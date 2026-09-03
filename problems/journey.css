@@ -55,8 +55,8 @@ body.focus #journey { display: none; }
   min-height: 3.4em; /* fixed height: text changes, layout never jumps */
 }
 
-/* --- quiz gate: check questions before the unlock button appears --- */
-#quiz {
+/* --- quiz gate + predict panel (same look; predict interrupts playback) --- */
+#quiz, #predict {
   margin-top: 0.9rem;
   background: var(--mantle);
   border: 1px solid var(--surface0);
@@ -71,7 +71,9 @@ body.focus #journey { display: none; }
 .quiz-choice { text-align: left; }
 .quiz-choice.right { background: var(--green); color: var(--crust); }
 .quiz-choice.wrong { background: var(--red); color: var(--crust); }
+.quiz-choice:disabled { cursor: default; }
 .quiz-feedback { font-size: 0.85rem; color: var(--red); }
+#predict .quiz-feedback { color: var(--subtext); }
 
 #warning {
   font-size: 0.85rem;

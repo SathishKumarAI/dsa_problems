@@ -42,7 +42,15 @@ function* runBrute(nums, target) {
       const sum = nums[i] + nums[j];
       yield { line: 2, i, j, sum, note: `${nums[i]} + ${nums[j]} = ${sum}${sum === target ? ` — that's the target!` : ` — not ${target}, keep looking`}` };
       if (sum === target) {
-        yield { hold: 2, line: 3, i, j, sum, answer: [i, j], note: `return [${i}, ${j}] — the positions of ${nums[i]} and ${nums[j]}` };
+        yield {
+          hold: 2, line: 3, i, j, sum, answer: [i, j],
+          predict: {
+            q: `Found it: ${nums[i]} + ${nums[j]} = ${target}. What does the function return?`,
+            choices: [`the indices [${i}, ${j}]`, `the values [${nums[i]}, ${nums[j]}]`, `the sum ${target}`],
+            answer: 0,
+          },
+          note: `return [${i}, ${j}] — the positions of ${nums[i]} and ${nums[j]}`,
+        };
         return;
       }
     }
@@ -54,6 +62,7 @@ function* runTwoPointer(nums, target) {
   const order = nums.map((_, i) => i).sort((a, b) => nums[a] - nums[b]);
   const s = order.map((i) => nums[i]);
   let L = 0, R = s.length - 1;
+  let askedL = false, askedR = false;
   yield { hold: 2, line: 0, order, s, L, R, note: "sort — but drag each value's ORIGINAL index along (the tiny #numbers), because the answer must be positions" };
   while (L < R) {
     const sum = s[L] + s[R];
@@ -65,10 +74,29 @@ function* runTwoPointer(nums, target) {
     }
     if (sum < target) {
       L++;
-      yield { line: 5, order, s, L, R, note: `${sum} < ${target} — need more, the left pointer walks right onto a bigger value` };
+      yield {
+        line: 5, order, s, L, R,
+        // predict once per direction — the first time is the learning moment
+        predict: askedL ? undefined : {
+          q: `${sum} is LESS than ${target}. Which pointer moves, and where?`,
+          choices: ["left pointer → right, onto a bigger value", "right pointer → left, onto a smaller value", "both move inward"],
+          answer: 0,
+        },
+        note: `${sum} < ${target} — need more, the left pointer walks right onto a bigger value`,
+      };
+      askedL = true;
     } else {
       R--;
-      yield { line: 5, order, s, L, R, note: `${sum} > ${target} — too much, the right pointer walks left onto a smaller value` };
+      yield {
+        line: 5, order, s, L, R,
+        predict: askedR ? undefined : {
+          q: `${sum} is MORE than ${target}. Which pointer moves, and where?`,
+          choices: ["left pointer → right, onto a bigger value", "right pointer → left, onto a smaller value", "both move inward"],
+          answer: 1,
+        },
+        note: `${sum} > ${target} — too much, the right pointer walks left onto a smaller value`,
+      };
+      askedR = true;
     }
   }
   yield { hold: 2, line: 5, order, s, L, R, note: "pointers met — no solution, the promise was broken" };
@@ -85,7 +113,15 @@ function* runHash(nums, target) {
       return;
     }
     seen.set(nums[i], i);
-    yield { line: 4, i, seen: [...seen], note: `remember: ${nums[i]} lives at index ${i}` };
+    yield {
+      line: 4, i, seen: [...seen],
+      predict: i > 0 ? undefined : {
+        q: `${nums[0]}'s complement isn't in the map. What happens next?`,
+        choices: ["store this value with its index, move on", "scan the rest of the array for the complement", "give up — no solution"],
+        answer: 0,
+      },
+      note: `remember: ${nums[i]} lives at index ${i}`,
+    };
   }
   yield { hold: 2, line: 4, seen: [], note: "scanned everything — no solution, the promise was broken" };
 }

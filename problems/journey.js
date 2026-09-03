@@ -72,6 +72,7 @@ if (typeof document !== "undefined") {
       this.onFinish = null;
       this.els.scrub.oninput = () => {
         this.stop();
+        if (this.hidePredict) this.hidePredict();
         this.show(Number(this.els.scrub.value));
       };
     }
@@ -158,8 +159,26 @@ if (typeof document !== "undefined") {
       return this.pos >= this.frames.length - 1;
     }
 
+    // predict mode (Brilliant learn-by-doing): a frame with a `predict` field
+    // pauses playback BEFORE it renders and asks the learner to call the move.
+    // Asked once per build; scrubbing skips predictions (scrubbing is review).
+    tryPredict() {
+      const nf = this.frames[this.pos + 1];
+      if (!nf || !nf.predict || nf.predictDone || !this.showPredict) return false;
+      const wasPlaying = this.playing;
+      this.stop();
+      this.showPredict(nf.predict, () => {
+        nf.predictDone = true;
+        this.show(this.pos + 1);
+        if (this.atEnd && this.onFinish) this.onFinish();
+        else if (wasPlaying) this.play();
+      });
+      return true;
+    }
+
     step() {
       if (this.atEnd) return false;
+      if (this.tryPredict()) return false; // paused for a prediction
       this.show(this.pos + 1);
       // finishing by manual stepping counts the same as playing to the end
       if (this.atEnd && this.onFinish) this.onFinish();
@@ -274,6 +293,7 @@ if (typeof document !== "undefined") {
     journeyEl.querySelectorAll(".jnode").forEach((b) => b.classList.toggle("active", b.dataset.act === key));
     nextBtn.hidden = true;
     quizEl.hidden = true;
+    predictEl.hidden = true;
     setPlayLabel(false);
     buildChart();
   }
@@ -296,6 +316,7 @@ if (typeof document !== "undefined") {
     warningEl.hidden = !warningEl.textContent;
     nextBtn.hidden = true;
     quizEl.hidden = true;
+    predictEl.hidden = true;
     setPlayLabel(false);
     if (player.ap) {
       player.build();
@@ -334,11 +355,13 @@ if (typeof document !== "undefined") {
   };
   document.getElementById("btn-back").onclick = () => {
     player.stop();
+    player.hidePredict();
     setPlayLabel(false);
     player.stepBack();
   };
   document.getElementById("btn-reset").onclick = () => {
     player.stop();
+    player.hidePredict();
     setPlayLabel(false);
     player.show(0);
   };
@@ -351,6 +374,44 @@ if (typeof document !== "undefined") {
   quizEl.id = "quiz";
   quizEl.hidden = true;
   document.getElementById("explain").after(quizEl);
+
+  // predict panel: same look as the quiz, but asked mid-playback
+  const predictEl = document.createElement("div");
+  predictEl.id = "predict";
+  predictEl.hidden = true;
+  document.getElementById("explain").after(predictEl);
+
+  player.hidePredict = () => {
+    predictEl.hidden = true;
+  };
+  player.showPredict = (p, cont) => {
+    setPlayLabel(false);
+    predictEl.innerHTML =
+      `<div class="panel-label">you drive — predict the next move</div>
+       <p class="quiz-q">${p.q}</p>
+       <div class="quiz-choices">${p.choices
+         .map((c, i) => `<button class="quiz-choice" data-i="${i}">${c}</button>`)
+         .join("")}</div>
+       <p class="quiz-feedback" hidden></p>`;
+    predictEl.hidden = false;
+    const feedback = predictEl.querySelector(".quiz-feedback");
+    predictEl.querySelectorAll(".quiz-choice").forEach((btn) => {
+      btn.onclick = () => {
+        const right = Number(btn.dataset.i) === p.answer;
+        predictEl.querySelectorAll(".quiz-choice").forEach((b) => {
+          b.disabled = true;
+          if (Number(b.dataset.i) === p.answer) b.classList.add("right");
+        });
+        if (!right) btn.classList.add("wrong");
+        feedback.textContent = right ? "exactly — watch:" : "not quite — watch what actually happens:";
+        feedback.hidden = false;
+        setTimeout(() => {
+          predictEl.hidden = true;
+          cont();
+        }, right ? 700 : 1600);
+      };
+    });
+  };
 
   function showQuiz(quiz, onPass) {
     let qi = 0;
@@ -433,10 +494,12 @@ if (typeof document !== "undefined") {
       player.step();
     } else if (e.key === "ArrowLeft") {
       player.stop();
+      player.hidePredict();
       setPlayLabel(false);
       player.stepBack();
     } else if (e.key === "r") {
       player.stop();
+      player.hidePredict();
       setPlayLabel(false);
       player.show(0);
     }
