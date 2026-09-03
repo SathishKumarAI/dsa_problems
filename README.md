@@ -11,7 +11,7 @@ Open `index.html` or `python -m http.server`.
 | Add/fix a sort algorithm or its pseudocode | `js/algorithms.js` |
 | Bar rendering, playback, timeline scrub, stats | `js/visualizer.js` |
 | Buttons, sliders, keyboard shortcuts, array generators, startup | `js/main.js` |
-| Theme (dark/light), sidebar resize + persistence | `js/ui-prefs.js` |
+| Theme (dark/light), sidebar resize, focus mode | `js/ui-prefs.js` |
 | Page structure, control labels, legend | `index.html` |
 | Correctness check (`node js/test_sorts.js`) | `js/test_sorts.js` |
 | Journey playback engine, journey bar, chart, wiring (shared) | `problems/journey.js` |

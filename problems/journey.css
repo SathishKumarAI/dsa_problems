@@ -8,6 +8,8 @@ h1 a:hover { text-decoration: underline; }
 
 #btn-theme { margin-left: auto; }
 
+body.focus #journey { display: none; }
+
 /* --- learning journey graph --- */
 #journey {
   display: flex;

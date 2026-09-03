@@ -1,7 +1,7 @@
 // Shared UI preferences (all pages). Owns: theme choice + #btn-theme wiring,
-// sidebar resize handle + width persistence. Not: any visualizer/playback
-// state. Load in <head> so the theme attribute is set before first paint —
-// no dark→light flash.
+// sidebar resize handle + width persistence, focus mode (#btn-focus / f / Esc).
+// Not: any visualizer/playback state. Load in <head> so the theme attribute
+// is set before first paint — no dark→light flash.
 (() => {
   const saved = localStorage.getItem("theme");
   const theme =
@@ -57,5 +57,27 @@
       side.style.width = "";
       localStorage.removeItem(key);
     };
+  });
+
+  // focus mode: strip the page down to the visualization + playback controls
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("btn-focus");
+    if (!btn) return;
+    const paint = () => {
+      const on = document.body.classList.contains("focus");
+      btn.textContent = on ? "✕ Exit" : "⛶ Focus";
+      btn.title = on ? "exit focus mode (Esc)" : "focus mode (f)";
+    };
+    const toggle = (force) => {
+      document.body.classList.toggle("focus", force);
+      paint();
+    };
+    btn.onclick = () => toggle();
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+      if (e.key === "f") toggle();
+      else if (e.key === "Escape") toggle(false);
+    });
+    paint();
   });
 })();

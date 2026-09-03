@@ -138,6 +138,11 @@ main {
 #status b { color: var(--text); }
 #complexity { margin-left: auto; color: var(--peach); }
 
+/* focus mode: visualization + playback only (journey bar hidden via journey.css) */
+body.focus header,
+body.focus #side,
+body.focus #resize-handle { display: none; }
+
 #resize-handle {
   width: 6px;
   flex-shrink: 0;
