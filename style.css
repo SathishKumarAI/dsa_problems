@@ -138,6 +138,15 @@ main {
 #status b { color: var(--text); }
 #complexity { margin-left: auto; color: var(--peach); }
 
+#resize-handle {
+  width: 6px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  border-radius: 3px;
+  touch-action: none;
+}
+#resize-handle:hover, #resize-handle:active { background: var(--surface0); }
+
 #side {
   width: 320px;
   display: flex;
@@ -217,5 +226,6 @@ input[type="range"] { accent-color: var(--mauve); }
 
 @media (max-width: 800px) {
   main { flex-direction: column; }
-  #side { width: 100%; }
+  #side { width: 100% !important; }
+  #resize-handle { display: none; }
 }
