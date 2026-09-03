@@ -347,3 +347,18 @@ select {
   font-size: var(--fs-sm);
 }
 #btn-next { background: var(--mauve); color: var(--on-mauve); }
+
+/* --- hint ladder --- */
+#hints {
+  margin-top: 0.9rem;
+  background: color-mix(in srgb, var(--blue) 8%, var(--mantle));
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+#hints[hidden] { display: none; }
+#hints .hint { font-size: var(--fs-md); color: var(--text); }
+#hint-more { align-self: flex-start; }

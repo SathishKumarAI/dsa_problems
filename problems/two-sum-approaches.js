@@ -392,6 +392,11 @@ const APPROACHES = {
       "starting j at i+1 both halves the work and bans using an element twice",
       "always know the brute force: it is the baseline every trick must beat",
     ],
+    hints: [
+      "Watch which pairs get tried — is any pair ever tried twice?",
+      "i HOLDS one item (orange ▲) while j sweeps everything after it. Together they visit each unordered pair exactly once.",
+      "The line to stare at: <b>for j in i+1..n-1</b> — j never looks backwards, so no repeats and no self-pairs.",
+    ],
     quiz: [
       {
         q: "Why does j start at i+1 instead of 0?",
@@ -464,6 +469,11 @@ const APPROACHES = {
       "sorted + two pointers squeezing inward = linear scan; the sort is the cost",
       "each comparison eliminates a whole position — that's why it can't miss",
       "index-recovery trap: sort scrambles positions, so sort the INDICES by value",
+    ],
+    hints: [
+      "The array got sorted before the pointers started. What did that buy?",
+      "When the sum is too SMALL, only the left pointer moving right can raise it — every other move is provably useless. That's why nothing gets skipped.",
+      "The line to stare at: <b>s < target ? L += 1 : R -= 1</b> — exactly one forced move per probe.",
     ],
     quiz: [
       {
@@ -556,6 +566,11 @@ const APPROACHES = {
       "the j != i guard is mandatory: during pass 2 the map contains the current element",
       "duplicates work because later entries overwrite — [3,3] keeps index 1, and index 0 finds it",
     ],
+    hints: [
+      "Pass 1 never answers anything. What is it building, and for whom?",
+      "It's a phone book: value → index. Pass 2 just looks up target − x in O(1) instead of scanning.",
+      "The line to stare at: <b>if j exists and j != i</b> — the map contains YOU, so you could match yourself.",
+    ],
     quiz: [
       {
         q: "In pass 2, why is the j != i guard mandatory?",
@@ -637,6 +652,11 @@ const APPROACHES = {
       "check the map BEFORE storing, or target = 2x matches an element with itself",
       "one pass, O(n) time, O(n) space — beats two pointers by skipping the sort",
     ],
+    hints: [
+      "At index i, what exactly does the map contain?",
+      "Only elements BEHIND you. So a hit always pairs (someone in the past, you) — no self-match possible.",
+      "The order to stare at: check <b>need in seen</b> BEFORE <b>seen[x] = i</b>. Swap them and target = 2x breaks.",
+    ],
     quiz: [
       {
         q: "Why CHECK the map before STORING the current value?",
@@ -706,6 +726,11 @@ const APPROACHES = {
     gate: "pass",
     chart: false,
     quiz: null,
+    hints: [
+      "Say the plan in one sentence before typing: \"as I walk, I ask whether my complement already walked past.\"",
+      "You want a Map. At each value x: need = target − x. If the map has need, you're done; otherwise file x under its index.",
+      "Skeleton to fill: a for-loop over nums → <b>const need = target - nums[i]</b> → <b>if (seen.has(need)) return [seen.get(need), i]</b> → <b>seen.set(nums[i], i)</b>.",
+    ],
     nextLabel: "It's green — show me what I earned ▸",
     run: function* (nums, target) {
       if (typeof lastTrace === "undefined" || !lastTrace) {

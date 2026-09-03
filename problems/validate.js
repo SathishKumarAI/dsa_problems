@@ -73,6 +73,13 @@ for (const file of FILES) {
       );
     }
 
+    if (a.hints) {
+      check(
+        Array.isArray(a.hints) && a.hints.every((h) => typeof h === "string" && h),
+        at("hints must be a non-empty-string array")
+      );
+    }
+
     if (a.quiz) {
       for (const [i, q] of a.quiz.entries()) {
         check(typeof q.q === "string" && q.q, at(`quiz[${i}].q missing`));

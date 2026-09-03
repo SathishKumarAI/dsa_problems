@@ -368,6 +368,9 @@ if (typeof document !== "undefined") {
     stallFlush(false);
     stallAct = key;
     stallStart = Date.now();
+    hintTier = 0;
+    quizWrongs = 0;
+    hintEl.hidden = true;
     player.setApproach(key);
     journeyEl.querySelectorAll(".jnode").forEach((b) => b.classList.toggle("active", b.dataset.act === key));
     nextBtn.hidden = true;
@@ -525,6 +528,45 @@ if (typeof document !== "undefined") {
     );
   }
 
+  // hint ladder (Ropes-style, inverted for learning): stuck detection offers
+  // tiered hints — nudge → concept → line to stare at. Never the answer.
+  // Triggers: 45s with no playback progress, or 2+ wrong quiz answers.
+  const hintEl = document.createElement("div");
+  hintEl.id = "hints";
+  hintEl.hidden = true;
+  let hintTier = 0;
+  let idleTimer = null;
+  let quizWrongs = 0;
+
+  function renderHints() {
+    const hints = player.ap.hints || [];
+    hintEl.innerHTML =
+      `<div class="panel-label">stuck? earn it with a smaller push</div>` +
+      hints.slice(0, hintTier).map((h) => `<p class="hint">${h}</p>`).join("") +
+      (hintTier < hints.length
+        ? `<button id="hint-more">${hintTier === 0 ? "give me a nudge" : "a bigger hint"}</button>`
+        : "");
+    const more = hintEl.querySelector("#hint-more");
+    if (more) {
+      more.onclick = () => {
+        hintTier++;
+        renderHints();
+      };
+    }
+  }
+
+  function offerHint() {
+    if (!player.ap || !player.ap.hints || !player.ap.hints.length) return;
+    if (!hintEl.hidden) return;
+    hintEl.hidden = false;
+    renderHints();
+  }
+
+  function resetHintIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(offerHint, 45000);
+  }
+
   // quiz gate (Khan/AlgoMonster style): before the unlock button appears the
   // learner answers the act's check questions. Wrong answer → explanation,
   // retry; no penalty, but no skipping. Injected div — pages need no markup.
@@ -538,6 +580,7 @@ if (typeof document !== "undefined") {
   predictEl.id = "predict";
   predictEl.hidden = true;
   document.getElementById("explain").after(predictEl);
+  document.getElementById("explain").after(hintEl);
 
   player.hidePredict = () => {
     predictEl.hidden = true;
@@ -599,6 +642,7 @@ if (typeof document !== "undefined") {
             btn.classList.add("wrong");
             feedback.textContent = q.explain;
             feedback.hidden = false;
+            if (++quizWrongs >= 2) offerHint(); // struggling — offer the ladder
           }
         };
       });
@@ -737,6 +781,7 @@ if (typeof document !== "undefined") {
   // itself isn't encoded: a link restores the act/step on fresh data.
   let urlTimer;
   player.onShow = () => {
+    resetHintIdle(); // any shown frame counts as progress
     clearTimeout(urlTimer);
     urlTimer = setTimeout(() => {
       const u = new URL(location);
