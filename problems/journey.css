@@ -4,7 +4,7 @@
 h1 a { color: inherit; text-decoration: none; }
 h1 a:hover { text-decoration: underline; }
 
-#subtitle { font-size: 0.8rem; color: var(--subtext); }
+#subtitle { font-size: var(--fs-sm); color: var(--subtext); }
 
 #settings { margin-left: auto; }
 
@@ -30,18 +30,18 @@ h1 a:hover { text-decoration: underline; }
   border: 1px solid var(--surface1);
   border-radius: 10px;
   padding: 0.9rem 1rem;
-  font-size: 0.88rem;
+  font-size: var(--fs-md);
   line-height: 1.45;
 }
 .tour-nav { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.7rem; }
-.tour-nav span { color: var(--subtext); font-size: 0.75rem; margin-right: auto; }
+.tour-nav span { color: var(--subtext); font-size: var(--fs-xs); margin-right: auto; }
 .tour-next { background: var(--mauve); color: var(--crust); }
 
-#xp-badge { font-size: 0.78rem; color: var(--yellow); white-space: nowrap; }
+#xp-badge { font-size: var(--fs-sm); color: var(--yellow); white-space: nowrap; }
 .xp-float {
   position: fixed;
   z-index: 20;
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
   font-weight: bold;
   color: var(--yellow);
   pointer-events: none;
@@ -66,7 +66,7 @@ body.focus #journey { display: none; }
   padding: 0.45rem 0.7rem;
   text-align: left;
 }
-.jnode small { color: var(--subtext); font-size: 0.7rem; }
+.jnode small { color: var(--subtext); font-size: var(--fs-xs); }
 .jnode.active { background: var(--mauve); color: var(--crust); }
 .jnode.active small { color: var(--crust); }
 .jnode.done b::after { content: " ✓"; color: var(--green); }
@@ -85,7 +85,7 @@ body.focus #journey { display: none; }
 
 /* narration is the star of the page — big, stable, right under the data */
 #explain {
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   color: var(--text);
   background: var(--mantle);
   border-left: 3px solid var(--mauve);
@@ -107,17 +107,17 @@ body.focus #journey { display: none; }
   gap: 0.6rem;
 }
 #quiz[hidden], #predict[hidden] { display: none; } /* display:flex would beat [hidden] */
-.quiz-q { font-size: 0.95rem; }
+.quiz-q { font-size: var(--fs-md); }
 .quiz-choices { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .quiz-choice { text-align: left; }
 .quiz-choice.right { background: var(--green); color: var(--crust); }
 .quiz-choice.wrong { background: var(--red); color: var(--crust); }
 .quiz-choice:disabled { cursor: default; }
-.quiz-feedback { font-size: 0.85rem; color: var(--red); }
+.quiz-feedback { font-size: var(--fs-md); color: var(--red); }
 #predict .quiz-feedback { color: var(--subtext); }
 
 #warning {
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   border-radius: 8px;
   padding: 0.6rem 0.9rem;
   margin-bottom: 0.9rem;
@@ -125,8 +125,8 @@ body.focus #journey { display: none; }
 #warning.bad { background: color-mix(in srgb, var(--red) 18%, var(--mantle)); color: var(--red); }
 #warning.info { background: var(--mantle); color: var(--subtext); }
 
-#databar { font-size: 0.9rem; color: var(--subtext); padding-bottom: 0.6rem; }
-#databar b { color: var(--peach); font-size: 1.05rem; }
+#databar { font-size: var(--fs-md); color: var(--subtext); padding-bottom: 0.6rem; }
+#databar b { color: var(--peach); font-size: var(--fs-lg); }
 
 #array-row, .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
@@ -141,9 +141,9 @@ body.focus #journey { display: none; }
   background: var(--surface0);
   border-radius: 8px;
   font-family: ui-monospace, monospace;
-  font-size: 1rem;
+  font-size: var(--fs-lg);
 }
-.chip .oi { font-size: 0.58rem; color: var(--subtext); line-height: 1.1; }
+.chip .oi { font-size: var(--fs-2xs); color: var(--subtext); line-height: 1.1; }
 .chip.focus { background: var(--yellow); color: var(--crust); font-weight: bold; }
 .chip.anchor { background: var(--peach); color: var(--crust); font-weight: bold; }
 .chip.answer { background: var(--green); color: var(--crust); font-weight: bold; }
@@ -157,12 +157,12 @@ body.focus #journey { display: none; }
   flex-direction: column;
   gap: 0.75rem;
 }
-.panel-label { font-size: 0.75rem; color: var(--subtext); }
+.panel-label { font-size: var(--fs-xs); color: var(--subtext); }
 
-.sum-eq { font-size: 1.15rem; font-family: ui-monospace, monospace; }
+.sum-eq { font-size: var(--fs-lg); font-family: ui-monospace, monospace; }
 .sum-eq b.hit { color: var(--green); }
 .sum-eq b.miss { color: var(--red); }
-.sum-eq .target-note { margin-left: 0.7rem; font-size: 0.8rem; color: var(--subtext); }
+.sum-eq .target-note { margin-left: 0.7rem; font-size: var(--fs-sm); color: var(--subtext); }
 
 .map-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .map-chip {
@@ -170,7 +170,7 @@ body.focus #journey { display: none; }
   border-radius: 8px;
   padding: 0.4rem 0.6rem;
   font-family: ui-monospace, monospace;
-  font-size: 0.9rem;
+  font-size: var(--fs-md);
 }
 .map-chip.scan { background: var(--yellow); color: var(--crust); }
 .map-chip.answer { background: var(--green); color: var(--crust); }
@@ -178,14 +178,14 @@ body.focus #journey { display: none; }
 .story-scene { font-size: 2.2rem; letter-spacing: 0.4rem; padding: 0.5rem 0; }
 
 /* --- recap screen --- */
-.recap-table { border-collapse: collapse; font-size: 0.82rem; max-width: 46rem; }
+.recap-table { border-collapse: collapse; font-size: var(--fs-sm); max-width: 46rem; }
 .recap-table th, .recap-table td {
   text-align: left;
   padding: 0.45rem 0.8rem;
   border-bottom: 1px solid var(--surface0);
   vertical-align: top;
 }
-.recap-table th { color: var(--subtext); font-weight: normal; font-size: 0.72rem; }
+.recap-table th { color: var(--subtext); font-weight: normal; font-size: var(--fs-xs); }
 .recap-table td:first-child { color: var(--mauve); white-space: nowrap; }
 .recap-table td:nth-child(2) { white-space: nowrap; color: var(--peach); }
 .recap-links { display: flex; gap: 0.75rem; flex-wrap: wrap; }
@@ -204,7 +204,7 @@ body.focus #journey { display: none; }
 
 /* --- code challenge editor --- */
 #challenge-box { display: flex; flex-direction: column; gap: 0.4rem; max-width: 44rem; }
-.challenge-sig { font-family: ui-monospace, monospace; font-size: 0.85rem; color: var(--subtext); }
+.challenge-sig { font-family: ui-monospace, monospace; font-size: var(--fs-md); color: var(--subtext); }
 #challenge-code {
   background: var(--mantle);
   color: var(--text);
@@ -212,7 +212,7 @@ body.focus #journey { display: none; }
   border-radius: 8px;
   padding: 0.7rem 0.9rem;
   font-family: ui-monospace, monospace;
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   line-height: 1.5;
   resize: vertical;
   tab-size: 2;
@@ -220,17 +220,17 @@ body.focus #journey { display: none; }
 #challenge-code:focus { outline: 2px solid var(--mauve); }
 .challenge-controls { display: flex; gap: 0.8rem; align-items: center; }
 #challenge-run { background: var(--green); color: var(--crust); }
-#challenge-verdict { font-size: 0.85rem; }
+#challenge-verdict { font-size: var(--fs-md); }
 #challenge-verdict.hit { color: var(--green); }
 #challenge-verdict.miss { color: var(--red); }
-#challenge-cases { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-monospace, monospace; font-size: 0.8rem; }
+#challenge-cases { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
 .challenge-case.pass { color: var(--green); }
 .challenge-case.fail { color: var(--red); }
 .challenge-case small { color: var(--subtext); }
 
 .bits { display: flex; gap: 0.3rem; align-items: center; }
-.bits .tag { width: 3.5rem; color: var(--subtext); font-size: 0.8rem; }
-.bits .dec { margin-left: 0.6rem; color: var(--subtext); font-size: 0.85rem; }
+.bits .tag { width: 3.5rem; color: var(--subtext); font-size: var(--fs-sm); }
+.bits .dec { margin-left: 0.6rem; color: var(--subtext); font-size: var(--fs-md); }
 .bit {
   width: 2rem;
   height: 2rem;
@@ -248,7 +248,7 @@ body.focus #journey { display: none; }
 #legend .blue { background: var(--blue); }
 
 #idea {
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
   background: var(--mantle);
   border-radius: 8px;
   padding: 0.75rem 1rem;
@@ -262,17 +262,17 @@ body.focus #journey { display: none; }
 #pseudocode { flex-shrink: 0; }
 
 #code-tabs { display: flex; gap: 0.25rem; }
-.code-tab { font-size: 0.75rem; padding: 0.25rem 0.6rem; }
+.code-tab { font-size: var(--fs-xs); padding: 0.25rem 0.6rem; }
 .code-tab.active { background: var(--mauve); color: var(--crust); }
 
-#takeaways { font-size: 0.78rem; }
+#takeaways { font-size: var(--fs-sm); }
 #takeaways ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
 #takeaways li { margin-bottom: 0.25rem; color: var(--subtext); }
 #takeaways li::marker { color: var(--mauve); }
 
 /* --- steps-per-approach chart: one measure, one hue, direct-labeled --- */
 #chart { display: flex; flex-direction: column; gap: 0.35rem; }
-.crow { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
+.crow { display: flex; align-items: center; gap: 0.5rem; font-size: var(--fs-xs); }
 .clabel { width: 5.5rem; color: var(--subtext); flex-shrink: 0; }
 .cbar {
   height: 10px;
@@ -282,7 +282,7 @@ body.focus #journey { display: none; }
 }
 .crow.active .cbar { background: var(--mauve); }
 .crow.active .clabel { color: var(--text); }
-.cval { color: var(--subtext); }
+.cval { color: var(--subtext); font-variant-numeric: tabular-nums; }
 
 /* stacked (phone) layout: sidebar flows with the page instead of scrolling
    inside itself; chips grow to comfortable touch size on coarse pointers */
@@ -296,7 +296,7 @@ body.focus #journey { display: none; }
   .quiz-choice { min-height: 44px; }
 }
 
-#resources { font-size: 0.7rem; color: var(--subtext); }
+#resources { font-size: var(--fs-xs); color: var(--subtext); }
 #resources a { color: var(--blue); text-decoration: none; }
 #resources a:hover { text-decoration: underline; }
 
@@ -306,7 +306,7 @@ body.focus #journey { display: none; }
   border: none;
   border-radius: 6px;
   padding: 0.4rem 0.5rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
 #custom { width: 11rem; }
 #target-input { width: 3.5rem; }
@@ -316,6 +316,6 @@ select {
   border: none;
   border-radius: 6px;
   padding: 0.35rem 0.4rem;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
 }
 #btn-next { background: var(--mauve); color: var(--crust); }

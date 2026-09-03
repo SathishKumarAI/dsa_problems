@@ -1,6 +1,21 @@
 /* All visuals live here. Catppuccin Mocha (dark) / Latte (light) palettes.
    Theme is <html data-theme="dark|light">, set by js/ui-prefs.js before paint. */
 :root {
+  /* type scale (~1.125 modular) — use these, not literals, in every rule */
+  --fs-2xs: 0.65rem; /* chip sub-indices, bar labels */
+  --fs-xs: 0.72rem;  /* captions, legends, hints */
+  --fs-sm: 0.8rem;   /* secondary UI: labels, code, takeaways */
+  --fs-md: 0.9rem;   /* body copy, controls */
+  --fs-lg: 1.05rem;  /* narration, headings */
+  --fs-xl: 1.2rem;   /* stat numerals */
+
+  /* spacing rhythm */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+
   --base: #1e1e2e;
   --mantle: #181825;
   --crust: #11111b;
@@ -51,13 +66,13 @@ header {
   background: var(--mantle);
 }
 
-h1 { font-size: 1.1rem; color: var(--mauve); }
+h1 { font-size: var(--fs-lg); color: var(--mauve); }
 
 #algo-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 
 #problems-link {
   margin-left: auto;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--subtext);
   text-decoration: none;
 }
@@ -68,7 +83,7 @@ h1 { font-size: 1.1rem; color: var(--mauve); }
 #settings summary {
   list-style: none;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: var(--fs-lg);
   padding: 0.2rem 0.4rem;
   border-radius: 6px;
 }
@@ -98,7 +113,7 @@ button {
   border-radius: 6px;
   padding: 0.4rem 0.8rem;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
 }
 button:hover { background: var(--surface1); }
 #algo-tabs button.active { background: var(--mauve); color: var(--crust); }
@@ -137,7 +152,7 @@ main {
   top: -1.2rem;
   width: 100%;
   text-align: center;
-  font-size: 0.65rem;
+  font-size: var(--fs-2xs);
   color: var(--subtext);
 }
 .bar.compare { background: var(--yellow); }
@@ -159,7 +174,8 @@ main {
   gap: 2rem;
   padding-top: 0.75rem;
   color: var(--subtext);
-  font-size: 0.85rem;
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums; /* step counters must not jitter */
 }
 #status b { color: var(--text); }
 #complexity { margin-left: auto; color: var(--peach); }
@@ -190,7 +206,7 @@ body.focus #resize-handle { display: none; }
   border-radius: 8px;
   padding: 1rem;
   font-family: ui-monospace, monospace;
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   line-height: 1.7;
   overflow: auto;
 }
@@ -201,7 +217,7 @@ body.focus #resize-handle { display: none; }
 #pseudocode .line { display: block; padding: 0 0.4rem; white-space: pre; }
 
 #explain {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--subtext);
   min-height: 3em;
 }
@@ -210,7 +226,7 @@ body.focus #resize-handle { display: none; }
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1rem;
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: var(--subtext);
   margin-top: auto;
 }
@@ -239,7 +255,7 @@ footer {
 .group { display: flex; gap: 0.5rem; align-items: center; }
 
 label {
-  font-size: 0.8rem;
+  font-size: var(--fs-sm);
   color: var(--subtext);
   display: flex;
   align-items: center;
@@ -254,7 +270,7 @@ input[type="range"] { accent-color: var(--mauve); }
 #target { width: 4rem; background: var(--surface0); color: var(--text); border: none; border-radius: 6px; padding: 0.3rem 0.4rem; }
 
 #keys { margin-left: auto; }
-#keys-btn { font-size: 0.7rem; padding: 0.25rem 0.6rem; color: var(--subtext); background: none; }
+#keys-btn { font-size: var(--fs-xs); padding: 0.25rem 0.6rem; color: var(--subtext); background: none; }
 #keys-btn:hover { background: var(--surface0); }
 
 /* keyboard-shortcut overlay (injected by ui-prefs.js) */
@@ -267,16 +283,16 @@ input[type="range"] { accent-color: var(--mauve); }
   min-width: 20rem;
 }
 #shortcuts::backdrop { background: rgba(0, 0, 0, 0.55); }
-#shortcuts h2 { font-size: 0.95rem; color: var(--mauve); margin-bottom: 0.8rem; }
+#shortcuts h2 { font-size: var(--fs-md); color: var(--mauve); margin-bottom: 0.8rem; }
 #shortcuts table { border-collapse: collapse; margin-bottom: 1rem; }
-#shortcuts td { padding: 0.3rem 0.9rem 0.3rem 0; font-size: 0.85rem; color: var(--subtext); }
+#shortcuts td { padding: 0.3rem 0.9rem 0.3rem 0; font-size: var(--fs-md); color: var(--subtext); }
 #shortcuts kbd {
   background: var(--surface0);
   color: var(--text);
   border-radius: 4px;
   padding: 0.15rem 0.5rem;
   font-family: ui-monospace, monospace;
-  font-size: 0.78rem;
+  font-size: var(--fs-sm);
   white-space: nowrap;
 }
 
