@@ -252,6 +252,21 @@ body.focus #journey { display: none; }
 #challenge-verdict.hit { color: var(--green-text); }
 #challenge-verdict.miss { color: var(--red-text); }
 #challenge-cases { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
+#challenge-scorecard {
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.score-row { font-size: var(--fs-sm); color: var(--subtext); display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; }
+.score-row b { color: var(--text); font-variant-numeric: tabular-nums; }
+.score-row .hit { color: var(--green-text); }
+.score-row .miss { color: var(--red-text); }
+
 .challenge-case.pass { color: var(--green-text); }
 .challenge-case.fail { color: var(--red-text); }
 .challenge-case small { color: var(--subtext); }

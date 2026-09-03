@@ -160,15 +160,23 @@ const ACT_ORDER = ["story", "brute", "twoptr", "twopass", "hash", "challenge", "
 
 const CHALLENGE = {
   starter: "// nums and target are in scope — return the two indices\nconst seen = new Map();\n\n",
-  // same cases as test_two_sum.js; expected pre-sorted for comparison
+  // same cases as test_two_sum.js; expected pre-sorted; tag marks edge cases
   cases: [
     { nums: [2, 7, 11, 15], target: 9, expected: [0, 1] },
     { nums: [3, 2, 4], target: 6, expected: [1, 2] },
-    { nums: [3, 3], target: 6, expected: [0, 1] },
+    { nums: [3, 3], target: 6, expected: [0, 1], tag: "equal values" },
     { nums: [5, 75, 25], target: 100, expected: [1, 2] },
-    { nums: [3, 1, 3, 8], target: 6, expected: [0, 2] },
-    { nums: [1, 9, 4, 6, 30], target: 31, expected: [0, 4] },
+    { nums: [3, 1, 3, 8], target: 6, expected: [0, 2], tag: "duplicates" },
+    { nums: [1, 9, 4, 6, 30], target: 31, expected: [0, 4], tag: "answer at extremes" },
   ],
+  // scorecard baseline: the one-pass hash, measured with the same access counter
+  reference:
+    "const seen = new Map();\n" +
+    "for (let i = 0; i < nums.length; i++) {\n" +
+    "  const need = target - nums[i];\n" +
+    "  if (seen.has(need)) return [seen.get(need), i];\n" +
+    "  seen.set(nums[i], i);\n" +
+    "}\nreturn [];",
 };
 
 // your code IS the animation: the worker can also trace a run on the current
@@ -194,13 +202,23 @@ const CHALLENGE_WORKER_SRC = `onmessage = (e) => {
     postMessage({ trace: { events, result, error } });
     return;
   }
+  // test mode counts array touches for the learner AND the reference —
+  // step-efficiency is part of the scorecard, not just pass/fail
+  const counter = (arr, bump) => new Proxy(arr, {
+    get(t, p) { if (/^\\d+$/.test(p)) bump(); return t[p]; },
+    set(t, p, v) { if (/^\\d+$/.test(p)) bump(); t[p] = v; return true; },
+  });
+  let refFn = null;
+  try { refFn = new Function("nums", "target", e.data.reference || ""); } catch {}
   postMessage({ results: cases.map((c) => {
+    let touches = 0, refTouches = 0;
     try {
-      const got = fn(c.nums.slice(), c.target);
+      const got = fn(counter(c.nums.slice(), () => touches++), c.target);
+      if (refFn) { try { refFn(counter(c.nums.slice(), () => refTouches++), c.target); } catch {} }
       const ok = Array.isArray(got) && got.length === 2 &&
         [...got].sort((a, b) => a - b).join() === c.expected.join();
-      return { ok, got: JSON.stringify(got) };
-    } catch (err) { return { ok: false, got: String(err.message) }; }
+      return { ok, got: JSON.stringify(got), touches, refTouches };
+    } catch (err) { return { ok: false, got: String(err.message), touches, refTouches }; }
   }) });
 };`;
 
@@ -264,7 +282,7 @@ function runChallenge() {
   verdict.textContent = "running…";
   // the learner's code runs in a Worker: main thread stays responsive and
   // eval-free; an infinite loop just gets its worker terminated
-  challengeWorker({ code, cases: CHALLENGE.cases }, (data) => {
+  challengeWorker({ code, cases: CHALLENGE.cases, reference: CHALLENGE.reference }, (data) => {
     if (data.error) {
       verdict.textContent = "syntax error: " + data.error;
       verdict.className = "miss";
@@ -289,7 +307,40 @@ function runChallenge() {
       verdict.textContent = `${passed}/${results.length} passing`;
       verdict.className = "miss";
     }
+    renderScorecard(results, passed);
   }, verdict);
+}
+
+// skill scorecard (Ropes-style mirror): HOW you solved, not just pass/fail.
+// History lives in localStorage so improvement shows as growth, never shame.
+function renderScorecard(results, passed) {
+  const touches = results.reduce((s, r) => s + (r.touches || 0), 0);
+  const refTouches = results.reduce((s, r) => s + (r.refTouches || 0), 0);
+  const edges = CHALLENGE.cases
+    .map((c, i) => ({ tag: c.tag, ok: results[i].ok }))
+    .filter((e) => e.tag);
+  const KEY = "scorecard:" + location.pathname;
+  const hist = JSON.parse(localStorage.getItem(KEY) || "[]");
+  const bestTouches = hist.filter((h) => h.allPass).reduce((m, h) => Math.min(m, h.touches), Infinity);
+  hist.push({ date: new Date().toISOString().slice(0, 10), passed, allPass: passed === results.length, touches });
+  localStorage.setItem(KEY, JSON.stringify(hist.slice(-50)));
+
+  let growth = "";
+  if (passed === results.length && bestTouches !== Infinity) {
+    growth =
+      touches < bestTouches
+        ? `<span class="hit">new best — previous was ${bestTouches} touches</span>`
+        : `<span>your best: ${bestTouches} touches</span>`;
+  }
+  const box = document.getElementById("challenge-scorecard") || document.createElement("div");
+  box.id = "challenge-scorecard";
+  box.innerHTML = `
+    <div class="panel-label">scorecard — how you solved it</div>
+    <div class="score-row">correctness <b>${passed}/${results.length}</b></div>
+    <div class="score-row">array touches <b>${touches}</b> <small>reference one-pass: ${refTouches}</small></div>
+    <div class="score-row">edge cases ${edges.map((e) => `<span class="${e.ok ? "hit" : "miss"}">${e.ok ? "✓" : "✗"} ${e.tag}</span>`).join(" ")}</div>
+    ${growth ? `<div class="score-row">${growth}</div>` : ""}`;
+  document.getElementById("challenge-cases").after(box);
 }
 
 const RESOURCES = [
