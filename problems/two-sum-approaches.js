@@ -147,6 +147,20 @@ const APPROACHES = {
       "\"exactly one solution\" is a promise the fast solutions lean on",
       "same element twice is forbidden: j starts at i+1, maps check before storing",
     ],
+    quiz: [
+      {
+        q: "What exactly must you return?",
+        choices: ["the two values that hit the target", "the two indices where they sit", "the sum itself"],
+        answer: 1,
+        explain: "Values are easy to read off — the problem wants WHERE they are. Index bookkeeping shapes every solution.",
+      },
+      {
+        q: "How many valid pairs does the input promise?",
+        choices: ["exactly one", "at least one", "any number"],
+        answer: 0,
+        explain: "\"Exactly one solution exists\" — the fast approaches quietly lean on that promise.",
+      },
+    ],
     run: runStory,
     render(f, els, data) {
       const focus = new Set(f.pair && !f.answer ? f.pair : []);
@@ -196,6 +210,20 @@ const APPROACHES = {
       "the pair-checking nested loop is the O(n²) shape — learn to see it instantly",
       "starting j at i+1 both halves the work and bans using an element twice",
       "always know the brute force: it is the baseline every trick must beat",
+    ],
+    quiz: [
+      {
+        q: "Why does j start at i+1 instead of 0?",
+        choices: ["it saves memory", "it halves the work AND bans using the same element twice", "it makes the loop O(n)"],
+        answer: 1,
+        explain: "Pairs are unordered — checking (i,j) and (j,i) is the same check. Starting at i+1 skips the mirror half and can never pair an element with itself.",
+      },
+      {
+        q: "The nested pair-checking loop costs…",
+        choices: ["O(n) — one pass per element", "O(n log n) — like sorting", "O(n²) — every pair"],
+        answer: 2,
+        explain: "n choices for i times up to n for j ≈ n²/2 checks. Fine for a shelf, hopeless for a warehouse.",
+      },
     ],
     run: runBrute,
     render(f, els, data) {
@@ -255,6 +283,28 @@ const APPROACHES = {
       "sorted + two pointers squeezing inward = linear scan; the sort is the cost",
       "each comparison eliminates a whole position — that's why it can't miss",
       "index-recovery trap: sort scrambles positions, so sort the INDICES by value",
+    ],
+    quiz: [
+      {
+        q: "Why must the array be sorted for two pointers to work?",
+        choices: [
+          "sorted arrays use less memory",
+          "so one comparison can eliminate a whole pointer position",
+          "duplicates disappear after sorting",
+        ],
+        answer: 1,
+        explain: "If the ends sum too small, the left value fails with its BEST partner — so it fails with all of them. Only order makes that deduction valid.",
+      },
+      {
+        q: "What does sorting break, and how do we repair it?",
+        choices: [
+          "nothing — return the sorted positions",
+          "the original indices — carry each value's index along through the sort",
+          "the values — copy the array first",
+        ],
+        answer: 1,
+        explain: "The answer must be ORIGINAL positions. Sort the indices by value (the tiny #numbers) or you return the wrong thing.",
+      },
     ],
     run: runTwoPointer,
     render(f, els, data) {
@@ -325,6 +375,18 @@ const APPROACHES = {
       "the j != i guard is mandatory: during pass 2 the map contains the current element",
       "duplicates work because later entries overwrite — [3,3] keeps index 1, and index 0 finds it",
     ],
+    quiz: [
+      {
+        q: "In pass 2, why is the j != i guard mandatory?",
+        choices: [
+          "the map might point the current element at ITSELF when target = 2×x",
+          "the map might be empty",
+          "j could run past the end of the array",
+        ],
+        answer: 0,
+        explain: "Pass 1 filed every element — including the one you're standing on. For target 6 at value 3, the map says \"3 lives at your own index\". The guard rejects that self-match.",
+      },
+    ],
     run: runTwoPassHash,
     render(f, els, data) {
       const nums = data.nums;
@@ -393,6 +455,24 @@ const APPROACHES = {
       "\"have I seen my complement?\" — THE hash-map interview pattern, memorize the shape",
       "check the map BEFORE storing, or target = 2x matches an element with itself",
       "one pass, O(n) time, O(n) space — beats two pointers by skipping the sort",
+    ],
+    quiz: [
+      {
+        q: "Why CHECK the map before STORING the current value?",
+        choices: [
+          "checking first is faster",
+          "store first and x can match itself when target = 2×x",
+          "the map must stay small",
+        ],
+        answer: 1,
+        explain: "Store 3 first with target 6, then ask \"seen 3?\" — yes, yourself. Check-before-store means the map only ever holds elements BEHIND you.",
+      },
+      {
+        q: "One-pass hash costs…",
+        choices: ["O(n) time · O(n) space", "O(n log n) time · O(1) space", "O(n²) time · O(n) space"],
+        answer: 0,
+        explain: "One walk, O(1) lookups, and a map that can grow to n entries. Time is bought with space — that trade IS the pattern.",
+      },
     ],
     run: runHash,
     render(f, els, data) {

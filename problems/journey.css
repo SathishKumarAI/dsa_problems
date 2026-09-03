@@ -55,6 +55,24 @@ body.focus #journey { display: none; }
   min-height: 3.4em; /* fixed height: text changes, layout never jumps */
 }
 
+/* --- quiz gate: check questions before the unlock button appears --- */
+#quiz {
+  margin-top: 0.9rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.quiz-q { font-size: 0.95rem; }
+.quiz-choices { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.quiz-choice { text-align: left; }
+.quiz-choice.right { background: var(--green); color: var(--crust); }
+.quiz-choice.wrong { background: var(--red); color: var(--crust); }
+.quiz-feedback { font-size: 0.85rem; color: var(--red); }
+
 #warning {
   font-size: 0.85rem;
   border-radius: 8px;

@@ -161,6 +161,8 @@ if (typeof document !== "undefined") {
     step() {
       if (this.atEnd) return false;
       this.show(this.pos + 1);
+      // finishing by manual stepping counts the same as playing to the end
+      if (this.atEnd && this.onFinish) this.onFinish();
       return !this.atEnd;
     }
 
@@ -177,8 +179,7 @@ if (typeof document !== "undefined") {
           const hold = this.frames[this.pos].hold || 1;
           this.timer = setTimeout(tick, this.delay * hold);
         } else {
-          this.timer = null;
-          if (this.onFinish) this.onFinish();
+          this.timer = null; // step() already fired onFinish at the end
         }
       };
       tick();
@@ -272,6 +273,7 @@ if (typeof document !== "undefined") {
     player.setApproach(key);
     journeyEl.querySelectorAll(".jnode").forEach((b) => b.classList.toggle("active", b.dataset.act === key));
     nextBtn.hidden = true;
+    quizEl.hidden = true;
     setPlayLabel(false);
     buildChart();
   }
@@ -293,6 +295,7 @@ if (typeof document !== "undefined") {
     }
     warningEl.hidden = !warningEl.textContent;
     nextBtn.hidden = true;
+    quizEl.hidden = true;
     setPlayLabel(false);
     if (player.ap) {
       player.build();
@@ -341,6 +344,49 @@ if (typeof document !== "undefined") {
   };
   speedEl.oninput = () => player.setSpeed(Number(speedEl.value));
 
+  // quiz gate (Khan/AlgoMonster style): before the unlock button appears the
+  // learner answers the act's check questions. Wrong answer → explanation,
+  // retry; no penalty, but no skipping. Injected div — pages need no markup.
+  const quizEl = document.createElement("div");
+  quizEl.id = "quiz";
+  quizEl.hidden = true;
+  document.getElementById("explain").after(quizEl);
+
+  function showQuiz(quiz, onPass) {
+    let qi = 0;
+    const ask = () => {
+      const q = quiz[qi];
+      quizEl.innerHTML =
+        `<div class="panel-label">check yourself (${qi + 1}/${quiz.length})</div>
+         <p class="quiz-q">${q.q}</p>
+         <div class="quiz-choices">${q.choices
+           .map((c, i) => `<button class="quiz-choice" data-i="${i}">${c}</button>`)
+           .join("")}</div>
+         <p class="quiz-feedback" hidden></p>`;
+      quizEl.hidden = false;
+      const feedback = quizEl.querySelector(".quiz-feedback");
+      quizEl.querySelectorAll(".quiz-choice").forEach((btn) => {
+        btn.onclick = () => {
+          if (Number(btn.dataset.i) === q.answer) {
+            btn.classList.add("right");
+            qi++;
+            if (qi < quiz.length) {
+              setTimeout(ask, 500);
+            } else {
+              quizEl.hidden = true;
+              onPass();
+            }
+          } else {
+            btn.classList.add("wrong");
+            feedback.textContent = q.explain;
+            feedback.hidden = false;
+          }
+        };
+      });
+    };
+    ask();
+  }
+
   player.onFinish = () => {
     setPlayLabel(false);
     journeyEl.querySelector(`.jnode[data-act="${player.key}"]`)?.classList.add("done");
@@ -351,23 +397,29 @@ if (typeof document !== "undefined") {
       // already unlocked on an earlier visit — plain navigation
       nextBtn.textContent = `Next: ${APPROACHES[next].name} ▸`;
       nextBtn.onclick = () => setAct(next);
+      nextBtn.hidden = false;
     } else {
-      // the reveal moment: no name shown until the learner opts in
-      nextBtn.textContent =
-        idx === 0
-          ? "I understand the problem — try solving it ▸"
-          : "I get it — what's the weakness? ▸";
-      nextBtn.onclick = () => {
-        unlocked = idx + 2;
-        localStorage.setItem(UNLOCK_KEY, unlocked);
-        buildJourney();
-        setAct(next);
-        journeyEl.querySelector(`.jnode[data-act="${next}"]`)?.classList.add("revealed");
-        player.els.idea.classList.add("revealed");
-        setTimeout(() => player.els.idea.classList.remove("revealed"), 1300);
+      // the reveal moment: quiz first (if the act has one), then the opt-in
+      const reveal = () => {
+        nextBtn.textContent =
+          idx === 0
+            ? "I understand the problem — try solving it ▸"
+            : "I get it — what's the weakness? ▸";
+        nextBtn.onclick = () => {
+          unlocked = idx + 2;
+          localStorage.setItem(UNLOCK_KEY, unlocked);
+          buildJourney();
+          setAct(next);
+          journeyEl.querySelector(`.jnode[data-act="${next}"]`)?.classList.add("revealed");
+          player.els.idea.classList.add("revealed");
+          setTimeout(() => player.els.idea.classList.remove("revealed"), 1300);
+        };
+        nextBtn.hidden = false;
       };
+      const quiz = player.ap.quiz;
+      if (quiz && quiz.length && quizEl.hidden) showQuiz(quiz, reveal);
+      else if (!quiz || !quiz.length) reveal();
     }
-    nextBtn.hidden = false;
   };
 
   document.addEventListener("keydown", (e) => {
