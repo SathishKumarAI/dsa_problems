@@ -59,7 +59,7 @@ branch = one increment.
 |---|---|---|---|
 | 17 | ☑ **Type & spacing system** — modular type scale, consistent vertical rhythm, tabular numerals for stats; tokens in `:root` beside the palette. | Current sizing is ad-hoc rem values; production feel is mostly typography. | M |
 | 18 | ☑ **Chip visual grammar** — one documented shape language (fill = state, ring = attention, icon = role) that is colorblind-safe (never color alone). | Legend currently maps 6 colors with no redundancy channel. | M |
-| 19 | ☐ **Landing page redesign** — hero stating the method ("feel the weakness, earn the insight"), problem cards with progress rings, pattern chips. | index.html is a tool, not a welcome; first impression sells the pedagogy. | M |
+| 19 | ☑ **Landing page redesign** — hero stating the method ("feel the weakness, earn the insight"), problem cards with progress rings, pattern chips. | index.html is a tool, not a welcome; first impression sells the pedagogy. | M |
 | 20 | ☐ **Contrast & focus audit** — AA contrast both themes, `:focus-visible` outlines on every interactive element. | Accessibility basics; also required for keyboard-first users. | S |
 
 ## P3 — platform & backend (static-first, honest about need)

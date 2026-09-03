@@ -3,11 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DSA Visualizer — Sorting</title>
+<title>DSA Visualizer — feel the weakness, earn the insight</title>
 <link rel="stylesheet" href="style.css">
 <script src="js/ui-prefs.js"></script>
 </head>
 <body>
+<section id="hero">
+  <div id="hero-copy">
+    <h2>Feel the weakness. Earn the insight.</h2>
+    <p>Algorithms taught the way they were discovered: start with the obvious way,
+       watch it struggle, and unlock each faster idea only when you've earned it —
+       then prove it by writing the code yourself.</p>
+  </div>
+  <div id="hero-cards"></div>
+</section>
 <header>
   <h1>Sorting Visualizer</h1>
   <nav id="algo-tabs">
@@ -69,6 +78,25 @@
   <span id="keys">space play · ←/→ step · r reset · drag timeline to scrub</span>
 </footer>
 
+<script src="js/catalog.js"></script>
+<script>
+// hero cards: every catalog entry with a live progress ring (pathLength=100
+// makes stroke-dasharray a straight percentage)
+document.getElementById("hero-cards").innerHTML = CATALOG.filter((e) => !e.ghost)
+  .map((e) => {
+    const unlocked = catalogUnlocked(e, "");
+    const pct = Math.round((Math.max(0, Math.min(unlocked, e.acts) - 1) / (e.acts - 1)) * 100);
+    return `<a class="hero-card${e.pattern ? " pattern" : ""}" href="${e.href}">
+      <svg class="ring" viewBox="0 0 36 36" aria-label="${pct}% complete">
+        <circle cx="18" cy="18" r="15.5" pathLength="100"></circle>
+        <circle cx="18" cy="18" r="15.5" pathLength="100" stroke-dasharray="${pct} 100"></circle>
+        <text x="18" y="21">${pct}%</text>
+      </svg>
+      <span><b>${e.title}</b><small>${e.sub}</small></span>
+    </a>`;
+  })
+  .join("") + `<a class="hero-card more" href="problems/index.html"><span><b>Roadmap ▸</b><small>the whole path, with your progress</small></span></a>`;
+</script>
 <script src="js/algorithms.js"></script>
 <script src="js/visualizer.js"></script>
 <script src="js/main.js"></script>

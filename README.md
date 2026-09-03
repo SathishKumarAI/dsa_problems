@@ -13,6 +13,7 @@ Open `index.html` or `python -m http.server`.
 | Buttons, sliders, keyboard shortcuts, array generators, startup | `js/main.js` |
 | Settings gear (theme, default speed, reduce motion), sidebar resize, focus mode | `js/ui-prefs.js` |
 | Page structure, control labels, legend | `index.html` |
+| Content catalog (titles, act counts) for landing hero + roadmap | `js/catalog.js` |
 | Correctness check (`node js/test_sorts.js`) | `js/test_sorts.js` |
 | Journey playback engine, journey bar, chart, wiring (shared) | `problems/journey.js` |
 | Journey page styles — chips, narration, chart (shared) | `problems/journey.css` |

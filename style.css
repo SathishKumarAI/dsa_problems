@@ -66,6 +66,46 @@ header {
   background: var(--mantle);
 }
 
+/* --- landing hero (index.html): the method, then live progress cards --- */
+#hero {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+  padding: var(--sp-4) 1.25rem;
+  background: linear-gradient(135deg, var(--mantle), var(--base));
+  border-bottom: 1px solid var(--surface0);
+}
+#hero-copy { max-width: 26rem; }
+#hero-copy h2 { font-size: var(--fs-xl); color: var(--mauve); margin-bottom: var(--sp-2); }
+#hero-copy p { font-size: var(--fs-sm); color: var(--subtext); line-height: 1.5; }
+#hero-cards { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.hero-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 10px;
+  padding: var(--sp-3) var(--sp-4);
+  text-decoration: none;
+  max-width: 15rem;
+}
+.hero-card:hover { background: var(--surface0); }
+.hero-card b { display: block; color: var(--mauve); font-size: var(--fs-md); }
+.hero-card.pattern b { color: var(--blue); }
+.hero-card small { color: var(--subtext); font-size: var(--fs-xs); line-height: 1.35; display: block; margin-top: 0.15rem; }
+.ring { width: 2.6rem; height: 2.6rem; flex-shrink: 0; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke: var(--surface0); stroke-width: 3.5; }
+.ring circle + circle { stroke: var(--green); stroke-linecap: round; }
+.ring text {
+  transform: rotate(90deg);
+  transform-origin: 18px 18px;
+  fill: var(--subtext);
+  font-size: 0.62rem;
+  text-anchor: middle;
+}
+
 h1 { font-size: var(--fs-lg); color: var(--mauve); }
 
 #algo-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }

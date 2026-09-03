@@ -62,26 +62,15 @@
     <div id="roadmap"></div>
   </section>
 </main>
+<script src="../js/catalog.js"></script>
 <script>
-// Roadmap data. acts = length of each page's ACT_ORDER, kept by hand.
-// ponytail: 3 nodes don't justify loading every content file here; when the
-// count grows past ~8, generate this from the PROBLEM objects instead.
-const TRACKS = [
-  {
-    label: "Arrays · start here",
-    nodes: [
-      { href: "two-sum.html", title: "Two Sum", sub: "LeetCode 1 — story → brute → faster → code it yourself", acts: 7 },
-      { href: "../patterns/two-pointers.html", title: "Pattern: Two Pointers", sub: "the reusable shape Two Sum reveals — converge & chase", acts: 3, pattern: true },
-    ],
-  },
-  {
-    label: "Bits",
-    nodes: [
-      { href: "single-number.html", title: "Single Number", sub: "LeetCode 136 — every element twice except one; find it faster", acts: 5 },
-      { ghost: true, title: "Pattern: XOR", sub: "coming after Single Number's machinery is complete" },
-    ],
-  },
-];
+// group the shared catalog into tracks; hrefs are root-relative → prefix ../
+const TRACKS = [...new Set(CATALOG.map((e) => e.track))].map((label) => ({
+  label,
+  nodes: CATALOG.filter((e) => e.track === label).map((e) =>
+    e.ghost ? e : { ...e, href: "../" + e.href }
+  ),
+}));
 
 // --- dashboard: everything derived from localStorage, nothing phones home ---
 const nodes = TRACKS.flatMap((t) => t.nodes).filter((n) => !n.ghost);
