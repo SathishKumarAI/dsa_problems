@@ -37,6 +37,9 @@
          ${speedEl ? `<label>default speed <input id="set-speed" type="range" min="1" max="100"></label>` : ""}
          <label><input type="checkbox" id="set-motion"> reduce motion</label>
          ${document.getElementById("journey") ? `<button id="set-restart">↺ restart this journey</button>` : ""}
+         <button id="set-export">⬇ export progress</button>
+         <button id="set-import">⬆ import progress</button>
+         <input id="set-import-file" type="file" accept=".json,application/json" hidden>
        </div>`;
     header.appendChild(details);
 
@@ -52,6 +55,40 @@
     motionEl.onchange = () => {
       document.documentElement.classList.toggle("reduce-motion", motionEl.checked);
       localStorage.setItem("reduceMotion", motionEl.checked ? "1" : "0");
+    };
+
+    // progress export/import: cross-device sync v0, zero backend. Only
+    // progress keys travel — prefs (theme/speed) stay per device.
+    const PROGRESS_KEYS = (k) =>
+      k.startsWith("unlocked:") || k.startsWith("quizzes:") || k === "xp" || k === "activity-days";
+    details.querySelector("#set-export").onclick = () => {
+      const data = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (PROGRESS_KEYS(k)) data[k] = localStorage.getItem(k);
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      a.download = "dsa-visualizer-progress.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+    const fileEl = details.querySelector("#set-import-file");
+    details.querySelector("#set-import").onclick = () => fileEl.click();
+    fileEl.onchange = async () => {
+      const file = fileEl.files[0];
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        const entries = Object.entries(data).filter(([k, v]) => PROGRESS_KEYS(k) && typeof v === "string");
+        if (!entries.length) throw new Error("no progress keys");
+        entries.forEach(([k, v]) => localStorage.setItem(k, v));
+        location.reload();
+      } catch {
+        fileEl.value = "";
+        details.querySelector("#set-import").textContent = "⚠ not a progress file";
+        setTimeout(() => (details.querySelector("#set-import").textContent = "⬆ import progress"), 3000);
+      }
     };
 
     // restart journey: re-lock every act on this page (relearning is the
