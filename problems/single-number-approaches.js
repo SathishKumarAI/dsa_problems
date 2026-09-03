@@ -269,7 +269,7 @@ const APPROACHES = {
         .map(([x, c]) => {
           let cls = "map-chip";
           if (x === f.scanX) cls += f.answer === x ? " answer" : " scan";
-          return `<span class="${cls}">${x} ×${c}</span>`;
+          return `<span class="${cls}" data-k="m${x}">${x} ×${c}</span>`;
         })
         .join("");
       els.panel.innerHTML = `<div class="panel-label">counts (the memory we pay for)</div><div class="map-row">${chips}</div>`;

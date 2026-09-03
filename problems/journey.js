@@ -43,12 +43,58 @@ function chipRow(values, { focus = new Set(), anchor = new Set(), dim = new Set(
       if (focus.has(i)) cls += " focus";
       if (answer.has(i)) cls += " answer";
       const sub = subs ? `<span class="oi">${subs[i]}</span>` : "";
-      return `<div class="${cls}">${v}${sub}</div>`;
+      // data-k identifies a chip across frames so re-renders can morph, not teleport
+      const key = subs ? "s" + subs[i] : "i" + i;
+      return `<div class="${cls}" data-k="${key}">${v}${sub}</div>`;
     })
     .join("");
 }
 
 if (typeof document !== "undefined") {
+  // Manim-style morphs: renders replace innerHTML (teleporting), so before a
+  // render we snapshot every keyed chip's rect + background, and after it we
+  // FLIP-animate survivors from old to new and scale-fade newcomers in.
+  // ponytail: same-key matching only, no cross-container morphs — revisit if
+  // the sort step ever needs chips to fly from the input row to the sorted row.
+  const CHIP_SEL = "#array-row [data-k], #panel [data-k]";
+  const chipKey = (el) => (el.closest("#panel") ? "P:" : "A:") + el.dataset.k;
+
+  function snapChips() {
+    const m = new Map();
+    document.querySelectorAll(CHIP_SEL).forEach((el) => {
+      m.set(chipKey(el), { rect: el.getBoundingClientRect(), bg: getComputedStyle(el).backgroundColor });
+    });
+    return m;
+  }
+
+  function morphChips(prev, delay) {
+    if (document.documentElement.classList.contains("reduce-motion")) return;
+    const dur = Math.max(80, Math.min(280, delay * 0.4)); // never outlast the step
+    document.querySelectorAll(CHIP_SEL).forEach((el) => {
+      const old = prev.get(chipKey(el));
+      if (!old) {
+        el.animate(
+          [{ opacity: 0, transform: "scale(0.5)" }, { opacity: 1, transform: "scale(1)" }],
+          { duration: dur, easing: "ease-out" }
+        );
+        return;
+      }
+      const now = el.getBoundingClientRect();
+      const dx = old.rect.left - now.left;
+      const dy = old.rect.top - now.top;
+      if (dx || dy) {
+        el.animate(
+          [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }],
+          { duration: dur, easing: "ease-in-out" }
+        );
+      }
+      const bg = getComputedStyle(el).backgroundColor;
+      if (old.bg !== bg) {
+        el.animate([{ backgroundColor: old.bg }, { backgroundColor: bg }], { duration: dur, easing: "ease-in-out" });
+      }
+    });
+  }
+
   class Player {
     constructor() {
       this.els = {
@@ -146,7 +192,9 @@ if (typeof document !== "undefined") {
     show(i) {
       this.pos = Math.max(0, Math.min(i, this.frames.length - 1));
       const f = this.frames[this.pos];
+      const prev = snapChips();
       this.ap.render(f, this.els, this.data);
+      morphChips(prev, this.delay);
       this.els.code.querySelectorAll(".line").forEach((el, k) =>
         el.classList.toggle("active", k === f.line)
       );

@@ -439,7 +439,7 @@ const APPROACHES = {
         .map(([v, idx]) => {
           let cls = "map-chip";
           if (f.hit && v === f.need) cls += " answer";
-          return `<span class="${cls}">${v} @ ${idx}</span>`;
+          return `<span class="${cls}" data-k="m${v}">${v} @ ${idx}</span>`;
         })
         .join("");
       const phase = f.need === undefined ? "pass 1 — building the map" : "pass 2 — looking up complements";
@@ -528,7 +528,7 @@ const APPROACHES = {
         .map(([v, idx]) => {
           let cls = "map-chip";
           if (f.hit && v === f.need) cls += " answer";
-          return `<span class="${cls}">${v} @ ${idx}</span>`;
+          return `<span class="${cls}" data-k="m${v}">${v} @ ${idx}</span>`;
         })
         .join("");
       const needLine =
