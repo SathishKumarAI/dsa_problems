@@ -418,6 +418,21 @@ if (typeof document !== "undefined") {
   };
   speedEl.oninput = () => player.setSpeed(Number(speedEl.value));
 
+  // progress tracking for the dashboard: which acts' quizzes were passed on
+  // this page, and which calendar days saw any learning (streak source)
+  const QUIZ_KEY = "quizzes:" + location.pathname;
+  function recordQuizPass(act) {
+    const passed = new Set(JSON.parse(localStorage.getItem(QUIZ_KEY) || "[]"));
+    passed.add(act);
+    localStorage.setItem(QUIZ_KEY, JSON.stringify([...passed]));
+  }
+  function recordActivity() {
+    const days = new Set(JSON.parse(localStorage.getItem("activity-days") || "[]"));
+    days.add(new Date().toISOString().slice(0, 10));
+    localStorage.setItem("activity-days", JSON.stringify([...days]));
+  }
+  recordActivity(); // opening a journey page counts as showing up
+
   // quiz gate (Khan/AlgoMonster style): before the unlock button appears the
   // learner answers the act's check questions. Wrong answer → explanation,
   // retry; no penalty, but no skipping. Injected div — pages need no markup.
@@ -533,8 +548,12 @@ if (typeof document !== "undefined") {
         nextBtn.hidden = false;
       };
       const quiz = player.ap.quiz;
-      if (quiz && quiz.length && quizEl.hidden) showQuiz(quiz, reveal);
-      else if (!quiz || !quiz.length) reveal();
+      if (quiz && quiz.length && quizEl.hidden) {
+        showQuiz(quiz, () => {
+          recordQuizPass(player.key);
+          reveal();
+        });
+      } else if (!quiz || !quiz.length) reveal();
     }
   };
 

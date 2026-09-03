@@ -8,6 +8,16 @@
 <link rel="stylesheet" href="journey.css">
 <script src="../js/ui-prefs.js"></script>
 <style>
+  #dashboard { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; max-width: 46rem; }
+  .stat-tile {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    min-width: 8.5rem;
+  }
+  .stat-tile b { display: block; font-size: 1.3rem; color: var(--mauve); font-variant-numeric: tabular-nums; }
+  .stat-tile span { font-size: 0.72rem; color: var(--subtext); }
   #roadmap { display: flex; flex-direction: column; gap: 1.5rem; max-width: 46rem; }
   .track { display: flex; flex-direction: column; gap: 0.6rem; }
   .track-label { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -48,6 +58,7 @@
 </header>
 <main>
   <section id="stage">
+    <div id="dashboard"></div>
     <div id="roadmap"></div>
   </section>
 </main>
@@ -71,6 +82,34 @@ const TRACKS = [
     ],
   },
 ];
+
+// --- dashboard: everything derived from localStorage, nothing phones home ---
+const nodes = TRACKS.flatMap((t) => t.nodes).filter((n) => !n.ghost);
+const unlockedOf = (n) =>
+  Number(localStorage.getItem("unlocked:" + new URL(n.href, location.href).pathname)) || 0;
+const actsDone = nodes.reduce((s, n) => s + Math.max(0, Math.min(unlockedOf(n), n.acts) - 1), 0);
+const journeysDone = nodes.filter((n) => unlockedOf(n) >= n.acts).length;
+const quizzesPassed = nodes.reduce((s, n) => {
+  const key = "quizzes:" + new URL(n.href, location.href).pathname;
+  return s + JSON.parse(localStorage.getItem(key) || "[]").length;
+}, 0);
+
+// streak: consecutive days with activity, ending today or yesterday
+const days = new Set(JSON.parse(localStorage.getItem("activity-days") || "[]"));
+let streak = 0;
+const d = new Date();
+if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1); // today not yet — count from yesterday
+while (days.has(d.toISOString().slice(0, 10))) {
+  streak++;
+  d.setDate(d.getDate() - 1);
+}
+
+document.getElementById("dashboard").innerHTML = [
+  [streak, streak === 1 ? "day streak" : "day streak 🔥"],
+  [actsDone, "acts completed"],
+  [quizzesPassed, "quizzes passed"],
+  [`${journeysDone}/${nodes.length}`, "journeys finished"],
+].map(([v, label]) => `<div class="stat-tile"><b>${v}</b><span>${label}</span></div>`).join("");
 
 const roadmapEl = document.getElementById("roadmap");
 roadmapEl.innerHTML = TRACKS.map((t) => {

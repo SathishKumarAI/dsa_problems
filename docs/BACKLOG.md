@@ -45,7 +45,7 @@ branch = one increment.
 | # | Item | Why | Size |
 |---|---|---|---|
 | 9 | ☑ **Roadmap page** — patterns→problems DAG with lock/done states (AlgoMonster style), replacing the flat problem list as home for `problems/`. | A visible path is the difference between a toy and a curriculum. | M |
-| 10 | ☐ **Progress dashboard** — per-problem acts done, quizzes passed, day streak; all localStorage. | Brilliant-style reinforcement; streaks sustain daily practice. | M |
+| 10 | ☑ **Progress dashboard** — per-problem acts done, quizzes passed, day streak; all localStorage. | Brilliant-style reinforcement; streaks sustain daily practice. | M |
 | 11 | ☐ **Celebrations** — act-complete micro-animation + XP counter; honors reduce-motion. | Cheap dopamine, proven by Brilliant; keep it tasteful. | S |
 | 12 | ☐ **Onboarding tour** — first visit: 3-step spotlight on play/scrub/focus controls, dismissible, never again (localStorage). | Controls are keyboard-rich and invisible to newcomers. | S |
 | 13 | ☐ **`?` shortcut overlay** — modal listing all keyboard shortcuts, replacing the footer hint text. | Footer hint doesn't scale past 4 shortcuts. | S |
