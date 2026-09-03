@@ -27,6 +27,9 @@
     <button data-algo="quick">Quick</button>
     <button data-algo="heap">Heap</button>
     <button data-algo="binary">Binary Search</button>
+    <button data-algo="bfs">BFS</button>
+    <button data-algo="dfs">DFS</button>
+    <button data-algo="dijkstra">Dijkstra</button>
   </nav>
   <a id="problems-link" href="problems/index.html">Problems ▸</a>
 </header>
@@ -37,8 +40,8 @@
     <input id="scrub" type="range" min="0" max="0" value="0" aria-label="timeline">
     <div id="status">
       <span>step <b id="stat-step">0</b>/<b id="stat-total">0</b></span>
-      <span>comparisons: <b id="stat-comparisons">0</b></span>
-      <span>swaps: <b id="stat-swaps">0</b></span>
+      <span><span id="stat-cmp-label">comparisons:</span> <b id="stat-comparisons">0</b></span>
+      <span><span id="stat-swp-label">swaps:</span> <b id="stat-swaps">0</b></span>
       <span id="complexity"></span>
     </div>
   </section>

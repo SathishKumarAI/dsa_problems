@@ -247,3 +247,137 @@ const ALGORITHMS = {
     },
   },
 };
+
+// ---------- graphs: node/edge generators + traversal algorithms ----------
+// A graph is { nodes: [{x, y}], edges: [[u, v, w]], adj: Map(u -> [{v, w}]) }.
+// Graph algorithms have kind: "graph" and yield visit/frontier/edge/relax/path
+// steps; the render layer (visualizer.js) is the only code that draws them.
+
+function makeGraph(n = 9) {
+  // circle layout with jitter: readable without a layout engine
+  const nodes = Array.from({ length: n }, (_, i) => {
+    const a = (2 * Math.PI * i) / n - Math.PI / 2;
+    return {
+      x: 50 + 38 * Math.cos(a) + (Math.random() * 6 - 3),
+      y: 50 + 38 * Math.sin(a) + (Math.random() * 6 - 3),
+    };
+  });
+  const edges = [];
+  const seen = new Set();
+  const addEdge = (u, v) => {
+    const key = Math.min(u, v) + "-" + Math.max(u, v);
+    if (u === v || seen.has(key)) return;
+    seen.add(key);
+    edges.push([u, v, 1 + Math.floor(Math.random() * 9)]);
+  };
+  for (let i = 0; i < n; i++) addEdge(i, (i + 1) % n); // ring keeps it connected
+  for (let k = 0; k < n - 2; k++) addEdge(Math.floor(Math.random() * n), Math.floor(Math.random() * n));
+  const adj = new Map(nodes.map((_, i) => [i, []]));
+  for (const [u, v, w] of edges) {
+    adj.get(u).push({ v, w });
+    adj.get(v).push({ v: u, w });
+  }
+  for (const list of adj.values()) list.sort((a, b) => a.v - b.v);
+  return { nodes, edges, adj };
+}
+
+ALGORITHMS.bfs = {
+  name: "BFS",
+  kind: "graph",
+  complexity: "O(V + E) time · O(V) space",
+  pseudocode: [
+    "queue = [start], seen = {start}",
+    "while queue not empty:",
+    "  u = queue.shift()   # FIFO!",
+    "  for each neighbor v of u:",
+    "    if v not seen:",
+    "      seen.add(v); queue.push(v)",
+  ],
+  *run(g) {
+    const queue = [0];
+    const seenN = new Set([0]);
+    yield { type: "frontier", node: 0, line: 0, note: "start at node 0 — into the queue" };
+    while (queue.length) {
+      const u = queue.shift();
+      yield { type: "visit", node: u, line: 2, note: `visit ${u} — FIRST in, first out: the frontier expands in rings` };
+      for (const { v } of g.adj.get(u)) {
+        yield { type: "edge", edge: [u, v], line: 3, note: `look along ${u} → ${v}` };
+        if (!seenN.has(v)) {
+          seenN.add(v);
+          queue.push(v);
+          yield { type: "frontier", node: v, edge: [u, v], line: 5, note: `${v} is new — queued. Distance from start: one ring further than ${u}` };
+        }
+      }
+    }
+    yield { type: "done", line: 1, note: "queue empty — every reachable node visited, in distance order" };
+  },
+},
+
+ALGORITHMS.dfs = {
+  name: "DFS",
+  kind: "graph",
+  complexity: "O(V + E) time · O(V) space",
+  pseudocode: [
+    "stack = [start], seen = {start}",
+    "while stack not empty:",
+    "  u = stack.pop()   # LIFO!",
+    "  for each neighbor v of u:",
+    "    if v not seen:",
+    "      seen.add(v); stack.push(v)",
+  ],
+  *run(g) {
+    const stack = [0];
+    const seenN = new Set([0]);
+    yield { type: "frontier", node: 0, line: 0, note: "start at node 0 — onto the stack" };
+    while (stack.length) {
+      const u = stack.pop();
+      yield { type: "visit", node: u, line: 2, note: `visit ${u} — LAST in, first out: dive deep before going wide` };
+      for (const { v } of g.adj.get(u)) {
+        yield { type: "edge", edge: [u, v], line: 3, note: `look along ${u} → ${v}` };
+        if (!seenN.has(v)) {
+          seenN.add(v);
+          stack.push(v);
+          yield { type: "frontier", node: v, edge: [u, v], line: 5, note: `${v} is new — stacked. It may be visited long before its siblings` };
+        }
+      }
+    }
+    yield { type: "done", line: 1, note: "stack empty — one deep tendril at a time, that's the DFS shape" };
+  },
+},
+
+ALGORITHMS.dijkstra = {
+  name: "Dijkstra",
+  kind: "graph",
+  weighted: true,
+  complexity: "O((V + E) log V) time · O(V) space",
+  pseudocode: [
+    "dist[start] = 0, others ∞",
+    "while unvisited nodes remain:",
+    "  u = closest unvisited node",
+    "  for each neighbor v of u:",
+    "    if dist[u] + w(u,v) < dist[v]:",
+    "      dist[v] = dist[u] + w(u,v)  # relax",
+  ],
+  *run(g) {
+    const n = g.nodes.length;
+    const dist = Array(n).fill(Infinity);
+    const done = new Set();
+    dist[0] = 0;
+    yield { type: "relax", node: 0, dist: dist.slice(), line: 0, note: "dist[0] = 0; everyone else starts at ∞" };
+    for (let round = 0; round < n; round++) {
+      let u = -1;
+      for (let i = 0; i < n; i++) if (!done.has(i) && (u === -1 || dist[i] < dist[u])) u = i;
+      if (u === -1 || dist[u] === Infinity) break;
+      done.add(u);
+      yield { type: "visit", node: u, dist: dist.slice(), line: 2, note: `lock in ${u} at distance ${dist[u]} — nothing unvisited can beat it` };
+      for (const { v, w } of g.adj.get(u)) {
+        yield { type: "edge", edge: [u, v], dist: dist.slice(), line: 3, note: `try ${u} → ${v} (weight ${w})` };
+        if (dist[u] + w < dist[v]) {
+          dist[v] = dist[u] + w;
+          yield { type: "relax", node: v, edge: [u, v], dist: dist.slice(), line: 5, note: `relax! ${v} now reachable in ${dist[v]} via ${u}` };
+        }
+      }
+    }
+    yield { type: "done", dist: dist.slice(), line: 1, note: "every label is now the true shortest distance from node 0" };
+  },
+};

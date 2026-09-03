@@ -45,6 +45,13 @@ class Visualizer {
       .map((l) => `<span class="line">${l}</span>`)
       .join("");
     this.complexityEl.textContent = algo.complexity;
+    // stat labels follow the kind: graphs count visits/relaxations, not swaps
+    const cmpLabel = document.getElementById("stat-cmp-label");
+    const swpLabel = document.getElementById("stat-swp-label");
+    if (cmpLabel) {
+      cmpLabel.textContent = algo.kind === "graph" ? "visited:" : "comparisons:";
+      swpLabel.textContent = algo.kind === "graph" ? "relaxations:" : "swaps:";
+    }
     this.build();
   }
 
@@ -53,10 +60,85 @@ class Visualizer {
     this.build();
   }
 
+  newGraph() {
+    this.graph = makeGraph(9);
+    this.build();
+  }
+
+  // Graph frames: visited/frontier sets, the edge being examined, dist labels.
+  // Same drained-timeline model as bars — only the snapshot shape differs.
+  buildGraph() {
+    if (!this.graph) this.graph = makeGraph(9);
+    const visited = new Set(), frontier = new Set();
+    let visits = 0, relaxes = 0, dist = null, current = null;
+    const frames = [{ visited: new Set(), frontier: new Set(), current, activeEdge: null, dist, line: -1, note: "", cmp: 0, swp: 0 }];
+    for (const s of this.algo.run(this.graph)) {
+      if (s.type === "visit") {
+        visits++;
+        frontier.delete(s.node);
+        visited.add(s.node);
+        current = s.node;
+      } else if (s.type === "frontier") {
+        frontier.add(s.node);
+      } else if (s.type === "relax") {
+        relaxes++;
+      }
+      if (s.dist) dist = s.dist;
+      frames.push({
+        visited: new Set(visited),
+        frontier: new Set(frontier),
+        current,
+        activeEdge: s.edge || null,
+        dist,
+        line: s.line,
+        note: s.note || "",
+        cmp: visits,
+        swp: relaxes,
+      });
+    }
+    this.frames = frames;
+    this.scrubEl.max = frames.length - 1;
+    this.statTotal.textContent = frames.length - 1;
+    this.show(0);
+  }
+
+  renderGraph(f) {
+    const g = this.graph;
+    const weighted = !!this.algo.weighted;
+    const edges = g.edges
+      .map(([u, v, w]) => {
+        const a = g.nodes[u], b = g.nodes[v];
+        const active =
+          f.activeEdge &&
+          ((f.activeEdge[0] === u && f.activeEdge[1] === v) || (f.activeEdge[0] === v && f.activeEdge[1] === u));
+        return (
+          `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="gedge${active ? " active" : ""}"></line>` +
+          (weighted ? `<text x="${(a.x + b.x) / 2}" y="${(a.y + b.y) / 2}" class="gweight">${w}</text>` : "")
+        );
+      })
+      .join("");
+    const nodes = g.nodes
+      .map((p, i) => {
+        let cls = "gnode";
+        if (f.visited.has(i)) cls += " visited";
+        else if (f.frontier.has(i)) cls += " frontier";
+        if (f.current === i && f.visited.has(i)) cls += " current";
+        const d = f.dist ? (f.dist[i] === Infinity ? "∞" : f.dist[i]) : "";
+        return (
+          `<circle cx="${p.x}" cy="${p.y}" r="5" class="${cls}"></circle>` +
+          `<text x="${p.x}" y="${p.y}" class="glabel">${i}</text>` +
+          (f.dist ? `<text x="${p.x}" y="${p.y - 6.5}" class="gdist">${d}</text>` : "")
+        );
+      })
+      .join("");
+    this.barsEl.innerHTML = `<svg id="graph" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">${edges}${nodes}</svg>`;
+  }
+
   // Drain the generator into frames. Searches run on a sorted copy —
   // binary search's precondition, and the sorted bars make that visible.
   build() {
     this.stop();
+    if (this.algo && this.algo.kind === "graph") return this.buildGraph();
     const a = this.algo.kind === "search"
       ? this.array.slice().sort((x, y) => x - y)
       : this.array.slice();
@@ -91,6 +173,16 @@ class Visualizer {
   show(i) {
     this.pos = Math.max(0, Math.min(i, this.frames.length - 1));
     const f = this.frames[this.pos];
+    if (this.algo && this.algo.kind === "graph") {
+      this.renderGraph(f);
+      this.codeEl.querySelectorAll(".line").forEach((el, k) => el.classList.toggle("active", k === f.line));
+      this.explainEl.textContent = this.atEnd && !f.note ? "Done." : f.note;
+      this.statCmp.textContent = f.cmp;
+      this.statSwp.textContent = f.swp;
+      this.statStep.textContent = this.pos;
+      this.scrubEl.value = this.pos;
+      return;
+    }
     const max = Math.max(...f.arr, 1);
     this.barsEl.innerHTML = f.arr
       .map((v, k) => {

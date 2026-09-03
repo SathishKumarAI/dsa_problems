@@ -40,7 +40,9 @@ and a `test_<slug>.js`. `node problems/validate.js` checks the whole shape —
 required fields, quiz/predict schemas, generators draining on PROBLEM.sample,
 and that every code tab matches pseudocode line-for-line (highlight sync).
 
-Algorithms: bubble, selection, insertion, merge, quick, heap sorts + binary search.
+Algorithms: bubble, selection, insertion, merge, quick, heap sorts + binary
+search + graph traversals (BFS, DFS, Dijkstra — `kind: "graph"`, drawn as an
+SVG node/edge view; generators yield `visit`/`frontier`/`edge`/`relax` steps).
 Each is a generator yielding steps (`compare` / `swap` / `set` / `pivot` / `sorted` /
 `discard`) — the visualizer knows nothing about algorithm internals, so adding an
 algorithm is one entry in `ALGORITHMS` plus one tab button in `index.html`.

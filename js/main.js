@@ -30,6 +30,13 @@ const generators = {
 };
 
 function newArray(kind) {
+  // graph mode: every "new data" button deals a fresh random graph
+  // (size slider is ignored there — 9 nodes stays readable)
+  if (viz.algo && viz.algo.kind === "graph") {
+    viz.newGraph();
+    setPlayLabel(false);
+    return;
+  }
   const a = generators[kind](Number(sizeEl.value));
   // default target to an existing element so a search demo usually hits;
   // the user can type any value to see the miss path
