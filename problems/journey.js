@@ -624,6 +624,53 @@ if (typeof document !== "undefined") {
     }
   });
 
+  // first-visit tour: 3 spotlights on the controls newcomers never find.
+  // Dismiss or finish → localStorage tourDone, never shown again.
+  if (!localStorage.getItem("tourDone")) {
+    const TOUR = [
+      { sel: "#btn-play", text: "Play walks the algorithm one narrated step at a time. Space bar works too — and ←/→ let you step by hand." },
+      { sel: "#scrub", text: "This is a timeline, not a progress bar — drag it to scrub anywhere in the run, even backwards." },
+      { sel: "#btn-focus", text: "Focus mode hides everything but the visualization. Press f to enter, Esc to leave." },
+    ];
+    const overlay = document.createElement("div");
+    overlay.className = "tour-overlay";
+    document.body.appendChild(overlay);
+    let ti = 0;
+    let target = null;
+    const endTour = () => {
+      localStorage.setItem("tourDone", "1");
+      overlay.remove();
+      target?.classList.remove("tour-target");
+    };
+    const showStep = () => {
+      target?.classList.remove("tour-target");
+      const t = TOUR[ti];
+      target = document.querySelector(t.sel);
+      if (!target) return endTour();
+      target.classList.add("tour-target");
+      const r = target.getBoundingClientRect();
+      overlay.innerHTML = `<div class="tour-tip">
+        <p>${t.text}</p>
+        <div class="tour-nav">
+          <span>${ti + 1}/${TOUR.length}</span>
+          <button class="tour-skip">skip</button>
+          <button class="tour-next">${ti < TOUR.length - 1 ? "next ▸" : "got it ✓"}</button>
+        </div>
+      </div>`;
+      const tip = overlay.querySelector(".tour-tip");
+      // above the controls bar, roughly over the target
+      tip.style.left = Math.max(12, Math.min(r.left, innerWidth - 320)) + "px";
+      tip.style.bottom = innerHeight - r.top + 14 + "px";
+      overlay.querySelector(".tour-skip").onclick = endTour;
+      overlay.querySelector(".tour-next").onclick = () => {
+        ti++;
+        if (ti >= TOUR.length) endTour();
+        else showStep();
+      };
+    };
+    showStep();
+  }
+
   // startup: land on the story act
   document.getElementById("resources").innerHTML =
     "same problem elsewhere: " + RESOURCES.map((r) => `<a href="${r.url}" target="_blank" rel="noopener">${r.label}</a>`).join(" · ");

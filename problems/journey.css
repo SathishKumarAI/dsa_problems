@@ -8,6 +8,35 @@ h1 a:hover { text-decoration: underline; }
 
 #settings { margin-left: auto; }
 
+/* --- first-visit tour --- */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.55);
+}
+.tour-target {
+  position: relative;
+  z-index: 31;
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.tour-tip {
+  position: fixed;
+  z-index: 32;
+  width: 300px;
+  background: var(--mantle);
+  border: 1px solid var(--surface1);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.tour-nav { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.7rem; }
+.tour-nav span { color: var(--subtext); font-size: 0.75rem; margin-right: auto; }
+.tour-next { background: var(--mauve); color: var(--crust); }
+
 #xp-badge { font-size: 0.78rem; color: var(--yellow); white-space: nowrap; }
 .xp-float {
   position: fixed;
