@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Problems — learning journeys</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="journey.css">
+<style>
+  #problem-list { display: flex; flex-direction: column; gap: 0.75rem; max-width: 40rem; }
+  .pcard { background: var(--mantle); border-radius: 8px; padding: 1rem 1.25rem; text-decoration: none; }
+  .pcard b { color: var(--mauve); }
+  .pcard p { color: var(--subtext); font-size: 0.85rem; margin-top: 0.3rem; }
+  .pcard:hover { background: var(--surface0); }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html">DSA Visualizer</a> · Problems</h1>
+  <span id="subtitle">one problem at a time, naive → optimal, as a story</span>
+</header>
+<main>
+  <section id="stage">
+    <div id="problem-list">
+      <a class="pcard" href="single-number.html">
+        <b>Single Number</b> — LeetCode 136
+        <p>Every element appears twice except one. Brute force → hash map → sort → XOR. Bits that annihilate.</p>
+      </a>
+      <a class="pcard" href="two-sum.html">
+        <b>Two Sum</b> — LeetCode 1
+        <p>Two indices whose values hit a target. Brute force → two pointers → one-pass hash map. The complement pattern.</p>
+      </a>
+    </div>
+  </section>
+</main>
+</body>
+</html>

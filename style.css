@@ -36,7 +36,15 @@ header {
 
 h1 { font-size: 1.1rem; color: var(--mauve); }
 
-#algo-tabs { display: flex; gap: 0.25rem; }
+#algo-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+
+#problems-link {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--subtext);
+  text-decoration: none;
+}
+#problems-link:hover { color: var(--text); }
 
 button {
   background: var(--surface0);

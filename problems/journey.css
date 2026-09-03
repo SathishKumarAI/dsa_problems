@@ -1,0 +1,180 @@
+/* Shared styles for problem journey pages (chips, journey graph, narration,
+   map/bit views, chart). Palette + layout skeleton come from ../style.css. */
+
+h1 a { color: inherit; text-decoration: none; }
+h1 a:hover { text-decoration: underline; }
+
+#subtitle { font-size: 0.8rem; color: var(--subtext); }
+
+/* --- learning journey graph --- */
+#journey {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+}
+.jnode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+}
+.jnode small { color: var(--subtext); font-size: 0.7rem; }
+.jnode.active { background: var(--mauve); color: var(--crust); }
+.jnode.active small { color: var(--crust); }
+.jnode.done b::after { content: " ✓"; color: var(--green); }
+.jnode.active.done b::after { color: var(--crust); }
+
+/* narration is the star of the page — big, stable, right under the data */
+#explain {
+  font-size: 1.05rem;
+  color: var(--text);
+  background: var(--mantle);
+  border-left: 3px solid var(--mauve);
+  border-radius: 0 8px 8px 0;
+  padding: 0.7rem 1rem;
+  margin-top: 1rem;
+  min-height: 3.4em; /* fixed height: text changes, layout never jumps */
+}
+
+#warning {
+  font-size: 0.85rem;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.9rem;
+}
+#warning.bad { background: color-mix(in srgb, var(--red) 18%, var(--mantle)); color: var(--red); }
+#warning.info { background: var(--mantle); color: var(--subtext); }
+
+#databar { font-size: 0.9rem; color: var(--subtext); padding-bottom: 0.6rem; }
+#databar b { color: var(--peach); font-size: 1.05rem; }
+
+#array-row, .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.chip {
+  min-width: 2.4rem;
+  height: 2.4rem;
+  padding: 0 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface0);
+  border-radius: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+}
+.chip .oi { font-size: 0.58rem; color: var(--subtext); line-height: 1.1; }
+.chip.focus { background: var(--yellow); color: var(--crust); font-weight: bold; }
+.chip.anchor { background: var(--peach); color: var(--crust); font-weight: bold; }
+.chip.answer { background: var(--green); color: var(--crust); font-weight: bold; }
+.chip.focus .oi, .chip.anchor .oi, .chip.answer .oi { color: var(--crust); }
+.chip.done { opacity: 0.25; }
+
+#panel {
+  flex: 1;
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.panel-label { font-size: 0.75rem; color: var(--subtext); }
+
+.sum-eq { font-size: 1.15rem; font-family: ui-monospace, monospace; }
+.sum-eq b.hit { color: var(--green); }
+.sum-eq b.miss { color: var(--red); }
+.sum-eq .target-note { margin-left: 0.7rem; font-size: 0.8rem; color: var(--subtext); }
+
+.map-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.map-chip {
+  background: var(--surface0);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+}
+.map-chip.scan { background: var(--yellow); color: var(--crust); }
+.map-chip.answer { background: var(--green); color: var(--crust); }
+
+.bits { display: flex; gap: 0.3rem; align-items: center; }
+.bits .tag { width: 3.5rem; color: var(--subtext); font-size: 0.8rem; }
+.bits .dec { margin-left: 0.6rem; color: var(--subtext); font-size: 0.85rem; }
+.bit {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface0);
+  border-radius: 6px;
+  font-family: ui-monospace, monospace;
+  color: var(--subtext);
+}
+.bit.on { background: var(--blue); color: var(--crust); font-weight: bold; }
+.bit.flip { outline: 2px solid var(--red); }
+
+#legend .blue { background: var(--blue); }
+
+#idea {
+  font-size: 0.85rem;
+  background: var(--mantle);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+}
+#idea b { color: var(--mauve); }
+
+/* sidebar scrolls as a whole; the code box must never collapse into a
+   one-line scroller when content overflows the column */
+#side { overflow-y: auto; }
+#pseudocode { flex-shrink: 0; }
+
+#code-tabs { display: flex; gap: 0.25rem; }
+.code-tab { font-size: 0.75rem; padding: 0.25rem 0.6rem; }
+.code-tab.active { background: var(--mauve); color: var(--crust); }
+
+#takeaways { font-size: 0.78rem; }
+#takeaways ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
+#takeaways li { margin-bottom: 0.25rem; color: var(--subtext); }
+#takeaways li::marker { color: var(--mauve); }
+
+/* --- steps-per-approach chart: one measure, one hue, direct-labeled --- */
+#chart { display: flex; flex-direction: column; gap: 0.35rem; }
+.crow { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; }
+.clabel { width: 5.5rem; color: var(--subtext); flex-shrink: 0; }
+.cbar {
+  height: 10px;
+  background: var(--blue);
+  border-radius: 0 4px 4px 0;
+  min-width: 2px;
+}
+.crow.active .cbar { background: var(--mauve); }
+.crow.active .clabel { color: var(--text); }
+.cval { color: var(--subtext); }
+
+#resources { font-size: 0.7rem; color: var(--subtext); }
+#resources a { color: var(--blue); text-decoration: none; }
+#resources a:hover { text-decoration: underline; }
+
+#custom, #target-input {
+  background: var(--surface0);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+}
+#custom { width: 11rem; }
+#target-input { width: 3.5rem; }
+select {
+  background: var(--surface0);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.8rem;
+}
+#btn-next { background: var(--mauve); color: var(--crust); }
