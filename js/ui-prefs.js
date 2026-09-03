@@ -60,7 +60,7 @@
     // progress export/import: cross-device sync v0, zero backend. Only
     // progress keys travel — prefs (theme/speed) stay per device.
     const PROGRESS_KEYS = (k) =>
-      k.startsWith("unlocked:") || k.startsWith("quizzes:") || k === "xp" || k === "activity-days";
+      k.startsWith("unlocked:") || k.startsWith("quizzes:") || k === "xp" || k === "activity-days" || k === "srs";
     details.querySelector("#set-export").onclick = () => {
       const data = {};
       for (let i = 0; i < localStorage.length; i++) {

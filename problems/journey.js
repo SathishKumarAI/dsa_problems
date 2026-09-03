@@ -435,6 +435,32 @@ if (typeof document !== "undefined") {
   }
   recordActivity(); // opening a journey page counts as showing up
 
+  // spaced repetition: finishing a journey schedules reviews on a decay
+  // ladder; the roadmap surfaces what's due. ponytail: visiting a due page
+  // counts as the review — upgrade to "challenge re-passed" when that lies.
+  const SRS_INTERVALS = [1, 3, 7, 14, 30]; // days until next review, by stage
+  const srsAll = () => JSON.parse(localStorage.getItem("srs") || "{}");
+  const srsSave = (all) => localStorage.setItem("srs", JSON.stringify(all));
+  const inDays = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+
+  function srsSchedule() {
+    const all = srsAll();
+    if (all[location.pathname]) return; // already on the ladder
+    all[location.pathname] = { stage: 0, due: inDays(SRS_INTERVALS[0]), earned: inDays(0) };
+    srsSave(all);
+  }
+
+  // a due page being opened = review done, climb the ladder
+  {
+    const all = srsAll();
+    const entry = all[location.pathname];
+    if (entry && entry.due <= inDays(0)) {
+      entry.stage = Math.min(entry.stage + 1, SRS_INTERVALS.length - 1);
+      entry.due = inDays(SRS_INTERVALS[entry.stage]);
+      srsSave(all);
+    }
+  }
+
   // XP + celebration (Brilliant-style, kept tasteful): a header badge and a
   // floating "+n XP" burst on earn; reduce-motion gets the number, no motion
   const xpBadge = document.createElement("span");
@@ -580,6 +606,7 @@ if (typeof document !== "undefined") {
           unlocked = idx + 2;
           localStorage.setItem(UNLOCK_KEY, unlocked);
           awardXP(10, nextBtn);
+          if (unlocked >= ACT_ORDER.length) srsSchedule(); // journey done → review ladder
           buildJourney();
           setAct(next);
           journeyEl.querySelector(`.jnode[data-act="${next}"]`)?.classList.add("revealed");
