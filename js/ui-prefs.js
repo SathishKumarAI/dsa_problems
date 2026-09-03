@@ -36,6 +36,7 @@
          </label>
          ${speedEl ? `<label>default speed <input id="set-speed" type="range" min="1" max="100"></label>` : ""}
          <label><input type="checkbox" id="set-motion"> reduce motion</label>
+         ${document.getElementById("journey") ? `<button id="set-restart">↺ restart this journey</button>` : ""}
        </div>`;
     header.appendChild(details);
 
@@ -52,6 +53,26 @@
       document.documentElement.classList.toggle("reduce-motion", motionEl.checked);
       localStorage.setItem("reduceMotion", motionEl.checked ? "1" : "0");
     };
+
+    // restart journey: re-lock every act on this page (relearning is the
+    // point). Two-click confirm — no native dialog, no accidental wipe.
+    const restartBtn = details.querySelector("#set-restart");
+    if (restartBtn) {
+      restartBtn.onclick = () => {
+        if (!restartBtn.dataset.armed) {
+          restartBtn.dataset.armed = "1";
+          restartBtn.textContent = "⚠ erase progress here — sure?";
+          setTimeout(() => {
+            delete restartBtn.dataset.armed;
+            restartBtn.textContent = "↺ restart this journey";
+          }, 3000);
+          return;
+        }
+        localStorage.removeItem("unlocked:" + location.pathname);
+        localStorage.removeItem("quizzes:" + location.pathname);
+        location.reload();
+      };
+    }
 
     if (speedEl) {
       const saved = Number(localStorage.getItem("speed"));
