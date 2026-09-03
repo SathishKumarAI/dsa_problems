@@ -14,8 +14,8 @@ const CATALOG = [
     track: "Arrays · start here",
     href: "patterns/two-pointers.html",
     title: "Pattern: Two Pointers",
-    sub: "the reusable shape Two Sum reveals — converge & chase",
-    acts: 3,
+    sub: "the reusable shape Two Sum reveals — converge, chase, then build it",
+    acts: 4,
     pattern: true,
   },
   {

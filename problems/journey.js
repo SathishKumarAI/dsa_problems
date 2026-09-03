@@ -50,6 +50,178 @@ function chipRow(values, { focus = new Set(), anchor = new Set(), dim = new Set(
     .join("");
 }
 
+// ---------- code-challenge harness (shared by problem + pattern pages) ----------
+// Content defines CHALLENGE { fname, signature, starter, cases, reference?,
+// hintsless? } and an act whose render calls renderChallengeUI(els.panel).
+// DOM-lazy: definitions are safe under node; document is only touched when
+// called. currentData/lastTrace are script-globals so content generators can
+// replay the learner's trace ("your code is the animation").
+let currentData = null;
+let lastTrace = null;
+
+const CHALLENGE_WORKER_SRC = `onmessage = (e) => {
+  const { code, cases, mode, nums, target } = e.data;
+  let fn;
+  try { fn = new Function("nums", "target", code); }
+  catch (err) { postMessage({ error: String(err.message) }); return; }
+  if (mode === "trace") {
+    const events = [];
+    const arr = nums.slice();
+    const proxied = new Proxy(arr, {
+      get(t, p) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "get", i: +p, v: t[p] }); return t[p]; },
+      set(t, p, v) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "set", i: +p, v }); t[p] = v; return true; },
+    });
+    let result = null, error = null;
+    try { result = fn(proxied, target); } catch (err) { error = String(err.message); }
+    postMessage({ trace: { events, result, error } });
+    return;
+  }
+  // test mode counts array touches for the learner AND the reference —
+  // step-efficiency is part of the scorecard, not just pass/fail
+  const counter = (arr, bump) => new Proxy(arr, {
+    get(t, p) { if (/^\\d+$/.test(p)) bump(); return t[p]; },
+    set(t, p, v) { if (/^\\d+$/.test(p)) bump(); t[p] = v; return true; },
+  });
+  let refFn = null;
+  try { refFn = new Function("nums", "target", e.data.reference || ""); } catch {}
+  postMessage({ results: cases.map((c) => {
+    let touches = 0, refTouches = 0;
+    try {
+      const got = fn(counter(c.nums.slice(), () => touches++), c.target);
+      if (refFn) { try { refFn(counter(c.nums.slice(), () => refTouches++), c.target); } catch {} }
+      const isPair = Array.isArray(got) && got.length === 2;
+      const ok = c.expected.length === 0
+        ? Array.isArray(got) && got.length === 0
+        : c.anyPair
+          ? isPair && got[0] !== got[1] && c.nums[got[0]] + c.nums[got[1]] === c.target
+          : isPair && [...got].sort((a, b) => a - b).join() === c.expected.join();
+      return { ok, got: JSON.stringify(got), touches, refTouches };
+    } catch (err) { return { ok: false, got: String(err.message), touches, refTouches }; }
+  }) });
+};`;
+
+function challengeWorker(msg, onMessage, verdict) {
+  const w = new Worker(URL.createObjectURL(new Blob([CHALLENGE_WORKER_SRC], { type: "text/javascript" })));
+  const timer = setTimeout(() => {
+    w.terminate();
+    verdict.textContent = "⏱ timed out — infinite loop?";
+    verdict.className = "miss";
+  }, 3000);
+  w.onmessage = (e) => {
+    clearTimeout(timer);
+    w.terminate();
+    onMessage(e.data);
+  };
+  w.postMessage(msg);
+}
+
+function renderChallengeUI(panel) {
+  if (document.getElementById("challenge-box")) return;
+  panel.innerHTML = `<div id="challenge-box">
+    <div class="challenge-sig">${CHALLENGE.signature}</div>
+    <textarea id="challenge-code" rows="9" spellcheck="false" aria-label="your solution">${CHALLENGE.starter}</textarea>
+    <div class="challenge-sig">}</div>
+    <div class="challenge-controls">
+      <button id="challenge-run">▶ Run tests</button>
+      <button id="challenge-trace">👁 Watch my code on this input</button>
+      <span id="challenge-verdict"></span>
+    </div>
+    <div id="challenge-cases"></div>
+  </div>`;
+  document.getElementById("challenge-run").onclick = runChallenge;
+  document.getElementById("challenge-trace").onclick = traceChallenge;
+}
+
+function traceChallenge() {
+  const code = document.getElementById("challenge-code").value;
+  const verdict = document.getElementById("challenge-verdict");
+  verdict.textContent = "tracing…";
+  verdict.className = "";
+  challengeWorker(
+    { mode: "trace", code, nums: currentData.nums, target: currentData.target },
+    (data) => {
+      if (data.error) {
+        verdict.textContent = "syntax error: " + data.error;
+        verdict.className = "miss";
+        return;
+      }
+      lastTrace = data.trace;
+      verdict.textContent = `traced ${data.trace.events.length} array accesses — press ▶ Play to watch YOUR code`;
+      document.dispatchEvent(new CustomEvent("act-rebuild"));
+    },
+    verdict
+  );
+}
+
+function runChallenge() {
+  const code = document.getElementById("challenge-code").value;
+  const verdict = document.getElementById("challenge-verdict");
+  const casesEl = document.getElementById("challenge-cases");
+  verdict.textContent = "running…";
+  // the learner's code runs in a Worker: main thread stays responsive and
+  // eval-free; an infinite loop just gets its worker terminated
+  challengeWorker({ code, cases: CHALLENGE.cases, reference: CHALLENGE.reference }, (data) => {
+    if (data.error) {
+      verdict.textContent = "syntax error: " + data.error;
+      verdict.className = "miss";
+      casesEl.innerHTML = "";
+      return;
+    }
+    const results = data.results;
+    casesEl.innerHTML = results
+      .map((r, i) => {
+        const c = CHALLENGE.cases[i];
+        const want = c.expected.length === 0 ? "[]" : c.anyPair ? `any pair hitting ${c.target}` : `[${c.expected}]`;
+        return `<div class="challenge-case ${r.ok ? "pass" : "fail"}">
+          ${r.ok ? "✓" : "✗"} ${CHALLENGE.fname}([${c.nums}], ${c.target}) → ${r.got}${r.ok ? "" : ` <small>want ${want}</small>`}
+        </div>`;
+      })
+      .join("");
+    const passed = results.filter((r) => r.ok).length;
+    if (passed === results.length) {
+      verdict.textContent = `all ${passed} cases pass — you wrote it 🎉`;
+      verdict.className = "hit";
+      document.dispatchEvent(new CustomEvent("challenge-pass"));
+    } else {
+      verdict.textContent = `${passed}/${results.length} passing`;
+      verdict.className = "miss";
+    }
+    renderScorecard(results, passed);
+  }, verdict);
+}
+
+// skill scorecard (Ropes-style mirror): HOW you solved, not just pass/fail.
+// History lives in localStorage so improvement shows as growth, never shame.
+function renderScorecard(results, passed) {
+  const touches = results.reduce((s, r) => s + (r.touches || 0), 0);
+  const refTouches = results.reduce((s, r) => s + (r.refTouches || 0), 0);
+  const edges = CHALLENGE.cases
+    .map((c, i) => ({ tag: c.tag, ok: results[i].ok }))
+    .filter((e) => e.tag);
+  const KEY = "scorecard:" + location.pathname;
+  const hist = JSON.parse(localStorage.getItem(KEY) || "[]");
+  const bestTouches = hist.filter((h) => h.allPass).reduce((m, h) => Math.min(m, h.touches), Infinity);
+  hist.push({ date: new Date().toISOString().slice(0, 10), passed, allPass: passed === results.length, touches });
+  localStorage.setItem(KEY, JSON.stringify(hist.slice(-50)));
+
+  let growth = "";
+  if (passed === results.length && bestTouches !== Infinity) {
+    growth =
+      touches < bestTouches
+        ? `<span class="hit">new best — previous was ${bestTouches} touches</span>`
+        : `<span>your best: ${bestTouches} touches</span>`;
+  }
+  const box = document.getElementById("challenge-scorecard") || document.createElement("div");
+  box.id = "challenge-scorecard";
+  box.innerHTML = `
+    <div class="panel-label">scorecard — how you solved it</div>
+    <div class="score-row">correctness <b>${passed}/${results.length}</b></div>
+    <div class="score-row">array touches <b>${touches}</b> <small>reference: ${refTouches}</small></div>
+    <div class="score-row">edge cases ${edges.map((e) => `<span class="${e.ok ? "hit" : "miss"}">${e.ok ? "✓" : "✗"} ${e.tag}</span>`).join(" ")}</div>
+    ${growth ? `<div class="score-row">${growth}</div>` : ""}`;
+  document.getElementById("challenge-cases").after(box);
+}
+
 if (typeof document !== "undefined") {
   // Manim-style morphs: renders replace innerHTML (teleporting), so before a
   // render we snapshot every keyed chip's rect + background, and after it we
@@ -382,6 +554,8 @@ if (typeof document !== "undefined") {
 
   function applyData(d, extraInfo = "") {
     player.data = d;
+    currentData = d;
+    lastTrace = null; // a stale trace on new data would lie
     customEl.value = PAGE.describe(d);
     if (PAGE.onData) PAGE.onData(d);
     const verdict = PAGE.classify(d);

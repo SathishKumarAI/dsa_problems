@@ -56,7 +56,30 @@ function* runChase(nums) {
 
 // ---------- the acts ----------
 
-const ACT_ORDER = ["shape", "converge", "chase"];
+const ACT_ORDER = ["shape", "converge", "chase", "build"];
+
+// ---------- capstone (CodeCrafters model): BUILD the scan you just watched ----------
+
+const CHALLENGE = {
+  fname: "pairInSorted",
+  signature: "function pairInSorted(nums, target) {   // nums is SORTED",
+  starter: "// return indices of ANY pair summing to target, or [] if none\nlet L = 0, R = nums.length - 1;\n\n",
+  cases: [
+    { nums: [1, 3, 4, 6, 9], target: 10, expected: [0, 4], anyPair: true },
+    { nums: [2, 5, 8, 11], target: 19, expected: [2, 3], anyPair: true, tag: "answer inside" },
+    { nums: [1, 2, 3, 4], target: 3, expected: [0, 1], anyPair: true, tag: "smallest pair" },
+    { nums: [2, 2, 5, 9], target: 4, expected: [0, 1], anyPair: true, tag: "equal values" },
+    { nums: [1, 2, 4, 8], target: 100, expected: [], tag: "no pair — prove absence" },
+  ],
+  // reference: the converge scan itself, measured with the same touch counter
+  reference:
+    "let L = 0, R = nums.length - 1;\n" +
+    "while (L < R) {\n" +
+    "  const s = nums[L] + nums[R];\n" +
+    "  if (s === target) return [L, R];\n" +
+    "  if (s < target) L++; else R--;\n" +
+    "}\nreturn [];",
+};
 
 const RESOURCES = [
   { label: "Two Sum (apply this pattern)", url: "../problems/two-sum.html" },
@@ -181,6 +204,72 @@ const APPROACHES = {
       els.panel.innerHTML = "";
     },
   },
+
+  build: {
+    name: "Build It",
+    short: "capstone",
+    complexity: "your turn — implement the converge scan",
+    insight: "Using a structure teaches; implementing it cements.",
+    idea: "Write <b>pairInSorted(nums, target)</b> in the editor: the squeeze you just watched, from memory. Return ANY pair of indices summing to the target, or [] when none exists. The no-pair case is the real test — your loop must PROVE absence, not just fail to find. 👁 trace it to watch your own pointers walk.",
+    pseudocode: [
+      "L = 0, R = n-1",
+      "while L < R:",
+      "  s = nums[L] + nums[R]",
+      "  if s == target: return [L, R]",
+      "  s < target ? L += 1 : R -= 1",
+      "no pair: return []",
+    ],
+    python: null,
+    takeaways: [
+      "the empty-array return is load-bearing: pointers meeting IS the proof of absence",
+      "compare your touch count to the reference — a matching shape reads the array identically",
+      "if you wrote a nested loop instead, it still passes; the scorecard will tattle",
+    ],
+    gate: "pass",
+    chart: false,
+    hints: [
+      "One pointer at each end. What single fact decides which one moves?",
+      "Sum too small → only L moving right can raise it. Too big → only R moving left can lower it. No other move is ever useful.",
+      "Skeleton: <b>while (L < R)</b> → compute s → hit? return [L, R] → <b>s < target ? L++ : R--</b> → after the loop, return [].",
+    ],
+    nextLabel: "Built it ▸",
+    run: function* (nums, target) {
+      if (!lastTrace) {
+        yield { hold: 2, line: -1, note: "implement the scan in the editor below — then 👁 trace it and watch YOUR pointers squeeze" };
+        return;
+      }
+      const { events, result, error } = lastTrace;
+      if (!events.length) {
+        yield { hold: 2, note: "your code never touched nums 🤨" };
+      }
+      for (let n = 0; n < events.length; n++) {
+        const e = events[n];
+        yield { i: e.i, op: e.op, note: `access #${n + 1}: your code ${e.op === "get" ? `read nums[${e.i}] (${e.v})` : `wrote nums[${e.i}] = ${e.v}`}` };
+      }
+      if (error) {
+        yield { hold: 2, note: `then it threw: ${error}` };
+      } else {
+        const ok = Array.isArray(result) && result.length === 2 && nums[result[0]] + nums[result[1]] === target;
+        const none = Array.isArray(result) && result.length === 0;
+        yield {
+          hold: 3,
+          answer: ok ? [...result].sort((a, b) => a - b) : undefined,
+          note: ok
+            ? `returned [${result}] — a valid pair, found in ${events.length} touches.`
+            : none
+              ? `returned [] after ${events.length} touches — if no pair exists on this input, that's the proof done right.`
+              : `returned ${JSON.stringify(result)} — not a valid pair for target ${target}.`,
+        };
+      }
+    },
+    render(f, els, data) {
+      const focus = new Set(f.op === "get" ? [f.i] : []);
+      const anchor = new Set(f.op === "set" ? [f.i] : []);
+      const answer = new Set(f.answer || []);
+      els.array.innerHTML = chipRow(data.nums, { focus, anchor, answer });
+      renderChallengeUI(els.panel);
+    },
+  },
 };
 
 // ---------- page config consumed by journey.js (browser only) ----------
@@ -241,6 +330,6 @@ const PROBLEM = {
   actOrder: ACT_ORDER,
   resources: RESOURCES,
   page: PAGE,
-  challenge: null,
+  challenge: CHALLENGE,
   sample: { nums: [1, 3, 6, 9], target: 10 },
 };

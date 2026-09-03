@@ -159,6 +159,8 @@ const ACT_ORDER = ["story", "brute", "twoptr", "twopass", "hash", "challenge", "
 // ---------- code challenge (Khan-style "prove it"): runs in a Web Worker ----------
 
 const CHALLENGE = {
+  fname: "twoSum",
+  signature: "function twoSum(nums, target) {",
   starter: "// nums and target are in scope — return the two indices\nconst seen = new Map();\n\n",
   // same cases as test_two_sum.js; expected pre-sorted; tag marks edge cases
   cases: [
@@ -178,170 +180,6 @@ const CHALLENGE = {
     "  seen.set(nums[i], i);\n" +
     "}\nreturn [];",
 };
-
-// your code IS the animation: the worker can also trace a run on the current
-// page input — every nums[i] read/write via Proxy — and the journey engine
-// replays that trace as frames. currentData/lastTrace are page-level state.
-let currentData = null;
-let lastTrace = null;
-
-const CHALLENGE_WORKER_SRC = `onmessage = (e) => {
-  const { code, cases, mode, nums, target } = e.data;
-  let fn;
-  try { fn = new Function("nums", "target", code); }
-  catch (err) { postMessage({ error: String(err.message) }); return; }
-  if (mode === "trace") {
-    const events = [];
-    const arr = nums.slice();
-    const proxied = new Proxy(arr, {
-      get(t, p) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "get", i: +p, v: t[p] }); return t[p]; },
-      set(t, p, v) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "set", i: +p, v }); t[p] = v; return true; },
-    });
-    let result = null, error = null;
-    try { result = fn(proxied, target); } catch (err) { error = String(err.message); }
-    postMessage({ trace: { events, result, error } });
-    return;
-  }
-  // test mode counts array touches for the learner AND the reference —
-  // step-efficiency is part of the scorecard, not just pass/fail
-  const counter = (arr, bump) => new Proxy(arr, {
-    get(t, p) { if (/^\\d+$/.test(p)) bump(); return t[p]; },
-    set(t, p, v) { if (/^\\d+$/.test(p)) bump(); t[p] = v; return true; },
-  });
-  let refFn = null;
-  try { refFn = new Function("nums", "target", e.data.reference || ""); } catch {}
-  postMessage({ results: cases.map((c) => {
-    let touches = 0, refTouches = 0;
-    try {
-      const got = fn(counter(c.nums.slice(), () => touches++), c.target);
-      if (refFn) { try { refFn(counter(c.nums.slice(), () => refTouches++), c.target); } catch {} }
-      const ok = Array.isArray(got) && got.length === 2 &&
-        [...got].sort((a, b) => a - b).join() === c.expected.join();
-      return { ok, got: JSON.stringify(got), touches, refTouches };
-    } catch (err) { return { ok: false, got: String(err.message), touches, refTouches }; }
-  }) });
-};`;
-
-function challengeWorker(msg, onMessage, verdict) {
-  const w = new Worker(URL.createObjectURL(new Blob([CHALLENGE_WORKER_SRC], { type: "text/javascript" })));
-  const timer = setTimeout(() => {
-    w.terminate();
-    verdict.textContent = "⏱ timed out — infinite loop?";
-    verdict.className = "miss";
-  }, 3000);
-  w.onmessage = (e) => {
-    clearTimeout(timer);
-    w.terminate();
-    onMessage(e.data);
-  };
-  w.postMessage(msg);
-}
-
-function renderChallengeUI(panel) {
-  if (document.getElementById("challenge-box")) return;
-  panel.innerHTML = `<div id="challenge-box">
-    <div class="challenge-sig">function twoSum(nums, target) {</div>
-    <textarea id="challenge-code" rows="9" spellcheck="false" aria-label="your solution">${CHALLENGE.starter}</textarea>
-    <div class="challenge-sig">}</div>
-    <div class="challenge-controls">
-      <button id="challenge-run">▶ Run tests</button>
-      <button id="challenge-trace">👁 Watch my code on this input</button>
-      <span id="challenge-verdict"></span>
-    </div>
-    <div id="challenge-cases"></div>
-  </div>`;
-  document.getElementById("challenge-run").onclick = runChallenge;
-  document.getElementById("challenge-trace").onclick = traceChallenge;
-}
-
-function traceChallenge() {
-  const code = document.getElementById("challenge-code").value;
-  const verdict = document.getElementById("challenge-verdict");
-  verdict.textContent = "tracing…";
-  verdict.className = "";
-  challengeWorker(
-    { mode: "trace", code, nums: currentData.nums, target: currentData.target },
-    (data) => {
-      if (data.error) {
-        verdict.textContent = "syntax error: " + data.error;
-        verdict.className = "miss";
-        return;
-      }
-      lastTrace = data.trace;
-      verdict.textContent = `traced ${data.trace.events.length} array accesses — press ▶ Play to watch YOUR code`;
-      document.dispatchEvent(new CustomEvent("act-rebuild"));
-    },
-    verdict
-  );
-}
-
-function runChallenge() {
-  const code = document.getElementById("challenge-code").value;
-  const verdict = document.getElementById("challenge-verdict");
-  const casesEl = document.getElementById("challenge-cases");
-  verdict.textContent = "running…";
-  // the learner's code runs in a Worker: main thread stays responsive and
-  // eval-free; an infinite loop just gets its worker terminated
-  challengeWorker({ code, cases: CHALLENGE.cases, reference: CHALLENGE.reference }, (data) => {
-    if (data.error) {
-      verdict.textContent = "syntax error: " + data.error;
-      verdict.className = "miss";
-      casesEl.innerHTML = "";
-      return;
-    }
-    const results = data.results;
-    casesEl.innerHTML = results
-      .map((r, i) => {
-        const c = CHALLENGE.cases[i];
-        return `<div class="challenge-case ${r.ok ? "pass" : "fail"}">
-          ${r.ok ? "✓" : "✗"} twoSum([${c.nums}], ${c.target}) → ${r.got}${r.ok ? "" : ` <small>want [${c.expected}]</small>`}
-        </div>`;
-      })
-      .join("");
-    const passed = results.filter((r) => r.ok).length;
-    if (passed === results.length) {
-      verdict.textContent = `all ${passed} cases pass — you wrote it 🎉`;
-      verdict.className = "hit";
-      document.dispatchEvent(new CustomEvent("challenge-pass"));
-    } else {
-      verdict.textContent = `${passed}/${results.length} passing`;
-      verdict.className = "miss";
-    }
-    renderScorecard(results, passed);
-  }, verdict);
-}
-
-// skill scorecard (Ropes-style mirror): HOW you solved, not just pass/fail.
-// History lives in localStorage so improvement shows as growth, never shame.
-function renderScorecard(results, passed) {
-  const touches = results.reduce((s, r) => s + (r.touches || 0), 0);
-  const refTouches = results.reduce((s, r) => s + (r.refTouches || 0), 0);
-  const edges = CHALLENGE.cases
-    .map((c, i) => ({ tag: c.tag, ok: results[i].ok }))
-    .filter((e) => e.tag);
-  const KEY = "scorecard:" + location.pathname;
-  const hist = JSON.parse(localStorage.getItem(KEY) || "[]");
-  const bestTouches = hist.filter((h) => h.allPass).reduce((m, h) => Math.min(m, h.touches), Infinity);
-  hist.push({ date: new Date().toISOString().slice(0, 10), passed, allPass: passed === results.length, touches });
-  localStorage.setItem(KEY, JSON.stringify(hist.slice(-50)));
-
-  let growth = "";
-  if (passed === results.length && bestTouches !== Infinity) {
-    growth =
-      touches < bestTouches
-        ? `<span class="hit">new best — previous was ${bestTouches} touches</span>`
-        : `<span>your best: ${bestTouches} touches</span>`;
-  }
-  const box = document.getElementById("challenge-scorecard") || document.createElement("div");
-  box.id = "challenge-scorecard";
-  box.innerHTML = `
-    <div class="panel-label">scorecard — how you solved it</div>
-    <div class="score-row">correctness <b>${passed}/${results.length}</b></div>
-    <div class="score-row">array touches <b>${touches}</b> <small>reference one-pass: ${refTouches}</small></div>
-    <div class="score-row">edge cases ${edges.map((e) => `<span class="${e.ok ? "hit" : "miss"}">${e.ok ? "✓" : "✗"} ${e.tag}</span>`).join(" ")}</div>
-    ${growth ? `<div class="score-row">${growth}</div>` : ""}`;
-  document.getElementById("challenge-cases").after(box);
-}
 
 const RESOURCES = [
   { label: "LeetCode 1", url: "https://leetcode.com/problems/two-sum/" },
@@ -920,8 +758,6 @@ const PAGE = {
     return nums.length >= 2 && Number.isInteger(target) ? { nums, target } : null;
   },
   onData: (d) => {
-    currentData = d;
-    lastTrace = null; // a stale trace on new data would lie
     document.getElementById("target-input").value = d.target;
     document.getElementById("databar").innerHTML = `target = <b>${d.target}</b>`;
   },
