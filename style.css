@@ -253,7 +253,32 @@ input[type="range"] { accent-color: var(--mauve); }
 
 #target { width: 4rem; background: var(--surface0); color: var(--text); border: none; border-radius: 6px; padding: 0.3rem 0.4rem; }
 
-#keys { margin-left: auto; font-size: 0.7rem; color: var(--surface1); }
+#keys { margin-left: auto; }
+#keys-btn { font-size: 0.7rem; padding: 0.25rem 0.6rem; color: var(--subtext); background: none; }
+#keys-btn:hover { background: var(--surface0); }
+
+/* keyboard-shortcut overlay (injected by ui-prefs.js) */
+#shortcuts {
+  background: var(--mantle);
+  color: var(--text);
+  border: 1px solid var(--surface1);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  min-width: 20rem;
+}
+#shortcuts::backdrop { background: rgba(0, 0, 0, 0.55); }
+#shortcuts h2 { font-size: 0.95rem; color: var(--mauve); margin-bottom: 0.8rem; }
+#shortcuts table { border-collapse: collapse; margin-bottom: 1rem; }
+#shortcuts td { padding: 0.3rem 0.9rem 0.3rem 0; font-size: 0.85rem; color: var(--subtext); }
+#shortcuts kbd {
+  background: var(--surface0);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
 
 @media (max-width: 800px) {
   main { flex-direction: column; }

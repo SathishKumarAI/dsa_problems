@@ -108,6 +108,39 @@
     };
   });
 
+  // keyboard-shortcut overlay: ? opens a native <dialog>; replaces the
+  // unscalable footer hint text on any page that has a #keys span
+  document.addEventListener("DOMContentLoaded", () => {
+    const keysEl = document.getElementById("keys");
+    if (!keysEl) return;
+    const dlg = document.createElement("dialog");
+    dlg.id = "shortcuts";
+    const rows = [
+      ["space", "play / pause"],
+      ["← →", "step back / forward"],
+      ["r", "reset to the start"],
+      ["f", "focus mode (visualization only)"],
+      ["Esc", "exit focus mode / close this"],
+      ["drag timeline", "scrub anywhere in the run"],
+      ["?", "this overlay"],
+    ];
+    dlg.innerHTML =
+      `<h2>keyboard shortcuts</h2><table>` +
+      rows.map(([k, d]) => `<tr><td><kbd>${k}</kbd></td><td>${d}</td></tr>`).join("") +
+      `</table><button id="shortcuts-close">close (Esc)</button>`;
+    document.body.appendChild(dlg);
+    dlg.querySelector("#shortcuts-close").onclick = () => dlg.close();
+    dlg.onclick = (e) => {
+      if (e.target === dlg) dlg.close(); // backdrop click
+    };
+    keysEl.innerHTML = `<button id="keys-btn" title="keyboard shortcuts">? shortcuts</button>`;
+    keysEl.querySelector("#keys-btn").onclick = () => dlg.showModal();
+    document.addEventListener("keydown", (e) => {
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+      if (e.key === "?") dlg.open ? dlg.close() : dlg.showModal();
+    });
+  });
+
   // focus mode: strip the page down to the visualization + playback controls
   document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById("btn-focus");
@@ -124,6 +157,7 @@
     btn.onclick = () => toggle();
     document.addEventListener("keydown", (e) => {
       if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
+      if (document.querySelector("dialog[open]")) return; // Esc belongs to the dialog
       if (e.key === "f") toggle();
       else if (e.key === "Escape") toggle(false);
     });

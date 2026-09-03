@@ -97,6 +97,7 @@ document.querySelectorAll("#algo-tabs button").forEach((btn) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.target.tagName === "INPUT") return; // don't hijack sliders/number input
+  if (document.querySelector("dialog[open]")) return; // shortcut overlay owns the keys
   if (e.key === " ") {
     e.preventDefault();
     playBtn.onclick();
