@@ -171,6 +171,54 @@ const CHALLENGE = {
   ],
 };
 
+// your code IS the animation: the worker can also trace a run on the current
+// page input — every nums[i] read/write via Proxy — and the journey engine
+// replays that trace as frames. currentData/lastTrace are page-level state.
+let currentData = null;
+let lastTrace = null;
+
+const CHALLENGE_WORKER_SRC = `onmessage = (e) => {
+  const { code, cases, mode, nums, target } = e.data;
+  let fn;
+  try { fn = new Function("nums", "target", code); }
+  catch (err) { postMessage({ error: String(err.message) }); return; }
+  if (mode === "trace") {
+    const events = [];
+    const arr = nums.slice();
+    const proxied = new Proxy(arr, {
+      get(t, p) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "get", i: +p, v: t[p] }); return t[p]; },
+      set(t, p, v) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "set", i: +p, v }); t[p] = v; return true; },
+    });
+    let result = null, error = null;
+    try { result = fn(proxied, target); } catch (err) { error = String(err.message); }
+    postMessage({ trace: { events, result, error } });
+    return;
+  }
+  postMessage({ results: cases.map((c) => {
+    try {
+      const got = fn(c.nums.slice(), c.target);
+      const ok = Array.isArray(got) && got.length === 2 &&
+        [...got].sort((a, b) => a - b).join() === c.expected.join();
+      return { ok, got: JSON.stringify(got) };
+    } catch (err) { return { ok: false, got: String(err.message) }; }
+  }) });
+};`;
+
+function challengeWorker(msg, onMessage, verdict) {
+  const w = new Worker(URL.createObjectURL(new Blob([CHALLENGE_WORKER_SRC], { type: "text/javascript" })));
+  const timer = setTimeout(() => {
+    w.terminate();
+    verdict.textContent = "⏱ timed out — infinite loop?";
+    verdict.className = "miss";
+  }, 3000);
+  w.onmessage = (e) => {
+    clearTimeout(timer);
+    w.terminate();
+    onMessage(e.data);
+  };
+  w.postMessage(msg);
+}
+
 function renderChallengeUI(panel) {
   if (document.getElementById("challenge-box")) return;
   panel.innerHTML = `<div id="challenge-box">
@@ -179,11 +227,34 @@ function renderChallengeUI(panel) {
     <div class="challenge-sig">}</div>
     <div class="challenge-controls">
       <button id="challenge-run">▶ Run tests</button>
+      <button id="challenge-trace">👁 Watch my code on this input</button>
       <span id="challenge-verdict"></span>
     </div>
     <div id="challenge-cases"></div>
   </div>`;
   document.getElementById("challenge-run").onclick = runChallenge;
+  document.getElementById("challenge-trace").onclick = traceChallenge;
+}
+
+function traceChallenge() {
+  const code = document.getElementById("challenge-code").value;
+  const verdict = document.getElementById("challenge-verdict");
+  verdict.textContent = "tracing…";
+  verdict.className = "";
+  challengeWorker(
+    { mode: "trace", code, nums: currentData.nums, target: currentData.target },
+    (data) => {
+      if (data.error) {
+        verdict.textContent = "syntax error: " + data.error;
+        verdict.className = "miss";
+        return;
+      }
+      lastTrace = data.trace;
+      verdict.textContent = `traced ${data.trace.events.length} array accesses — press ▶ Play to watch YOUR code`;
+      document.dispatchEvent(new CustomEvent("act-rebuild"));
+    },
+    verdict
+  );
 }
 
 function runChallenge() {
@@ -193,36 +264,14 @@ function runChallenge() {
   verdict.textContent = "running…";
   // the learner's code runs in a Worker: main thread stays responsive and
   // eval-free; an infinite loop just gets its worker terminated
-  const src = `onmessage = (e) => {
-    const { code, cases } = e.data;
-    let fn;
-    try { fn = new Function("nums", "target", code); }
-    catch (err) { postMessage({ error: String(err.message) }); return; }
-    postMessage({ results: cases.map((c) => {
-      try {
-        const got = fn(c.nums.slice(), c.target);
-        const ok = Array.isArray(got) && got.length === 2 &&
-          [...got].sort((a, b) => a - b).join() === c.expected.join();
-        return { ok, got: JSON.stringify(got) };
-      } catch (err) { return { ok: false, got: String(err.message) }; }
-    }) });
-  };`;
-  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
-  const timer = setTimeout(() => {
-    w.terminate();
-    verdict.textContent = "⏱ timed out — infinite loop?";
-    verdict.className = "miss";
-  }, 3000);
-  w.onmessage = (e) => {
-    clearTimeout(timer);
-    w.terminate();
-    if (e.data.error) {
-      verdict.textContent = "syntax error: " + e.data.error;
+  challengeWorker({ code, cases: CHALLENGE.cases }, (data) => {
+    if (data.error) {
+      verdict.textContent = "syntax error: " + data.error;
       verdict.className = "miss";
       casesEl.innerHTML = "";
       return;
     }
-    const results = e.data.results;
+    const results = data.results;
     casesEl.innerHTML = results
       .map((r, i) => {
         const c = CHALLENGE.cases[i];
@@ -240,8 +289,7 @@ function runChallenge() {
       verdict.textContent = `${passed}/${results.length} passing`;
       verdict.className = "miss";
     }
-  };
-  w.postMessage({ code, cases: CHALLENGE.cases });
+  }, verdict);
 }
 
 const RESOURCES = [
@@ -659,11 +707,42 @@ const APPROACHES = {
     chart: false,
     quiz: null,
     nextLabel: "It's green — show me what I earned ▸",
-    run: function* () {
-      yield { hold: 2, line: -1, note: "write the function body in the editor below, hit Run tests, make every case green" };
+    run: function* (nums, target) {
+      if (typeof lastTrace === "undefined" || !lastTrace) {
+        yield { hold: 2, line: -1, note: "write the function body in the editor below, hit Run tests — or 👁 trace it and WATCH your own code walk the array" };
+        return;
+      }
+      // learner-code trace: their execution drives the chips
+      const { events, result, error } = lastTrace;
+      if (!events.length) {
+        yield { hold: 2, note: "your code never touched nums 🤨 — it returned without reading the array" };
+      }
+      for (let n = 0; n < events.length; n++) {
+        const e = events[n];
+        yield {
+          i: e.i,
+          op: e.op,
+          note: `access #${n + 1}: your code ${e.op === "get" ? `read nums[${e.i}] (${e.v})` : `wrote nums[${e.i}] = ${e.v}`}`,
+        };
+      }
+      if (error) {
+        yield { hold: 2, note: `then it threw: ${error}` };
+      } else {
+        const ok = Array.isArray(result) && result.length === 2 && nums[result[0]] + nums[result[1]] === target;
+        yield {
+          hold: 3,
+          answer: ok ? [...result].sort((a, b) => a - b) : undefined,
+          note: ok
+            ? `returned [${result}] — correct, in ${events.length} array accesses. That count IS your algorithm's shape.`
+            : `returned ${JSON.stringify(result)} — not a valid pair for target ${target}. Watch where the walk went wrong.`,
+        };
+      }
     },
     render(f, els, data) {
-      els.array.innerHTML = chipRow(data.nums);
+      const focus = new Set(f.op === "get" ? [f.i] : []);
+      const anchor = new Set(f.op === "set" ? [f.i] : []);
+      const answer = new Set(f.answer || []);
+      els.array.innerHTML = chipRow(data.nums, { focus, anchor, answer });
       renderChallengeUI(els.panel);
     },
   },
@@ -765,6 +844,8 @@ const PAGE = {
     return nums.length >= 2 && Number.isInteger(target) ? { nums, target } : null;
   },
   onData: (d) => {
+    currentData = d;
+    lastTrace = null; // a stale trace on new data would lie
     document.getElementById("target-input").value = d.target;
     document.getElementById("databar").innerHTML = `target = <b>${d.target}</b>`;
   },

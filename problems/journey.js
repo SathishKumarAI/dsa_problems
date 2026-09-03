@@ -652,6 +652,10 @@ if (typeof document !== "undefined") {
     }
   };
 
+  // content can ask for a frame rebuild of the current act (e.g. after a
+  // learner-code trace arrives, so playback runs THEIR execution)
+  document.addEventListener("act-rebuild", () => player.build());
+
   document.addEventListener("challenge-pass", () => {
     if (!player.ap._passed) awardXP(25, nextBtn); // first green run only
     player.ap._passed = true;
