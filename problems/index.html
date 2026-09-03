@@ -3,40 +3,89 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Problems — learning journeys</title>
+<title>Roadmap — learning journeys</title>
 <link rel="stylesheet" href="../style.css">
 <link rel="stylesheet" href="journey.css">
 <script src="../js/ui-prefs.js"></script>
 <style>
-  #problem-list { display: flex; flex-direction: column; gap: 0.75rem; max-width: 40rem; }
-  .pcard { background: var(--mantle); border-radius: 8px; padding: 1rem 1.25rem; text-decoration: none; }
-  .pcard b { color: var(--mauve); }
-  .pcard p { color: var(--subtext); font-size: 0.85rem; margin-top: 0.3rem; }
-  .pcard:hover { background: var(--surface0); }
+  #roadmap { display: flex; flex-direction: column; gap: 1.5rem; max-width: 46rem; }
+  .track { display: flex; flex-direction: column; gap: 0.6rem; }
+  .track-label { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.08em; }
+  .track-row { display: flex; align-items: stretch; gap: 0.6rem; flex-wrap: wrap; }
+  .rarrow { align-self: center; color: var(--surface1); font-size: 1.2rem; }
+  .rcard {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    text-decoration: none;
+    min-width: 15rem;
+    max-width: 19rem;
+    flex: 1;
+  }
+  .rcard:hover { background: var(--surface0); }
+  .rcard b { color: var(--mauve); }
+  .rcard.pattern b { color: var(--blue); }
+  .rcard p { color: var(--subtext); font-size: 0.8rem; margin-top: 0.3rem; line-height: 1.4; }
+  .rcard .status { display: block; margin-top: 0.45rem; font-size: 0.72rem; color: var(--subtext); }
+  .rcard .status::before { content: "○ "; }
+  .rcard.started .status { color: var(--yellow); }
+  .rcard.started .status::before { content: "◐ "; }
+  .rcard.done .status { color: var(--green); }
+  .rcard.done .status::before { content: "● "; }
+  .rcard.ghost {
+    border-style: dashed;
+    background: none;
+    pointer-events: none;
+  }
+  .rcard.ghost b { color: var(--subtext); }
 </style>
 </head>
 <body>
 <header>
-  <h1><a href="../index.html">DSA Visualizer</a> · Problems</h1>
-  <span id="subtitle">one problem at a time, naive → optimal, as a story</span>
+  <h1><a href="../index.html">DSA Visualizer</a> · Roadmap</h1>
+  <span id="subtitle">a visible path — patterns are the destinations, problems are how you get there</span>
 </header>
 <main>
   <section id="stage">
-    <div id="problem-list">
-      <a class="pcard" href="single-number.html">
-        <b>Single Number</b> — LeetCode 136
-        <p>Every element appears twice except one. Can you find it — and then find it faster?</p>
-      </a>
-      <a class="pcard" href="two-sum.html">
-        <b>Two Sum</b> — LeetCode 1
-        <p>Two indices whose values hit a target. Start the obvious way — each act earns the next idea.</p>
-      </a>
-      <a class="pcard" href="../patterns/two-pointers.html">
-        <b>Pattern: Two Pointers</b>
-        <p>The reusable shape behind many problems — why sorted order lets one comparison eliminate many candidates.</p>
-      </a>
-    </div>
+    <div id="roadmap"></div>
   </section>
 </main>
+<script>
+// Roadmap data. acts = length of each page's ACT_ORDER, kept by hand.
+// ponytail: 3 nodes don't justify loading every content file here; when the
+// count grows past ~8, generate this from the PROBLEM objects instead.
+const TRACKS = [
+  {
+    label: "Arrays · start here",
+    nodes: [
+      { href: "two-sum.html", title: "Two Sum", sub: "LeetCode 1 — story → brute → faster → code it yourself", acts: 7 },
+      { href: "../patterns/two-pointers.html", title: "Pattern: Two Pointers", sub: "the reusable shape Two Sum reveals — converge & chase", acts: 3, pattern: true },
+    ],
+  },
+  {
+    label: "Bits",
+    nodes: [
+      { href: "single-number.html", title: "Single Number", sub: "LeetCode 136 — every element twice except one; find it faster", acts: 5 },
+      { ghost: true, title: "Pattern: XOR", sub: "coming after Single Number's machinery is complete" },
+    ],
+  },
+];
+
+const roadmapEl = document.getElementById("roadmap");
+roadmapEl.innerHTML = TRACKS.map((t) => {
+  const cards = t.nodes.map((n) => {
+    if (n.ghost) return `<span class="rcard ghost"><b>${n.title}</b><p>${n.sub}</p></span>`;
+    const key = "unlocked:" + new URL(n.href, location.href).pathname;
+    const unlocked = Number(localStorage.getItem(key)) || 0;
+    const state = unlocked >= n.acts ? "done" : unlocked > 1 ? "started" : "";
+    const status = unlocked >= n.acts ? "journey complete" : unlocked > 1 ? `${unlocked}/${n.acts} acts unlocked` : "not started";
+    return `<a class="rcard ${state}${n.pattern ? " pattern" : ""}" href="${n.href}">
+      <b>${n.title}</b><p>${n.sub}</p><span class="status">${status}</span>
+    </a>`;
+  });
+  return `<div class="track"><div class="track-label">${t.label}</div><div class="track-row">${cards.join('<span class="rarrow">→</span>')}</div></div>`;
+}).join("");
+</script>
 </body>
 </html>
