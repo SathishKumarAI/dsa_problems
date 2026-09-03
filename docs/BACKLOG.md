@@ -70,7 +70,7 @@ branch = one increment.
 | 22 | ☑ **Progress export/import** — settings gear: download/upload progress JSON. | Cross-device sync v0 with zero backend. | S |
 | 23 | ☐ **Sync backend (only after 22 hurts)** — smallest possible store (Supabase/KV) keyed by a login-less token; syncs the same JSON. | Real backend only when export/import friction is proven. | L |
 | 24 | ☑ **Spaced-repetition queue** — "you earned the XOR trick 5 days ago — solve Single Number cold?" resurfaces finished problems on a decay schedule; localStorage scheduler. | Retention is the actual goal; one pass teaches, review keeps. | M |
-| 25 | ☐ **Stall analytics (local)** — log which act/step learners linger or quit on, render in dashboard; no network, no tracking. | Tells you which explanation is failing; data-driven content fixes. | M |
+| 25 | ☑ **Stall analytics (local)** — log which act/step learners linger or quit on, render in dashboard; no network, no tracking. | Tells you which explanation is failing; data-driven content fixes. | M |
 
 ## P0–P2 — AI-platform round (from `docs/RESEARCH.md`)
 

@@ -341,7 +341,33 @@ if (typeof document !== "undefined") {
         .join("");
   }
 
+  // stall analytics, all local: seconds spent + quits per act, so the
+  // dashboard can show which explanation is failing. No network, ever.
+  let stallAct = null;
+  let stallStart = 0;
+  function stallFlush(quit) {
+    if (!stallAct) return;
+    const secs = Math.round((Date.now() - stallStart) / 1000);
+    const all = JSON.parse(localStorage.getItem("stalls") || "{}");
+    const k = location.pathname + "|" + stallAct;
+    const e = (all[k] = all[k] || { name: APPROACHES[stallAct].name, secs: 0, quits: 0, step: 0 });
+    if (secs >= 3) e.secs += secs;
+    if (quit) {
+      e.quits += 1;
+      e.step = player.pos; // where they were when they left
+    }
+    localStorage.setItem("stalls", JSON.stringify(all));
+    stallStart = Date.now();
+  }
+  addEventListener("pagehide", () => {
+    // leaving mid-journey counts as a quit on the current act
+    stallFlush(unlocked < ACT_ORDER.length);
+  });
+
   function setAct(key) {
+    stallFlush(false);
+    stallAct = key;
+    stallStart = Date.now();
     player.setApproach(key);
     journeyEl.querySelectorAll(".jnode").forEach((b) => b.classList.toggle("active", b.dataset.act === key));
     nextBtn.hidden = true;

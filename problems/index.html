@@ -30,6 +30,12 @@
   }
   .stat-tile b { display: block; font-size: 1.3rem; color: var(--mauve); font-variant-numeric: tabular-nums; }
   .stat-tile span { font-size: 0.72rem; color: var(--subtext); }
+  #stalls { max-width: 46rem; margin-bottom: 1.5rem; }
+  #stalls:empty { display: none; }
+  #stalls .track-label { margin-bottom: 0.5rem; }
+  .stall-row { display: flex; gap: 0.75rem; font-size: var(--fs-sm); color: var(--subtext); padding: 0.2rem 0; }
+  .stall-row b { color: var(--text); font-weight: normal; }
+  .stall-row span:last-child { font-variant-numeric: tabular-nums; }
   #roadmap { display: flex; flex-direction: column; gap: 1.5rem; max-width: 46rem; }
   .track { display: flex; flex-direction: column; gap: 0.6rem; }
   .track-label { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -72,6 +78,7 @@
   <section id="stage">
     <div id="review"></div>
     <div id="dashboard"></div>
+    <div id="stalls"></div>
     <div id="roadmap"></div>
   </section>
 </main>
@@ -129,6 +136,24 @@ document.getElementById("dashboard").innerHTML = [
   [quizzesPassed, "quizzes passed"],
   [`${journeysDone}/${nodes.length}`, "journeys finished"],
 ].map(([v, label]) => `<div class="stat-tile"><b>${v}</b><span>${label}</span></div>`).join("");
+
+// --- stall spots: the acts you sat in longest / left from (local only) ---
+const stalls = Object.entries(JSON.parse(localStorage.getItem("stalls") || "{}"))
+  .map(([k, e]) => ({ pathname: k.split("|")[0], ...e }))
+  .filter((e) => e.secs >= 60 || e.quits > 0)
+  .sort((a, b) => b.secs - a.secs)
+  .slice(0, 4);
+if (stalls.length) {
+  const mins = (s) => (s < 60 ? s + "s" : Math.round(s / 60) + " min");
+  document.getElementById("stalls").innerHTML =
+    `<div class="track-label">where you linger — worth a re-watch?</div>` +
+    stalls
+      .map((e) => {
+        const c = CATALOG.find((c) => !c.ghost && new URL("../" + c.href, location.href).pathname === e.pathname);
+        return `<div class="stall-row"><b>${c ? c.title : e.pathname} · ${e.name}</b><span>${mins(e.secs)}${e.quits ? ` · left ${e.quits}× (last at step ${e.step})` : ""}</span></div>`;
+      })
+      .join("");
+}
 
 const roadmapEl = document.getElementById("roadmap");
 roadmapEl.innerHTML = TRACKS.map((t) => {
