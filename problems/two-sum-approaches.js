@@ -171,6 +171,28 @@ const CHALLENGE = {
     { nums: [3, 1, 3, 8], target: 6, expected: [0, 2], tag: "duplicates" },
     { nums: [1, 9, 4, 6, 30], target: 31, expected: [0, 4], tag: "answer at extremes" },
   ],
+  // self-review: auto-checked against the code string where a regex can
+  // honestly tell; anything subtler stays a manual checkbox
+  review: [
+    {
+      q: "No-solution path returns something sane (an empty array, not undefined)",
+      check: (c) => /return\s*(\[\]|null)/.test(c),
+    },
+    {
+      q: "One pass, not nested loops",
+      check: (c) => (c.match(/\bfor\b|\bwhile\b/g) || []).length <= 1,
+    },
+    {
+      q: "Complement checked BEFORE storing — the target = 2x self-match trap",
+      check: (c) => {
+        const h = c.search(/\.has\(|in seen| in /);
+        const s = c.search(/\.set\(|seen\[/);
+        return h > -1 && s > -1 ? h < s : undefined;
+      },
+    },
+    { q: "Say the invariant out loud: what exactly does the map contain when you stand at index i?" },
+    { q: "Could you re-derive this cold tomorrow, without the reference?" },
+  ],
   // scorecard baseline: the one-pass hash, measured with the same access counter
   reference:
     "const seen = new Map();\n" +

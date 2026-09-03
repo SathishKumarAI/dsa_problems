@@ -71,6 +71,11 @@ const CHALLENGE = {
     { nums: [2, 2, 5, 9], target: 4, expected: [0, 1], anyPair: true, tag: "equal values" },
     { nums: [1, 2, 4, 8], target: 100, expected: [], tag: "no pair — prove absence" },
   ],
+  review: [
+    { q: "Returns [] when the pointers meet — absence is proven, not assumed", check: (c) => /return\s*\[\]/.test(c) },
+    { q: "One loop, no nested scan hiding in the squeeze", check: (c) => (c.match(/\bfor\b|\bwhile\b/g) || []).length <= 1 },
+    { q: "Exactly one pointer moves per iteration — could you justify each move to an interviewer?" },
+  ],
   // reference: the converge scan itself, measured with the same touch counter
   reference:
     "let L = 0, R = nums.length - 1;\n" +

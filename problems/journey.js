@@ -187,7 +187,33 @@ function runChallenge() {
       verdict.className = "miss";
     }
     renderScorecard(results, passed);
+    if (passed === results.length) renderSelfReview(code);
   }, verdict);
+}
+
+// structured self-review (Exercism's mentor review, automated): after a green
+// run, diff the learner's code against what a reviewer would ask. Items with
+// check(code) get auto-verdicts; items without become honest checkboxes —
+// review is where the learning consolidates.
+function renderSelfReview(code) {
+  const items = CHALLENGE.review || [];
+  if (!items.length) return;
+  const box = document.getElementById("challenge-review") || document.createElement("div");
+  box.id = "challenge-review";
+  box.innerHTML =
+    `<div class="panel-label">self-review — what a mentor would ask</div>` +
+    items
+      .map((it, i) => {
+        if (!it.check) {
+          return `<label class="review-item"><input type="checkbox"> ${it.q}</label>`;
+        }
+        let v;
+        try { v = it.check(code); } catch { v = undefined; }
+        if (v === undefined) return `<label class="review-item"><input type="checkbox"> ${it.q}</label>`;
+        return `<div class="review-item ${v ? "hit" : "miss"}">${v ? "✓" : "✗"} ${it.q}${v ? "" : " <small>— worth a second look</small>"}</div>`;
+      })
+      .join("");
+  (document.getElementById("challenge-scorecard") || document.getElementById("challenge-cases")).after(box);
 }
 
 // skill scorecard (Ropes-style mirror): HOW you solved, not just pass/fail.
