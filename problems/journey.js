@@ -297,7 +297,9 @@ function renderScorecard(results, passed) {
   document.getElementById("challenge-cases").after(box);
 }
 
-if (typeof document !== "undefined") {
+// the wiring below needs the full journey markup; harness-only pages
+// (challenge mode) load this file just for the helpers above
+if (typeof document !== "undefined" && document.getElementById("journey")) {
   // Manim-style morphs: renders replace innerHTML (teleporting), so before a
   // render we snapshot every keyed chip's rect + background, and after it we
   // FLIP-animate survivors from old to new and scale-fade newcomers in.

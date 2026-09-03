@@ -51,6 +51,13 @@ const CATALOG = [
     title: "Heap · Tree",
     sub: "the scheduler's favorite and the filesystem's shape — coming next",
   },
+  {
+    track: "Challenge mode",
+    href: "challenge.html",
+    title: "🔐 The Vault",
+    sub: "timed, narrative, optional — the earned pattern under pressure",
+    noProgress: true,
+  },
 ];
 
 // progress helpers shared by both pages

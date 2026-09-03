@@ -52,6 +52,13 @@ const PAGES = [
   ["structures/queue.html", null, (w) => {
     assert(w.document.querySelectorAll("#journey .jnode").length === 2, "queue fresh journey");
   }],
+  ["challenge.html", null, (w) => {
+    // fresh profile: clearance gate, not the mission
+    assert(w.document.getElementById("locked"), "challenge page should be gated for fresh profiles");
+  }],
+  ["challenge.html?cleared", (ls) => ls.setItem("unlocked:/problems/two-sum.html", "7"), (w) => {
+    assert(w.document.getElementById("accept"), "cleared profile should see the accept button");
+  }],
 ];
 
 let failures = 0;

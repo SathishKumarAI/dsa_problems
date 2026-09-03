@@ -23,6 +23,7 @@ Open `index.html` or `python -m http.server`.
 | Correctness checks (`node problems/test_single_number.js`, `test_two_sum.js`) | `problems/test_*.js` |
 | Two-pointers pattern page (shape → converge → chase → build) | `patterns/two-pointers.js` + `two-pointers.html` + `test_two_pointers.js` |
 | Structure explorers (need → mechanics → application) | `structures/<ds>.js` + `<ds>.html` + `test_structures.js` |
+| Timed story challenge (The Vault, gated on Two Sum) | `challenge.html` |
 | Content-schema check (`node problems/validate.js`) | `problems/validate.js` |
 | DOM smoke tests (`npm test` runs everything; needs `npm i` once) | `problems/test_dom.js` |
 

@@ -85,7 +85,7 @@
 <script>
 // hero cards: every catalog entry with a live progress ring (pathLength=100
 // makes stroke-dasharray a straight percentage)
-document.getElementById("hero-cards").innerHTML = CATALOG.filter((e) => !e.ghost)
+document.getElementById("hero-cards").innerHTML = CATALOG.filter((e) => !e.ghost && !e.noProgress)
   .map((e) => {
     const unlocked = catalogUnlocked(e, "");
     const pct = Math.round((Math.max(0, Math.min(unlocked, e.acts) - 1) / (e.acts - 1)) * 100);

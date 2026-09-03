@@ -109,7 +109,7 @@ document.getElementById("review").innerHTML = Object.entries(srs)
   .join("");
 
 // --- dashboard: everything derived from localStorage, nothing phones home ---
-const nodes = TRACKS.flatMap((t) => t.nodes).filter((n) => !n.ghost);
+const nodes = TRACKS.flatMap((t) => t.nodes).filter((n) => !n.ghost && !n.noProgress);
 const unlockedOf = (n) =>
   Number(localStorage.getItem("unlocked:" + new URL(n.href, location.href).pathname)) || 0;
 const actsDone = nodes.reduce((s, n) => s + Math.max(0, Math.min(unlockedOf(n), n.acts) - 1), 0);
@@ -159,6 +159,9 @@ const roadmapEl = document.getElementById("roadmap");
 roadmapEl.innerHTML = TRACKS.map((t) => {
   const cards = t.nodes.map((n) => {
     if (n.ghost) return `<span class="rcard ghost"><b>${n.title}</b><p>${n.sub}</p></span>`;
+    if (n.noProgress) {
+      return `<a class="rcard" href="${n.href}"><b>${n.title}</b><p>${n.sub}</p><span class="status">optional · timed</span></a>`;
+    }
     const key = "unlocked:" + new URL(n.href, location.href).pathname;
     const unlocked = Number(localStorage.getItem(key)) || 0;
     const state = unlocked >= n.acts ? "done" : unlocked > 1 ? "started" : "";
