@@ -128,9 +128,16 @@ body.focus #journey { display: none; }
 #databar { font-size: var(--fs-md); color: var(--subtext); padding-bottom: 0.6rem; }
 #databar b { color: var(--peach); font-size: var(--fs-lg); }
 
-#array-row, .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+/* Chip grammar — every state has a channel besides color (colorblind-safe):
+     fill   = state        (neutral / highlighted / answer)
+     marker = role         (▲ above = held/left/slow · ring = current/right/fast)
+     icon   = outcome      (✓ above = part of the answer)
+     fade   = eliminated   (opacity, luminance channel)
+   Change the grammar here and in the page legends together. */
+#array-row, .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.7rem; }
 
 .chip {
+  position: relative;
   min-width: 2.4rem;
   height: 2.4rem;
   padding: 0 0.4rem;
@@ -144,9 +151,30 @@ body.focus #journey { display: none; }
   font-size: var(--fs-lg);
 }
 .chip .oi { font-size: var(--fs-2xs); color: var(--subtext); line-height: 1.1; }
-.chip.focus { background: var(--yellow); color: var(--crust); font-weight: bold; }
+.chip.focus {
+  background: var(--yellow);
+  color: var(--crust);
+  font-weight: bold;
+  outline: 2px solid var(--text); /* ring = attention, readable without hue */
+  outline-offset: 2px;
+}
 .chip.anchor { background: var(--peach); color: var(--crust); font-weight: bold; }
-.chip.answer { background: var(--green); color: var(--crust); font-weight: bold; }
+.chip.anchor::before {
+  content: "▲";
+  position: absolute;
+  top: -0.8rem;
+  font-size: var(--fs-2xs);
+  color: var(--peach);
+}
+.chip.answer { background: var(--green); color: var(--crust); font-weight: bold; outline: none; }
+.chip.answer::before {
+  content: "✓";
+  position: absolute;
+  top: -0.9rem;
+  font-size: var(--fs-xs);
+  color: var(--green);
+  font-weight: bold;
+}
 .chip.focus .oi, .chip.anchor .oi, .chip.answer .oi { color: var(--crust); }
 .chip.done { opacity: 0.25; }
 
