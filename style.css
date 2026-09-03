@@ -16,6 +16,22 @@
   --sp-4: 1rem;
   --sp-5: 1.5rem;
 
+  /* AA-contrast companions: --on-<accent> = text sitting ON that accent
+     background; --<accent>-text = that accent used AS text on base/mantle.
+     Dark theme: raw accents already pass; light theme overrides below. */
+  --on-mauve: var(--crust);
+  --on-blue: var(--crust);
+  --on-green: var(--crust);
+  --on-yellow: var(--crust);
+  --on-peach: var(--crust);
+  --on-red: var(--crust);
+  --mauve-text: var(--mauve);
+  --blue-text: var(--blue);
+  --green-text: var(--green);
+  --yellow-text: var(--yellow);
+  --peach-text: var(--peach);
+  --red-text: var(--red);
+
   --base: #1e1e2e;
   --mantle: #181825;
   --crust: #11111b;
@@ -32,13 +48,28 @@
 }
 
 [data-theme="light"] {
+  /* white on the dark accents, near-black on the bright ones (all >= 4.5:1);
+     accents-as-text darken via color-mix until they pass on base/mantle */
+  --on-mauve: #ffffff;
+  --on-blue: #ffffff;
+  --on-red: #ffffff;
+  --on-green: #11111b;
+  --on-yellow: #11111b;
+  --on-peach: #11111b;
+  --mauve-text: color-mix(in srgb, #8839ef 85%, black);
+  --blue-text: color-mix(in srgb, #1e66f5 85%, black);
+  --red-text: color-mix(in srgb, #d20f39 85%, black);
+  --green-text: color-mix(in srgb, #40a02b 62%, black);
+  --yellow-text: color-mix(in srgb, #df8e1d 55%, black);
+  --peach-text: color-mix(in srgb, #fe640b 58%, black);
+
   --base: #eff1f5;
   --mantle: #e6e9ef;
   --crust: #dce0e8;
   --surface0: #ccd0da;
   --surface1: #bcc0cc;
   --text: #4c4f69;
-  --subtext: #6c6f85;
+  --subtext: #5c5f77; /* Latte subtext1: subtext0 fails 4.5:1 on base */
   --mauve: #8839ef;
   --blue: #1e66f5;
   --green: #40a02b;
@@ -77,7 +108,7 @@ header {
   border-bottom: 1px solid var(--surface0);
 }
 #hero-copy { max-width: 26rem; }
-#hero-copy h2 { font-size: var(--fs-xl); color: var(--mauve); margin-bottom: var(--sp-2); }
+#hero-copy h2 { font-size: var(--fs-xl); color: var(--mauve-text); margin-bottom: var(--sp-2); }
 #hero-copy p { font-size: var(--fs-sm); color: var(--subtext); line-height: 1.5; }
 #hero-cards { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .hero-card {
@@ -92,8 +123,8 @@ header {
   max-width: 15rem;
 }
 .hero-card:hover { background: var(--surface0); }
-.hero-card b { display: block; color: var(--mauve); font-size: var(--fs-md); }
-.hero-card.pattern b { color: var(--blue); }
+.hero-card b { display: block; color: var(--mauve-text); font-size: var(--fs-md); }
+.hero-card.pattern b { color: var(--blue-text); }
 .hero-card small { color: var(--subtext); font-size: var(--fs-xs); line-height: 1.35; display: block; margin-top: 0.15rem; }
 .ring { width: 2.6rem; height: 2.6rem; flex-shrink: 0; transform: rotate(-90deg); }
 .ring circle { fill: none; stroke: var(--surface0); stroke-width: 3.5; }
@@ -106,7 +137,7 @@ header {
   text-anchor: middle;
 }
 
-h1 { font-size: var(--fs-lg); color: var(--mauve); }
+h1 { font-size: var(--fs-lg); color: var(--mauve-text); }
 
 #algo-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 
@@ -156,7 +187,7 @@ button {
   font-size: var(--fs-md);
 }
 button:hover { background: var(--surface1); }
-#algo-tabs button.active { background: var(--mauve); color: var(--crust); }
+#algo-tabs button.active { background: var(--mauve); color: var(--on-mauve); }
 
 main {
   flex: 1;
@@ -205,7 +236,7 @@ main {
 #scrub {
   width: 100%;
   margin-top: 0.5rem;
-  accent-color: var(--mauve);
+  accent-color: var(--mauve-text);
   cursor: pointer;
 }
 
@@ -218,7 +249,7 @@ main {
   font-variant-numeric: tabular-nums; /* step counters must not jitter */
 }
 #status b { color: var(--text); }
-#complexity { margin-left: auto; color: var(--peach); }
+#complexity { margin-left: auto; color: var(--peach-text); }
 
 /* focus mode: visualization + playback only (journey bar hidden via journey.css) */
 body.focus header,
@@ -302,9 +333,9 @@ label {
   gap: 0.4rem;
 }
 
-input[type="range"] { accent-color: var(--mauve); }
+input[type="range"] { accent-color: var(--mauve-text); }
 
-#btn-play { background: var(--green); color: var(--crust); min-width: 5.5rem; }
+#btn-play { background: var(--green); color: var(--on-green); min-width: 5.5rem; }
 #btn-play.playing { background: var(--yellow); }
 
 #target { width: 4rem; background: var(--surface0); color: var(--text); border: none; border-radius: 6px; padding: 0.3rem 0.4rem; }
@@ -323,7 +354,7 @@ input[type="range"] { accent-color: var(--mauve); }
   min-width: 20rem;
 }
 #shortcuts::backdrop { background: rgba(0, 0, 0, 0.55); }
-#shortcuts h2 { font-size: var(--fs-md); color: var(--mauve); margin-bottom: 0.8rem; }
+#shortcuts h2 { font-size: var(--fs-md); color: var(--mauve-text); margin-bottom: 0.8rem; }
 #shortcuts table { border-collapse: collapse; margin-bottom: 1rem; }
 #shortcuts td { padding: 0.3rem 0.9rem 0.3rem 0; font-size: var(--fs-md); color: var(--subtext); }
 #shortcuts kbd {
@@ -355,4 +386,15 @@ input[type="range"] { accent-color: var(--mauve); }
   }
   input[type="range"] { min-height: 44px; }
   footer { gap: 0.75rem; }
+}
+
+/* keyboard focus: visible ring on every interactive element, both themes */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--mauve-text);
+  outline-offset: 2px;
 }
