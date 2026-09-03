@@ -66,7 +66,7 @@ branch = one increment.
 
 | # | Item | Why | Size |
 |---|---|---|---|
-| 21 | ☐ **DOM smoke tests** — Playwright (or node+jsdom) script: every page boots, zero console errors, journey unlock round-trips. Run pre-merge. | Current node tests cover algorithms only; every UI branch was hand-verified in Chrome. | M |
+| 21 | ☑ **DOM smoke tests** — Playwright (or node+jsdom) script: every page boots, zero console errors, journey unlock round-trips. Run pre-merge. | Current node tests cover algorithms only; every UI branch was hand-verified in Chrome. | M |
 | 22 | ☐ **Progress export/import** — settings gear: download/upload progress JSON. | Cross-device sync v0 with zero backend. | S |
 | 23 | ☐ **Sync backend (only after 22 hurts)** — smallest possible store (Supabase/KV) keyed by a login-less token; syncs the same JSON. | Real backend only when export/import friction is proven. | L |
 | 24 | ☐ **Spaced-repetition queue** — "you earned the XOR trick 5 days ago — solve Single Number cold?" resurfaces finished problems on a decay schedule; localStorage scheduler. | Retention is the actual goal; one pass teaches, review keeps. | M |

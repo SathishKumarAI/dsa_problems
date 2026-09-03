@@ -23,6 +23,7 @@ Open `index.html` or `python -m http.server`.
 | Correctness checks (`node problems/test_single_number.js`, `test_two_sum.js`) | `problems/test_*.js` |
 | Two-pointers pattern page (shape → converge → chase) | `patterns/two-pointers.js` + `two-pointers.html` + `test_two_pointers.js` |
 | Content-schema check (`node problems/validate.js`) | `problems/validate.js` |
+| DOM smoke tests (`npm test` runs everything; needs `npm i` once) | `problems/test_dom.js` |
 
 Problem pages are learning journeys: a layman story act, then approaches in
 naive→optimal order, each introduced by the insight that fixes the previous

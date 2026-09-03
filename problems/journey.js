@@ -69,6 +69,7 @@ if (typeof document !== "undefined") {
 
   function morphChips(prev, delay) {
     if (document.documentElement.classList.contains("reduce-motion")) return;
+    if (!Element.prototype.animate) return; // no WAAPI (jsdom smoke tests)
     const dur = Math.max(80, Math.min(280, delay * 0.4)); // never outlast the step
     document.querySelectorAll(CHIP_SEL).forEach((el) => {
       const old = prev.get(chipKey(el));
@@ -448,6 +449,7 @@ if (typeof document !== "undefined") {
     localStorage.setItem("xp", Number(localStorage.getItem("xp") || 0) + n);
     paintXP();
     if (document.documentElement.classList.contains("reduce-motion")) return;
+    if (!Element.prototype.animate) return; // no WAAPI (jsdom smoke tests)
     const float = document.createElement("span");
     float.className = "xp-float";
     float.textContent = `+${n} XP`;
