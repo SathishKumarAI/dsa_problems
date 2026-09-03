@@ -23,7 +23,10 @@ Open `index.html` or `python -m http.server`.
 
 Problem pages are learning journeys: a layman story act, then approaches in
 naive→optimal order, each introduced by the insight that fixes the previous
-one's weakness. Edge-case presets include contract-breaking inputs on purpose —
+one's weakness. Approaches unlock progressively — the learner finishes an act,
+clicks "I get it", and only then sees the next approach's name (progress in
+localStorage, key `unlocked:<pathname>`); locked acts render as a "?" node and
+the steps chart never includes them. Edge-case presets include contract-breaking inputs on purpose —
 watching XOR lie on two singles teaches why the problem's promise matters.
 
 Adding a problem = one content file (`problems/<slug>-approaches.js` defining

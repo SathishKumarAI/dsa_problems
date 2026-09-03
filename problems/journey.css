@@ -31,6 +31,17 @@ body.focus #journey { display: none; }
 .jnode.active small { color: var(--crust); }
 .jnode.done b::after { content: " ✓"; color: var(--green); }
 .jnode.active.done b::after { color: var(--crust); }
+.jnode.locked {
+  background: none;
+  border: 1px dashed var(--surface1);
+  border-radius: 6px;
+  color: var(--subtext);
+}
+.jnode.revealed { animation: reveal 0.5s ease; }
+#idea.revealed { animation: reveal 1.2s ease; }
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+}
 
 /* narration is the star of the page — big, stable, right under the data */
 #explain {

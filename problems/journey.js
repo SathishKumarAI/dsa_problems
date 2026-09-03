@@ -199,6 +199,15 @@ if (typeof document !== "undefined") {
     }
   }
 
+  // progressive disclosure: approaches unlock one at a time — the learner
+  // finishes an act, admits they've got it, and only then sees what's next.
+  // Locked acts are invisible (a lone "?" hints at more); names never spoil.
+  const UNLOCK_KEY = "unlocked:" + location.pathname;
+  let unlocked = Math.min(
+    Math.max(Number(localStorage.getItem(UNLOCK_KEY)) || 1, 1),
+    ACT_ORDER.length
+  );
+
   const player = new Player();
   const playBtn = document.getElementById("btn-play");
   const nextBtn = document.getElementById("btn-next");
@@ -215,12 +224,18 @@ if (typeof document !== "undefined") {
   }
 
   function buildJourney() {
-    journeyEl.innerHTML = ACT_ORDER.map((key, i) => {
-      const ap = APPROACHES[key];
-      const arrow = i ? `<span class="jarrow" title="${ap.insight}">→</span>` : "";
-      return `${arrow}<button class="jnode" data-act="${key}"><b>${ap.name}</b><small>${ap.short}</small></button>`;
-    }).join("");
-    journeyEl.querySelectorAll(".jnode").forEach((btn) => {
+    journeyEl.innerHTML =
+      ACT_ORDER.slice(0, unlocked)
+        .map((key, i) => {
+          const ap = APPROACHES[key];
+          const arrow = i ? `<span class="jarrow" title="${ap.insight}">→</span>` : "";
+          return `${arrow}<button class="jnode" data-act="${key}"><b>${ap.name}</b><small>${ap.short}</small></button>`;
+        })
+        .join("") +
+      (unlocked < ACT_ORDER.length
+        ? `<span class="jarrow">→</span><span class="jnode locked" title="finish this act to unlock"><b>?</b><small>locked</small></span>`
+        : "");
+    journeyEl.querySelectorAll("button.jnode").forEach((btn) => {
       btn.onclick = () => setAct(btn.dataset.act);
     });
   }
@@ -228,7 +243,11 @@ if (typeof document !== "undefined") {
   // one bar per approach: steps taken on the CURRENT input. Single measure,
   // single hue; the active act's bar gets the accent. Direct-labeled, no legend.
   function buildChart() {
-    const acts = ACT_ORDER.slice(1); // skip the story act
+    const acts = ACT_ORDER.slice(1, unlocked); // skip the story act; never spoil locked ones
+    if (!acts.length) {
+      chartEl.innerHTML = "";
+      return;
+    }
     const counts = acts.map((k) => {
       let n = 0;
       for (const _ of APPROACHES[k].run(player.data.nums.slice(), ...player.runArgs())) n++;
@@ -325,12 +344,30 @@ if (typeof document !== "undefined") {
   player.onFinish = () => {
     setPlayLabel(false);
     journeyEl.querySelector(`.jnode[data-act="${player.key}"]`)?.classList.add("done");
-    const next = ACT_ORDER[ACT_ORDER.indexOf(player.key) + 1];
-    if (next) {
+    const idx = ACT_ORDER.indexOf(player.key);
+    const next = ACT_ORDER[idx + 1];
+    if (!next) return;
+    if (idx + 1 < unlocked) {
+      // already unlocked on an earlier visit — plain navigation
       nextBtn.textContent = `Next: ${APPROACHES[next].name} ▸`;
       nextBtn.onclick = () => setAct(next);
-      nextBtn.hidden = false;
+    } else {
+      // the reveal moment: no name shown until the learner opts in
+      nextBtn.textContent =
+        idx === 0
+          ? "I understand the problem — try solving it ▸"
+          : "I get it — what's the weakness? ▸";
+      nextBtn.onclick = () => {
+        unlocked = idx + 2;
+        localStorage.setItem(UNLOCK_KEY, unlocked);
+        buildJourney();
+        setAct(next);
+        journeyEl.querySelector(`.jnode[data-act="${next}"]`)?.classList.add("revealed");
+        player.els.idea.classList.add("revealed");
+        setTimeout(() => player.els.idea.classList.remove("revealed"), 1300);
+      };
     }
+    nextBtn.hidden = false;
   };
 
   document.addEventListener("keydown", (e) => {
