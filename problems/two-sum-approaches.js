@@ -193,6 +193,16 @@ const CHALLENGE = {
     { q: "Say the invariant out loud: what exactly does the map contain when you stand at index i?" },
     { q: "Could you re-derive this cold tomorrow, without the reference?" },
   ],
+  // dual test set: small cases prove correctness; this proves (or exposes) scale
+  big: {
+    n: 400,
+    make: () => {
+      const nums = shuffled(distinct(400, 1, 5000));
+      const i = randInt(0, 398);
+      const j = randInt(i + 1, 399);
+      return { nums, target: nums[i] + nums[j], expected: [i, j], anyPair: true };
+    },
+  },
   // scorecard baseline: the one-pass hash, measured with the same access counter
   reference:
     "const seen = new Map();\n" +

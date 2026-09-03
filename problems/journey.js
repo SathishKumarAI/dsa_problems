@@ -189,8 +189,55 @@ function runChallenge() {
       verdict.className = "miss";
     }
     renderScorecard(results, passed);
-    if (passed === results.length) renderSelfReview(code);
+    if (passed === results.length) {
+      renderSelfReview(code);
+      offerBigSet();
+    }
   }, verdict);
+}
+
+// dual test sets (Code Jam mechanic): small n passed — now the same code
+// meets a big input, and the touch counter explodes on screen next to the
+// reference's. Complexity felt, not asserted.
+function offerBigSet() {
+  if (!CHALLENGE.big || document.getElementById("challenge-big")) return;
+  const box = document.createElement("div");
+  box.id = "challenge-big";
+  box.innerHTML = `<button id="big-run">⚡ Set 2: same code, n = ${CHALLENGE.big.n}</button><div id="big-result"></div>`;
+  document.getElementById("challenge-cases").parentNode.appendChild(box);
+  box.querySelector("#big-run").onclick = () => {
+    // read the editor NOW — the learner may have rewritten since the offer
+    const code = document.getElementById("challenge-code").value;
+    const result = box.querySelector("#big-result");
+    result.innerHTML = `<span class="panel-label">running ${CHALLENGE.big.n} elements…</span>`;
+    const bigCase = CHALLENGE.big.make();
+    challengeWorker(
+      { code, cases: [bigCase], reference: CHALLENGE.reference },
+      (data) => {
+        if (data.error) {
+          result.innerHTML = `<span class="miss">syntax error: ${data.error}</span>`;
+          return;
+        }
+        const r = data.results[0];
+        const max = Math.max(r.touches, r.refTouches, 1);
+        const bar = (n, cls) =>
+          `<div class="big-row"><span class="big-label">${cls === "you" ? "your code" : "reference"}</span>
+             <span class="big-bar ${cls}" style="width:${Math.max(1, (n / max) * 100)}%"></span>
+             <span class="big-val">${n.toLocaleString()} touches</span></div>`;
+        const ratio = r.refTouches ? (r.touches / r.refTouches).toFixed(1) : "—";
+        result.innerHTML =
+          `<div class="panel-label">${r.ok ? "still correct" : "✗ wrong on the big input"} at n = ${CHALLENGE.big.n}</div>` +
+          bar(r.touches, "you") +
+          bar(r.refTouches, "ref") +
+          `<p class="big-note">${
+            r.touches > r.refTouches * 5
+              ? `${ratio}× the reference's work — THIS gap is what O-notation was trying to tell you. It only gets worse.`
+              : `within ${ratio}× of the reference — your shape scales. This is what a good complexity feels like.`
+          }</p>`;
+      },
+      result
+    );
+  };
 }
 
 // structured self-review (Exercism's mentor review, automated): after a green

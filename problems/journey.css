@@ -252,6 +252,18 @@ body.focus #journey { display: none; }
 #challenge-verdict.hit { color: var(--green-text); }
 #challenge-verdict.miss { color: var(--red-text); }
 #challenge-cases { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
+/* --- dual test set: the big-input counter comparison --- */
+#challenge-big { margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+#big-run { background: var(--yellow); color: var(--on-yellow); }
+#big-result { width: 100%; max-width: 34rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.big-row { display: flex; align-items: center; gap: 0.5rem; font-size: var(--fs-sm); }
+.big-label { width: 6rem; color: var(--subtext); flex-shrink: 0; }
+.big-bar { height: 12px; border-radius: 0 4px 4px 0; min-width: 2px; }
+.big-bar.you { background: var(--red); }
+.big-bar.ref { background: var(--green); }
+.big-val { color: var(--subtext); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.big-note { font-size: var(--fs-sm); color: var(--text); }
+
 #challenge-review {
   margin-top: 0.4rem;
   padding: 0.7rem 0.9rem;

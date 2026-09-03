@@ -71,6 +71,15 @@ const CHALLENGE = {
     { nums: [2, 2, 5, 9], target: 4, expected: [0, 1], anyPair: true, tag: "equal values" },
     { nums: [1, 2, 4, 8], target: 100, expected: [], tag: "no pair — prove absence" },
   ],
+  big: {
+    n: 500,
+    make: () => {
+      const nums = distinct(500, 1, 9000).sort((a, b) => a - b);
+      const i = randInt(0, 498);
+      const j = randInt(i + 1, 499);
+      return { nums, target: nums[i] + nums[j], expected: [i, j], anyPair: true };
+    },
+  },
   review: [
     { q: "Returns [] when the pointers meet — absence is proven, not assumed", check: (c) => /return\s*\[\]/.test(c) },
     { q: "One loop, no nested scan hiding in the squeeze", check: (c) => (c.match(/\bfor\b|\bwhile\b/g) || []).length <= 1 },

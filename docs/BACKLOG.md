@@ -89,7 +89,7 @@ branch = one increment.
 |---|---|---|---|
 | 32 | ☑ **Graph render kind** — nodes+edges layout, BFS/DFS/shortest-path acts; generators yield `visit`/`frontier`/`relax` frames, render layer is the only new code (engine already algorithm-agnostic). | Graphs are the largest DSA territory the engine can't draw yet. | L |
 | 33 | ☑ **Data-structure explorer pages** (stack + queue shipped; heap/tree explorers tracked as item 36) — per DS (stack, queue, heap, tree, graph): the real-world need first (undo stack, scheduler heap, route graph), then operations animated. | Your stated goal: show the *need* for learning each structure, Khan-style. | L |
-| 34 | ☐ **Dual test sets (Code Jam mechanic)** — learner code runs on small n (passes) then large n (brute force's step counter explodes on screen next to optimal's). | Complexity felt, not asserted; the best weakness-teacher ever designed. | M |
+| 34 | ☑ **Dual test sets (Code Jam mechanic)** — learner code runs on small n (passes) then large n (brute force's step counter explodes on screen next to optimal's). | Complexity felt, not asserted; the best weakness-teacher ever designed. | M |
 | 35 | ☐ **Story challenge mode (Foobar mechanic)** — optional timed challenges reusing earned patterns, wrapped in narrative. | Retrieval practice with stakes; fits the earned-insight arc. | M |
 
 ## Sources
