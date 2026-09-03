@@ -6,6 +6,8 @@ h1 a:hover { text-decoration: underline; }
 
 #subtitle { font-size: 0.8rem; color: var(--subtext); }
 
+#btn-theme { margin-left: auto; }
+
 /* --- learning journey graph --- */
 #journey {
   display: flex;
