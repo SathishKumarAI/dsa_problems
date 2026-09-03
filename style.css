@@ -280,8 +280,23 @@ input[type="range"] { accent-color: var(--mauve); }
   white-space: nowrap;
 }
 
+/* stacked layout: let the page scroll naturally instead of cramming both
+   panels into one viewport; the visualization keeps a workable height */
 @media (max-width: 800px) {
+  body { height: auto; min-height: 100vh; }
   main { flex-direction: column; }
+  #stage { min-width: 0; }
+  #bars { min-height: 45vh; }
   #side { width: 100% !important; }
   #resize-handle { display: none; }
+  #keys { display: none; } /* the ? button matters on desktop; keys don't exist on touch */
+}
+
+/* touch: every interactive target at least 44px tall */
+@media (pointer: coarse) {
+  button, select, #custom, #target-input {
+    min-height: 44px;
+  }
+  input[type="range"] { min-height: 44px; }
+  footer { gap: 0.75rem; }
 }

@@ -106,6 +106,7 @@ body.focus #journey { display: none; }
   flex-direction: column;
   gap: 0.6rem;
 }
+#quiz[hidden], #predict[hidden] { display: none; } /* display:flex would beat [hidden] */
 .quiz-q { font-size: 0.95rem; }
 .quiz-choices { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .quiz-choice { text-align: left; }
@@ -282,6 +283,18 @@ body.focus #journey { display: none; }
 .crow.active .cbar { background: var(--mauve); }
 .crow.active .clabel { color: var(--text); }
 .cval { color: var(--subtext); }
+
+/* stacked (phone) layout: sidebar flows with the page instead of scrolling
+   inside itself; chips grow to comfortable touch size on coarse pointers */
+@media (max-width: 800px) {
+  #side { overflow-y: visible; }
+  #journey { padding-bottom: 0.6rem; }
+}
+@media (pointer: coarse) {
+  .chip { min-width: 2.75rem; height: 2.75rem; }
+  .jnode { padding: 0.6rem 0.9rem; }
+  .quiz-choice { min-height: 44px; }
+}
 
 #resources { font-size: 0.7rem; color: var(--subtext); }
 #resources a { color: var(--blue); text-decoration: none; }
