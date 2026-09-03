@@ -180,9 +180,11 @@ if (typeof document !== "undefined") {
 
     build() {
       this.stop();
+      const frames = [...this.ap.run(this.data.nums.slice(), ...this.runArgs())];
       this.frames = [
-        { line: -1, note: "press play — or step through at your own pace" },
-        ...this.ap.run(this.data.nums.slice(), ...this.runArgs()),
+        // inherit noChips so a need-first story opens on an empty stage
+        { line: -1, noChips: frames[0]?.noChips, note: "press play — or step through at your own pace" },
+        ...frames,
       ];
       this.els.scrub.max = this.frames.length - 1;
       this.els.total.textContent = this.frames.length - 1;

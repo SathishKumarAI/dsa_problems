@@ -25,6 +25,9 @@ function classifyTwoSum(nums, target) {
 // ---------- generators (one frame per step; hold = extra read time) ----------
 
 function* runStory(nums, target) {
+  // the need comes before any data: no chips on screen yet, just the situation
+  yield { hold: 3, noChips: true, note: `Why does this problem exist? You're at a register holding a gift card with exactly ${target} on it. Store rule: the card is use-it-or-lose-it, and you must buy exactly TWO items. Spend it to zero or leave money behind.` };
+  yield { hold: 3, noChips: true, note: `The cashier doesn't want the prices — they want WHICH shelf slots you took, so they can restock them. That tiny detail (positions, not values) will quietly shape every solution you build. Ready? Here's the shelf.` };
   yield { hold: 3, note: `A gift card worth exactly ${target}. The shelf holds ${nums.length} priced items. Buy exactly two items that spend the card to zero — and report WHICH shelf slots they sit in, not their prices.` };
   const pairs = allPairs(nums, target);
   if (pairs.length) {
@@ -287,6 +290,12 @@ const APPROACHES = {
     ],
     run: runStory,
     render(f, els, data) {
+      if (f.noChips) {
+        // need before data: the story opens with an empty stage
+        els.array.innerHTML = "";
+        els.panel.innerHTML = `<div class="story-scene">🎁 → 🛒 → ❓</div>`;
+        return;
+      }
       const focus = new Set(f.pair && !f.answer ? f.pair : []);
       const answer = new Set(f.answer || []);
       els.array.innerHTML = chipRow(data.nums, { focus, answer });
