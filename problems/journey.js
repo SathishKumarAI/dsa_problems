@@ -58,6 +58,7 @@ function chipRow(values, { focus = new Set(), anchor = new Set(), dim = new Set(
 // replay the learner's trace ("your code is the animation").
 let currentData = null;
 let lastTrace = null;
+let challengeAttempts = 0; // this page visit; adaptive difficulty reads it
 
 const CHALLENGE_WORKER_SRC = `onmessage = (e) => {
   const { code, cases, mode, nums, target } = e.data;
@@ -154,6 +155,7 @@ function traceChallenge() {
 }
 
 function runChallenge() {
+  challengeAttempts++;
   const code = document.getElementById("challenge-code").value;
   const verdict = document.getElementById("challenge-verdict");
   const casesEl = document.getElementById("challenge-cases");
@@ -737,6 +739,7 @@ if (typeof document !== "undefined") {
   let hintTier = 0;
   let idleTimer = null;
   let quizWrongs = 0;
+  let pageWrongs = 0; // across every act this visit; adaptive difficulty reads it
 
   function renderHints() {
     const hints = player.ap.hints || [];
@@ -842,6 +845,7 @@ if (typeof document !== "undefined") {
             btn.classList.add("wrong");
             feedback.textContent = q.explain;
             feedback.hidden = false;
+            pageWrongs++;
             if (++quizWrongs >= 2) offerHint(); // struggling — offer the ladder
           }
         };
@@ -901,9 +905,24 @@ if (typeof document !== "undefined") {
   document.addEventListener("act-rebuild", () => player.build());
 
   document.addEventListener("challenge-pass", () => {
-    if (!player.ap._passed) awardXP(25, nextBtn); // first green run only
+    const first = !player.ap._passed;
+    if (first) awardXP(25, nextBtn);
     player.ap._passed = true;
     player.onFinish();
+    // adaptive difficulty (Ropes' harder follow-ups): flawless quizzes + a
+    // first-try green run earns the harder input, offered, never forced
+    if (first && pageWrongs === 0 && challengeAttempts === 1 && PAGE.harder && PAGE.presets[PAGE.harder.preset]) {
+      const up = document.createElement("div");
+      up.id = "adaptive-up";
+      up.innerHTML = `<span>🔥 Flawless — no wrong answers, first-try green.</span>
+        <button id="adaptive-go">${PAGE.harder.label}</button>`;
+      document.getElementById("explain").after(up);
+      up.querySelector("#adaptive-go").onclick = () => {
+        presetEl.value = PAGE.harder.preset;
+        applyPreset();
+        up.remove();
+      };
+    }
   });
 
   document.addEventListener("keydown", (e) => {

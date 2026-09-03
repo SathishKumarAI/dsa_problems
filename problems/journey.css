@@ -378,6 +378,21 @@ select {
 }
 #btn-next { background: var(--mauve); color: var(--on-mauve); }
 
+/* --- adaptive difficulty prompt --- */
+#adaptive-up {
+  margin-top: 0.9rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+  background: color-mix(in srgb, var(--peach) 12%, var(--mantle));
+  border: 1px solid color-mix(in srgb, var(--peach) 40%, var(--surface0));
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: var(--fs-md);
+}
+#adaptive-go { background: var(--peach); color: var(--on-peach); }
+
 /* --- hint ladder --- */
 #hints {
   margin-top: 0.9rem;

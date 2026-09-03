@@ -81,7 +81,7 @@ branch = one increment.
 | 28 | ☑ **Skill scorecard** — after the code challenge: correctness per case, step-efficiency vs reference (we already count steps), edge cases attempted. Shown as growth, stored locally. | Ropes tracks *how* you solve, not just pass/fail; learners deserve the same mirror. | M |
 | 29 | ☑ **Capstone: build the structure itself** — after a pattern's problems: implement the hash map / sorted-array scan in the challenge harness (CodeCrafters model). | Using a structure teaches; implementing it cements. | L |
 | 30 | ☑ **Structured self-review** — post-challenge checklist diffing learner solution against reference ("empty array? early exit?") — Exercism's mentor review, automated. | Review is where the learning consolidates. | S |
-| 31 | ☐ **Adaptive difficulty** — ace the quiz + challenge fast → offer the harder preset/variant next (Ropes' harder follow-ups). | Keeps strong learners out of boredom, weak ones out of despair. | M |
+| 31 | ☑ **Adaptive difficulty** — ace the quiz + challenge fast → offer the harder preset/variant next (Ropes' harder follow-ups). | Keeps strong learners out of boredom, weak ones out of despair. | M |
 
 ## Future content expansion (post-flagship — do NOT start before items 1–8)
 

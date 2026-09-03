@@ -767,6 +767,7 @@ const PAGE = {
     nosolution: { make: () => ({ nums: [1, 2, 5, 11], target: 99 }) },
     multi: { make: () => ({ nums: [1, 4, 2, 3], target: 5 }) },
   },
+  harder: { preset: "big", label: "Take on n = 20 — watch your code scale ▸" },
   classify: (d) => classifyTwoSum(d.nums, d.target),
   describe: (d) => d.nums.join(", "),
   runArgs: (d) => [d.target],

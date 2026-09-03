@@ -305,6 +305,7 @@ const PAGE = {
       info: "No pair reaches 999 — watch Converge PROVE absence in one squeeze instead of trying every pair.",
     },
   },
+  harder: { preset: "nopair", label: "Prove absence: no pair hits the target ▸" },
   classify: () => ({ ok: true }),
   describe: (d) => d.nums.join(", "),
   runArgs: (d) => [d.target],
