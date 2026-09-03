@@ -10,6 +10,7 @@ says otherwise.
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (pick top unchecked P0) |
 | What already shipped, session history | `docs/WORKLOG.md` |
+| Platform research (Ropes, Cosmo, Boot.dev…), why each backlog item | `docs/RESEARCH.md` |
 | Change → file map, how to add a problem/algorithm | `README.md` |
 | Theme, settings gear, sidebar resize, focus mode | `js/ui-prefs.js` |
 | Journey playback + progressive unlock engine | `problems/journey.js` |

@@ -2,6 +2,19 @@
 
 Newest first. One dated entry per working session; what shipped, with PR numbers.
 
+## 2026-09-03 — AI-platform research round (Ropes, Cosmo, Boot.dev, Exercism, CodeCrafters)
+
+- `docs/RESEARCH.md`: per-platform steal/skip analysis. Ropes' assessment
+  mechanics inverted into teaching (hint ladder, skill scorecard, adaptive
+  difficulty); Cosmo validates practice-first gates; CodeCrafters → capstone.
+- Backlog grew items 26–31. Headline innovation: #26 "your code is the
+  animation" — learner's challenge solution instrumented to drive the
+  visualization; no surveyed platform closes that loop.
+- Google Code Jam/Kick Start/Foobar (discontinued 2023) mined for mechanics:
+  dual test sets (small passes, large explodes — complexity felt), story-
+  wrapped challenges. Backlog items 32–35 cover graphs, DS explorer pages,
+  and those mechanics — locked behind flagship completion.
+
 ## 2026-09-03 — research + 25-item backlog, repo CLAUDE.md
 
 - Researched Khan Academy (step diagrams, in-browser coding challenges, quizzes),

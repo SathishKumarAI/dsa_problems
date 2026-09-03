@@ -72,6 +72,26 @@ branch = one increment.
 | 24 | ☐ **Spaced-repetition queue** — "you earned the XOR trick 5 days ago — solve Single Number cold?" resurfaces finished problems on a decay schedule; localStorage scheduler. | Retention is the actual goal; one pass teaches, review keeps. | M |
 | 25 | ☐ **Stall analytics (local)** — log which act/step learners linger or quit on, render in dashboard; no network, no tracking. | Tells you which explanation is failing; data-driven content fixes. | M |
 
+## P0–P2 — AI-platform round (from `docs/RESEARCH.md`)
+
+| # | Item | Why | Size |
+|---|---|---|---|
+| 26 | ☐ `[flagship]` **Your code is the animation** — instrument the learner's code-challenge solution (yield per loop iteration) and drive the chip visualization from *their* execution; watch your own off-by-one walk past the answer. Extends #5's Worker harness. | The learn/implement merge no surveyed platform does; our differentiator. | L |
+| 27 | ☐ **Hint ladder** — stuck detection (no progress N seconds / repeated wrong quiz) offers tiered hints: nudge → concept → pseudocode line. Never the answer (Boot.dev's rule). Static per-act hint arrays in content schema. | Ropes' dynamic-hint mechanic, inverted for learning. | M |
+| 28 | ☐ **Skill scorecard** — after the code challenge: correctness per case, step-efficiency vs reference (we already count steps), edge cases attempted. Shown as growth, stored locally. | Ropes tracks *how* you solve, not just pass/fail; learners deserve the same mirror. | M |
+| 29 | ☐ **Capstone: build the structure itself** — after a pattern's problems: implement the hash map / sorted-array scan in the challenge harness (CodeCrafters model). | Using a structure teaches; implementing it cements. | L |
+| 30 | ☐ **Structured self-review** — post-challenge checklist diffing learner solution against reference ("empty array? early exit?") — Exercism's mentor review, automated. | Review is where the learning consolidates. | S |
+| 31 | ☐ **Adaptive difficulty** — ace the quiz + challenge fast → offer the harder preset/variant next (Ropes' harder follow-ups). | Keeps strong learners out of boredom, weak ones out of despair. | M |
+
+## Future content expansion (post-flagship — do NOT start before items 1–8)
+
+| # | Item | Why | Size |
+|---|---|---|---|
+| 32 | ☐ **Graph render kind** — nodes+edges layout, BFS/DFS/shortest-path acts; generators yield `visit`/`frontier`/`relax` frames, render layer is the only new code (engine already algorithm-agnostic). | Graphs are the largest DSA territory the engine can't draw yet. | L |
+| 33 | ☐ **Data-structure explorer pages** — per DS (stack, queue, heap, tree, graph): the real-world need first (undo stack, scheduler heap, route graph), then operations animated. | Your stated goal: show the *need* for learning each structure, Khan-style. | L |
+| 34 | ☐ **Dual test sets (Code Jam mechanic)** — learner code runs on small n (passes) then large n (brute force's step counter explodes on screen next to optimal's). | Complexity felt, not asserted; the best weakness-teacher ever designed. | M |
+| 35 | ☐ **Story challenge mode (Foobar mechanic)** — optional timed challenges reusing earned patterns, wrapped in narrative. | Retrieval practice with stakes; fits the earned-insight arc. | M |
+
 ## Sources
 
 - [Khan Academy × Dartmouth algorithms course](https://blog.khanacademy.org/algorithms-on-khan-academy-a-collaboration-with-dartmouth-college-professors/) · [teaching approach](https://cs-blog.khanacademy.org/2014/11/teaching-algorithms-on-khan-academy.html)
