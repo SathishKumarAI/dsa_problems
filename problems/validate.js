@@ -7,9 +7,11 @@ const path = require("path");
 
 const FILES = [
   ...fs.readdirSync(__dirname).filter((f) => f.endsWith("-approaches.js")).map((f) => path.join(__dirname, f)),
-  ...fs.readdirSync(path.join(__dirname, "..", "patterns"))
-    .filter((f) => f.endsWith(".js") && !f.startsWith("test_"))
-    .map((f) => path.join(__dirname, "..", "patterns", f)),
+  ...["patterns", "structures"].flatMap((dir) =>
+    fs.readdirSync(path.join(__dirname, "..", dir))
+      .filter((f) => f.endsWith(".js") && !f.startsWith("test_"))
+      .map((f) => path.join(__dirname, "..", dir, f))
+  ),
 ];
 
 // journey.js provides the DOM-free helpers (chipRow, randInt, …) content relies on

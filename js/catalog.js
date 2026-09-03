@@ -31,6 +31,26 @@ const CATALOG = [
     title: "Pattern: XOR",
     sub: "coming after Single Number's machinery is complete",
   },
+  {
+    track: "Structures · why they exist",
+    href: "structures/stack.html",
+    title: "Stack",
+    sub: "the undo button's secret — LIFO, then balanced brackets",
+    acts: 3,
+  },
+  {
+    track: "Structures · why they exist",
+    href: "structures/queue.html",
+    title: "Queue",
+    sub: "fairness encoded — FIFO, then round-robin scheduling",
+    acts: 3,
+  },
+  {
+    track: "Structures · why they exist",
+    ghost: true,
+    title: "Heap · Tree",
+    sub: "the scheduler's favorite and the filesystem's shape — coming next",
+  },
 ];
 
 // progress helpers shared by both pages

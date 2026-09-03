@@ -46,6 +46,12 @@ const PAGES = [
   ["patterns/two-pointers.html", null, (w) => {
     assert(w.document.querySelectorAll("#journey .jnode").length === 2, "pattern fresh journey");
   }],
+  ["structures/stack.html", null, (w) => {
+    assert(w.document.querySelectorAll("#journey .jnode").length === 2, "stack fresh journey");
+  }],
+  ["structures/queue.html", null, (w) => {
+    assert(w.document.querySelectorAll("#journey .jnode").length === 2, "queue fresh journey");
+  }],
 ];
 
 let failures = 0;

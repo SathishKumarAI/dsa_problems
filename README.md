@@ -21,7 +21,8 @@ Open `index.html` or `python -m http.server`.
 | Single Number acts, generators, narrative, presets | `problems/single-number-approaches.js` + `single-number.html` |
 | Two Sum acts, generators, narrative, presets | `problems/two-sum-approaches.js` + `two-sum.html` |
 | Correctness checks (`node problems/test_single_number.js`, `test_two_sum.js`) | `problems/test_*.js` |
-| Two-pointers pattern page (shape → converge → chase) | `patterns/two-pointers.js` + `two-pointers.html` + `test_two_pointers.js` |
+| Two-pointers pattern page (shape → converge → chase → build) | `patterns/two-pointers.js` + `two-pointers.html` + `test_two_pointers.js` |
+| Structure explorers (need → mechanics → application) | `structures/<ds>.js` + `<ds>.html` + `test_structures.js` |
 | Content-schema check (`node problems/validate.js`) | `problems/validate.js` |
 | DOM smoke tests (`npm test` runs everything; needs `npm i` once) | `problems/test_dom.js` |
 

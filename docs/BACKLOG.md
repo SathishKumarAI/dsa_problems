@@ -88,7 +88,7 @@ branch = one increment.
 | # | Item | Why | Size |
 |---|---|---|---|
 | 32 | ☑ **Graph render kind** — nodes+edges layout, BFS/DFS/shortest-path acts; generators yield `visit`/`frontier`/`relax` frames, render layer is the only new code (engine already algorithm-agnostic). | Graphs are the largest DSA territory the engine can't draw yet. | L |
-| 33 | ☐ **Data-structure explorer pages** — per DS (stack, queue, heap, tree, graph): the real-world need first (undo stack, scheduler heap, route graph), then operations animated. | Your stated goal: show the *need* for learning each structure, Khan-style. | L |
+| 33 | ☑ **Data-structure explorer pages** (stack + queue shipped; heap/tree explorers tracked as item 36) — per DS (stack, queue, heap, tree, graph): the real-world need first (undo stack, scheduler heap, route graph), then operations animated. | Your stated goal: show the *need* for learning each structure, Khan-style. | L |
 | 34 | ☐ **Dual test sets (Code Jam mechanic)** — learner code runs on small n (passes) then large n (brute force's step counter explodes on screen next to optimal's). | Complexity felt, not asserted; the best weakness-teacher ever designed. | M |
 | 35 | ☐ **Story challenge mode (Foobar mechanic)** — optional timed challenges reusing earned patterns, wrapped in narrative. | Retrieval practice with stakes; fits the earned-insight arc. | M |
 
@@ -98,3 +98,9 @@ branch = one increment.
 - [Brilliant × ustwo design case study](https://ustwo.com/work/brilliant/) · [Brilliant's Rive animations](https://rive.app/blog/how-brilliant-org-motivates-learners-with-rive-animations)
 - [AlgoMonster roadmap](https://algo.monster/problems/roadmap) · [20 DSA patterns](https://blog.algomaster.io/p/20-dsa-patterns)
 - [Manim (3b1b animation engine)](https://github.com/3b1b/manim)
+
+## Follow-ups discovered while shipping 1–35
+
+| # | Item | Why | Size |
+|---|---|---|---|
+| 36 | ☐ **Heap + tree explorer pages** — same need→mechanics→application arc as stack/queue; heap needs a tree layout in the render. | Item 33 shipped the machinery + stack/queue; these are the next structures. | L |
