@@ -197,6 +197,7 @@ if (typeof document !== "undefined") {
       const prev = snapChips();
       this.ap.render(f, this.els, this.data);
       morphChips(prev, this.delay);
+      if (this.onShow) this.onShow();
       this.els.code.querySelectorAll(".line").forEach((el, k) =>
         el.classList.toggle("active", k === f.line)
       );
@@ -672,11 +673,34 @@ if (typeof document !== "undefined") {
     showStep();
   }
 
-  // startup: land on the story act
+  // deep links: ?act=brute&step=12 — the URL always mirrors the current
+  // moment (debounced replaceState), so any position is shareable. The input
+  // itself isn't encoded: a link restores the act/step on fresh data.
+  let urlTimer;
+  player.onShow = () => {
+    clearTimeout(urlTimer);
+    urlTimer = setTimeout(() => {
+      const u = new URL(location);
+      u.searchParams.set("act", player.key);
+      u.searchParams.set("step", player.pos);
+      history.replaceState(null, "", u);
+    }, 300);
+  };
+
+  // startup: land on the story act — or on the act/step a shared link names,
+  // if that act is already unlocked (links never bypass the earn)
   document.getElementById("resources").innerHTML =
     "same problem elsewhere: " + RESOURCES.map((r) => `<a href="${r.url}" target="_blank" rel="noopener">${r.label}</a>`).join(" · ");
   buildJourney();
   player.setSpeed(Number(speedEl.value));
   applyData(PAGE.presets[presetEl.value].make(), PAGE.presets[presetEl.value].info || "");
-  setAct(ACT_ORDER[0]);
+  const params = new URLSearchParams(location.search);
+  const linkedAct = params.get("act");
+  if (linkedAct && ACT_ORDER.indexOf(linkedAct) > -1 && ACT_ORDER.indexOf(linkedAct) < unlocked) {
+    setAct(linkedAct);
+    const st = Number(params.get("step"));
+    if (st > 0) player.show(st);
+  } else {
+    setAct(ACT_ORDER[0]);
+  }
 }
