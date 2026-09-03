@@ -439,3 +439,17 @@ const PAGE = {
     return nums.length ? { nums } : null;
   },
 };
+
+// ---------- schema v2: one aggregate object per content file ----------
+// validate with: node problems/validate.js
+
+const PROBLEM = {
+  slug: "single-number",
+  title: "Single Number",
+  approaches: APPROACHES,
+  actOrder: ACT_ORDER,
+  resources: RESOURCES,
+  page: PAGE,
+  challenge: null,
+  sample: { nums: [2, 2, 3] },
+};

@@ -769,3 +769,18 @@ const PAGE = {
     document.getElementById("databar").innerHTML = `target = <b>${d.target}</b>`;
   },
 };
+
+// ---------- schema v2: one aggregate object per content file ----------
+// validate with: node problems/validate.js
+
+const PROBLEM = {
+  slug: "two-sum",
+  title: "Two Sum",
+  approaches: APPROACHES,
+  actOrder: ACT_ORDER,
+  resources: RESOURCES,
+  page: PAGE,
+  challenge: CHALLENGE,
+  // DOM-free input the validator drains every generator with
+  sample: { nums: [2, 7, 11, 15], target: 9 },
+};

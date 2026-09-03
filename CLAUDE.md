@@ -32,7 +32,8 @@ says otherwise.
 
 - One backlog item = one `type/scope-slug` branch = one PR, squash-merged; check
   the item off in `docs/BACKLOG.md` **in the same commit** as the work.
-- Verification = `node js/test_sorts.js` + `node problems/test_*.js` **plus** a
+- Verification = `node js/test_sorts.js` + `node problems/test_*.js` +
+  `node problems/validate.js` (content schema) **plus** a
   live browser check of the actual behavior (Chrome devtools MCP; computed
   styles/localStorage round-trips, not code reading). UI has no automated tests
   yet — BACKLOG #21.

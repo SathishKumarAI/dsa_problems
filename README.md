@@ -21,6 +21,7 @@ Open `index.html` or `python -m http.server`.
 | Two Sum acts, generators, narrative, presets | `problems/two-sum-approaches.js` + `two-sum.html` |
 | Correctness checks (`node problems/test_single_number.js`, `test_two_sum.js`) | `problems/test_*.js` |
 | Two-pointers pattern page (shape → converge → chase) | `patterns/two-pointers.js` + `two-pointers.html` + `test_two_pointers.js` |
+| Content-schema check (`node problems/validate.js`) | `problems/validate.js` |
 
 Problem pages are learning journeys: a layman story act, then approaches in
 naive→optimal order, each introduced by the insight that fixes the previous
@@ -31,9 +32,11 @@ the steps chart never includes them. Edge-case presets include contract-breaking
 watching XOR lie on two singles teaches why the problem's promise matters.
 
 Adding a problem = one content file (`problems/<slug>-approaches.js` defining
-APPROACHES / ACT_ORDER / RESOURCES / PAGE) + one html file loading it before
-`journey.js`, + a card in `problems/index.html` and a `test_<slug>.js`.
-Python snippets must match pseudocode line-for-line (highlight sync relies on it).
+APPROACHES / ACT_ORDER / RESOURCES / PAGE plus a PROBLEM aggregate at the end)
++ one html file loading it before `journey.js`, + a card in `problems/index.html`
+and a `test_<slug>.js`. `node problems/validate.js` checks the whole shape —
+required fields, quiz/predict schemas, generators draining on PROBLEM.sample,
+and that every code tab matches pseudocode line-for-line (highlight sync).
 
 Algorithms: bubble, selection, insertion, merge, quick, heap sorts + binary search.
 Each is a generator yielding steps (`compare` / `swap` / `set` / `pivot` / `sorted` /

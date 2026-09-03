@@ -38,7 +38,7 @@ branch = one increment.
 | 5 | ☑ `[flagship]` **In-browser code challenge** — final act: an editable JS function body run in a Web Worker against the same unit cases as `test_two_sum.js`, green/red per case. No backend, no eval in main thread. | Khan's coding challenges are the "prove it" step; watching ≠ writing. | L |
 | 6 | ☑ `[flagship]` **Recap screen** — after the last act: complexity table across approaches, the pattern named + linked (the reveal!), takeaways, "next problem using this pattern". | Closes the loop; the pattern name lands harder after you've earned it. | S |
 | 7 | ☑ `[flagship]` **Story act upgrade: "why this exists"** — open with the real-world need (find two prices that hit a gift-card balance) before any array chips. | Motivation before mechanics; your stated goal — show the *need* for the structure. | S |
-| 8 | ☐ **Content schema v2** — one `PROBLEM` object per content file (acts, quizzes, predicts, pattern refs, resources) + a `node problems/validate.js` that checks shape. | Makes items 1–7 authorable for every future problem, and makes "give Claude a LeetCode URL → page" mechanical. | M |
+| 8 | ☑ **Content schema v2** — one `PROBLEM` object per content file (acts, quizzes, predicts, pattern refs, resources) + a `node problems/validate.js` that checks shape. | Makes items 1–7 authorable for every future problem, and makes "give Claude a LeetCode URL → page" mechanical. | M |
 
 ## P1 — flow & UX
 

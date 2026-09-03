@@ -229,3 +229,18 @@ const PAGE = {
     document.getElementById("databar").innerHTML = `sorted input · target = <b>${d.target}</b>`;
   },
 };
+
+// ---------- schema v2: one aggregate object per content file ----------
+// validate with: node problems/validate.js
+
+const PROBLEM = {
+  slug: "two-pointers",
+  title: "Pattern: Two Pointers",
+  kind: "pattern",
+  approaches: APPROACHES,
+  actOrder: ACT_ORDER,
+  resources: RESOURCES,
+  page: PAGE,
+  challenge: null,
+  sample: { nums: [1, 3, 6, 9], target: 10 },
+};
