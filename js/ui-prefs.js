@@ -1,29 +1,78 @@
-// Shared UI preferences (all pages). Owns: theme choice + #btn-theme wiring,
-// sidebar resize handle + width persistence, focus mode (#btn-focus / f / Esc).
-// Not: any visualizer/playback state. Load in <head> so the theme attribute
-// is set before first paint — no dark→light flash.
+// Shared UI preferences (all pages). Owns: theme + reduce-motion + default
+// speed (settings gear, injected into the header), sidebar resize handle +
+// width persistence, focus mode (#btn-focus / f / Esc). Not: any
+// visualizer/playback state. Load in <head> so theme/motion attributes are
+// set before first paint — no dark→light flash.
 (() => {
-  const saved = localStorage.getItem("theme");
   const theme =
-    saved || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    localStorage.getItem("theme") ||
+    (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
   document.documentElement.dataset.theme = theme;
 
-  function paint(btn) {
-    const light = document.documentElement.dataset.theme === "light";
-    btn.textContent = light ? "🌙" : "☀";
-    btn.title = light ? "switch to dark theme" : "switch to light theme";
+  const savedMotion = localStorage.getItem("reduceMotion");
+  if (
+    savedMotion === "1" ||
+    (savedMotion === null && matchMedia("(prefers-reduced-motion: reduce)").matches)
+  ) {
+    document.documentElement.classList.add("reduce-motion");
   }
 
+  // settings gear: appended to <header>, native <details> handles open/close
   document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("btn-theme");
-    if (!btn) return;
-    paint(btn);
-    btn.onclick = () => {
-      const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-      document.documentElement.dataset.theme = next;
-      localStorage.setItem("theme", next);
-      paint(btn);
+    const header = document.querySelector("header");
+    if (!header) return;
+    const speedEl = document.getElementById("speed");
+
+    const details = document.createElement("details");
+    details.id = "settings";
+    details.innerHTML =
+      `<summary title="settings" aria-label="settings">⚙</summary>
+       <div id="settings-panel">
+         <label>theme
+           <select id="set-theme">
+             <option value="dark">dark</option>
+             <option value="light">light</option>
+           </select>
+         </label>
+         ${speedEl ? `<label>default speed <input id="set-speed" type="range" min="1" max="100"></label>` : ""}
+         <label><input type="checkbox" id="set-motion"> reduce motion</label>
+       </div>`;
+    header.appendChild(details);
+
+    const themeSel = details.querySelector("#set-theme");
+    themeSel.value = document.documentElement.dataset.theme;
+    themeSel.onchange = () => {
+      document.documentElement.dataset.theme = themeSel.value;
+      localStorage.setItem("theme", themeSel.value);
     };
+
+    const motionEl = details.querySelector("#set-motion");
+    motionEl.checked = document.documentElement.classList.contains("reduce-motion");
+    motionEl.onchange = () => {
+      document.documentElement.classList.toggle("reduce-motion", motionEl.checked);
+      localStorage.setItem("reduceMotion", motionEl.checked ? "1" : "0");
+    };
+
+    if (speedEl) {
+      const saved = Number(localStorage.getItem("speed"));
+      if (saved) {
+        speedEl.value = saved;
+        // main.js/journey.js assigned oninput before DOMContentLoaded fires,
+        // so this event applies the saved speed to the player
+        speedEl.dispatchEvent(new Event("input"));
+      }
+      const setSpeed = details.querySelector("#set-speed");
+      setSpeed.value = speedEl.value;
+      setSpeed.oninput = () => {
+        speedEl.value = setSpeed.value;
+        speedEl.dispatchEvent(new Event("input"));
+        localStorage.setItem("speed", setSpeed.value);
+      };
+      speedEl.addEventListener("input", () => {
+        setSpeed.value = speedEl.value;
+        localStorage.setItem("speed", speedEl.value);
+      });
+    }
   });
 
   // sidebar resize: drag handle inserted before #side, width saved per page
