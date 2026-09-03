@@ -151,7 +151,95 @@ function* runTwoPassHash(nums, target) {
 
 // ---------- the acts, in learning order ----------
 
-const ACT_ORDER = ["story", "brute", "twoptr", "twopass", "hash"];
+const ACT_ORDER = ["story", "brute", "twoptr", "twopass", "hash", "challenge"];
+
+// ---------- code challenge (Khan-style "prove it"): runs in a Web Worker ----------
+
+const CHALLENGE = {
+  starter: "// nums and target are in scope — return the two indices\nconst seen = new Map();\n\n",
+  // same cases as test_two_sum.js; expected pre-sorted for comparison
+  cases: [
+    { nums: [2, 7, 11, 15], target: 9, expected: [0, 1] },
+    { nums: [3, 2, 4], target: 6, expected: [1, 2] },
+    { nums: [3, 3], target: 6, expected: [0, 1] },
+    { nums: [5, 75, 25], target: 100, expected: [1, 2] },
+    { nums: [3, 1, 3, 8], target: 6, expected: [0, 2] },
+    { nums: [1, 9, 4, 6, 30], target: 31, expected: [0, 4] },
+  ],
+};
+
+function renderChallengeUI(panel) {
+  if (document.getElementById("challenge-box")) return;
+  panel.innerHTML = `<div id="challenge-box">
+    <div class="challenge-sig">function twoSum(nums, target) {</div>
+    <textarea id="challenge-code" rows="9" spellcheck="false" aria-label="your solution">${CHALLENGE.starter}</textarea>
+    <div class="challenge-sig">}</div>
+    <div class="challenge-controls">
+      <button id="challenge-run">▶ Run tests</button>
+      <span id="challenge-verdict"></span>
+    </div>
+    <div id="challenge-cases"></div>
+  </div>`;
+  document.getElementById("challenge-run").onclick = runChallenge;
+}
+
+function runChallenge() {
+  const code = document.getElementById("challenge-code").value;
+  const verdict = document.getElementById("challenge-verdict");
+  const casesEl = document.getElementById("challenge-cases");
+  verdict.textContent = "running…";
+  // the learner's code runs in a Worker: main thread stays responsive and
+  // eval-free; an infinite loop just gets its worker terminated
+  const src = `onmessage = (e) => {
+    const { code, cases } = e.data;
+    let fn;
+    try { fn = new Function("nums", "target", code); }
+    catch (err) { postMessage({ error: String(err.message) }); return; }
+    postMessage({ results: cases.map((c) => {
+      try {
+        const got = fn(c.nums.slice(), c.target);
+        const ok = Array.isArray(got) && got.length === 2 &&
+          [...got].sort((a, b) => a - b).join() === c.expected.join();
+        return { ok, got: JSON.stringify(got) };
+      } catch (err) { return { ok: false, got: String(err.message) }; }
+    }) });
+  };`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  const timer = setTimeout(() => {
+    w.terminate();
+    verdict.textContent = "⏱ timed out — infinite loop?";
+    verdict.className = "miss";
+  }, 3000);
+  w.onmessage = (e) => {
+    clearTimeout(timer);
+    w.terminate();
+    if (e.data.error) {
+      verdict.textContent = "syntax error: " + e.data.error;
+      verdict.className = "miss";
+      casesEl.innerHTML = "";
+      return;
+    }
+    const results = e.data.results;
+    casesEl.innerHTML = results
+      .map((r, i) => {
+        const c = CHALLENGE.cases[i];
+        return `<div class="challenge-case ${r.ok ? "pass" : "fail"}">
+          ${r.ok ? "✓" : "✗"} twoSum([${c.nums}], ${c.target}) → ${r.got}${r.ok ? "" : ` <small>want [${c.expected}]</small>`}
+        </div>`;
+      })
+      .join("");
+    const passed = results.filter((r) => r.ok).length;
+    if (passed === results.length) {
+      verdict.textContent = `all ${passed} cases pass — you wrote it 🎉`;
+      verdict.className = "hit";
+      document.dispatchEvent(new CustomEvent("challenge-pass"));
+    } else {
+      verdict.textContent = `${passed}/${results.length} passing`;
+      verdict.className = "miss";
+    }
+  };
+  w.postMessage({ code, cases: CHALLENGE.cases });
+}
 
 const RESOURCES = [
   { label: "LeetCode 1", url: "https://leetcode.com/problems/two-sum/" },
@@ -536,6 +624,37 @@ const APPROACHES = {
           ? `<div class="sum-eq">need <b class="${f.hit ? "hit" : "miss"}">${f.need}</b><span class="target-note">${data.target} − ${nums[f.i]}</span></div>`
           : "";
       els.panel.innerHTML = `<div class="panel-label">seen (value @ index)</div><div class="map-row">${chips}</div>` + needLine;
+    },
+  },
+
+  challenge: {
+    name: "Code It",
+    short: "prove it",
+    complexity: "your turn — all 6 cases must pass",
+    insight: "Watching is not writing. The pattern is yours when your fingers can produce it.",
+    idea: "Write the body of <b>twoSum(nums, target)</b> in the editor under the array. Your code runs in a sandboxed Worker against the same cases the site's own tests use — including the equal-values trap and the answer-at-the-extremes input. Any working approach passes; the one-pass map is the one to reach for.",
+    pseudocode: [
+      "seen = empty map (value → index)",
+      "for i, x in nums:",
+      "  need = target - x",
+      "  if need in seen: return [seen[need], i]",
+      "  seen[x] = i",
+    ],
+    python: null,
+    takeaways: [
+      "reproduce the shape from memory — peeking at the reference is allowed, twice is a signal",
+      "your solution may be brute force; watch it pass and ask what n would break it",
+      "the duplicates case [3,1,3,8] is where check-before-store proves itself",
+    ],
+    gate: "pass",
+    chart: false,
+    quiz: null,
+    run: function* () {
+      yield { hold: 2, line: -1, note: "write the function body in the editor below, hit Run tests, make every case green" };
+    },
+    render(f, els, data) {
+      els.array.innerHTML = chipRow(data.nums);
+      renderChallengeUI(els.panel);
     },
   },
 };

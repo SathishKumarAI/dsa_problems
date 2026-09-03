@@ -134,6 +134,32 @@ body.focus #journey { display: none; }
 .map-chip.scan { background: var(--yellow); color: var(--crust); }
 .map-chip.answer { background: var(--green); color: var(--crust); }
 
+/* --- code challenge editor --- */
+#challenge-box { display: flex; flex-direction: column; gap: 0.4rem; max-width: 44rem; }
+.challenge-sig { font-family: ui-monospace, monospace; font-size: 0.85rem; color: var(--subtext); }
+#challenge-code {
+  background: var(--mantle);
+  color: var(--text);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+  tab-size: 2;
+}
+#challenge-code:focus { outline: 2px solid var(--mauve); }
+.challenge-controls { display: flex; gap: 0.8rem; align-items: center; }
+#challenge-run { background: var(--green); color: var(--crust); }
+#challenge-verdict { font-size: 0.85rem; }
+#challenge-verdict.hit { color: var(--green); }
+#challenge-verdict.miss { color: var(--red); }
+#challenge-cases { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-monospace, monospace; font-size: 0.8rem; }
+.challenge-case.pass { color: var(--green); }
+.challenge-case.fail { color: var(--red); }
+.challenge-case small { color: var(--subtext); }
+
 .bits { display: flex; gap: 0.3rem; align-items: center; }
 .bits .tag { width: 3.5rem; color: var(--subtext); font-size: 0.8rem; }
 .bits .dec { margin-left: 0.6rem; color: var(--subtext); font-size: 0.85rem; }

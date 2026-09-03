@@ -311,7 +311,8 @@ if (typeof document !== "undefined") {
   // one bar per approach: steps taken on the CURRENT input. Single measure,
   // single hue; the active act's bar gets the accent. Direct-labeled, no legend.
   function buildChart() {
-    const acts = ACT_ORDER.slice(1, unlocked); // skip the story act; never spoil locked ones
+    const acts = ACT_ORDER.slice(1, unlocked) // skip the story act; never spoil locked ones
+      .filter((k) => APPROACHES[k].chart !== false); // challenge/recap acts aren't algorithms
     if (!acts.length) {
       chartEl.innerHTML = "";
       return;
@@ -498,6 +499,9 @@ if (typeof document !== "undefined") {
 
   player.onFinish = () => {
     setPlayLabel(false);
+    // acts with gate:"pass" (code challenge) unlock on green tests, not on
+    // reaching the last frame; content dispatches "challenge-pass" when done
+    if (player.ap.gate === "pass" && !player.ap._passed) return;
     journeyEl.querySelector(`.jnode[data-act="${player.key}"]`)?.classList.add("done");
     const idx = ACT_ORDER.indexOf(player.key);
     const next = ACT_ORDER[idx + 1];
@@ -531,8 +535,13 @@ if (typeof document !== "undefined") {
     }
   };
 
+  document.addEventListener("challenge-pass", () => {
+    player.ap._passed = true;
+    player.onFinish();
+  });
+
   document.addEventListener("keydown", (e) => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+    if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
     if (e.key === " ") {
       e.preventDefault();
       playBtn.onclick();

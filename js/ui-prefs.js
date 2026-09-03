@@ -123,7 +123,7 @@
     };
     btn.onclick = () => toggle();
     document.addEventListener("keydown", (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+      if (["INPUT", "SELECT", "TEXTAREA"].includes(e.target.tagName)) return;
       if (e.key === "f") toggle();
       else if (e.key === "Escape") toggle(false);
     });
