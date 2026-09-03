@@ -151,7 +151,7 @@ function* runTwoPassHash(nums, target) {
 
 // ---------- the acts, in learning order ----------
 
-const ACT_ORDER = ["story", "brute", "twoptr", "twopass", "hash", "challenge"];
+const ACT_ORDER = ["story", "brute", "twoptr", "twopass", "hash", "challenge", "recap"];
 
 // ---------- code challenge (Khan-style "prove it"): runs in a Web Worker ----------
 
@@ -649,12 +649,58 @@ const APPROACHES = {
     gate: "pass",
     chart: false,
     quiz: null,
+    nextLabel: "It's green — show me what I earned ▸",
     run: function* () {
       yield { hold: 2, line: -1, note: "write the function body in the editor below, hit Run tests, make every case green" };
     },
     render(f, els, data) {
       els.array.innerHTML = chipRow(data.nums);
       renderChallengeUI(els.panel);
+    },
+  },
+
+  recap: {
+    name: "The Reveal",
+    short: "what you earned",
+    complexity: "journey complete 🏁",
+    insight: "The ideas you fought for have names — now they're yours to reuse.",
+    idea: "You didn't learn \"Two Sum\". You earned two reusable weapons: the <b>two-pointers</b> squeeze (order lets one comparison eliminate many candidates) and the <b>hash-map complement lookup</b> (\"have I seen what I need?\") — THE most common interview pattern. Names last longer when they arrive after the struggle.",
+    pseudocode: [
+      "what transfers to the next problem:",
+      "  1. always know the brute force",
+      "  2. name its weakness out loud",
+      "  3. ask: does order help? (two pointers)",
+      "  4. ask: does memory help? (hash map)",
+      "  5. return-what-exactly? read the contract",
+    ],
+    python: null,
+    takeaways: [
+      "brute force is the baseline, not a failure — every trick is measured against it",
+      "two pointers buys speed with ORDER; the hash map buys it with MEMORY",
+      "you wrote the interview answer yourself — that's the part that sticks",
+    ],
+    chart: false,
+    run: function* (nums) {
+      yield { hold: 3, note: "the squeeze you learned in act 3 has a name: TWO POINTERS. The complement lookup from acts 4–5: the HASH MAP pattern. You earned both — here's the scorecard." };
+    },
+    render(f, els, data) {
+      els.array.innerHTML = chipRow(data.nums, { answer: new Set(data.nums.map((_, i) => i)) });
+      const rows = ["brute", "twoptr", "twopass", "hash"]
+        .map((k) => {
+          const a = APPROACHES[k];
+          return `<tr><td>${a.name}</td><td>${a.complexity}</td><td>${a.insight}</td></tr>`;
+        })
+        .join("");
+      els.panel.innerHTML = `
+        <div class="panel-label">the journey, side by side</div>
+        <table class="recap-table">
+          <tr><th>approach</th><th>cost</th><th>the insight that got you there</th></tr>
+          ${rows}
+        </table>
+        <div class="recap-links">
+          <a class="recap-link" href="../patterns/two-pointers.html"><b>⤴ Study the pattern: Two Pointers</b><br><small>the shape on its own — converge and chase, beyond this problem</small></a>
+          <a class="recap-link" href="single-number.html"><b>Next problem: Single Number ▸</b><br><small>a different superpower — can you beat the hash map's memory bill?</small></a>
+        </div>`;
     },
   },
 };

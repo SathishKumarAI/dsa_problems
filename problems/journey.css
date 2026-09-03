@@ -134,6 +134,31 @@ body.focus #journey { display: none; }
 .map-chip.scan { background: var(--yellow); color: var(--crust); }
 .map-chip.answer { background: var(--green); color: var(--crust); }
 
+/* --- recap screen --- */
+.recap-table { border-collapse: collapse; font-size: 0.82rem; max-width: 46rem; }
+.recap-table th, .recap-table td {
+  text-align: left;
+  padding: 0.45rem 0.8rem;
+  border-bottom: 1px solid var(--surface0);
+  vertical-align: top;
+}
+.recap-table th { color: var(--subtext); font-weight: normal; font-size: 0.72rem; }
+.recap-table td:first-child { color: var(--mauve); white-space: nowrap; }
+.recap-table td:nth-child(2) { white-space: nowrap; color: var(--peach); }
+.recap-links { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.recap-link {
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  max-width: 20rem;
+}
+.recap-link:hover { background: var(--surface0); }
+.recap-link b { color: var(--mauve); }
+.recap-link small { color: var(--subtext); }
+
 /* --- code challenge editor --- */
 #challenge-box { display: flex; flex-direction: column; gap: 0.4rem; max-width: 44rem; }
 .challenge-sig { font-family: ui-monospace, monospace; font-size: 0.85rem; color: var(--subtext); }

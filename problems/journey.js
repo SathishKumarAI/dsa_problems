@@ -515,9 +515,10 @@ if (typeof document !== "undefined") {
       // the reveal moment: quiz first (if the act has one), then the opt-in
       const reveal = () => {
         nextBtn.textContent =
-          idx === 0
+          player.ap.nextLabel ||
+          (idx === 0
             ? "I understand the problem — try solving it ▸"
-            : "I get it — what's the weakness? ▸";
+            : "I get it — what's the weakness? ▸");
         nextBtn.onclick = () => {
           unlocked = idx + 2;
           localStorage.setItem(UNLOCK_KEY, unlocked);
