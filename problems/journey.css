@@ -8,6 +8,17 @@ h1 a:hover { text-decoration: underline; }
 
 #settings { margin-left: auto; }
 
+#xp-badge { font-size: 0.78rem; color: var(--yellow); white-space: nowrap; }
+.xp-float {
+  position: fixed;
+  z-index: 20;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--yellow);
+  pointer-events: none;
+  opacity: 0;
+}
+
 body.focus #journey { display: none; }
 
 /* --- learning journey graph --- */

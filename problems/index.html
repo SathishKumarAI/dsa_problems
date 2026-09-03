@@ -105,6 +105,7 @@ while (days.has(d.toISOString().slice(0, 10))) {
 }
 
 document.getElementById("dashboard").innerHTML = [
+  [`★ ${Number(localStorage.getItem("xp") || 0)}`, "XP earned"],
   [streak, streak === 1 ? "day streak" : "day streak 🔥"],
   [actsDone, "acts completed"],
   [quizzesPassed, "quizzes passed"],

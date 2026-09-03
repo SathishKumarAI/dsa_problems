@@ -433,6 +433,43 @@ if (typeof document !== "undefined") {
   }
   recordActivity(); // opening a journey page counts as showing up
 
+  // XP + celebration (Brilliant-style, kept tasteful): a header badge and a
+  // floating "+n XP" burst on earn; reduce-motion gets the number, no motion
+  const xpBadge = document.createElement("span");
+  xpBadge.id = "xp-badge";
+  const paintXP = () => {
+    xpBadge.textContent = `★ ${Number(localStorage.getItem("xp") || 0)} XP`;
+  };
+  paintXP();
+  document.querySelector("header")?.appendChild(xpBadge);
+
+  function awardXP(n, anchor) {
+    localStorage.setItem("xp", Number(localStorage.getItem("xp") || 0) + n);
+    paintXP();
+    if (document.documentElement.classList.contains("reduce-motion")) return;
+    const float = document.createElement("span");
+    float.className = "xp-float";
+    float.textContent = `+${n} XP`;
+    const r = (anchor || xpBadge).getBoundingClientRect();
+    float.style.left = r.left + r.width / 2 + "px";
+    float.style.top = r.top + "px";
+    document.body.appendChild(float);
+    float
+      .animate(
+        [
+          { opacity: 0, transform: "translate(-50%, 0) scale(0.7)" },
+          { opacity: 1, transform: "translate(-50%, -1.2rem) scale(1.1)", offset: 0.3 },
+          { opacity: 0, transform: "translate(-50%, -2.6rem) scale(1)" },
+        ],
+        { duration: 1100, easing: "ease-out" }
+      )
+      .finished.then(() => float.remove());
+    xpBadge.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.25)" }, { transform: "scale(1)" }],
+      { duration: 400, easing: "ease-out" }
+    );
+  }
+
   // quiz gate (Khan/AlgoMonster style): before the unlock button appears the
   // learner answers the act's check questions. Wrong answer → explanation,
   // retry; no penalty, but no skipping. Injected div — pages need no markup.
@@ -539,6 +576,7 @@ if (typeof document !== "undefined") {
         nextBtn.onclick = () => {
           unlocked = idx + 2;
           localStorage.setItem(UNLOCK_KEY, unlocked);
+          awardXP(10, nextBtn);
           buildJourney();
           setAct(next);
           journeyEl.querySelector(`.jnode[data-act="${next}"]`)?.classList.add("revealed");
@@ -551,6 +589,7 @@ if (typeof document !== "undefined") {
       if (quiz && quiz.length && quizEl.hidden) {
         showQuiz(quiz, () => {
           recordQuizPass(player.key);
+          awardXP(5, quizEl);
           reveal();
         });
       } else if (!quiz || !quiz.length) reveal();
@@ -558,6 +597,7 @@ if (typeof document !== "undefined") {
   };
 
   document.addEventListener("challenge-pass", () => {
+    if (!player.ap._passed) awardXP(25, nextBtn); // first green run only
     player.ap._passed = true;
     player.onFinish();
   });
