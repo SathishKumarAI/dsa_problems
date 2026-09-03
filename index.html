@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Visualizer — Sorting</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Sorting Visualizer</h1>
+  <nav id="algo-tabs">
+    <button data-algo="bubble" class="active">Bubble</button>
+    <button data-algo="selection">Selection</button>
+    <button data-algo="insertion">Insertion</button>
+    <button data-algo="merge">Merge</button>
+    <button data-algo="quick">Quick</button>
+    <button data-algo="heap">Heap</button>
+    <button data-algo="binary">Binary Search</button>
+  </nav>
+</header>
+
+<main>
+  <section id="stage">
+    <div id="bars" aria-label="array visualization"></div>
+    <input id="scrub" type="range" min="0" max="0" value="0" aria-label="timeline">
+    <div id="status">
+      <span>step <b id="stat-step">0</b>/<b id="stat-total">0</b></span>
+      <span>comparisons: <b id="stat-comparisons">0</b></span>
+      <span>swaps: <b id="stat-swaps">0</b></span>
+      <span id="complexity"></span>
+    </div>
+  </section>
+
+  <aside id="side">
+    <pre id="pseudocode" aria-label="pseudocode"></pre>
+    <p id="explain"></p>
+    <div id="legend" aria-label="color legend">
+      <span><i class="sw compare"></i>comparing</span>
+      <span><i class="sw swap"></i>writing/swapping</span>
+      <span><i class="sw pivot"></i>pivot / range</span>
+      <span><i class="sw sorted"></i>in place / found</span>
+      <span><i class="sw discard"></i>eliminated</span>
+    </div>
+  </aside>
+</main>
+
+<footer id="controls">
+  <div class="group">
+    <button id="btn-random">Random</button>
+    <button id="btn-nearly">Nearly sorted</button>
+    <button id="btn-reversed">Reversed</button>
+    <button id="btn-few">Few unique</button>
+  </div>
+  <div class="group">
+    <label>size <input id="size" type="range" min="5" max="60" value="25"></label>
+    <label>speed <input id="speed" type="range" min="1" max="100" value="50"></label>
+    <label id="target-wrap" hidden>target <input id="target" type="number" min="0" max="120" value="50"></label>
+  </div>
+  <div class="group">
+    <button id="btn-play">▶ Play</button>
+    <button id="btn-back" title="step back (←)">◀ Step</button>
+    <button id="btn-step" title="step forward (→)">Step ▶</button>
+    <button id="btn-reset">Reset</button>
+  </div>
+  <span id="keys">space play · ←/→ step · r reset · drag timeline to scrub</span>
+</footer>
+
+<script src="js/algorithms.js"></script>
+<script src="js/visualizer.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

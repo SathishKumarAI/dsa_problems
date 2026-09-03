@@ -1,0 +1,194 @@
+/* All visuals live here. Catppuccin Mocha palette. */
+:root {
+  --base: #1e1e2e;
+  --mantle: #181825;
+  --crust: #11111b;
+  --surface0: #313244;
+  --surface1: #45475a;
+  --text: #cdd6f4;
+  --subtext: #a6adc8;
+  --mauve: #cba6f7;
+  --blue: #89b4fa;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --peach: #fab387;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--base);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--mantle);
+}
+
+h1 { font-size: 1.1rem; color: var(--mauve); }
+
+#algo-tabs { display: flex; gap: 0.25rem; }
+
+button {
+  background: var(--surface0);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+button:hover { background: var(--surface1); }
+#algo-tabs button.active { background: var(--mauve); color: var(--crust); }
+
+main {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  min-height: 0;
+}
+
+#stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.bar {
+  flex: 1;
+  background: var(--blue);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  transition: height 0.1s;
+}
+.bar span {
+  position: absolute;
+  top: -1.2rem;
+  width: 100%;
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--subtext);
+}
+.bar.compare { background: var(--yellow); }
+.bar.swap    { background: var(--red); }
+.bar.pivot   { background: var(--peach); }
+.bar.sorted  { background: var(--green); }
+.bar.discard { background: var(--surface0); }
+.bar.discard span { color: var(--surface1); }
+
+#scrub {
+  width: 100%;
+  margin-top: 0.5rem;
+  accent-color: var(--mauve);
+  cursor: pointer;
+}
+
+#status {
+  display: flex;
+  gap: 2rem;
+  padding-top: 0.75rem;
+  color: var(--subtext);
+  font-size: 0.85rem;
+}
+#status b { color: var(--text); }
+#complexity { margin-left: auto; color: var(--peach); }
+
+#side {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+#pseudocode {
+  background: var(--mantle);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  overflow: auto;
+}
+#pseudocode .line.active {
+  background: var(--surface1);
+  border-radius: 4px;
+}
+#pseudocode .line { display: block; padding: 0 0.4rem; white-space: pre; }
+
+#explain {
+  font-size: 0.8rem;
+  color: var(--subtext);
+  min-height: 3em;
+}
+
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.75rem;
+  color: var(--subtext);
+  margin-top: auto;
+}
+#legend span { display: flex; align-items: center; gap: 0.35rem; }
+#legend .sw {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  display: inline-block;
+}
+#legend .compare { background: var(--yellow); }
+#legend .swap    { background: var(--red); }
+#legend .pivot   { background: var(--peach); }
+#legend .sorted  { background: var(--green); }
+#legend .discard { background: var(--surface0); }
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: var(--mantle);
+}
+
+.group { display: flex; gap: 0.5rem; align-items: center; }
+
+label {
+  font-size: 0.8rem;
+  color: var(--subtext);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+input[type="range"] { accent-color: var(--mauve); }
+
+#btn-play { background: var(--green); color: var(--crust); min-width: 5.5rem; }
+#btn-play.playing { background: var(--yellow); }
+
+#target { width: 4rem; background: var(--surface0); color: var(--text); border: none; border-radius: 6px; padding: 0.3rem 0.4rem; }
+
+#keys { margin-left: auto; font-size: 0.7rem; color: var(--surface1); }
+
+@media (max-width: 800px) {
+  main { flex-direction: column; }
+  #side { width: 100%; }
+}
