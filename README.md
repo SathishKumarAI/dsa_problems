@@ -20,6 +20,7 @@ Open `index.html` or `python -m http.server`.
 | Single Number acts, generators, narrative, presets | `problems/single-number-approaches.js` + `single-number.html` |
 | Two Sum acts, generators, narrative, presets | `problems/two-sum-approaches.js` + `two-sum.html` |
 | Correctness checks (`node problems/test_single_number.js`, `test_two_sum.js`) | `problems/test_*.js` |
+| Two-pointers pattern page (shape → converge → chase) | `patterns/two-pointers.js` + `two-pointers.html` + `test_two_pointers.js` |
 
 Problem pages are learning journeys: a layman story act, then approaches in
 naive→optimal order, each introduced by the insight that fixes the previous
