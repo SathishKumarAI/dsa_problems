@@ -18,17 +18,17 @@ function SumEq({
 }) {
   if (need) {
     return (
-      <div className="flex items-baseline justify-center gap-3 font-mono text-lg">
+      <div className="flex items-baseline justify-center gap-3 font-mono text-2xl">
         <span className="text-muted-foreground">need</span>
         <b
           className={cn(
-            "text-2xl",
+            "text-4xl",
             need.hit ? "text-chart-3" : "text-foreground"
           )}
         >
           {need.need}
         </b>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-sm text-muted-foreground">
           {need.target} − {need.x}
         </span>
       </div>
@@ -37,15 +37,15 @@ function SumEq({
   if (!eq) return null
   const ok = eq.sum === eq.target
   return (
-    <div className="flex items-baseline justify-center gap-2 font-mono text-lg">
+    <div className="flex items-baseline justify-center gap-2 font-mono text-2xl">
       <span>{eq.a}</span>
       <span className="text-muted-foreground">+</span>
       <span>{eq.b}</span>
       <span className="text-muted-foreground">=</span>
-      <b className={cn("text-2xl", ok ? "text-chart-3" : "text-chart-5")}>
+      <b className={cn("text-4xl", ok ? "text-chart-3" : "text-chart-5")}>
         {eq.sum}
       </b>
-      <span className="ml-2 text-xs text-muted-foreground">
+      <span className="ml-2 text-sm text-muted-foreground">
         target {eq.target}
       </span>
     </div>
@@ -61,7 +61,7 @@ function BitRow({ row }: { row: BitRowModel }) {
       <span
         key={b}
         className={cn(
-          "flex size-7 items-center justify-center rounded border font-mono text-sm tabular-nums transition-colors",
+          "flex size-9 items-center justify-center rounded border font-mono text-base tabular-nums transition-colors",
           on
             ? "border-chart-2 bg-chart-2/20 text-chart-2"
             : "border-border/60 text-muted-foreground/50",
@@ -74,11 +74,11 @@ function BitRow({ row }: { row: BitRowModel }) {
   }
   return (
     <div className="flex items-center gap-1.5">
-      <span className="w-8 font-mono text-xs text-muted-foreground">
+      <span className="w-10 font-mono text-sm text-muted-foreground">
         {row.tag}
       </span>
       {cells}
-      <span className="ml-2 font-mono text-sm tabular-nums">= {row.value}</span>
+      <span className="ml-2 font-mono text-base tabular-nums">= {row.value}</span>
     </div>
   )
 }
@@ -90,7 +90,7 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
         {p.caption}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[15px]">
           <thead>
             <tr className="text-left text-[11px] tracking-wide text-muted-foreground uppercase">
               <th className="py-1 pr-3 font-medium">approach</th>
@@ -115,7 +115,7 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
           </tbody>
         </table>
       </div>
-      <p className="text-sm text-muted-foreground">{p.note}</p>
+      <p className="text-[15px] text-muted-foreground">{p.note}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {p.links.map((l) => (
           <a
@@ -144,7 +144,7 @@ export function Panel({
       return null
     case "story":
       return (
-        <div className="py-6 text-center text-4xl tracking-widest">
+        <div className="py-8 text-center text-5xl tracking-widest">
           {panel.glyph}
         </div>
       )
@@ -206,7 +206,7 @@ export function Stage({
     <>
       <div
         ref={arrayRef}
-        className="flex min-h-20 items-end justify-center px-2"
+        className="flex min-h-24 items-end justify-center px-2"
       >
         {model.chips ? (
           <ChipRow chips={model.chips} />

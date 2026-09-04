@@ -4,6 +4,34 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — focus rails and a bigger stage
+
+Branch `feat/journey-focus-rails`, stacked on `feat/merge-visualizer` (PR #1 still open).
+
+**Why.** Reading a problem with the sidebar, the stage and the reading column all open left the
+stage 717 px wide at 1440 and the chips at 44 px. The ask: close either rail from a button at its
+foot, keep that button on the rail, and make the working area and its type bigger.
+
+**What.** `AppSidebar` is `collapsible="icon"` with a footer toggle (icons + tooltips on every row,
+wordmark → `d.`, state in shadcn's `sidebar_state` cookie). The journey reading column collapses
+to a 2.75 rem rail with the same toggle at its foot (`prefs.reading`; `usePrefs` now merges over
+`DEFAULT_PREFS` so a pref added later reads as its default). Journey page `max-w-7xl` →
+`max-w-[110rem]`. Type scale: narration 16/18 px, reading column 15 px, chips 56 px with 20 px
+digits, sum 24/36 px, code 13.5 px on 28 px lines, bit cells 36 px.
+
+**Evidence.** `npm run check`: tsc 0, eslint 0, node tests 29/29 (unchanged from baseline). Headless
+Chrome over CDP at 1440 × 1000, `#/journey/two-sum?act=hash&step=6`:
+
+| State | stage width | right column | sidebar | console errors |
+|---|---|---|---|---|
+| both open (baseline) | 717 px | 384 px | 256 px | 0 |
+| reading closed | 1072 px | 44 px rail | 256 px | 0 |
+| both closed | 1280 px | 44 px rail | 48 px rail | 0 |
+
+Toggles measured at the foot of each rail (left y = 960 of 1000; right sticky above the fold),
+`dsa:prefs` gained `"reading":false`, cookie `sidebar_state=false`. 390 px: `scrollWidth = 390`,
+the collapsed rail is a 38 px bar. Not verified: keyboard focus order across the new buttons.
+
 ## 2026-09-04 — the merge: one repo, one app, two journeys, an API, the docs
 
 Branch `feat/merge-visualizer`, pushed to `SathishKumarAI/dsa_problems` (created this session); PR #1 against `master`.

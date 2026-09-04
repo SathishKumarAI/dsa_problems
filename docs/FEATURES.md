@@ -13,14 +13,14 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 
 | Feature | Behaviour | File | Status |
 |---|---|---|---|
-| Sidebar | Three groups: **Journeys** (one row per journey with `earned/acts` badge, ✓ when complete; the visualizer), **Patterns** (10 rows, glyph + name + `solved/total`), **Data rounds** (SQL, flashcards). Active row highlighted from the hash route. Every row is an `<a href="#/…">`, so back/forward and middle-click work. | `src/components/app-sidebar.tsx` | shipped (visual) |
+| Sidebar | Three groups: **Journeys** (one row per journey with `earned/acts` badge, ✓ when complete; the visualizer), **Patterns** (10 rows, glyph + name + `solved/total`), **Data rounds** (SQL, flashcards). Active row highlighted from the hash route. Every row is an `<a href="#/…">`, so back/forward and middle-click work. | `src/components/app-sidebar.tsx` **Collapse** button at the foot of the rail shrinks it to a 3 rem icon rail (icons + tooltips, badges and labels hidden, wordmark becomes `d.`); the button stays on the rail to expand again. State persists in the `sidebar_state` cookie (shadcn default). | `src/components/app-sidebar.tsx` | shipped (cdp: 256 → 48 px, toggle at y = 960 of 1000) |
 | Mobile header | Below `md`, a top bar with the sidebar trigger and the wordmark; the sidebar becomes a sheet. | `src/App.tsx`, `ui/sidebar.tsx` | shipped (cdp 390 px) |
 | Hash router | `#/`, `#/p/<pattern>`, `#/p/<pattern>/<problem>`, `#/journey/<slug>?act=&step=`, `#/algorithms?algo=`, `#/sql`, `#/flashcards`. Unknown routes fall back to home. `replaceQuery` mirrors state without history entries. | `src/lib/route.ts`, `App.tsx` | shipped (cdp) |
-| Wide layouts | Journey and visualizer pages get `max-w-7xl` with tighter padding; content pages stay `max-w-3xl/4xl`. | `App.tsx` | shipped |
+| Wide layouts | Journey page grows to `max-w-[110rem]` (fills the width both rails free up); visualizer `max-w-7xl`; content pages stay `max-w-3xl/4xl`. | `App.tsx`, `journey-page.tsx` | shipped (cdp: stage 717 → 1072 → 1280 px as the two rails close) |
 | Theme | Catppuccin Mocha, forced dark (`<html class="dark">`). Tokens in `index.css`: chart-1 mauve, chart-2 blue, chart-3 green, chart-4 peach, chart-5 red, yellow, teal. | `src/index.css` | shipped |
 | Reduced motion | `prefers-reduced-motion: reduce` zeroes CSS transitions/animations; FLIP checks it too. | `index.css`, `use-flip.ts` | shipped (code; not device-tested) |
 | Settings gear (theme, default speed, motion dial, restart, export/import) | — | `legacy/visualizer/js/ui-prefs.js` | backlog #B3 (speed + motion prefs exist in `lib/store.ts`; no UI for motion yet) |
-| Focus tiers (full / stage / cinema), collapsible rails | — | `legacy/visualizer/js/shell.js` | backlog #B4 |
+| Collapsible rails (focus) | Both rails close from a button at their foot and stay as a thin rail holding that button. Left: sidebar (above). Right: journey reading column → 2.75 rem rail, pref `reading` in `dsa:prefs`. Keyboard `f` / `Esc` cycling is B26. | `app-sidebar.tsx`, `journey-page.tsx` `ReadingToggle` | shipped (cdp) |
 | `?` shortcuts overlay | — | `legacy/visualizer/js/ui-prefs.js` | backlog #B5 (shortcuts listed as text on the visualizer page) |
 | Command palette | — | — | backlog #B12 |
 
@@ -152,11 +152,13 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 |---|---|---|---|
 | Insight + idea | Insight bold mauve (the weakness the previous act had), idea below. | `journey-page.tsx` | shipped |
 | Built from | The act's `tools`: name bold + role. | same | shipped |
-| Code panel | Tabs pseudocode / Python 3 / Java / C++ (only those present); active line lit with a mauve left bar; the tab choice is a stored pref shared by every act and the visualizer. | `code-panel.tsx` | shipped (cdp) |
+| Code panel | Tabs pseudocode / Python 3 / Java / C++ (only those present); active line lit with a mauve left bar; the tab choice is a stored pref shared by every act and the visualizer. Hidden with the column when it is collapsed — the stage is the focus. | `code-panel.tsx` | shipped (cdp) |
 | Takeaways | Three `›` bullets. | `journey-page.tsx` | shipped |
 | Steps chart | Horizontal bars, one per **unlocked** algorithm act (never story, challenge, recap), single hue, active act saturated, direct labels, `title` tooltip. Data from `POST chart` with `upto = unlocked`. | `steps-chart.tsx`, `api/routes.ts` | shipped (cdp + test "never includes acts past upto") |
 | Legend | Four swatches with the marker channel drawn. | `chip-row.tsx` `Legend` | shipped |
 | Resources | "same problem elsewhere:" external links with ↗. | `journey-page.tsx` | shipped |
+| Reading toggle | Sticky button at the foot of the column (`PanelRightClose`) collapses it to a rail with the same button (`PanelRightOpen`); below `lg` the rail is a full-width bar. `aria-expanded` mirrors the state. | `journey-page.tsx` `ReadingToggle`, `lib/store.ts` `prefs.reading` | shipped (cdp: 384 → 44 px, prefs written) |
+| Type scale | Reading column 15 px, narration 16 px (18 px ≥ `lg`), chips 56 px tall / 20 px digits, sum equation 24/36 px, code 13.5 px on 28 px lines, bit cells 36 px. | `journey-page.tsx`, `chip-row.tsx`, `panels.tsx`, `code-panel.tsx`, `hash-map-view.tsx` | shipped (cdp computed: narration 18px, chip 56) |
 
 ### 4.8 Journey content
 
