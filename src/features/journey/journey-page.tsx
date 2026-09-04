@@ -21,7 +21,14 @@ import { PATTERNS, PROBLEMS } from "@/data"
 import { href } from "@/lib/route"
 import { setPref, usePrefs } from "@/lib/store"
 import { ActStepper } from "./act-stepper"
-import { HintLadder, PredictCard, QuizCard } from "./cards"
+import {
+  EdgeCaseCard,
+  EdgeCaseList,
+  HintLadder,
+  HintList,
+  PredictCard,
+  QuizCard,
+} from "./cards"
 import { ChallengeEditor } from "./challenge-editor"
 import { Legend } from "./chip-row"
 import { CodePanel } from "./code-panel"
@@ -63,6 +70,10 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const pattern = problem && PATTERNS.find((p) => p.id === problem.pattern)
   const { act, model, frame } = j
   const reading = usePrefs().reading
+  const edge = frame?.corner
+    ? journey.edgeCases.find((e) => e.key === frame.corner)
+    : undefined
+  const storyAct = j.actIndex === 0
 
   return (
     <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-5">
@@ -199,6 +210,13 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             {frame?.note ?? ""}
           </p>
 
+          {/* a corner case biting on this very frame */}
+          {edge && (
+            <div className="border-t px-4 py-3">
+              <EdgeCaseCard edge={edge} />
+            </div>
+          )}
+
           {/* interruptions: predict / quiz / hints / reveal */}
           {(j.predict || j.quiz || j.hints || j.nextButton || j.adaptive) && (
             <div className="flex flex-col gap-3 border-t px-4 py-3">
@@ -245,7 +263,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                   </Button>
                 </div>
               )}
-              {j.hints && (
+              {j.hints && !storyAct && (
                 <HintLadder
                   hints={j.hints.hints}
                   tier={j.hints.tier}
@@ -307,6 +325,17 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               )}
               <p className="text-muted-foreground">{act.idea}</p>
             </div>
+
+            {storyAct && act.hints?.length ? (
+              <HintList hints={act.hints} />
+            ) : null}
+            {storyAct && (
+              <EdgeCaseList
+                edges={journey.edgeCases}
+                current={j.presetKey}
+                onLoad={j.applyPreset}
+              />
+            )}
 
             {act.tools?.length ? (
               <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">

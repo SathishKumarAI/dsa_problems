@@ -4,6 +4,50 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — corner cases as content, hints up front
+
+Branch `feat/journey-edge-cases`, stacked on `feat/journey-focus-rails`.
+
+**Why.** The ask: show hints and edge cases in the problem statement, and while solving, explain at
+least once how each edge case affects the solution and how to think about it. Inspiration: Waleed
+Khamies, *How to Solve Algorithm Problems* (2023) §3.1 — understand, formalize as input → output,
+reread for hidden promises, bring three inputs (empty-case, medium-case, corner-case: duplicates,
+negatives) before any code, brute force, analyse, optimise.
+
+**What.** `Journey.edgeCases: EdgeCase[]` (`key, name, example, why, think, preset`) — 4 per
+journey: Two Sum *tiny · duplicates · negatives · nosolution*; Single Number *single · last · zero ·
+broken*. Frames gain `corner?: string`; every generator tags the frame where the case bites and its
+note says what this approach did about it (13 tag sites in Two Sum, 8 in Single Number). Story acts
+gain `hints` about *reading* the problem (reread · formalize · bring inputs), shown up front as an
+accordion instead of the idle ladder. Story-act reading column gets the "bring three inputs" card
+with a **load this input** button per case; the stage shows a teal callout under the narration while
+a tagged frame is current. New presets `tiny`, `negatives` (Two Sum; `parse` now accepts −999…999)
+and `zero` (Single Number). API meta exposes `edgeCases`.
+
+**The gate grew.** New test per journey: ≥ 3 cases, unique keys, preset exists, **every case is
+tagged by some act on its preset**, no frame tags an unknown key; the disclosure test now also lints
+`edgeCases` prose against later act names. Tag coverage (`edges.ts` script, not in repo):
+
+| Case | Preset | Tagged by |
+|---|---|---|
+| two-sum tiny | tiny | brute, twoptr, twopass, hash |
+| two-sum duplicates | duplicates | brute, twoptr, hash (twopass hits the later copy first) |
+| two-sum negatives | negatives | brute, twoptr, hash |
+| two-sum nosolution | nosolution | story, brute, twoptr, twopass, hash |
+| single-number single | single | brute, hash, sort, xor |
+| single-number last | max | sort (the fallback line after the loop) |
+| single-number zero | zero | brute, hash, sort, xor |
+| single-number broken | twosingles | xor |
+
+**Evidence.** `npm run check`: tsc 0, eslint 0, `node --test` 31/31 (29 → 31). Headless Chrome/CDP:
+story act shows 3 accordion triggers (`reread`, `formalize`, `bring inputs`; first opens) and 4 corner
+cards with `load this input`; clicking the second → preset `duplicates`, data `3, 1, 3, 8`, banner,
+button `loaded ✓` with `aria-pressed`; brute act on `duplicates`, after the predict → callout
+`data-edge=duplicates` with note "…j started at i + 1 so a slot never met itself"; Single Number sort
+on `max` → callout `last` on the fallback frame; `GET /api/journeys/two-sum` lists 4 `edgeCases` and
+8 presets; `POST parse` accepts `-3, 4, 3, 90` target 0. 0 console errors throughout. Not verified in
+the browser: `negatives` and `tiny` callouts (covered by the test), the `zero` XOR bit rows.
+
 ## 2026-09-04 (later) — focus rails and a bigger stage
 
 Branch `feat/journey-focus-rails`, stacked on `feat/merge-visualizer` (PR #1 still open).

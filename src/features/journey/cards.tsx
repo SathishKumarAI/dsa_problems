@@ -1,11 +1,19 @@
 // The learner-facing interruptions that live under the narration: the quiz
-// gate, the mid-playback prediction, and the hint ladder. Owns their look
-// and their small local state; the journey hook owns when they appear.
+// gate, the mid-playback prediction, the hint ladder, the corner-case
+// callout — plus the story act's reading-column cards (corner cases to
+// bring, how to read the problem). Owns their look and their small local
+// state; the journey hook owns when they appear.
 
 import { useState } from "react"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { Predict, Quiz } from "@/engine"
+import type { EdgeCase, Predict, Quiz } from "@/engine"
 
 function Choices({
   choices,
@@ -169,6 +177,117 @@ export function HintLadder({
           </Button>
         </div>
       )}
+    </div>
+  )
+}
+
+// A corner case biting right now: shown under the narration while the frame
+// tagged `edge` is on screen. Name + example are the journey's; the frame's
+// own note already says what THIS approach did about it.
+export function EdgeCaseCard({ edge }: { edge: EdgeCase }) {
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-lg border border-teal/40 bg-teal/5 p-4"
+      aria-live="polite"
+      data-edge={edge.key}
+    >
+      <div className="flex flex-wrap items-baseline gap-x-3 text-xs tracking-wide text-teal uppercase">
+        <span>corner case · {edge.name}</span>
+        <span className="font-mono tracking-normal text-muted-foreground normal-case">
+          {edge.example}
+        </span>
+      </div>
+      <p className="text-[15px] leading-relaxed">{edge.why}</p>
+      <p className="text-[15px] leading-relaxed text-muted-foreground">
+        <span className="mr-2 font-mono text-xs text-teal">think</span>
+        {edge.think}
+      </p>
+    </div>
+  )
+}
+
+// The story act's "bring your inputs" card (Khamies §3.1.4: an empty-case,
+// a medium-case and a corner-case input before any code). One button per
+// corner case loads its preset so the learner can watch it bite.
+export function EdgeCaseList({
+  edges,
+  current,
+  onLoad,
+}: {
+  edges: EdgeCase[]
+  current: string
+  onLoad: (preset: string) => void
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-teal/30 bg-card p-4">
+      <div className="text-xs tracking-wide text-teal uppercase">
+        bring three inputs before any code
+      </div>
+      <p className="text-muted-foreground">
+        A plain input shows the flow. The smallest legal input and the corner
+        cases below show where a first draft breaks. Load one, then step through
+        the approaches you have earned — each explains the case when it hits it.
+      </p>
+      <ul className="flex flex-col gap-3">
+        {edges.map((e) => (
+          <li
+            key={e.key}
+            className={cn(
+              "flex flex-col gap-1.5 rounded-lg border p-3",
+              current === e.preset
+                ? "border-teal/60 bg-teal/5"
+                : "border-border/60 bg-background/40"
+            )}
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <b>{e.name}</b>
+              <span className="font-mono text-sm text-muted-foreground">
+                {e.example}
+              </span>
+            </div>
+            <p className="text-muted-foreground">{e.why}</p>
+            <p className="text-muted-foreground">
+              <span className="mr-2 font-mono text-xs text-teal">think</span>
+              {e.think}
+            </p>
+            <div>
+              <Button
+                size="sm"
+                variant={current === e.preset ? "secondary" : "outline"}
+                onClick={() => onLoad(e.preset)}
+                aria-pressed={current === e.preset}
+              >
+                {current === e.preset ? "loaded ✓" : "load this input"}
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// The story act's hints, visible up front (they are about READING the
+// problem — reread, formalize, bring inputs — not about solving it), one
+// click each so the learner still chooses to look.
+export function HintList({ hints }: { hints: string[] }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-xl border bg-card p-4">
+      <div className="text-xs tracking-wide text-muted-foreground uppercase">
+        how to read this problem
+      </div>
+      <Accordion multiple={false} className="w-full">
+        {hints.map((h, i) => (
+          <AccordionItem key={i} value={`hint-${i}`}>
+            <AccordionTrigger className="font-mono text-sm">
+              {["reread", "formalize", "bring inputs"][i] ?? `hint ${i + 1}`}
+            </AccordionTrigger>
+            <AccordionContent className="text-[15px] leading-relaxed text-muted-foreground">
+              {h}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   )
 }

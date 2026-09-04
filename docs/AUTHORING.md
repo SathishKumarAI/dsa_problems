@@ -56,6 +56,8 @@ const hash: Act<TwoSumData, F> = {
 |---|---|
 | No act's `name`, `short`, `insight`, `idea`, `complexity`, `takeaways`, `hints`, `tools`, `quiz`, frame `note`s or `predict` text names a **later** act. Generic names (`The Problem`, `Code It`, `The Reveal`, `start here`…) are exempt. | disclosure test |
 | No preset `info` names any act past the story act (banners show from act 1). | disclosure test |
+| No `edgeCases` prose (`name`, `example`, `why`, `think`) names any act past the story act — it sits on act 0. Describe what breaks, never what fixes it. | disclosure test |
+| ≥ 3 `edgeCases`, unique keys, each `preset` exists, and on that preset **some act tags a frame `corner: key`** — every corner case is explained in play at least once. No frame tags an unknown key. | edge-case test |
 | Every frame has a non-empty `note`, present tense, one sentence. | drain test |
 | `python` / `java` / `cpp` have exactly as many lines as `pseudo`. Pad with a closing brace on the same line (`seen.put(nums[i], i); }`) rather than a separate `}` line. | line-count test |
 | `frame.line` < `pseudo.length`. | drain test |
@@ -108,6 +110,39 @@ params: [{ key: "target", label: "target" }]                       // scalar inp
 ```
 
 `parse(text, params)` must reject silently (`null`) — the UI shows "couldn't read that input".
+
+## Corner cases (required)
+
+Khamies, *How to Solve Algorithm Problems* §3.1.4: bring three inputs before any code — an
+empty (or smallest legal) case, a medium case, a corner case. A journey ships that list as data,
+and each entry is taught twice: read in the story act, then watched biting in play.
+
+```ts
+edgeCases: [
+  {
+    key: "duplicates",
+    name: "two equal values",                   // shown as "CORNER CASE · two equal values"
+    example: "[3, 1, 3, 8], target 6 → [0, 2]", // mono
+    why: "3 + 3 hits the target, but a value may not pair with itself. Anything that remembers a value must check BEFORE it records …",
+    think: "Ask: can both indices be the same? Can two indices hold the same value? …",
+    preset: "duplicates",                       // the "load this input" button applies this
+  },
+]
+```
+
+Then, in the generator, tag the frame where it bites — and let the **note** say what this
+approach did about it (the note may name the technique; the act is unlocked by then):
+
+```ts
+yield {
+  …,
+  corner: equal ? "duplicates" : undefined,
+  note: `return [${i}, ${j}]${equal ? ". Two different slots, same price — legal, because j started at i + 1" : ""}`,
+}
+```
+
+The story act's `hints` are shown up front (not on the idle ladder) as **reread · formalize ·
+bring inputs** — write them about reading the problem, not solving it.
 
 ## The challenge (optional)
 

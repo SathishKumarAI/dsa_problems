@@ -117,6 +117,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Predict card | Blue card "YOU DRIVE — PREDICT THE NEXT MOVE". Appears when the *next* frame has `predict` and has not been asked on this timeline; playback pauses **before** that frame renders. Choice buttons; right = green, wrong = red + the right one green; feedback "exactly — watch:" / "not quite — watch what actually happens:"; after 0.7 s / 1.6 s the frame plays and playback resumes if it was playing. Scrubbing or ← skips the question. Asked once per direction (two pointers), once for the return (brute), once at i = 0 (hash), once at i = 1 (XOR). | `cards.tsx`, `use-journey.ts` guard | shipped (cdp brute act) |
 | Quiz card | Mauve card "CHECK YOURSELF (1/2)". Appears when an act finishes and the *next* act is still locked and the act has a quiz not yet passed (`quizzes:<slug>`). Wrong → explanation text + retry, counts towards the hint ladder; right → next question after 0.5 s; all right → `+5 XP`, act key recorded, reveal button appears. | `cards.tsx`, `use-journey.ts` | shipped (cdp: quizzes = ["story"]) |
 | Reveal button | Green: "I understand the problem — try solving it ▸" (act 1) / "I get it — what's the weakness? ▸" / the act's `nextLabel`. Click → `unlocked = idx+2`, `+10 XP`, switch to the new act, stepper node zooms in. If the next act was already unlocked (revisit), a plain "Next: <name> ▸" instead. | `use-journey.ts` `nextButton` | shipped (cdp: unlocked 1→2, xp 15) |
+| Corner-case callout | Teal card "CORNER CASE · <name>" + the example in mono, the journey's `why` and a `think` line, under the narration while the current frame carries `corner: <key>`. The frame's own note says what this approach did about it. Every corner case is tagged by at least one act on its own preset (test). Never on the story act's hint ladder — the story act shows hints up front instead. | `cards.tsx` `EdgeCaseCard`, `journey-page.tsx`, journey `edgeCases` | shipped (cdp: brute on `duplicates` → `data-edge=duplicates` after the predict; sort on `max` → `last`) |
 | Hint ladder | Dashed card "STUCK? EARN IT WITH A SMALLER PUSH". Offered after **45 s** with no new frame shown, or after **2 wrong quiz answers**. "give me a nudge" → nudge; "a bigger hint" → concept; then the line to stare at. Never the answer. Resets on act change. | `cards.tsx`, `use-journey.ts` | shipped (code; timer path not screenshot-tested) |
 | Adaptive difficulty | Peach card "🔥 Flawless — no wrong answers, first-try green." + the journey's `harder.label` button → applies the harder preset. Only when zero wrong quiz answers this visit **and** the challenge passed on attempt 1. | `use-journey.ts`, `journey-page.tsx` | shipped (code; not exercised in cdp) |
 
@@ -130,9 +131,9 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | › forward | Pauses, then steps; a predict frame ahead opens the predict card instead. Disabled at end. | same | shipped (cdp) |
 | ↺ restart act | Pauses, pos = 0, clears prediction. Disabled at 0. | same | shipped |
 | Speed | 1..100 → 2.0 s … 0.1 s per step (`delayFor`); stored pref shared with the visualizer. | `use-player.ts`, `lib/store.ts` | shipped |
-| Preset select | `random`, `answer at the extremes`, `equal values (3 + 3)`, `big (n = 20)`, `no solution`, `two valid pairs` (Two Sum); `random`, `n = 1`, `loner is the largest`, `big (n = 25)`, `two singles`, `a triple` (Single Number). Changing applies immediately and re-runs classify. | `controls.tsx` `DataControls`, journey `presets` | shipped (test: every preset drains) |
+| Preset select | `random`, `answer at the extremes`, `equal values (3 + 3)`, `big (n = 20)`, `n = 2 (smallest legal)`, `negatives (target 0)`, `no solution`, `two valid pairs` (Two Sum); `random`, `n = 1`, `loner is the largest`, `loner is 0`, `big (n = 25)`, `two singles`, `a triple` (Single Number). Changing applies immediately and re-runs classify. | `controls.tsx` `DataControls`, journey `presets` | shipped (test: every preset drains) |
 | ⚄ new | Regenerates from the current preset. | same | shipped |
-| Custom input | Comma/space-separated integers (0–999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
+| Custom input | Comma/space-separated integers (−999…999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
 | Keyboard | `space` play/pause, `→` step, `←` back, `r` restart — ignored inside inputs/textarea/select. | `use-journey.ts` | shipped (code) |
 
 ### 4.6 Code challenge (Two Sum act 6 "Code It")
@@ -151,6 +152,8 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Element | Behaviour | File | Status |
 |---|---|---|---|
 | Insight + idea | Insight bold mauve (the weakness the previous act had), idea below. | `journey-page.tsx` | shipped |
+| How to read this problem (story act only) | Accordion of the story act's `hints`, labelled **reread · formalize · bring inputs** (Khamies §3.1: understand, formalize as input → output, reread for hidden promises, bring examples). Visible up front instead of the idle hint ladder, one click each. | `cards.tsx` `HintList` | shipped (cdp: 3 triggers, first opens) |
+| Bring three inputs (story act only) | Teal card listing every `edgeCases` entry: name, example (mono), `why`, `think`, and a **load this input** button that applies its preset (becomes **loaded ✓**, `aria-pressed`). Prose is technique-neutral so it may sit on act 0 (disclosure test covers it). | `cards.tsx` `EdgeCaseList`, `use-journey.ts` `applyPreset` | shipped (cdp: click → preset `duplicates`, data `3, 1, 3, 8`, banner) |
 | Built from | The act's `tools`: name bold + role. | same | shipped |
 | Code panel | Tabs pseudocode / Python 3 / Java / C++ (only those present); active line lit with a mauve left bar; the tab choice is a stored pref shared by every act and the visualizer. Hidden with the column when it is collapsed — the stage is the focus. | `code-panel.tsx` | shipped (cdp) |
 | Takeaways | Three `›` bullets. | `journey-page.tsx` | shipped |
@@ -164,8 +167,8 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 
 | Journey | Acts | Presets | Challenge | Status |
 |---|---|---|---|---|
-| Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 6 | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
-| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 6 | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
+| Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 8 + 4 corner cases (tiny, duplicates, negatives, nosolution) | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
+| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 7 + 4 corner cases (single, last, zero, broken) | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
 
 ## 5. Algorithm visualizer
 

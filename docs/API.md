@@ -47,6 +47,8 @@ included; the client keeps those in-process.
              "takeaways": ["…"], "hints": ["…"], "quiz": [{ "q": "…", "choices": ["…"], "answer": 1, "explain": "…" }],
              "gate": null, "chart": true, "nextLabel": null }, …],
   "resources": [{ "label": "LeetCode 1", "url": "…" }],
+  "edgeCases": [{ "key": "duplicates", "name": "two equal values", "example": "[3, 1, 3, 8], target 6 → [0, 2]",
+                  "why": "…", "think": "…", "preset": "duplicates" }, …],
   "presets": { "random": { "label": "random", "info": null }, "big": { "label": "big (n = 20)", "info": "…" } },
   "defaultPreset": "random",
   "harder": { "preset": "big", "label": "…" },

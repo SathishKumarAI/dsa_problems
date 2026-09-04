@@ -50,6 +50,7 @@ a port; the original implementation is the reference, not the spec — the React
 ## Shipped this round (2026-09-04)
 
 - ☑ B4 collapsible rails + a bigger type scale on the journey page (stage 717 → 1280 px at 1440 wide).
+- ☑ Corner cases as content: `edgeCases` per journey (4 + 4), story-act cards (how to read · bring three inputs), in-play callout on `corner`-tagged frames, gated by a test that every case is explained on its preset. New presets `tiny`, `negatives` (Two Sum), `zero` (Single Number).
 
 - ☑ Repo merge with history (`legacy/visualizer` subtree, 47 commits preserved).
 - ☑ Engine port: typed, DOM-free, view models instead of HTML strings; content gate as tests.
