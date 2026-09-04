@@ -4,6 +4,24 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — the problem pipeline and the front-end proposals
+
+Branch `docs/problem-pipeline`, stacked on `feat/shell-panels-help`. Docs only.
+
+**Why.** The ask: a backlog of every problem in the app to be built "in this way", one at a time
+with all approaches, code in Python 3 / Java / C++ per approach, the books on disk as sources, SQL
+questions from the PDFs, and a reviewable list of animation and front-end changes.
+
+**What.** `docs/PROBLEMS.md`: definition of done for one problem; the sources on disk and what each
+is for; all 31 practice-set problems in three waves ordered by how much of the stage already exists
+(wave 1 needs no new panel kind until Widest Container); the SQL track; the cross-cutting
+three-language item; open questions (the Python section, journey vs. practice page, shared corner
+cases). `BACKLOG.md` gains the F1–F12 proposals with tiers. ROADMAP, docs manifest, CLAUDE.md, PRD,
+STATUS updated to point at it.
+
+**Evidence.** Docs only — `npm run check` unchanged (31/31). Problem list generated from
+`src/data/problems/*.ts` (31 ids, alternatives per problem), not typed by hand.
+
 ## 2026-09-04 (later) — panels, peek, settings, shortcuts, help
 
 Branch `feat/shell-panels-help`, stacked on `feat/journey-edge-cases`.

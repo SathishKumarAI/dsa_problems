@@ -16,6 +16,14 @@ engineering one.
 One repo. Two journeys. A React stage over a typed, tested, DOM-free engine. An HTTP API in front
 of the same engine. Docs that let the next session start from fact.
 
+## The pipeline — one problem at a time
+
+`PROBLEMS.md` lists all 31 practice-set problems in three waves ordered by how much of the stage
+already exists, plus the SQL track. One problem per branch; the definition of done is in that file.
+Wave 1 (arrays, two pointers, windows) needs no new panel kind until Widest Container; waves 2–3
+each bring one structural kind (stack, heap, list, tree, grid, dp strip) with the problem that
+proves it. The front-end proposals that support the waves are the F-items in `BACKLOG.md`.
+
 ## Next — Q4 2026: the curriculum layer (B1–B12)
 
 **Goal:** a learner who finishes Two Sum knows where to go next without reading the sidebar.
@@ -26,9 +34,9 @@ of the same engine. Docs that let the next session start from fact.
   hand-verified over a debugging socket.
 - Then the roadmap page, the dashboard and the two-pointers pattern page (B9–B11), because the
   recap's "study the pattern" link should land on the earned shape, not a list.
-- **Exit criterion:** a third journey (candidate: Valid Anagram or Contains Duplicate — both sit
-  on the hash-map insight already earned) is authored from `AUTHORING.md` in one sitting, and the
-  content gate catches at least one spoiler in review.
+- **Exit criterion:** the third journey — Triplets Summing to Zero (`PROBLEMS.md` #3, Khamies
+  §3.2.2, reuses every existing panel kind) — is authored from `AUTHORING.md` in one sitting, and
+  the content gate catches at least one spoiler in review.
 
 ## Later — Q1 2027: breadth on proven machinery (B13–B17, third to sixth journey)
 

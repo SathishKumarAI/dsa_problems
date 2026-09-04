@@ -47,6 +47,26 @@ a port; the original implementation is the reference, not the spec — the React
 | B26 | ☑ **Focus key** — `f` closes both rails / reopens both (`Esc` is left to dialogs). Shipped 2026-09-04 with hover-peek on closed rails. | Mouse-free focus for a keyboard-driven page. | S | legacy #41 |
 | B25 | ☐ **Retire `legacy/visualizer/`** once B3–B5, B9–B11, B13, B15–B17, B20 have shipped or been explicitly dropped. | It is reference material, not product; delete it when nothing left in it is un-ported. | S | — |
 
+## Animations and front-end proposals — for review (2026-09-04)
+
+Not committed to; ordered by my judgement of value ÷ size. P0 rows are ones I would ship without
+asking. The problem pipeline itself lives in `PROBLEMS.md` and is not repeated here.
+
+| # | Proposal | Why | Size | Tier |
+|---|---|---|---|---|
+| F1 | ☐ **Code splitting** — `React.lazy` for the journey and visualizer features (B22; the bundle is 650 kB+ after the dialogs). | Content pages should not download the engine. Mechanical. | S | **P0** |
+| F2 | ☐ **Three-language code on the practice set** — `Solution.java` / `.cpp` beside `python`, tabs on the problem page sharing the `codeTab` pref. | The explicit ask: full code in Python 3, Java, C++ per approach. Unblocks the pipeline's DoD. | S (type + UI) · content per problem | **P0** |
+| F3 | ☐ **Window / stack / bars panel kinds** — `window` (a span over chips + the set beside it), `stack` (vertical chips, push/pop FLIP), `bars` (heights, port from the visualizer with a shaded area). | Wave 1–2 of `PROBLEMS.md` needs exactly these three; one PR each, arriving with the problem that proves it. | M each | **P0** with the problem |
+| F4 | ☐ **Corner cases met** — a teal dot on a stepper node once that act has shown a corner-case callout; header counter "cases met 3/4"; +3 XP the first time each case is seen. | The gamified loop the ask describes: the learner *collects* the edge cases instead of reading them. Data already exists (`frame.corner`). | S | P1 |
+| F5 | ☐ **Hold indicator on Play** — a thin ring on the Play button that fills while a `hold` frame waits. | Autoplay looks frozen on narrative frames (`hold: 3` = 6 s at default speed); users press Play twice. | S | P1 |
+| F6 | ☐ **Live cost meter** — the steps chart grows as you step (bar for the current act fills to the current frame; the others show their totals as ghosts). | Makes "cost" visible during play, not only after. Chart data is already there per act. | S | P1 |
+| F7 | ☐ **Tap-to-peek on touch** — tap a closed rail to peek, tap outside to close (hover-peek is mouse-only). | Tablets get the focus mode too. | S | P1 |
+| F8 | ☐ **Hash-map resize animation** — when `resized` flips, the bucket grid FLIPs from n to 2n columns with the rehash as one morph. | The doubling is the one moment the "iceberg" view exists for and it currently snaps. | M | P1 |
+| F9 | ☐ **Chip trail in cinematic motion** — a fading ghost at the previous position during a FLIP move. | Cinematic mode is currently just slower. | S | P2 |
+| F10 | ☐ **Structural panel kinds** — `list` (nodes + arrows), `tree`, `grid`, `dp strip`, `heap`. | Waves 2–3 of the pipeline. Each arrives with its first problem. | M–L each | P1 with the problem |
+| F11 | ☐ **Practice-set StepPlayer → journey chips** (part of B1) — the static walkthrough draws with `ChipRow` and the same grammar. | Two chip grammars on one site. | S | P1 |
+| F12 | ☐ **Narration typewriter** (off in `calm`/`off` motion) — the note reveals word by word within the frame's hold. | Reading pace matches the hold; cheap delight. | S | P2 |
+
 ## Shipped this round (2026-09-04)
 
 - ☑ B4 collapsible rails + a bigger type scale on the journey page (stage 717 → 1280 px at 1440 wide).

@@ -126,6 +126,9 @@ the Vite dev middleware, the standalone Node server and the in-process client us
 
 ## 8. Open questions
 
+0. **Sidebar sections.** Requested split: Python / DSA / SQL. Shipped DSA / DSA · patterns / SQL /
+   Data science; a Python section has no content yet — options in `PROBLEMS.md` §Open questions.
+
 1. Should the practice set's static walkthroughs be generated from the journey engine for the
    two flagship problems, retiring the hand-written frames? (Leaning yes — one source of truth.)
 2. Server-side challenge execution would let a CLI or a phone client take the challenge. It also
