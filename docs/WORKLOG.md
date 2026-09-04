@@ -6,7 +6,7 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 
 ## 2026-09-04 — the merge: one repo, one app, two journeys, an API, the docs
 
-Branch `feat/merge-visualizer`, six commits (no remote yet — see `STATUS.md`).
+Branch `feat/merge-visualizer`, pushed to `SathishKumarAI/dsa_problems` (created this session); PR #1 against `master`.
 
 | Commit | What |
 |---|---|
