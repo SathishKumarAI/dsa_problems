@@ -60,18 +60,16 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
 
 export function StepPlayer({ frames }: { frames: Frame[] }) {
   const [step, setStep] = useState(0)
-  const [playing, setPlaying] = useState(false)
+  const [wantPlay, setPlaying] = useState(false)
   const frame = frames[step]
   const last = frames.length - 1
   const usesCells = frames.some((f) => f.cells)
+  // derived, so reaching the end never needs a setState inside the effect
+  const playing = wantPlay && step < last
 
   useEffect(() => {
     if (!playing) return
-    if (step === last) {
-      setPlaying(false)
-      return
-    }
-    const t = setTimeout(() => setStep((s) => s + 1), 1800)
+    const t = setTimeout(() => setStep((s) => Math.min(s + 1, last)), 1800)
     return () => clearTimeout(t)
   }, [playing, step, last])
 

@@ -1,4 +1,4 @@
-import type { Pattern } from "./types"
+import type { Pattern } from "./types.ts"
 
 // Order here = order in the sidebar (rough difficulty ramp).
 export const PATTERNS: Pattern[] = [

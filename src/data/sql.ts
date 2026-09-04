@@ -1,4 +1,4 @@
-import type { SqlProblem } from "./types"
+import type { SqlProblem } from "./types.ts"
 
 // Original SQL practice set. Shared toy schema unless a problem states its own.
 const SHOP = `orders(order_id, customer_id, order_date, amount)

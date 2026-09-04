@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 import type { Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { CodeBlock } from "./code-block"
-import { difficultyClass } from "./problem-list"
+import { difficultyClass } from "@/lib/difficulty"
 import { StepPlayer } from "./step-player"
 
 interface Props {

@@ -1,4 +1,4 @@
-import type { Flashcard } from "./types"
+import type { Flashcard } from "./types.ts"
 
 // Original statistics flashcards for DS/ML interview review.
 export const FLASHCARDS: Flashcard[] = [

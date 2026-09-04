@@ -8,8 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "typecheck": "tsc -b",
+    "preview": "vite preview",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "api": "node server/index.ts",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

@@ -7,15 +7,10 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item"
 import { cn } from "@/lib/utils"
-import type { Difficulty, Pattern } from "@/data"
+import type { Pattern } from "@/data"
 import { problemsByPattern } from "@/data"
+import { difficultyClass } from "@/lib/difficulty"
 import { toggleSolved, useSolved } from "@/lib/progress"
-
-export const difficultyClass: Record<Difficulty, string> = {
-  easy: "border-chart-3/40 bg-chart-3/10 text-chart-3",
-  medium: "border-chart-4/40 bg-chart-4/10 text-chart-4",
-  hard: "border-chart-5/40 bg-chart-5/10 text-chart-5",
-}
 
 interface Props {
   pattern: Pattern

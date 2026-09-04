@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { SQL_PROBLEMS } from "@/data/sql"
 import { CodeBlock } from "./code-block"
-import { difficultyClass } from "./problem-list"
+import { difficultyClass } from "@/lib/difficulty"
 
 export function SqlView() {
   return (
