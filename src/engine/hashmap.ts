@@ -15,7 +15,8 @@ export function hashBuckets(n: number): number {
 }
 
 // The mod that wraps negatives up, like Python's % — complements go negative.
-export const hashSlot = (key: number, buckets: number) => ((key % buckets) + buckets) % buckets
+export const hashSlot = (key: number, buckets: number) =>
+  ((key % buckets) + buckets) % buckets
 
 export function hashLayout(
   entries: HashEntry[],
@@ -24,7 +25,12 @@ export function hashLayout(
     hit = false,
     label = "seen — value @ index",
     fmt = "at",
-  }: { probe?: number | null; hit?: boolean; label?: string; fmt?: "at" | "times" } = {}
+  }: {
+    probe?: number | null
+    hit?: boolean
+    label?: string
+    fmt?: "at" | "times"
+  } = {}
 ): HashModel {
   const buckets = hashBuckets(entries.length)
   const chains: HashEntry[][] = Array.from({ length: buckets }, () => [])

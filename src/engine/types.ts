@@ -88,11 +88,24 @@ export type PanelModel =
   | { kind: "none" }
   | { kind: "story"; glyph: string }
   | { kind: "sum"; eq: SumModel }
-  | { kind: "need"; need: number; hit: boolean; target: number; x: number; map: HashModel }
+  | {
+      kind: "need"
+      need: number
+      hit: boolean
+      target: number
+      x: number
+      map: HashModel
+    }
   | { kind: "hash"; map: HashModel }
   | { kind: "sorted"; label: string; chips: ChipModel[]; eq?: SumModel }
   | { kind: "bits"; rows: BitRowModel[] }
-  | { kind: "recap"; caption: string; rows: RecapRow[]; note: string; links: RecapLink[] }
+  | {
+      kind: "recap"
+      caption: string
+      rows: RecapRow[]
+      note: string
+      links: RecapLink[]
+    }
   | { kind: "challenge" }
 
 export interface StageModel {

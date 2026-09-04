@@ -1,0 +1,230 @@
+// The approach panel: everything a PanelModel can be, plus <Stage/> which
+// draws a whole StageModel (chips + panel) and FLIPs between frames.
+// Owns drawing only. Add a panel kind = one case here + one in engine/types.
+
+import { useRef } from "react"
+import { cn } from "@/lib/utils"
+import type { BitRowModel, PanelModel, StageModel, SumModel } from "@/engine"
+import { ChipRow } from "./chip-row"
+import { HashMapView } from "./hash-map-view"
+import { useFlip } from "./use-flip"
+
+function SumEq({
+  eq,
+  need,
+}: {
+  eq?: SumModel
+  need?: { need: number; hit: boolean; target: number; x: number }
+}) {
+  if (need) {
+    return (
+      <div className="flex items-baseline justify-center gap-3 font-mono text-lg">
+        <span className="text-muted-foreground">need</span>
+        <b
+          className={cn(
+            "text-2xl",
+            need.hit ? "text-chart-3" : "text-foreground"
+          )}
+        >
+          {need.need}
+        </b>
+        <span className="text-xs text-muted-foreground">
+          {need.target} − {need.x}
+        </span>
+      </div>
+    )
+  }
+  if (!eq) return null
+  const ok = eq.sum === eq.target
+  return (
+    <div className="flex items-baseline justify-center gap-2 font-mono text-lg">
+      <span>{eq.a}</span>
+      <span className="text-muted-foreground">+</span>
+      <span>{eq.b}</span>
+      <span className="text-muted-foreground">=</span>
+      <b className={cn("text-2xl", ok ? "text-chart-3" : "text-chart-5")}>
+        {eq.sum}
+      </b>
+      <span className="ml-2 text-xs text-muted-foreground">
+        target {eq.target}
+      </span>
+    </div>
+  )
+}
+
+function BitRow({ row }: { row: BitRowModel }) {
+  const cells = []
+  for (let b = row.bits - 1; b >= 0; b--) {
+    const on = (row.value >> b) & 1
+    const flip = (row.flip >> b) & 1
+    cells.push(
+      <span
+        key={b}
+        className={cn(
+          "flex size-7 items-center justify-center rounded border font-mono text-sm tabular-nums transition-colors",
+          on
+            ? "border-chart-2 bg-chart-2/20 text-chart-2"
+            : "border-border/60 text-muted-foreground/50",
+          flip && "ring-2 ring-chart-5/80 ring-offset-1 ring-offset-background"
+        )}
+      >
+        {on}
+      </span>
+    )
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="w-8 font-mono text-xs text-muted-foreground">
+        {row.tag}
+      </span>
+      {cells}
+      <span className="ml-2 font-mono text-sm tabular-nums">= {row.value}</span>
+    </div>
+  )
+}
+
+function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+        {p.caption}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[11px] tracking-wide text-muted-foreground uppercase">
+              <th className="py-1 pr-3 font-medium">approach</th>
+              <th className="py-1 pr-3 font-medium text-chart-1">built from</th>
+              <th className="py-1 pr-3 font-medium">cost</th>
+              <th className="py-1 font-medium">
+                the insight that got you there
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {p.rows.map((r) => (
+              <tr key={r.name} className="border-t border-border/60 align-top">
+                <td className="py-2 pr-3 font-medium">{r.name}</td>
+                <td className="py-2 pr-3 text-chart-1">{r.built}</td>
+                <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
+                  {r.cost}
+                </td>
+                <td className="py-2 text-muted-foreground">{r.insight}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-sm text-muted-foreground">{p.note}</p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {p.links.map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            className="rounded-lg border bg-background/40 p-3 transition-colors hover:border-primary/60"
+          >
+            <b className="text-sm">{l.label} ▸</b>
+            <div className="text-xs text-muted-foreground">{l.detail}</div>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function Panel({
+  panel,
+  challenge,
+}: {
+  panel: PanelModel
+  challenge?: React.ReactNode
+}) {
+  switch (panel.kind) {
+    case "none":
+      return null
+    case "story":
+      return (
+        <div className="py-6 text-center text-4xl tracking-widest">
+          {panel.glyph}
+        </div>
+      )
+    case "sum":
+      return <SumEq eq={panel.eq} />
+    case "need":
+      return (
+        <div className="flex flex-col gap-4">
+          <SumEq need={panel} />
+          <HashMapView map={panel.map} />
+        </div>
+      )
+    case "hash":
+      return <HashMapView map={panel.map} />
+    case "sorted":
+      return (
+        <div className="flex flex-col gap-3">
+          <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+            {panel.label}
+          </div>
+          <ChipRow chips={panel.chips} indexed={false} />
+          {panel.eq && <SumEq eq={panel.eq} />}
+        </div>
+      )
+    case "bits":
+      return (
+        <div className="flex flex-col gap-2">
+          <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+            accumulator (bit view) — ring = bits that just flipped
+          </div>
+          {panel.rows.map((r) => (
+            <BitRow key={r.tag} row={r} />
+          ))}
+        </div>
+      )
+    case "recap":
+      return <Recap p={panel} />
+    case "challenge":
+      return <>{challenge}</>
+  }
+}
+
+// The two containers are FLIPped separately: sorted-copy rows reuse the
+// input row's keys, and one flat map would morph a chip into a stranger.
+export function Stage({
+  model,
+  stepDelay,
+  challenge,
+}: {
+  model: StageModel
+  stepDelay: number
+  challenge?: React.ReactNode
+}) {
+  const arrayRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFlip(arrayRef, model, stepDelay)
+  useFlip(panelRef, model, stepDelay)
+  return (
+    <>
+      <div
+        ref={arrayRef}
+        className="flex min-h-20 items-end justify-center px-2"
+      >
+        {model.chips ? (
+          <ChipRow chips={model.chips} />
+        ) : (
+          <div className="text-xs text-muted-foreground/60">
+            the stage is empty on purpose — the need comes first
+          </div>
+        )}
+      </div>
+      <div
+        ref={panelRef}
+        className={cn(
+          "px-2",
+          model.panel.kind !== "none" && "border-t border-border/60 pt-4"
+        )}
+      >
+        <Panel panel={model.panel} challenge={challenge} />
+      </div>
+    </>
+  )
+}

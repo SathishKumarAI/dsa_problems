@@ -3,7 +3,9 @@ import { useMemo } from "react"
 import { K, updateStored, useStored } from "./store"
 
 export function toggleSolved(id: string) {
-  updateStored<string[]>(K.solved, [], (ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]))
+  updateStored<string[]>(K.solved, [], (ids) =>
+    ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]
+  )
 }
 
 export function useSolved(): Set<string> {

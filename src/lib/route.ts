@@ -19,10 +19,17 @@ export interface Route {
 function parse(): Route {
   const raw = location.hash.replace(/^#/, "") || "/"
   const [path, q = ""] = raw.split("?")
-  return { path, parts: path.split("/").filter(Boolean), query: new URLSearchParams(q) }
+  return {
+    path,
+    parts: path.split("/").filter(Boolean),
+    query: new URLSearchParams(q),
+  }
 }
 
-let current = typeof location !== "undefined" ? parse() : { path: "/", parts: [], query: new URLSearchParams() }
+let current =
+  typeof location !== "undefined"
+    ? parse()
+    : { path: "/", parts: [], query: new URLSearchParams() }
 const listeners = new Set<() => void>()
 
 if (typeof window !== "undefined") {

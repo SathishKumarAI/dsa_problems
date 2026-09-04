@@ -11,7 +11,10 @@ export interface ChipOpts {
   subs?: string[] | null // subscript per chip, e.g. original index after a sort
 }
 
-export function chipRow(values: (number | string)[], opts: ChipOpts = {}): ChipModel[] {
+export function chipRow(
+  values: (number | string)[],
+  opts: ChipOpts = {}
+): ChipModel[] {
   const focus = new Set(opts.focus ?? [])
   const anchor = new Set(opts.anchor ?? [])
   const dim = new Set(opts.dim ?? [])

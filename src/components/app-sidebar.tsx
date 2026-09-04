@@ -1,4 +1,7 @@
-// Navigation: home + one entry per pattern, with per-pattern solved counts.
+// Navigation: journeys (the deep builds), one entry per pattern with solved
+// counts, the algorithm visualizer, and the data rounds. Every entry is a
+// hash link so the browser back button and deep links just work.
+import { RouteIcon, SlidersHorizontalIcon } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -12,27 +15,87 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { PATTERNS, problemsByPattern } from "@/data"
+import { JOURNEYS } from "@/engine"
 import { useSolved } from "@/lib/progress"
+import { href } from "@/lib/route"
+import { K, useStored } from "@/lib/store"
 
-interface Props {
-  view: string // "home" | pattern id
-  onNavigate: (view: string) => void
+function JourneyItem({
+  slug,
+  title,
+  acts,
+  active,
+}: {
+  slug: string
+  title: string
+  acts: number
+  active: boolean
+}) {
+  const unlocked = Math.min(useStored<number>(K.unlocked(slug), 1), acts)
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        render={<a href={href(`/journey/${slug}`)} />}
+        isActive={active}
+        className="pr-12"
+      >
+        <RouteIcon className="size-3.5 shrink-0 text-chart-1" />
+        <span className="truncate">{title}</span>
+      </SidebarMenuButton>
+      <SidebarMenuBadge
+        className="font-mono"
+        title={`${unlocked} of ${acts} acts earned`}
+      >
+        {unlocked >= acts ? "✓" : `${unlocked}/${acts}`}
+      </SidebarMenuBadge>
+    </SidebarMenuItem>
+  )
 }
 
-export function AppSidebar({ view, onNavigate }: Props) {
+export function AppSidebar({ view }: { view: string }) {
   const solved = useSolved()
 
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-3">
-        <button className="text-left" onClick={() => onNavigate("home")}>
+        <a href={href("/")} className="block">
           <div className="font-mono text-sm font-semibold text-sidebar-primary">
             dsa.patterns
           </div>
-          <div className="text-xs text-muted-foreground">interview prep, by pattern</div>
-        </button>
+          <div className="text-xs text-muted-foreground">
+            earn the insight, then the name
+          </div>
+        </a>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Journeys</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {JOURNEYS.map((j) => (
+                <JourneyItem
+                  key={j.slug}
+                  slug={j.slug}
+                  title={j.title}
+                  acts={j.acts.length}
+                  active={
+                    view === "journey" &&
+                    location.hash.includes(`/journey/${j.slug}`)
+                  }
+                />
+              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<a href={href("/algorithms")} />}
+                  isActive={view === "algorithms"}
+                >
+                  <SlidersHorizontalIcon className="size-3.5 shrink-0 text-chart-2" />
+                  <span className="truncate">Algorithm visualizer</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
         <SidebarGroup>
           <SidebarGroupLabel>Patterns</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -43,8 +106,8 @@ export function AppSidebar({ view, onNavigate }: Props) {
                 return (
                   <SidebarMenuItem key={p.id}>
                     <SidebarMenuButton
+                      render={<a href={href(`/p/${p.id}`)} />}
                       isActive={view === p.id}
-                      onClick={() => onNavigate(p.id)}
                       className="pr-10"
                     >
                       <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
@@ -66,7 +129,10 @@ export function AppSidebar({ view, onNavigate }: Props) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton isActive={view === "sql"} onClick={() => onNavigate("sql")}>
+                <SidebarMenuButton
+                  render={<a href={href("/sql")} />}
+                  isActive={view === "sql"}
+                >
                   <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
                     OVER()
                   </span>
@@ -75,8 +141,8 @@ export function AppSidebar({ view, onNavigate }: Props) {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  render={<a href={href("/flashcards")} />}
                   isActive={view === "flashcards"}
-                  onClick={() => onNavigate("flashcards")}
                 >
                   <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
                     P(A|B)

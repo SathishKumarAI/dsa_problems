@@ -3,7 +3,12 @@
 
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { ALGORITHMS, buildArrayFrames, buildGraphFrames, makeGraph } from "./algorithms.ts"
+import {
+  ALGORITHMS,
+  buildArrayFrames,
+  buildGraphFrames,
+  makeGraph,
+} from "./algorithms.ts"
 import type { ArrayAlgo, GraphAlgo } from "./algorithms.ts"
 
 const arr = (algo: ArrayAlgo) => algo
@@ -17,13 +22,24 @@ test("every sort sorts random, reversed, and duplicate-heavy inputs", () => {
     [1],
     [],
   ]
-  for (const key of ["bubble", "selection", "insertion", "merge", "quick", "heap"]) {
+  for (const key of [
+    "bubble",
+    "selection",
+    "insertion",
+    "merge",
+    "quick",
+    "heap",
+  ]) {
     const algo = ALGORITHMS[key]
     assert.equal(algo.kind, "sort")
     for (const input of inputs) {
       const a = input.slice()
       for (const _ of arr(algo as ArrayAlgo).run(a)) void _
-      assert.deepEqual(a, input.slice().sort((x, y) => x - y), `${key} on [${input}]`)
+      assert.deepEqual(
+        a,
+        input.slice().sort((x, y) => x - y),
+        `${key} on [${input}]`
+      )
     }
   }
 })
@@ -53,7 +69,9 @@ test("BFS and DFS visit every node of a connected graph exactly once", () => {
   for (let trial = 0; trial < 5; trial++) {
     const g = makeGraph(8)
     for (const key of ["bfs", "dfs"]) {
-      const visits = [...graph(ALGORITHMS[key] as GraphAlgo).run(g)].filter((s) => s.type === "visit").map((s) => s.node)
+      const visits = [...graph(ALGORITHMS[key] as GraphAlgo).run(g)]
+        .filter((s) => s.type === "visit")
+        .map((s) => s.node)
       assert.equal(new Set(visits).size, 8, key)
       assert.equal(visits.length, 8, `${key} visits once`)
     }

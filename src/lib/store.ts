@@ -88,10 +88,15 @@ export interface Prefs {
   codeTab: string // pseudo | python | java | cpp
   motion: "calm" | "normal" | "cinematic" | "off"
 }
-export const DEFAULT_PREFS: Prefs = { speed: 50, codeTab: "pseudo", motion: "normal" }
+export const DEFAULT_PREFS: Prefs = {
+  speed: 50,
+  codeTab: "pseudo",
+  motion: "normal",
+}
 
 export const usePrefs = () => useStored<Prefs>(K.prefs, DEFAULT_PREFS)
-export const setPref = <P extends keyof Prefs>(k: P, v: Prefs[P]) => updateStored(K.prefs, DEFAULT_PREFS, (p) => ({ ...p, [k]: v }))
+export const setPref = <P extends keyof Prefs>(k: P, v: Prefs[P]) =>
+  updateStored(K.prefs, DEFAULT_PREFS, (p) => ({ ...p, [k]: v }))
 
 export function awardXP(n: number) {
   updateStored(K.xp, 0, (x) => x + n)
@@ -99,7 +104,9 @@ export function awardXP(n: number) {
 
 export function recordActivity() {
   const today = new Date().toISOString().slice(0, 10)
-  updateStored<string[]>(K.days, [], (d) => (d.includes(today) ? d : [...d, today]))
+  updateStored<string[]>(K.days, [], (d) =>
+    d.includes(today) ? d : [...d, today]
+  )
 }
 
 // consecutive days ending today (or yesterday, so a streak survives until midnight)

@@ -20,7 +20,10 @@ createServer((req, res) => {
         body = undefined
       }
     }
-    const out = req.method === "OPTIONS" ? { status: 204, body: "" } : route(req.method ?? "GET", url.pathname, body)
+    const out =
+      req.method === "OPTIONS"
+        ? { status: 204, body: "" }
+        : route(req.method ?? "GET", url.pathname, body)
     res.writeHead(out.status, {
       "content-type": "application/json",
       "access-control-allow-origin": "*",
@@ -29,4 +32,6 @@ createServer((req, res) => {
     })
     res.end(out.status === 204 ? "" : JSON.stringify(out.body))
   })
-}).listen(PORT, () => console.log(`api on http://localhost:${PORT}/api/problems`))
+}).listen(PORT, () =>
+  console.log(`api on http://localhost:${PORT}/api/problems`)
+)
