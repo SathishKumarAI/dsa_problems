@@ -8,8 +8,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { journeyBySlug } from "@/engine"
-import { AlgorithmsPage } from "@/features/algorithms/algorithms-page"
-import { JourneyPage } from "@/features/journey/journey-page"
+import { Suspense, lazy } from "react"
 import { navigate, useRoute } from "@/lib/route"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
@@ -18,6 +17,23 @@ import { Button } from "@/components/ui/button"
 import { AppDialogs } from "./components/app-dialogs"
 import { AppSidebar } from "./components/app-sidebar"
 import { GlobalKeys } from "./components/global-keys"
+
+// the engine-heavy features load on first visit, not on the content pages (B22 / F1)
+const JourneyPage = lazy(() =>
+  import("@/features/journey/journey-page").then((m) => ({
+    default: m.JourneyPage,
+  }))
+)
+const AlgorithmsPage = lazy(() =>
+  import("@/features/algorithms/algorithms-page").then((m) => ({
+    default: m.AlgorithmsPage,
+  }))
+)
+const Loading = () => (
+  <div className="py-16 text-center text-sm text-muted-foreground">
+    loading…
+  </div>
+)
 import { FlashcardsView } from "./components/flashcards-view"
 import { HomeView } from "./components/home-view"
 import { ProblemDetail } from "./components/problem-detail"
@@ -101,7 +117,9 @@ export default function App() {
               panels && "lg:min-h-0 lg:overflow-hidden lg:py-4"
             )}
           >
-            <View />
+            <Suspense fallback={<Loading />}>
+              <View />
+            </Suspense>
           </main>
         </SidebarInset>
       </SidebarProvider>

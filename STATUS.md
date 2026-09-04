@@ -4,19 +4,20 @@ Last session: 2026-09-04 (autonomous Claude session, branch `feat/merge-visualiz
 
 ## Where it stopped
 
-Five stacked branches, all pushed to `github.com/SathishKumarAI/dsa_problems` (private), none
+Six stacked branches, all pushed to `github.com/SathishKumarAI/dsa_problems` (private), none
 merged: `feat/merge-visualizer` (PR #1 → master), `feat/journey-focus-rails` (PR #2),
 `feat/journey-edge-cases` (PR #3), `feat/shell-panels-help` (PR #4), `docs/problem-pipeline`
-(PR #5). Merge bottom-up, squash each; GitHub retargets the next PR's base when its parent merges.
+(PR #5), `perf/code-splitting` (PR #6). Merge bottom-up, squash each; GitHub retargets the next
+PR's base when its parent merges.
 
 ## The next action
 
 1. Review: `npm run check`, `npm run dev` → `#/journey/two-sum` (story act: hints + corner cases;
    click a rail toggle at the foot of either side).
-2. Squash-merge PR #1, then #2, #3, #4, #5 in order; delete the branches.
+2. Squash-merge PR #1, then #2 … #6 in order; delete the branches.
 3. Read `docs/PROBLEMS.md` and the F-items in `docs/BACKLOG.md`; decide the Python-section
-   question. Then: F1 code splitting, F2 three-language code on the practice set, then problem #3
-   (Triplets Summing to Zero) as the third journey.
+   question. Then: F2 three-language code on the practice set, then problem #3 (Triplets Summing
+   to Zero) as the third journey.
 3. Archive the old folder — your call, nothing was touched: `../dsa_visualizer` still has an
    **uncommitted** `feat/disclosure-lint` branch. Its intent is captured as backlog **B8**; commit
    or discard it there, then move the folder to `~/coding/archive/` per the workspace rules.
@@ -38,4 +39,4 @@ merged: `feat/merge-visualizer` (PR #1 → master), `feat/journey-focus-rails` (
   were not exercised in the browser this session.
 - The sidebar names "Two Pointers" as a pattern while Two Sum act 3 is locked (B8).
 - Corner-case callouts for `tiny`, `negatives`, `zero` verified by test, not by eye.
-- Bundle is one 644 kB chunk (B22).
+- Engine/data chunk (204 kB) still loads on content pages because the sidebar reads `JOURNEYS` (F1 note).
