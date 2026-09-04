@@ -1,8 +1,10 @@
 // One journey on screen. Owns layout only — the stage (data, narration,
 // approach panel, timeline, controls) on the left, the reading column
 // (insight, tools, code, takeaways, chart, legend, resources) on the right,
-// the act stepper on top. The reading column collapses to an icon rail
-// (toggle at its foot, pref `reading`) so the stage can take the width.
+// the act stepper on top. On lg the header stays put and the two columns
+// scroll independently (App gives the inset the viewport height). The
+// reading column collapses to an icon rail (toggle at its foot, pref
+// `reading`) that peeks open on hover.
 // Every behaviour comes from useJourney. Panel map: docs/FEATURES.md §Journey page.
 
 import {
@@ -14,6 +16,7 @@ import {
   RotateCcwIcon,
   StarIcon,
 } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { AnyJourney } from "@/engine"
@@ -36,6 +39,7 @@ import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
 import { StepsChart } from "./steps-chart"
 import { useJourney } from "./use-journey"
+import type { JourneyController } from "./use-journey"
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -64,6 +68,92 @@ function ReadingToggle({ open }: { open: boolean }) {
   )
 }
 
+// Everything in the reading column, so the open column and the hover-peek
+// overlay of the closed rail draw the same thing.
+function ReadingBody({
+  j,
+  journey,
+}: {
+  j: JourneyController
+  journey: AnyJourney
+}) {
+  const { act, frame } = j
+  const storyAct = j.actIndex === 0
+  return (
+    <>
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        {act.insight && (
+          <p className="font-semibold text-chart-1">{act.insight}</p>
+        )}
+        <p className="text-muted-foreground">{act.idea}</p>
+      </div>
+
+      {storyAct && act.hints?.length ? <HintList hints={act.hints} /> : null}
+      {storyAct && (
+        <EdgeCaseList
+          edges={journey.edgeCases}
+          current={j.presetKey}
+          onLoad={j.applyPreset}
+        />
+      )}
+
+      {act.tools?.length ? (
+        <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+          <Label>what this approach is built from</Label>
+          {act.tools.map((t) => (
+            <div key={t.name}>
+              <b>{t.name}</b>{" "}
+              <span className="text-muted-foreground">— {t.role}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <CodePanel code={act.code} line={frame?.line ?? -1} />
+
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        <Label>what to understand</Label>
+        <ul className="flex flex-col gap-1.5 text-muted-foreground">
+          {act.takeaways.map((t, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="text-chart-1">›</span>
+              {t}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {j.chart.length > 0 && (
+        <div className="rounded-xl border bg-card p-4">
+          <StepsChart rows={j.chart} active={j.actKey} />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        <Label>legend</Label>
+        <Legend />
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        same problem elsewhere:{" "}
+        {journey.resources.map((r, i) => (
+          <span key={r.url}>
+            {i > 0 && " · "}
+            <a
+              href={r.url}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-foreground hover:underline"
+            >
+              {r.label} <ExternalLinkIcon className="size-3" />
+            </a>
+          </span>
+        ))}
+      </p>
+    </>
+  )
+}
+
 export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const j = useJourney(journey)
   const problem = PROBLEMS.find((p) => p.id === journey.problemId)
@@ -73,10 +163,11 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const edge = frame?.corner
     ? journey.edgeCases.find((e) => e.key === frame.corner)
     : undefined
+  const [peek, setPeek] = useState(false)
   const storyAct = j.actIndex === 0
 
   return (
-    <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-4 lg:h-full">
       {/* header */}
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -136,7 +227,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
 
       <div
         className={cn(
-          "grid gap-5",
+          "grid gap-5 lg:min-h-0 lg:flex-1",
           reading
             ? "lg:grid-cols-[minmax(0,1fr)_24rem]"
             : "lg:grid-cols-[minmax(0,1fr)_2.75rem]"
@@ -144,7 +235,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
       >
         {/* ---------- the stage ---------- */}
         <section
-          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg"
+          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0 lg:overflow-y-auto"
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
@@ -309,87 +400,27 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
         {/* ---------- the reading column (or its rail) ---------- */}
         {!reading ? (
           <aside
-            className="flex rounded-xl border bg-card p-1 lg:flex-col"
+            className="relative flex rounded-xl border bg-card p-1 lg:flex-col"
             aria-label="approach (collapsed)"
+            onMouseEnter={() => setPeek(true)}
+            onMouseLeave={() => setPeek(false)}
           >
+            {peek && (
+              <div
+                className="absolute top-0 right-0 z-20 hidden max-h-full w-[26rem] flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 text-[15px] leading-relaxed shadow-2xl lg:flex"
+                data-testid="reading-peek"
+              >
+                <ReadingBody j={j} journey={journey} />
+              </div>
+            )}
             <ReadingToggle open={false} />
           </aside>
         ) : (
           <aside
-            className="flex flex-col gap-4 text-[15px] leading-relaxed"
+            className="flex flex-col gap-4 text-[15px] leading-relaxed lg:min-h-0 lg:overflow-y-auto lg:pr-1"
             aria-label="approach"
           >
-            <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-              {act.insight && (
-                <p className="font-semibold text-chart-1">{act.insight}</p>
-              )}
-              <p className="text-muted-foreground">{act.idea}</p>
-            </div>
-
-            {storyAct && act.hints?.length ? (
-              <HintList hints={act.hints} />
-            ) : null}
-            {storyAct && (
-              <EdgeCaseList
-                edges={journey.edgeCases}
-                current={j.presetKey}
-                onLoad={j.applyPreset}
-              />
-            )}
-
-            {act.tools?.length ? (
-              <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-                <Label>what this approach is built from</Label>
-                {act.tools.map((t) => (
-                  <div key={t.name}>
-                    <b>{t.name}</b>{" "}
-                    <span className="text-muted-foreground">— {t.role}</span>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-
-            <CodePanel code={act.code} line={frame?.line ?? -1} />
-
-            <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-              <Label>what to understand</Label>
-              <ul className="flex flex-col gap-1.5 text-muted-foreground">
-                {act.takeaways.map((t, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-chart-1">›</span>
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {j.chart.length > 0 && (
-              <div className="rounded-xl border bg-card p-4">
-                <StepsChart rows={j.chart} active={j.actKey} />
-              </div>
-            )}
-
-            <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-              <Label>legend</Label>
-              <Legend />
-            </div>
-
-            <p className="text-sm text-muted-foreground">
-              same problem elsewhere:{" "}
-              {journey.resources.map((r, i) => (
-                <span key={r.url}>
-                  {i > 0 && " · "}
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener"
-                    className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-foreground hover:underline"
-                  >
-                    {r.label} <ExternalLinkIcon className="size-3" />
-                  </a>
-                </span>
-              ))}
-            </p>
+            <ReadingBody j={j} journey={journey} />
             <ReadingToggle open />
           </aside>
         )}

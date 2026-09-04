@@ -17,10 +17,12 @@ export function SqlView() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-2">
         <div className="font-mono text-sm text-primary">SELECT ⋯ OVER ()</div>
-        <h1 className="font-heading text-2xl font-semibold">SQL Interview Drills</h1>
+        <h1 className="font-heading text-2xl font-semibold">
+          SQL Interview Drills
+        </h1>
         <p className="text-sm text-muted-foreground">
-          The window-function and join patterns that show up in every data round: dedupe,
-          top-N per group, running totals, gaps and islands.
+          The window-function and join patterns that show up in every data
+          round: dedupe, top-N per group, running totals, gaps and islands.
         </p>
       </header>
 
@@ -29,7 +31,10 @@ export function SqlView() {
           <div key={p.id} className="rounded-xl border bg-card p-4">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold">{p.title}</h2>
-              <Badge variant="outline" className={cn("font-mono", difficultyClass[p.difficulty])}>
+              <Badge
+                variant="outline"
+                className={cn("font-mono", difficultyClass[p.difficulty])}
+              >
                 {p.difficulty}
               </Badge>
             </div>
@@ -59,7 +64,9 @@ export function SqlView() {
               <TabsContent value="solution">
                 <div className="flex flex-col gap-3 pt-2">
                   <CodeBlock code={p.solution} />
-                  <p className="text-sm leading-relaxed text-muted-foreground">{p.explanation}</p>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {p.explanation}
+                  </p>
                 </div>
               </TabsContent>
             </Tabs>

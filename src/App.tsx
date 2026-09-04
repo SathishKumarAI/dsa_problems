@@ -11,7 +11,13 @@ import { journeyBySlug } from "@/engine"
 import { AlgorithmsPage } from "@/features/algorithms/algorithms-page"
 import { JourneyPage } from "@/features/journey/journey-page"
 import { navigate, useRoute } from "@/lib/route"
+import { openDialog } from "@/lib/dialogs"
+import { cn } from "@/lib/utils"
+import { CircleHelpIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { AppDialogs } from "./components/app-dialogs"
 import { AppSidebar } from "./components/app-sidebar"
+import { GlobalKeys } from "./components/global-keys"
 import { FlashcardsView } from "./components/flashcards-view"
 import { HomeView } from "./components/home-view"
 import { ProblemDetail } from "./components/problem-detail"
@@ -66,19 +72,34 @@ export default function App() {
   const { parts } = useRoute()
   const view = parts[0] === "p" ? parts[1] : (parts[0] ?? "home")
   const wide = parts[0] === "journey" || parts[0] === "algorithms"
+  // the journey page is a set of panels that scroll on their own (≥ lg):
+  // the inset is viewport-high and the page divides the height itself
+  const panels = parts[0] === "journey"
   return (
     <TooltipProvider>
       <SidebarProvider>
         <AppSidebar view={view} />
-        <SidebarInset>
+        <GlobalKeys />
+        <AppDialogs />
+        <SidebarInset className={cn(panels && "lg:h-svh lg:overflow-hidden")}>
           <div className="flex items-center gap-2 border-b px-4 py-2 md:hidden">
             <SidebarTrigger />
             <span className="font-mono text-sm">dsa.patterns</span>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="ml-auto text-muted-foreground"
+              aria-label="how to use this app"
+              onClick={() => openDialog("help")}
+            >
+              <CircleHelpIcon />
+            </Button>
           </div>
           <main
-            className={
-              wide ? "flex-1 px-4 py-6 md:px-6" : "flex-1 px-4 py-8 md:px-8"
-            }
+            className={cn(
+              wide ? "flex-1 px-4 py-6 md:px-6" : "flex-1 px-4 py-8 md:px-8",
+              panels && "lg:min-h-0 lg:overflow-hidden lg:py-4"
+            )}
           >
             <View />
           </main>
