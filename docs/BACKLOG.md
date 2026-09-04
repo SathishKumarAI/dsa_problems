@@ -41,7 +41,7 @@ a port; the original implementation is the reference, not the spec — the React
 | B19 | ☐ **Undo toast on "restart journey"** (5 s) instead of a confirm dialog. | Restart is one click and irreversible today. | S | — |
 | B20 | ☐ **Timed story challenge** ("The Vault", gated on the earned pattern). | Retrieval practice with stakes. | M | legacy #35 |
 | B21 | ☐ **Per-moment OG preview** for shared `?act=&step=` links. | Sharing a moment is the only viral surface a no-backend site has. | L | legacy #51 |
-| B22 | ☐ **Code splitting** — lazy-load the journey and visualizer features; the bundle is 644 kB (203 kB gzip) in one chunk. | Vite warns above 500 kB; content pages don't need the engine. | S | build output |
+| B22 | ☑ **Code splitting** — see F1. Shipped 2026-09-04 (`perf/code-splitting`). | Vite warned above 500 kB. | S | build output |
 | B23 | ☐ **Server-side challenge check** (`POST /api/challenge/:slug/check`) in a real sandbox (isolated-vm or a worker with resource limits) — only if a non-browser client appears. | `node:vm` is not a sandbox; don't ship it as one. | L | PRD open question 2 |
 | B24 | ☐ **Sync backend** — smallest possible store keyed by a login-less token, syncing the same JSON as B3's export. Only after export/import friction is proven. | Real backend only when the need is real. | L | legacy #23 |
 | B26 | ☑ **Focus key** — `f` closes both rails / reopens both (`Esc` is left to dialogs). Shipped 2026-09-04 with hover-peek on closed rails. | Mouse-free focus for a keyboard-driven page. | S | legacy #41 |
@@ -54,7 +54,7 @@ asking. The problem pipeline itself lives in `PROBLEMS.md` and is not repeated h
 
 | # | Proposal | Why | Size | Tier |
 |---|---|---|---|---|
-| F1 | ☐ **Code splitting** — `React.lazy` for the journey and visualizer features (B22; the bundle is 650 kB+ after the dialogs). | Content pages should not download the engine. Mechanical. | S | **P0** |
+| F1 | ☑ **Code splitting** — `React.lazy` for the journey and visualizer features (B22). Shipped 2026-09-04: 673.77 kB in one chunk → 400 kB index + 204 kB shared engine/data + lazy 44 / 21 / 9 kB. Follow-up: the sidebar imports `JOURNEYS` from the engine, so the engine chunk is still eager — a slug/title/acts registry would make it lazy too. | Content pages should not download the engine. Mechanical. | S | **P0** |
 | F2 | ☐ **Three-language code on the practice set** — `Solution.java` / `.cpp` beside `python`, tabs on the problem page sharing the `codeTab` pref. | The explicit ask: full code in Python 3, Java, C++ per approach. Unblocks the pipeline's DoD. | S (type + UI) · content per problem | **P0** |
 | F3 | ☐ **Window / stack / bars panel kinds** — `window` (a span over chips + the set beside it), `stack` (vertical chips, push/pop FLIP), `bars` (heights, port from the visualizer with a shaded area). | Wave 1–2 of `PROBLEMS.md` needs exactly these three; one PR each, arriving with the problem that proves it. | M each | **P0** with the problem |
 | F4 | ☐ **Corner cases met** — a teal dot on a stepper node once that act has shown a corner-case callout; header counter "cases met 3/4"; +3 XP the first time each case is seen. | The gamified loop the ask describes: the learner *collects* the edge cases instead of reading them. Data already exists (`frame.corner`). | S | P1 |
@@ -70,6 +70,7 @@ asking. The problem pipeline itself lives in `PROBLEMS.md` and is not repeated h
 ## Shipped this round (2026-09-04)
 
 - ☑ B4 collapsible rails + a bigger type scale on the journey page (stage 717 → 1280 px at 1440 wide).
+- ☑ F1 / B22 code splitting: 673.77 kB single chunk → 400 kB index (127 kB gzip) + 204 kB shared engine/data (67 kB gzip) + lazy journey 44 kB, FLIP 21 kB, visualizer 9 kB.
 - ☑ Shell: independent scroll panels on the journey page, hover-peek on closed rails, `f` focus key, settings dialog (B3), `?` shortcuts dialog (B5), help dialog, sidebar regrouped DSA / DSA · patterns / SQL / Data science with a where-you-are footer line.
 - ☑ Corner cases as content: `edgeCases` per journey (4 + 4), story-act cards (how to read · bring three inputs), in-play callout on `corner`-tagged frames, gated by a test that every case is explained on its preset. New presets `tiny`, `negatives` (Two Sum), `zero` (Single Number).
 

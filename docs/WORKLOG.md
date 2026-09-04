@@ -4,6 +4,21 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — code splitting (F1 / B22)
+
+Branch `perf/code-splitting`, stacked on `docs/problem-pipeline`.
+
+`App.tsx` lazy-loads `JourneyPage` and `AlgorithmsPage` behind one `Suspense` fallback.
+
+| `vite build` | Before | After |
+|---|---|---|
+| chunks | `index` 673.77 kB (212.25 gzip) | `index` 400.23 kB (127.11 gzip) · `store` (engine + data, shared) 203.87 kB (66.70 gzip) · `journey-page` 43.52 kB · `use-flip` 20.90 kB · `algorithms-page` 9.46 kB · runtime 0.58 kB |
+| initial JS on a content page | 673.77 kB | 604 kB (index + shared chunk) |
+
+The shared chunk stays eager because `app-sidebar.tsx` imports `JOURNEYS` from `@/engine` for the
+journey rows; a registry of slug / title / act count would let the engine load lazily too (noted on
+F1). `npm run check` 31/31; CDP: `#/journey/two-sum`, `#/algorithms`, `#/` all render, 0 errors.
+
 ## 2026-09-04 (later) — the problem pipeline and the front-end proposals
 
 Branch `docs/problem-pipeline`, stacked on `feat/shell-panels-help`. Docs only.
