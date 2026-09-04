@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Visualizer — feel the weakness, earn the insight</title>
+<link rel="stylesheet" href="style.css">
+<script src="js/ui-prefs.js"></script>
+</head>
+<body>
+<section id="hero">
+  <div id="hero-copy">
+    <h2>Feel the weakness. Earn the insight.</h2>
+    <p>Algorithms taught the way they were discovered: start with the obvious way,
+       watch it struggle, and unlock each faster idea only when you've earned it —
+       then prove it by writing the code yourself.</p>
+  </div>
+  <div id="hero-cards"></div>
+</section>
+<header>
+  <h1>Sorting Visualizer</h1>
+  <nav id="algo-tabs">
+    <button data-algo="bubble" class="active">Bubble</button>
+    <button data-algo="selection">Selection</button>
+    <button data-algo="insertion">Insertion</button>
+    <button data-algo="merge">Merge</button>
+    <button data-algo="quick">Quick</button>
+    <button data-algo="heap">Heap</button>
+    <button data-algo="binary">Binary Search</button>
+    <button data-algo="bfs">BFS</button>
+    <button data-algo="dfs">DFS</button>
+    <button data-algo="dijkstra">Dijkstra</button>
+  </nav>
+  <a id="problems-link" href="problems/index.html">Problems ▸</a>
+</header>
+
+<main>
+  <section id="stage">
+    <div id="bars" aria-label="array visualization"></div>
+    <input id="scrub" type="range" min="0" max="0" value="0" aria-label="timeline">
+    <div id="status">
+      <span>step <b id="stat-step">0</b>/<b id="stat-total">0</b></span>
+      <span><span id="stat-cmp-label">comparisons:</span> <b id="stat-comparisons">0</b></span>
+      <span><span id="stat-swp-label">swaps:</span> <b id="stat-swaps">0</b></span>
+      <span id="complexity"></span>
+    </div>
+  </section>
+
+  <aside id="side">
+    <pre id="pseudocode" aria-label="pseudocode"></pre>
+    <p id="explain"></p>
+    <div id="legend" aria-label="color legend">
+      <span><i class="sw compare"></i>comparing</span>
+      <span><i class="sw swap"></i>writing/swapping</span>
+      <span><i class="sw pivot"></i>pivot / range</span>
+      <span><i class="sw sorted"></i>in place / found</span>
+      <span><i class="sw discard"></i>eliminated</span>
+    </div>
+  </aside>
+</main>
+
+<footer id="controls">
+  <div class="group">
+    <button id="btn-random">Random</button>
+    <button id="btn-nearly">Nearly sorted</button>
+    <button id="btn-reversed">Reversed</button>
+    <button id="btn-few">Few unique</button>
+  </div>
+  <div class="group">
+    <label>size <input id="size" type="range" min="5" max="60" value="25"></label>
+    <label>speed <input id="speed" type="range" min="1" max="100" value="50"></label>
+    <label id="target-wrap" hidden>target <input id="target" type="number" min="0" max="120" value="50"></label>
+  </div>
+  <div class="group">
+    <button id="btn-play">▶ Play</button>
+    <button id="btn-back" title="step back (←)">◀ Step</button>
+    <button id="btn-step" title="step forward (→)">Step ▶</button>
+    <button id="btn-reset">Reset</button>
+    <button id="btn-focus"></button>
+  </div>
+  <span id="keys">space play · ←/→ step · r reset · drag timeline to scrub</span>
+</footer>
+
+<script src="js/catalog.js"></script>
+<script>
+// hero cards: every catalog entry with a live progress ring (pathLength=100
+// makes stroke-dasharray a straight percentage)
+document.getElementById("hero-cards").innerHTML = CATALOG.filter((e) => !e.ghost && !e.noProgress)
+  .map((e) => {
+    const unlocked = catalogUnlocked(e, "");
+    const pct = Math.round((Math.max(0, Math.min(unlocked, e.acts) - 1) / (e.acts - 1)) * 100);
+    return `<a class="hero-card${e.pattern ? " pattern" : ""}" href="${e.href}">
+      <svg class="ring" viewBox="0 0 36 36" aria-label="${pct}% complete">
+        <circle cx="18" cy="18" r="15.5" pathLength="100"></circle>
+        <circle cx="18" cy="18" r="15.5" pathLength="100" stroke-dasharray="${pct} 100"></circle>
+        <text x="18" y="21">${pct}%</text>
+      </svg>
+      <span><b>${e.title}</b><small>${e.sub}</small></span>
+    </a>`;
+  })
+  .join("") + `<a class="hero-card more" href="problems/index.html"><span><b>Roadmap ▸</b><small>the whole path, with your progress</small></span></a>`;
+</script>
+<script src="js/algorithms.js"></script>
+<script src="js/visualizer.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

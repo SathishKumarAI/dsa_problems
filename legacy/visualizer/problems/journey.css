@@ -1,0 +1,421 @@
+/* Shared styles for problem journey pages (chips, journey graph, narration,
+   map/bit views, chart). Palette + layout skeleton come from ../style.css. */
+
+h1 a { color: inherit; text-decoration: none; }
+h1 a:hover { text-decoration: underline; }
+
+#subtitle { font-size: var(--fs-sm); color: var(--subtext); }
+
+#settings { margin-left: auto; }
+
+/* --- first-visit tour --- */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.55);
+}
+.tour-target {
+  position: relative;
+  z-index: 31;
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.tour-tip {
+  position: fixed;
+  z-index: 32;
+  width: 300px;
+  background: var(--mantle);
+  border: 1px solid var(--surface1);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  font-size: var(--fs-md);
+  line-height: 1.45;
+}
+.tour-nav { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.7rem; }
+.tour-nav span { color: var(--subtext); font-size: var(--fs-xs); margin-right: auto; }
+.tour-next { background: var(--mauve); color: var(--on-mauve); }
+
+#xp-badge { font-size: var(--fs-sm); color: var(--yellow-text); white-space: nowrap; }
+.xp-float {
+  position: fixed;
+  z-index: 20;
+  font-size: var(--fs-md);
+  font-weight: bold;
+  color: var(--yellow-text);
+  pointer-events: none;
+  opacity: 0;
+}
+
+body.focus #journey { display: none; }
+
+/* --- learning journey graph --- */
+#journey {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+}
+.jnode {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+}
+.jnode small { color: var(--subtext); font-size: var(--fs-xs); }
+.jnode.active { background: var(--mauve); color: var(--on-mauve); }
+.jnode.active small { color: var(--on-mauve); }
+.jnode.done b::after { content: " ✓"; color: var(--green-text); }
+.jnode.active.done b::after { color: var(--on-mauve); }
+.jnode.locked {
+  background: none;
+  border: 1px dashed var(--surface1);
+  border-radius: 6px;
+  color: var(--subtext);
+}
+.jnode.revealed { animation: reveal 0.5s ease; }
+#idea.revealed { animation: reveal 1.2s ease; }
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+
+/* narration is the star of the page — big, stable, right under the data */
+#explain {
+  font-size: var(--fs-lg);
+  color: var(--text);
+  background: var(--mantle);
+  border-left: 3px solid var(--mauve);
+  border-radius: 0 8px 8px 0;
+  padding: 0.7rem 1rem;
+  margin-top: 1rem;
+  min-height: 3.4em; /* fixed height: text changes, layout never jumps */
+}
+
+/* --- quiz gate + predict panel (same look; predict interrupts playback) --- */
+#quiz, #predict {
+  margin-top: 0.9rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+#quiz[hidden], #predict[hidden] { display: none; } /* display:flex would beat [hidden] */
+.quiz-q { font-size: var(--fs-md); }
+.quiz-choices { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.quiz-choice { text-align: left; }
+.quiz-choice.right { background: var(--green); color: var(--on-green); }
+.quiz-choice.wrong { background: var(--red); color: var(--on-red); }
+.quiz-choice:disabled { cursor: default; }
+.quiz-feedback { font-size: var(--fs-md); color: var(--red-text); }
+#predict .quiz-feedback { color: var(--subtext); }
+
+#warning {
+  font-size: var(--fs-md);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.9rem;
+}
+#warning.bad { background: color-mix(in srgb, var(--red) 18%, var(--mantle)); color: var(--red-text); }
+#warning.info { background: var(--mantle); color: var(--subtext); }
+
+#databar { font-size: var(--fs-md); color: var(--subtext); padding-bottom: 0.6rem; }
+#databar b { color: var(--peach-text); font-size: var(--fs-lg); }
+
+/* Chip grammar — every state has a channel besides color (colorblind-safe):
+     fill   = state        (neutral / highlighted / answer)
+     marker = role         (▲ above = held/left/slow · ring = current/right/fast)
+     icon   = outcome      (✓ above = part of the answer)
+     fade   = eliminated   (opacity, luminance channel)
+   Change the grammar here and in the page legends together. */
+#array-row, .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; padding-top: 0.7rem; }
+
+.chip {
+  position: relative;
+  min-width: 2.4rem;
+  height: 2.4rem;
+  padding: 0 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface0);
+  border-radius: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-lg);
+}
+.chip .oi { font-size: var(--fs-2xs); color: var(--subtext); line-height: 1.1; }
+.chip.focus {
+  background: var(--yellow);
+  color: var(--on-yellow);
+  font-weight: bold;
+  outline: 2px solid var(--text); /* ring = attention, readable without hue */
+  outline-offset: 2px;
+}
+.chip.anchor { background: var(--peach); color: var(--on-peach); font-weight: bold; }
+.chip.anchor::before {
+  content: "▲";
+  position: absolute;
+  top: -0.8rem;
+  font-size: var(--fs-2xs);
+  color: var(--peach-text);
+}
+.chip.answer { background: var(--green); color: var(--on-green); font-weight: bold; outline: none; }
+.chip.answer::before {
+  content: "✓";
+  position: absolute;
+  top: -0.9rem;
+  font-size: var(--fs-xs);
+  color: var(--green-text);
+  font-weight: bold;
+}
+.chip.focus .oi, .chip.anchor .oi, .chip.answer .oi { color: var(--on-yellow); }
+.chip.done { opacity: 0.25; }
+
+#panel {
+  flex: 1;
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.panel-label { font-size: var(--fs-xs); color: var(--subtext); }
+
+.sum-eq { font-size: var(--fs-lg); font-family: ui-monospace, monospace; }
+.sum-eq b.hit { color: var(--green-text); }
+.sum-eq b.miss { color: var(--red-text); }
+.sum-eq .target-note { margin-left: 0.7rem; font-size: var(--fs-sm); color: var(--subtext); }
+
+.map-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.map-chip {
+  background: var(--surface0);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-md);
+}
+.map-chip.scan { background: var(--yellow); color: var(--on-yellow); }
+.map-chip.answer { background: var(--green); color: var(--on-green); }
+
+.story-scene { font-size: 2.2rem; letter-spacing: 0.4rem; padding: 0.5rem 0; }
+
+/* --- recap screen --- */
+.recap-table { border-collapse: collapse; font-size: var(--fs-sm); max-width: 46rem; }
+.recap-table th, .recap-table td {
+  text-align: left;
+  padding: 0.45rem 0.8rem;
+  border-bottom: 1px solid var(--surface0);
+  vertical-align: top;
+}
+.recap-table th { color: var(--subtext); font-weight: normal; font-size: var(--fs-xs); }
+.recap-table td:first-child { color: var(--mauve-text); white-space: nowrap; }
+.recap-table td:nth-child(2) { white-space: nowrap; color: var(--peach-text); }
+.recap-links { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.recap-link {
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  max-width: 20rem;
+}
+.recap-link:hover { background: var(--surface0); }
+.recap-link b { color: var(--mauve-text); }
+.recap-link small { color: var(--subtext); }
+
+/* --- code challenge editor --- */
+#challenge-box { display: flex; flex-direction: column; gap: 0.4rem; max-width: 44rem; }
+.challenge-sig { font-family: ui-monospace, monospace; font-size: var(--fs-md); color: var(--subtext); }
+#challenge-code {
+  background: var(--mantle);
+  color: var(--text);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  resize: vertical;
+  tab-size: 2;
+}
+#challenge-code:focus { outline: 2px solid var(--mauve); }
+.challenge-controls { display: flex; gap: 0.8rem; align-items: center; }
+#challenge-run { background: var(--green); color: var(--on-green); }
+#challenge-verdict { font-size: var(--fs-md); }
+#challenge-verdict.hit { color: var(--green-text); }
+#challenge-verdict.miss { color: var(--red-text); }
+#challenge-cases { display: flex; flex-direction: column; gap: 0.25rem; font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
+/* --- dual test set: the big-input counter comparison --- */
+#challenge-big { margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+#big-run { background: var(--yellow); color: var(--on-yellow); }
+#big-result { width: 100%; max-width: 34rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.big-row { display: flex; align-items: center; gap: 0.5rem; font-size: var(--fs-sm); }
+.big-label { width: 6rem; color: var(--subtext); flex-shrink: 0; }
+.big-bar { height: 12px; border-radius: 0 4px 4px 0; min-width: 2px; }
+.big-bar.you { background: var(--red); }
+.big-bar.ref { background: var(--green); }
+.big-val { color: var(--subtext); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.big-note { font-size: var(--fs-sm); color: var(--text); }
+
+#challenge-review {
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.review-item { font-size: var(--fs-sm); color: var(--subtext); display: flex; gap: 0.45rem; align-items: baseline; }
+.review-item.hit { color: var(--green-text); }
+.review-item.miss { color: var(--red-text); }
+.review-item small { color: var(--subtext); }
+
+#challenge-scorecard {
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.score-row { font-size: var(--fs-sm); color: var(--subtext); display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap; }
+.score-row b { color: var(--text); font-variant-numeric: tabular-nums; }
+.score-row .hit { color: var(--green-text); }
+.score-row .miss { color: var(--red-text); }
+
+.challenge-case.pass { color: var(--green-text); }
+.challenge-case.fail { color: var(--red-text); }
+.challenge-case small { color: var(--subtext); }
+
+.bits { display: flex; gap: 0.3rem; align-items: center; }
+.bits .tag { width: 3.5rem; color: var(--subtext); font-size: var(--fs-sm); }
+.bits .dec { margin-left: 0.6rem; color: var(--subtext); font-size: var(--fs-md); }
+.bit {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface0);
+  border-radius: 6px;
+  font-family: ui-monospace, monospace;
+  color: var(--subtext);
+}
+.bit.on { background: var(--blue); color: var(--on-blue); font-weight: bold; }
+.bit.flip { outline: 2px solid var(--red); }
+
+#legend .blue { background: var(--blue); }
+
+#idea {
+  font-size: var(--fs-md);
+  background: var(--mantle);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+}
+#idea b { color: var(--mauve-text); }
+
+/* sidebar scrolls as a whole; the code box must never collapse into a
+   one-line scroller when content overflows the column */
+#side { overflow-y: auto; }
+#pseudocode { flex-shrink: 0; }
+
+#code-tabs { display: flex; gap: 0.25rem; }
+.code-tab { font-size: var(--fs-xs); padding: 0.25rem 0.6rem; }
+.code-tab.active { background: var(--mauve); color: var(--on-mauve); }
+
+#takeaways { font-size: var(--fs-sm); }
+#takeaways ul { margin: 0.3rem 0 0 1.1rem; padding: 0; }
+#takeaways li { margin-bottom: 0.25rem; color: var(--subtext); }
+#takeaways li::marker { color: var(--mauve-text); }
+
+/* --- steps-per-approach chart: one measure, one hue, direct-labeled --- */
+#chart { display: flex; flex-direction: column; gap: 0.35rem; }
+.crow { display: flex; align-items: center; gap: 0.5rem; font-size: var(--fs-xs); }
+.clabel { width: 5.5rem; color: var(--subtext); flex-shrink: 0; }
+.cbar {
+  height: 10px;
+  background: var(--blue);
+  border-radius: 0 4px 4px 0;
+  min-width: 2px;
+}
+.crow.active .cbar { background: var(--mauve); }
+.crow.active .clabel { color: var(--text); }
+.cval { color: var(--subtext); font-variant-numeric: tabular-nums; }
+
+/* stacked (phone) layout: sidebar flows with the page instead of scrolling
+   inside itself; chips grow to comfortable touch size on coarse pointers */
+@media (max-width: 800px) {
+  #side { overflow-y: visible; }
+  #journey { padding-bottom: 0.6rem; }
+}
+@media (pointer: coarse) {
+  .chip { min-width: 2.75rem; height: 2.75rem; }
+  .jnode { padding: 0.6rem 0.9rem; }
+  .quiz-choice { min-height: 44px; }
+}
+
+#resources { font-size: var(--fs-xs); color: var(--subtext); }
+#resources a { color: var(--blue-text); text-decoration: none; }
+#resources a:hover { text-decoration: underline; }
+
+#custom, #target-input {
+  background: var(--surface0);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font-size: var(--fs-sm);
+}
+#custom { width: 11rem; }
+#target-input { width: 3.5rem; }
+select {
+  background: var(--surface0);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.4rem;
+  font-size: var(--fs-sm);
+}
+#btn-next { background: var(--mauve); color: var(--on-mauve); }
+
+/* --- adaptive difficulty prompt --- */
+#adaptive-up {
+  margin-top: 0.9rem;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+  background: color-mix(in srgb, var(--peach) 12%, var(--mantle));
+  border: 1px solid color-mix(in srgb, var(--peach) 40%, var(--surface0));
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: var(--fs-md);
+}
+#adaptive-go { background: var(--peach); color: var(--on-peach); }
+
+/* --- hint ladder --- */
+#hints {
+  margin-top: 0.9rem;
+  background: color-mix(in srgb, var(--blue) 8%, var(--mantle));
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+#hints[hidden] { display: none; }
+#hints .hint { font-size: var(--fs-md); color: var(--text); }
+#hint-more { align-self: flex-start; }

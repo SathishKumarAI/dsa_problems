@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Vault — a timed challenge</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="problems/journey.css">
+<script src="js/ui-prefs.js"></script>
+<style>
+  #mission { max-width: 44rem; display: flex; flex-direction: column; gap: 1rem; }
+  #mission .transmission {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-left: 3px solid var(--green);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    font-family: ui-monospace, monospace;
+    font-size: var(--fs-md);
+    line-height: 1.6;
+  }
+  #mission .transmission b { color: var(--green-text); }
+  #timer {
+    font-family: ui-monospace, monospace;
+    font-size: 1.6rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--yellow-text);
+  }
+  #timer.late { color: var(--red-text); }
+  #accept { background: var(--green); color: var(--on-green); align-self: flex-start; }
+  #outcome { font-size: var(--fs-lg); }
+  #outcome.win { color: var(--green-text); }
+  #outcome.lose { color: var(--red-text); }
+  #locked a { color: var(--blue-text); }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="index.html">DSA Visualizer</a> · <a href="problems/index.html">Roadmap</a> · The Vault</h1>
+  <span id="subtitle">optional · timed · patterns you've already earned</span>
+</header>
+<main>
+  <section id="stage">
+    <div id="mission"></div>
+  </section>
+</main>
+
+<script src="problems/journey.js"></script>
+<script>
+// Story challenge mode (Foobar mechanic): retrieval practice with stakes.
+// Gated on finishing the Two Sum journey; reuses the shared harness from
+// journey.js (renderChallengeUI/challenge-pass) with mission-local cases.
+const missionEl = document.getElementById("mission");
+const TWO_SUM_DONE = (Number(localStorage.getItem("unlocked:/problems/two-sum.html")) || 0) >= 7;
+const MISSION_SECONDS = 300;
+
+function makeCase() {
+  const nums = shuffled(distinct(randInt(8, 12), 10, 99));
+  const i = randInt(0, nums.length - 2);
+  const j = randInt(i + 1, nums.length - 1);
+  return { nums, target: nums[i] + nums[j], expected: [i, j], anyPair: true };
+}
+
+// harness contract: a global CHALLENGE; cases dealt fresh per mission
+var CHALLENGE = {
+  fname: "crackVault",
+  signature: "function crackVault(codes, master) {",
+  starter: "// two keypad codes sum to the master code — return their positions\n\n",
+  cases: [],
+  review: null,
+  big: null,
+  // scorecard baseline (the earned one-pass), so touch counts mean something
+  reference:
+    "const seen = new Map();\n" +
+    "for (let i = 0; i < nums.length; i++) {\n" +
+    "  const need = target - nums[i];\n" +
+    "  if (seen.has(need)) return [seen.get(need), i];\n" +
+    "  seen.set(nums[i], i);\n" +
+    "}\nreturn [];",
+};
+
+if (!TWO_SUM_DONE) {
+  missionEl.innerHTML = `
+    <div class="transmission">▮ INCOMING TRANSMISSION …<br><br>
+    Clearance insufficient, operative. The vault reads your training record —
+    and the <b>Two Sum</b> journey isn't finished. Earn the pattern first;
+    the door will know.</div>
+    <p id="locked"><a href="problems/two-sum.html">→ complete the Two Sum journey</a></p>`;
+} else {
+  missionEl.innerHTML = `
+    <div class="transmission">▮ INCOMING TRANSMISSION …<br><br>
+    Operative — the vault's keypad shows a row of numbered codes and one
+    <b>master code</b>. Intelligence says exactly two keypad codes sum to it,
+    and the door wants their <b>positions</b>. You've done this before, in a
+    store, with a gift card. You have <b>5:00</b> from the moment you accept.
+    The pattern is yours — trust your hands.</div>
+    <button id="accept">Accept the mission ▸</button>
+    <div id="arena" hidden>
+      <div id="timer">5:00</div>
+      <div id="editor-slot"></div>
+      <p id="outcome"></p>
+    </div>`;
+
+  document.getElementById("accept").onclick = () => {
+    document.getElementById("accept").remove();
+    const arena = document.getElementById("arena");
+    arena.hidden = false;
+    CHALLENGE.cases = Array.from({ length: 5 }, makeCase);
+    renderChallengeUI(document.getElementById("editor-slot"));
+    document.getElementById("challenge-trace")?.remove(); // no page input to trace here
+
+    let left = MISSION_SECONDS;
+    const timerEl = document.getElementById("timer");
+    const outcome = document.getElementById("outcome");
+    const tick = setInterval(() => {
+      left--;
+      timerEl.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+      if (left <= 60) timerEl.classList.add("late");
+      if (left <= 0) {
+        clearInterval(tick);
+        document.getElementById("challenge-run").disabled = true;
+        outcome.className = "lose";
+        outcome.textContent = "▮ transmission lost — the vault re-keyed itself. Reload to run it again; the pattern doesn't expire.";
+      }
+    }, 1000);
+
+    document.addEventListener("challenge-pass", () => {
+      clearInterval(tick);
+      const used = MISSION_SECONDS - left;
+      const t = `${Math.floor(used / 60)}:${String(used % 60).padStart(2, "0")}`;
+      const bestKey = "mission:vault";
+      const best = Number(localStorage.getItem(bestKey)) || Infinity;
+      if (used < best) localStorage.setItem(bestKey, used);
+      localStorage.setItem("xp", (Number(localStorage.getItem("xp")) || 0) + 50);
+      outcome.className = "win";
+      outcome.textContent = `▮ VAULT OPEN in ${t} ${used < best ? "— new record" : `(best: ${Math.floor(best / 60)}:${String(best % 60).padStart(2, "0")})`} · +50 XP. The pattern held under pressure — that's the point.`;
+    }, { once: true });
+  };
+}
+</script>
+</body>
+</html>

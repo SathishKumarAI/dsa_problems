@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Sum — a learning journey</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="journey.css">
+<script src="../js/ui-prefs.js"></script>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html">DSA Visualizer</a> · <a href="index.html">Problems</a> · Two Sum</h1>
+  <span id="subtitle">one problem, solved step by step — each idea earned, not spoiled</span>
+</header>
+
+<main>
+  <section id="stage">
+    <nav id="journey" aria-label="learning journey"></nav>
+    <p id="warning" hidden></p>
+    <div id="databar"></div>
+    <div id="array-row" aria-label="input array"></div>
+    <p id="explain" aria-live="polite"></p>
+    <div id="panel" aria-label="approach state"></div>
+    <input id="scrub" type="range" min="0" max="0" value="0" aria-label="timeline">
+    <div id="status">
+      <span>step <b id="stat-step">0</b>/<b id="stat-total">0</b></span>
+      <span id="complexity"></span>
+    </div>
+  </section>
+
+  <aside id="side">
+    <p id="idea"></p>
+    <div id="code-tabs" hidden></div>
+    <pre id="pseudocode" aria-label="code"></pre>
+    <div id="takeaways"></div>
+    <div id="chart" aria-label="steps per approach on this input"></div>
+    <div id="legend" aria-label="legend — every state also has a shape channel">
+      <span><i class="sw pivot"></i>▲ held item / left pointer</span>
+      <span><i class="sw compare"></i>ring = current / right pointer</span>
+      <span><i class="sw sorted"></i>✓ answer</span>
+      <span><i class="sw discard"></i>faded = processed / eliminated</span>
+      <span><i class="sw blue"></i>pill = map entry</span>
+    </div>
+    <p id="resources"></p>
+  </aside>
+</main>
+
+<footer id="controls">
+  <div class="group">
+    <label>data <select id="preset">
+      <option value="random">random</option>
+      <option value="ends">edge: answer at the extremes</option>
+      <option value="duplicates">edge: pair of equal values</option>
+      <option value="big">edge: big array (n=20)</option>
+      <option value="nosolution">⚠ broken: no solution</option>
+      <option value="multi">⚠ broken: two solutions</option>
+    </select></label>
+    <button id="btn-new">New</button>
+    <input id="custom" placeholder="e.g. 2, 7, 11, 15" aria-label="custom input">
+    <label>target <input id="target-input" type="number" aria-label="target"></label>
+    <button id="btn-apply">Apply</button>
+  </div>
+  <div class="group">
+    <label>speed <input id="speed" type="range" min="1" max="100" value="50"></label>
+  </div>
+  <div class="group">
+    <button id="btn-play">▶ Play</button>
+    <button id="btn-back" title="step back (←)">◀ Step</button>
+    <button id="btn-step" title="step forward (→)">Step ▶</button>
+    <button id="btn-reset">Reset</button>
+    <button id="btn-focus"></button>
+    <button id="btn-next" hidden></button>
+  </div>
+  <span id="keys">space play · ←/→ step · r reset · drag timeline to scrub</span>
+</footer>
+
+<script src="two-sum-approaches.js"></script>
+<script src="journey.js"></script>
+</body>
+</html>
