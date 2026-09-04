@@ -13,7 +13,7 @@ a port; the original implementation is the reference, not the spec — the React
 | B1 | ☐ **Unify the flagship walkthroughs** — the practice-set pages for Pair With Target Sum and Single Number render their Walkthrough tab from the journey engine (`api.run` on the sample) instead of the hand-written `walkthrough` frames. | Two sources of truth for the same problem drift; the journey is the richer one. | S | PRD open question 1 |
 | B2 | ☐ **UI smoke test in CI** — a `node --test` that boots the app in jsdom (or a Playwright run) and checks: every route renders, zero console errors, quiz → reveal writes `unlocked=2`. | Every UI branch this session was verified by hand over CDP; that does not scale past two journeys. | M | legacy #21 |
 | B3 | ☐ **Settings gear** — theme (needs B14), default speed, motion dial (calm/normal/cinematic/off — the pref already exists in `lib/store.ts`), reduce-motion override, restart journey, export/import progress JSON. | The motion dial has no UI; export/import is the cross-device story until there is a backend. | M | legacy #5, #22, #45 |
-| B4 | ☐ **Focus tiers** — `f` cycles full → stage (sidebar + reading column hidden, header kept) → cinema (stage only). `Esc` exits. Never hide the controls. | The stage is the product; a learner mid-act should be able to remove everything else without losing play/speed. | S | legacy #41 |
+| B4 | ☑ **Collapsible rails** — sidebar and reading column each close from a button at their foot into a thin rail that keeps the button; both states persist. Shipped 2026-09-04 (`feat/journey-focus-rails`). The `f` / `Esc` cycling half moved to B26. | The stage is the product; a learner mid-act should be able to remove everything else without losing play/speed. | S | legacy #41 |
 | B5 | ☐ **`?` shortcuts overlay** on every page, built from a route → shortcuts table. | The visualizer page lists keys as text; the journey page lists none. | S | legacy #13, #42 |
 | B6 | ☐ **Single Number code challenge** — `singleNumber(nums)` with cases (n = 1, loner largest, duplicates), reference = XOR, review items (no map, one loop, `^`). Challenge harness already supports `target`-less functions. | Two Sum has the "prove it" act; Single Number ends on XOR without asking the learner to write it. | S | — |
 | B7 | ☐ **Merge-sort write pulse + discard fade** in `BarsView` — `set` steps scale-pulse, `discard` fades instead of greying. | The bars FLIP on swaps; merge sort's writes still teleport. | S | legacy #44 |
@@ -44,9 +44,12 @@ a port; the original implementation is the reference, not the spec — the React
 | B22 | ☐ **Code splitting** — lazy-load the journey and visualizer features; the bundle is 644 kB (203 kB gzip) in one chunk. | Vite warns above 500 kB; content pages don't need the engine. | S | build output |
 | B23 | ☐ **Server-side challenge check** (`POST /api/challenge/:slug/check`) in a real sandbox (isolated-vm or a worker with resource limits) — only if a non-browser client appears. | `node:vm` is not a sandbox; don't ship it as one. | L | PRD open question 2 |
 | B24 | ☐ **Sync backend** — smallest possible store keyed by a login-less token, syncing the same JSON as B3's export. Only after export/import friction is proven. | Real backend only when the need is real. | L | legacy #23 |
+| B26 | ☐ **Focus keys** — `f` cycles both rails open → both closed → back; `Esc` reopens. Never hide the controls. Builds on B4's two toggles. | Mouse-free focus for a keyboard-driven page (space / ← / → / r already work). | S | legacy #41 |
 | B25 | ☐ **Retire `legacy/visualizer/`** once B3–B5, B9–B11, B13, B15–B17, B20 have shipped or been explicitly dropped. | It is reference material, not product; delete it when nothing left in it is un-ported. | S | — |
 
 ## Shipped this round (2026-09-04)
+
+- ☑ B4 collapsible rails + a bigger type scale on the journey page (stage 717 → 1280 px at 1440 wide).
 
 - ☑ Repo merge with history (`legacy/visualizer` subtree, 47 commits preserved).
 - ☑ Engine port: typed, DOM-free, view models instead of HTML strings; content gate as tests.

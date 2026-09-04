@@ -9,7 +9,7 @@
 //   xp                number     total XP
 //   activity-days     string[]   ISO days with any activity (streak source)
 //   scorecard:<slug>  object[]   last 50 challenge runs
-//   prefs             object     speed, code tab, motion
+//   prefs             object     speed, code tab, motion, reading column open
 
 import { useSyncExternalStore } from "react"
 
@@ -87,14 +87,20 @@ export interface Prefs {
   speed: number // slider 1..100
   codeTab: string // pseudo | python | java | cpp
   motion: "calm" | "normal" | "cinematic" | "off"
+  reading: boolean // journey page: reading column open (false = icon rail)
 }
 export const DEFAULT_PREFS: Prefs = {
   speed: 50,
   codeTab: "pseudo",
   motion: "normal",
+  reading: true,
 }
 
-export const usePrefs = () => useStored<Prefs>(K.prefs, DEFAULT_PREFS)
+// merged over the defaults so a pref added later reads as its default, not undefined
+export const usePrefs = (): Prefs => ({
+  ...DEFAULT_PREFS,
+  ...useStored<Partial<Prefs>>(K.prefs, DEFAULT_PREFS),
+})
 export const setPref = <P extends keyof Prefs>(k: P, v: Prefs[P]) =>
   updateStored(K.prefs, DEFAULT_PREFS, (p) => ({ ...p, [k]: v }))
 
