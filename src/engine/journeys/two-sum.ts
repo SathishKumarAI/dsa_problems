@@ -90,23 +90,30 @@ function* runStory({ nums, target }: TwoSumData): Generator<F> {
   } else {
     yield {
       hold: 3,
+      corner: "nosolution",
       note: "…no pair spends the card exactly. The promise is broken — keep that in mind, it will matter.",
     }
   }
 }
 
 function* runBrute({ nums, target }: TwoSumData): Generator<F> {
+  let negShown = false
   for (let i = 0; i < nums.length; i++) {
     for (let j = i + 1; j < nums.length; j++) {
       const sum = nums[i] + nums[j]
+      const neg = !negShown && (nums[i] < 0 || nums[j] < 0)
+      if (neg) negShown = true
       yield {
         line: 2,
         i,
         j,
         sum,
-        note: `${nums[i]} + ${nums[j]} = ${sum}${sum === target ? ` — that's the target!` : ` — not ${target}, keep looking`}`,
+        corner: neg ? "negatives" : undefined,
+        hold: neg ? 2 : undefined,
+        note: `${nums[i]} + ${nums[j]} = ${sum}${sum === target ? ` — that's the target!` : ` — not ${target}, keep looking`}${neg ? ". A negative price is still just a number to add — the arithmetic never cared about the sign" : ""}`,
       }
       if (sum === target) {
+        const equal = nums[i] === nums[j]
         yield {
           hold: 2,
           line: 3,
@@ -114,6 +121,7 @@ function* runBrute({ nums, target }: TwoSumData): Generator<F> {
           j,
           sum,
           answer: [i, j],
+          corner: equal ? "duplicates" : nums.length === 2 ? "tiny" : undefined,
           predict: {
             q: `Found it: ${nums[i]} + ${nums[j]} = ${target}. What does the function return?`,
             choices: [
@@ -123,7 +131,7 @@ function* runBrute({ nums, target }: TwoSumData): Generator<F> {
             ],
             answer: 0,
           },
-          note: `return [${i}, ${j}] — the positions of ${nums[i]} and ${nums[j]}`,
+          note: `return [${i}, ${j}] — the positions of ${nums[i]} and ${nums[j]}${equal ? ". Two different slots, same price — legal, because j started at i + 1 so a slot never met itself" : nums.length === 2 ? ". n = 2: the loops ran exactly once — the smallest input is the whole search" : ""}`,
         }
         return
       }
@@ -132,6 +140,7 @@ function* runBrute({ nums, target }: TwoSumData): Generator<F> {
   yield {
     hold: 2,
     line: 4,
+    corner: "nosolution",
     note: "tried every pair — no solution, the promise was broken",
   }
 }
@@ -143,6 +152,7 @@ function* runTwoPointer({ nums, target }: TwoSumData): Generator<F> {
   let R = s.length - 1
   let askedL = false
   let askedR = false
+  const hasNeg = nums.some((v) => v < 0)
   yield {
     hold: 2,
     line: 0,
@@ -150,13 +160,15 @@ function* runTwoPointer({ nums, target }: TwoSumData): Generator<F> {
     s,
     L,
     R,
-    note: "sort — but drag each value's ORIGINAL index along (the tiny #numbers), because the answer must be positions",
+    corner: hasNeg ? "negatives" : undefined,
+    note: `sort — but drag each value's ORIGINAL index along (the tiny #numbers), because the answer must be positions${hasNeg ? ". Negatives sort to the front; sorting compares values, it never uses one as a position" : ""}`,
   }
   while (L < R) {
     const sum = s[L] + s[R]
     yield { line: 3, order, s, L, R, sum, note: `${s[L]} + ${s[R]} = ${sum}` }
     if (sum === target) {
       const ans = [order[L], order[R]].sort((a, b) => a - b)
+      const equal = s[L] === s[R]
       yield {
         hold: 2,
         line: 4,
@@ -166,7 +178,8 @@ function* runTwoPointer({ nums, target }: TwoSumData): Generator<F> {
         R,
         sum,
         answer: ans,
-        note: `hit! sorted slots ${L} and ${R} map back to original indices [${ans}]`,
+        corner: equal ? "duplicates" : nums.length === 2 ? "tiny" : undefined,
+        note: `hit! sorted slots ${L} and ${R} map back to original indices [${ans}]${equal ? ". Equal values sit side by side once sorted, and L < R keeps them two different slots" : nums.length === 2 ? ". n = 2: L and R started on the only pair there is" : ""}`,
       }
       return
     }
@@ -220,24 +233,31 @@ function* runTwoPointer({ nums, target }: TwoSumData): Generator<F> {
     s,
     L,
     R,
+    corner: "nosolution",
     note: "pointers met — no solution, the promise was broken",
   }
 }
 
 function* runHash({ nums, target }: TwoSumData): Generator<F> {
   const seen = new Map<number, number>()
+  let negShown = false
   for (let i = 0; i < nums.length; i++) {
     const need = target - nums[i]
     const hit = seen.has(need)
+    const neg = !negShown && need < 0
+    if (neg) negShown = true
     yield {
       line: 3,
       i,
       need,
       seen: [...seen],
       hit,
-      note: `at ${nums[i]}: I need ${need} — ${hit ? `and I've SEEN it, at index ${seen.get(need)}!` : "haven't seen it yet"}`,
+      corner: neg ? "negatives" : undefined,
+      hold: neg ? 2 : undefined,
+      note: `at ${nums[i]}: I need ${need} — ${hit ? `and I've SEEN it, at index ${seen.get(need)}!` : "haven't seen it yet"}${neg ? ". A negative need is just another key to look up — keys are values, never positions" : ""}`,
     }
     if (hit) {
+      const self = need === nums[i]
       yield {
         hold: 2,
         line: 3,
@@ -246,7 +266,8 @@ function* runHash({ nums, target }: TwoSumData): Generator<F> {
         seen: [...seen],
         hit,
         answer: [seen.get(need)!, i],
-        note: `return [${seen.get(need)}, ${i}] — one pass, done`,
+        corner: self ? "duplicates" : nums.length === 2 ? "tiny" : undefined,
+        note: `return [${seen.get(need)}, ${i}] — one pass, done${self ? `. I needed ${need} and I AM ${nums[i]} — it worked only because the check ran BEFORE the store, so the map held the OTHER copy` : nums.length === 2 ? ". n = 2: one store, one lookup — the whole algorithm" : ""}`,
       }
       return
     }
@@ -274,6 +295,7 @@ function* runHash({ nums, target }: TwoSumData): Generator<F> {
     hold: 2,
     line: 4,
     seen: [],
+    corner: "nosolution",
     note: "scanned everything — no solution, the promise was broken",
   }
 }
@@ -289,17 +311,23 @@ function* runTwoPassHash({ nums, target }: TwoSumData): Generator<F> {
       note: `pass 1: file ${nums[i]} under index ${i}`,
     }
   }
+  let negShown = false
   for (let i = 0; i < nums.length; i++) {
     const need = target - nums[i]
     const j = map.get(need)
     const hit = map.has(need) && j !== i
+    const self = map.has(need) && j === i
+    const neg = !negShown && need < 0
+    if (neg) negShown = true
     yield {
       line: 4,
       i,
       need,
       seen: [...map],
       hit,
-      note: `pass 2: at ${nums[i]} I need ${need} — ${!map.has(need) ? "not in the map" : j === i ? `the map points at index ${j}… that's MYSELF. The j != i guard saves us` : `the map says index ${j}`}`,
+      corner: self ? "duplicates" : neg ? "negatives" : undefined,
+      hold: self || neg ? 2 : undefined,
+      note: `pass 2: at ${nums[i]} I need ${need} — ${!map.has(need) ? "not in the map" : self ? `the map points at index ${j}… that's MYSELF. The j != i guard saves us` : `the map says index ${j}`}${neg ? ". A negative need is just another key" : ""}`,
     }
     if (hit) {
       const ans = [i, j!].sort((a, b) => a - b)
@@ -311,7 +339,8 @@ function* runTwoPassHash({ nums, target }: TwoSumData): Generator<F> {
         seen: [...map],
         hit,
         answer: ans,
-        note: `return [${ans}]`,
+        corner: nums.length === 2 ? "tiny" : undefined,
+        note: `return [${ans}]${nums.length === 2 ? " — n = 2: two files, one lookup" : ""}`,
       }
       return
     }
@@ -319,6 +348,7 @@ function* runTwoPassHash({ nums, target }: TwoSumData): Generator<F> {
   yield {
     hold: 2,
     line: 5,
+    corner: "nosolution",
     note: "no complement found — the promise was broken",
   }
 }
@@ -373,6 +403,11 @@ const story: Act<TwoSumData, F> = {
       "task: return the two indices",
     ],
   },
+  hints: [
+    "Reread the ask. It says return INDICES. Say the output for [2, 7, 11, 15] with target 9 out loud — is it [2, 7] or [0, 1]?",
+    "Formalize it as one question: input = an array of integers and a target; output = the two positions whose values add to the target. Which words in the statement are promises you may lean on?",
+    "Bring three inputs before any code: the smallest legal one (n = 2), a plain one, and a corner one — equal values, no answer, negatives. The corner cases listed here are those inputs; load one and watch.",
+  ],
   takeaways: [
     "the answer is indices, not values — index bookkeeping is half the problem",
     '"exactly one solution" is a promise the fast solutions lean on',
@@ -1087,6 +1122,16 @@ export const twoSum: Journey<TwoSumData> = {
       make: () => makeTwoSum(20, 1, 99),
       info: "n = 20. Same code, twenty prices. Watch the chart: one bar probes about n²/2 pairs while another stays flat. That gap is what complexity notation was trying to tell you.",
     },
+    tiny: {
+      label: "n = 2 (smallest legal)",
+      make: () => ({ nums: [1, 2], target: 3 }),
+      info: "n = 2: every loop runs at most once. The smallest legal input is where an off-by-one shows first.",
+    },
+    negatives: {
+      label: "negatives (target 0)",
+      make: () => ({ nums: [-3, 4, 3, 90], target: 0 }),
+      info: "Negative values and target 0: the complement can be negative or zero. Anything that uses a value as a position breaks here; comparisons and lookups do not care.",
+    },
     nosolution: {
       label: "no solution (broken promise)",
       make: () => ({ nums: [1, 2, 5, 11], target: 99 }),
@@ -1106,7 +1151,7 @@ export const twoSum: Journey<TwoSumData> = {
       .split(/[\s,]+/)
       .filter(Boolean)
       .map(Number)
-      .filter((v) => Number.isInteger(v) && v >= 0 && v <= 999)
+      .filter((v) => Number.isInteger(v) && v >= -999 && v <= 999)
     const target = Number(params.target)
     return nums.length >= 2 && Number.isInteger(target)
       ? { nums, target }
@@ -1114,4 +1159,42 @@ export const twoSum: Journey<TwoSumData> = {
   },
   challenge: TWO_SUM_CHALLENGE,
   sample: { nums: [2, 7, 11, 15], target: 9 },
+  edgeCases: [
+    {
+      key: "tiny",
+      name: "smallest legal input",
+      example: "[1, 2], target 3 → [0, 1]",
+      why: "n = 2 means every loop runs once at most. Off-by-one mistakes — j starting at i instead of i + 1, a loop that stops one early — show up here before anywhere else.",
+      think:
+        "Bring an empty or tiny case first. Two Sum cannot be empty (n ≥ 2 is promised), so n = 2 is the boundary to trace by hand.",
+      preset: "tiny",
+    },
+    {
+      key: "duplicates",
+      name: "two equal values",
+      example: "[3, 1, 3, 8], target 6 → [0, 2]",
+      why: "3 + 3 hits the target, but a value may not pair with itself. Anything that remembers a value must check for the complement BEFORE recording the current one, or guard j ≠ i — swap that order and 3 matches itself at index 0.",
+      think:
+        "Ask two questions before coding: can both indices be the same? (no) Can two different indices hold the same value? (yes) Those two answers fix the order of your check and your store.",
+      preset: "duplicates",
+    },
+    {
+      key: "negatives",
+      name: "negative numbers",
+      example: "[-3, 4, 3, 90], target 0 → [0, 2]",
+      why: "The complement target − x can be negative or zero. Anything that uses a value as an array position, or assumes values are positive, breaks; comparisons and lookups do not care.",
+      think:
+        "Read the constraints line (−10⁹ ≤ nums[i] ≤ 10⁹) as part of the problem. Values are keys, never positions.",
+      preset: "negatives",
+    },
+    {
+      key: "nosolution",
+      name: "no pair at all",
+      example: "[1, 2, 5, 11], target 99 → nothing",
+      why: "The promise says exactly one answer exists, so correct code never reaches the end. Your loop still needs a defined ending, and the interviewer will ask what you return.",
+      think:
+        "Write the fall-through line (return [] or raise) before the happy path, so a broken promise fails loudly instead of returning garbage.",
+      preset: "nosolution",
+    },
+  ],
 }

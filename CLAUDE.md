@@ -23,6 +23,9 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   can see: not in the stepper, banners, chart, hints, quiz, URL. Locked acts are one "?" node.
   `unlocked:<slug>` is written only by the reveal click in `use-journey.ts` (and restart).
 - **Insight before name.** An act opens with the previous act's weakness; names arrive in the recap.
+- **Corner cases are content, taught twice.** `journey.edgeCases` (technique-neutral prose, read on
+  the story act) + frames tagged `corner: key` (explained in play). The test requires every case to
+  be tagged on its own preset.
 - **The content test is the gate.** `src/engine/journeys.test.ts` enforces schema, drain, notes,
   line-for-line code tabs and the disclosure rule. Don't weaken it; extend it.
 

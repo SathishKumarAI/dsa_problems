@@ -4,15 +4,16 @@ Last session: 2026-09-04 (autonomous Claude session, branch `feat/merge-visualiz
 
 ## Where it stopped
 
-The merge is complete and verified on the branch: engine + API + journey UI + visualizer + docs.
-Seven commits on `feat/merge-visualizer`, pushed to `github.com/SathishKumarAI/dsa_problems`
-(private) with a PR open against `master`. Not merged yet.
+Three stacked branches, all pushed to `github.com/SathishKumarAI/dsa_problems` (private), none
+merged: `feat/merge-visualizer` (PR #1 → master), `feat/journey-focus-rails` (PR → merge-visualizer),
+`feat/journey-edge-cases` (PR → focus-rails). Merge bottom-up, squash each; GitHub retargets the
+next PR's base when its parent merges.
 
 ## The next action
 
-1. Review the branch: `git log --oneline master..feat/merge-visualizer`, `npm run check`,
-   `npm run dev` → `#/journey/two-sum`.
-2. Review and squash-merge the PR (`gh pr view --web`), delete the branch.
+1. Review: `npm run check`, `npm run dev` → `#/journey/two-sum` (story act: hints + corner cases;
+   click a rail toggle at the foot of either side).
+2. Squash-merge PR #1, then the two stacked PRs in order; delete the branches.
 3. Archive the old folder — your call, nothing was touched: `../dsa_visualizer` still has an
    **uncommitted** `feat/disclosure-lint` branch. Its intent is captured as backlog **B8**; commit
    or discard it there, then move the folder to `~/coding/archive/` per the workspace rules.
@@ -33,4 +34,6 @@ Seven commits on `feat/merge-visualizer`, pushed to `github.com/SathishKumarAI/d
 - Autoplay timing, the 45 s hint timer, Set 2 (n = 400), the adaptive offer and reduced-motion
   were not exercised in the browser this session.
 - The sidebar names "Two Pointers" as a pattern while Two Sum act 3 is locked (B8).
+- `f` / `Esc` focus-key cycling not built (B26); rails are mouse-toggled only.
+- Corner-case callouts for `tiny`, `negatives`, `zero` verified by test, not by eye.
 - Bundle is one 644 kB chunk (B22).

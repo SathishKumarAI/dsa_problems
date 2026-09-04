@@ -106,6 +106,36 @@ for (const j of JOURNEYS) {
     }
   })
 
+  test(`${j.slug}: edge cases — well-formed, and each one is explained in play at least once`, () => {
+    assert.ok(j.edgeCases.length >= 3, "bring at least three corner cases")
+    const keys = j.edgeCases.map((e) => e.key)
+    assert.equal(new Set(keys).size, keys.length, "edge keys unique")
+    for (const e of j.edgeCases) {
+      for (const k of ["name", "example", "why", "think"] as const)
+        assert.ok(e[k], `${e.key}.${k}`)
+      assert.ok(j.presets[e.preset], `${e.key} preset "${e.preset}" exists`)
+      // the preset that loads it must make some act tag a frame with it
+      const d = j.presets[e.preset].make()
+      const tagged = j.acts.some((a) =>
+        drain(a.run(d, {})).some((f) => f.corner === e.key)
+      )
+      assert.ok(
+        tagged,
+        `edge "${e.key}" is never explained on preset ${e.preset}`
+      )
+    }
+    // and no frame points at an edge case that does not exist
+    const data = [j.sample, ...Object.values(j.presets).map((p) => p.make())]
+    for (const d of data)
+      for (const a of j.acts)
+        for (const f of drain(a.run(d, {})))
+          if (f.corner)
+            assert.ok(
+              keys.includes(f.corner),
+              `${a.key}: unknown edge "${f.corner}"`
+            )
+  })
+
   test(`${j.slug}: every preset makes data the generators accept`, () => {
     for (const [k, p] of Object.entries(j.presets)) {
       const d = p.make()
@@ -148,6 +178,14 @@ for (const j of JOURNEYS) {
           !new RegExp(`\\b${esc(s)}\\b`, "i").test(p.info ?? ""),
           `preset ${k} leaks "${s}"`
         )
+    // edge cases sit in the story act's reading column — same rule
+    for (const e of j.edgeCases)
+      for (const s of spoilers)
+        for (const text of [e.name, e.example, e.why, e.think])
+          assert.ok(
+            !new RegExp(`\\b${esc(s)}\\b`, "i").test(text),
+            `edge case ${e.key} leaks "${s}": ${text.slice(0, 80)}`
+          )
   })
 }
 

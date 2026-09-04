@@ -31,7 +31,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Theme colours (Catppuccin token mapping, `yellow`, `teal`) | `src/index.css` |
 | Routes (`#/journey/…`, `#/algorithms`, `#/p/…`) | `src/lib/route.ts`, `src/App.tsx` |
 | Add / edit a **journey** (acts, generators, presets, quiz, challenge) | `src/engine/journeys/<slug>.ts` → register in `src/engine/index.ts` |
-| Frame / act / journey / stage-model contracts | `src/engine/types.ts` |
+| Frame / act / journey / stage-model contracts (incl. `EdgeCase`, frame `corner`) | `src/engine/types.ts` |
 | The hash-map bucket arithmetic | `src/engine/hashmap.ts` |
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
@@ -44,7 +44,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Chip grammar (▲ ring ✓ fade) + legend | `src/features/journey/chip-row.tsx` |
 | Approach panels (sum, need, sorted, bits, recap) + FLIP scopes | `src/features/journey/panels.tsx` |
 | Hash map drawn as a hash map | `src/features/journey/hash-map-view.tsx` |
-| Quiz / predict / hint cards | `src/features/journey/cards.tsx` |
+| Quiz / predict / hint cards · corner-case callout · story-act cards (how to read, bring three inputs) | `src/features/journey/cards.tsx` |
 | Code tabs + line highlight | `src/features/journey/code-panel.tsx` |
 | Steps chart | `src/features/journey/steps-chart.tsx` |
 | Transport, speed, preset / custom input | `src/features/journey/controls.tsx` |

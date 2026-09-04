@@ -88,6 +88,7 @@ function* runStory({ nums }: SingleNumberData): Generator<F> {
     yield {
       hold: 3,
       dim: [...dim],
+      corner: "broken",
       note: "…this input has no loner. The problem's promise is broken — keep that in mind, it will matter later.",
     }
   }
@@ -115,12 +116,21 @@ function* runBrute({ nums }: SingleNumberData): Generator<F> {
       }
     }
     if (!found) {
+      const edge =
+        nums.length === 1
+          ? "single"
+          : i === nums.length - 1
+            ? "last"
+            : nums[i] === 0
+              ? "zero"
+              : undefined
       yield {
         hold: 2,
         line: 4,
         i,
         answer: nums[i],
-        note: `${nums[i]} searched the whole drawer and found no partner — answer!`,
+        corner: edge,
+        note: `${nums[i]} searched the whole drawer and found no partner — answer!${edge === "single" ? " n = 1: the inner loop never ran; the loner is the whole drawer" : edge === "last" ? " It sat in the last slot — every earlier value found its partner first, so the search only ends when it finally reaches the loner" : edge === "zero" ? " The answer is 0 — a legal loner that a truthiness check would call 'nothing found'" : ""}`,
       }
       return
     }
@@ -128,6 +138,7 @@ function* runBrute({ nums }: SingleNumberData): Generator<F> {
   yield {
     hold: 2,
     line: 4,
+    corner: "broken",
     note: "every element found a partner — the input broke the problem's promise",
   }
 }
@@ -146,13 +157,15 @@ function* runHash({ nums }: SingleNumberData): Generator<F> {
   }
   for (const [x, c] of counts) {
     if (c === 1) {
+      const edge = nums.length === 1 ? "single" : x === 0 ? "zero" : undefined
       yield {
         hold: 2,
         line: 4,
         scanX: x,
         counts: [...counts],
         answer: x,
-        note: `counts[${x}] = 1 — ${x} is the single number`,
+        corner: edge,
+        note: `counts[${x}] = 1 — ${x} is the single number${edge === "single" ? ". n = 1: one entry, one count, one answer — the loops barely ran" : edge === "zero" ? ". The answer is 0: the count is 1, the value is falsy — test the count, never the value" : ""}`,
       }
       return
     }
@@ -167,6 +180,7 @@ function* runHash({ nums }: SingleNumberData): Generator<F> {
     hold: 2,
     line: 4,
     counts: [...counts],
+    corner: "broken",
     note: "no count of exactly 1 — the input broke the problem's promise",
   }
 }
@@ -196,7 +210,8 @@ function* runSort({ nums }: SingleNumberData): Generator<F> {
         single: i,
         passed: i,
         answer: s[i],
-        note: `${s[i]} has no partner — answer`,
+        corner: s[i] === 0 ? "zero" : undefined,
+        note: `${s[i]} has no partner — answer${s[i] === 0 ? ". 0 sorts first and is the loner: a legal answer that looks like 'nothing' to a truthiness check" : ""}`,
       }
       return
     }
@@ -216,11 +231,16 @@ function* runSort({ nums }: SingleNumberData): Generator<F> {
     single: last,
     passed: last,
     answer: s[last],
-    note: `every pair matched — last element ${s[last]} is the single`,
+    corner: s.length === 1 ? "single" : "last",
+    note:
+      s.length === 1
+        ? `n = 1: the loop never ran — the fallback line after it returns ${s[0]}, the whole drawer`
+        : `every pair matched — the loop ran off the end without returning. The line AFTER the loop returns the last element ${s[last]}: the loner was the largest value`,
   }
 }
 
 function* runXor({ nums }: SingleNumberData): Generator<F> {
+  const ok = classifySingle(nums).ok
   let acc = 0
   yield {
     line: 0,
@@ -252,6 +272,13 @@ function* runXor({ nums }: SingleNumberData): Generator<F> {
       note: `${before} XOR ${nums[i]} = ${acc} — equal bits cancel to 0`,
     }
   }
+  const edge = !ok
+    ? "broken"
+    : nums.length === 1
+      ? "single"
+      : acc === 0
+        ? "zero"
+        : undefined
   yield {
     hold: 2,
     line: 3,
@@ -259,7 +286,15 @@ function* runXor({ nums }: SingleNumberData): Generator<F> {
     x: null,
     acc,
     answer: acc,
-    note: `all pairs annihilated — acc = ${acc} is the single number`,
+    corner: edge,
+    note:
+      edge === "broken"
+        ? `acc = ${acc} — but the promise was broken, so this is every loner folded together: a value that may not even be in the array. The trick never checks; it trusts`
+        : edge === "single"
+          ? `acc = ${acc} — n = 1: one fold, and 0 XOR x = x hands the value straight back`
+          : edge === "zero"
+            ? `all pairs annihilated — acc = 0 is the single number. 0 is also what nothing-at-all leaves behind; only the promise tells the two apart`
+            : `all pairs annihilated — acc = ${acc} is the single number`,
   }
 }
 
@@ -293,6 +328,11 @@ const story: Act<SingleNumberData, F> = {
       "task: return that lone value",
     ],
   },
+  hints: [
+    "Reread the promise: 'every element appears twice except one'. Which of those two clauses could a clever solution exploit, and which one merely describes the input?",
+    "Formalize it as one question: input = an array where every value pairs up but one; output = the unpaired value. Now ask what should happen when n = 1.",
+    "Bring three inputs before any code: n = 1, a plain shuffled drawer, and a corner one — the loner being the largest value, or the loner being 0. The corner cases listed here are those inputs.",
+  ],
   takeaways: [
     "the promise — exactly one single, all else paired — is a rule you may lean on",
     "correctness is not the game; every approach below is correct",
@@ -714,6 +754,11 @@ export const singleNumber: Journey<SingleNumberData> = {
       },
       info: "The single is the LARGEST value here. That is a nasty edge: any approach that walks in order and expects the odd one out to interrupt the pattern will run clean off the end. Watch which ones need a fallback line.",
     },
+    zero: {
+      label: "loner is 0",
+      make: () => ({ nums: [0, 4, 4] }),
+      info: "The loner is 0. A legal answer — and the same value a truthiness check calls 'nothing found'. Watch which approaches would be fooled by `if result:`.",
+    },
     big: {
       label: "big (n = 25)",
       make: () => ({ nums: pairsPlusSingle(12) }),
@@ -761,4 +806,42 @@ export const singleNumber: Journey<SingleNumberData> = {
     return nums.length ? { nums } : null
   },
   sample: { nums: [2, 2, 3] },
+  edgeCases: [
+    {
+      key: "single",
+      name: "one element",
+      example: "[7] → 7",
+      why: "Every loop that compares neighbours or hunts for a partner runs zero or one times. Code that only returns from inside a loop returns nothing for n = 1.",
+      think:
+        "Bring the smallest legal input first. Whatever your code holds after the loop — an accumulator, a fallback line — must already be the answer.",
+      preset: "single",
+    },
+    {
+      key: "last",
+      name: "loner is last in order",
+      example: "[1, 1, 2, 2, 9] → 9",
+      why: "An approach that walks in order and waits for the odd one out to break the pattern runs off the end without returning. The answer needs a line AFTER the loop.",
+      think:
+        "Put the special element at every boundary — first, last, the largest value — and ask where your code returns from in each case.",
+      preset: "max",
+    },
+    {
+      key: "zero",
+      name: "the answer is 0",
+      example: "[0, 4, 4] → 0",
+      why: "0 is a legal loner, and a lot of code treats 0 as 'nothing found' (`if result:`). Cancelling everything also leaves 0 behind, so the real answer 0 looks exactly like no answer.",
+      think:
+        "Test for presence, not truthiness: `is not None`, a found flag, or trust the promise. Bring a case where the answer is falsy.",
+      preset: "zero",
+    },
+    {
+      key: "broken",
+      name: "promise broken",
+      example: "[2, 2, 5, 9] → ?",
+      why: "With two loners the approaches disagree: one returns the first it meets, one returns a value that is in neither. The promise is what makes the fast trick legal, not decoration.",
+      think:
+        "Say the promise back to the interviewer before coding, and decide out loud what to return when it is violated.",
+      preset: "twosingles",
+    },
+  ],
 }
