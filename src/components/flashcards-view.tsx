@@ -10,7 +10,9 @@ import { FLASHCARDS } from "@/data/flashcards"
 export function FlashcardsView() {
   const tags = useMemo(() => [...new Set(FLASHCARDS.map((c) => c.tag))], [])
   const [tag, setTag] = useState<string>("all")
-  const [order, setOrder] = useState<number[]>(() => FLASHCARDS.map((_, i) => i))
+  const [order, setOrder] = useState<number[]>(() =>
+    FLASHCARDS.map((_, i) => i)
+  )
   const [flipped, setFlipped] = useState<Set<number>>(new Set())
 
   const shuffle = () => {
@@ -31,15 +33,22 @@ export function FlashcardsView() {
       return next
     })
 
-  const visible = order.filter((i) => tag === "all" || FLASHCARDS[i].tag === tag)
+  const visible = order.filter(
+    (i) => tag === "all" || FLASHCARDS[i].tag === tag
+  )
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <div className="font-mono text-sm text-primary">P(A|B) = P(B|A)·P(A)/P(B)</div>
-        <h1 className="font-heading text-2xl font-semibold">Statistics Flashcards</h1>
+        <div className="font-mono text-sm text-primary">
+          P(A|B) = P(B|A)·P(A)/P(B)
+        </div>
+        <h1 className="font-heading text-2xl font-semibold">
+          Statistics Flashcards
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Click a card to flip it. The answer should come to you before the flip does.
+          Click a card to flip it. The answer should come to you before the flip
+          does.
         </p>
       </header>
 
@@ -55,7 +64,12 @@ export function FlashcardsView() {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        <Button variant="outline" size="sm" onClick={shuffle} className="ml-auto">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={shuffle}
+          className="ml-auto"
+        >
           <ShuffleIcon data-icon="inline-start" />
           Shuffle
         </Button>
@@ -76,11 +90,14 @@ export function FlashcardsView() {
                   : "bg-card hover:border-primary/40"
               )}
             >
-              <Badge variant="secondary" className="w-fit font-mono text-[10px]">
+              <Badge
+                variant="secondary"
+                className="w-fit font-mono text-[10px]"
+              >
                 {card.tag}
               </Badge>
               {isFlipped ? (
-                <p className="text-sm leading-relaxed text-muted-foreground duration-200 animate-in fade-in">
+                <p className="animate-in text-sm leading-relaxed text-muted-foreground duration-200 fade-in">
                   {card.a}
                 </p>
               ) : (

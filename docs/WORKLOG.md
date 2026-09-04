@@ -4,6 +4,42 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — panels, peek, settings, shortcuts, help
+
+Branch `feat/shell-panels-help`, stacked on `feat/journey-edge-cases`.
+
+**Why.** The ask: each panel scrolls on its own (sidebar / stage / reading column); closed rails
+reveal themselves on hover and hide again; settings and keyboard shortcuts at the foot of the sidebar
+with "where am I" details; an info icon at the top that explains how to use the app; the sidebar
+split into subject sections.
+
+**What.** Journey page on ≥ lg: inset is viewport-high, header + stepper fixed, stage and reading
+column `overflow-y-auto`. `ui/sidebar.tsx` gains hover-peek (`data-peek`; the gap follows the real
+state so content never shifts); the reading rail renders the same `ReadingBody` as a 26 rem overlay on
+hover. New `lib/dialogs.ts` (which dialog is open), `lib/shortcuts.ts` (the key map, one source),
+`components/global-keys.tsx` (`?`, `f`), `components/app-dialogs.tsx` (help, shortcuts, settings;
+shadcn `dialog` added — the CLI wrote `from "cn"` and a stray `cn` dependency; both reverted).
+`lib/store.ts` gains `exportProgress` / `importProgress` / `resetProgress` (prefs excluded). Sidebar:
+DSA / DSA · patterns / SQL / Data science, help button in the header, footer = where-you-are +
+settings + shortcuts + collapse. Closes B3 (minus theme), B5, B26.
+
+**Evidence.** `npm run check`: tsc 0, eslint 0, node tests 31/31. CDP at 1440 × 1000:
+
+| Check | Result |
+|---|---|
+| journey page scroll | `documentElement.scrollHeight` 1000 = viewport; stage `overflow-y: auto`; aside 818 px tall / 1063 scroll |
+| sidebar groups / footer | `DSA`, `DSA · patterns`, `SQL`, `Data science`; footer `settings`, `keyboard shortcuts`, `collapse sidebar`; where = `DSA · journey · Two Sum` |
+| sidebar peek | collapsed 48/48 (container/gap) → mouseover 256/48 with `data-peek=true` → mouseout 48/48 |
+| reading peek | rail 44 px → overlay 416 px with the code tabs inside → gone on mouseout; stage stays 1072 px |
+| `f` | 256 + 384 → 48 + 44 (`prefs.reading=false`) → back to 256 + 384 |
+| `?` | dialog "Keyboard shortcuts", 9 rows |
+| settings | motion select → `prefs.motion=cinematic`; copy fell back to the textarea (headless clipboard); import `{"unlocked:single-number":4,"xp":99}` → 2 keys, store updated |
+| help | dialog "How to use dsa.patterns", 5 sections |
+
+0 console errors in every run. Not verified: touch devices (peek is hover-only by design), the
+erase-progress double click, Python section of the sidebar (there is no Python content yet — see
+`docs/PROBLEMS.md`).
+
 ## 2026-09-04 (later) — corner cases as content, hints up front
 
 Branch `feat/journey-edge-cases`, stacked on `feat/journey-focus-rails`.

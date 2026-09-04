@@ -90,13 +90,19 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
         <span className="size-2.5 rounded-full bg-chart-4/60" />
         <span className="size-2.5 rounded-full bg-chart-3/60" />
         <span className="ml-2 font-mono text-xs text-muted-foreground">
-          walkthrough — step {String(step + 1).padStart(2, "0")}/{String(frames.length).padStart(2, "0")}
+          walkthrough — step {String(step + 1).padStart(2, "0")}/
+          {String(frames.length).padStart(2, "0")}
         </span>
         {usesCells && (
           <div className="ml-auto hidden items-center gap-3 sm:flex">
             {legend.map((l) => (
-              <span key={l.role} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <span className={cn("size-2 rounded-sm border", roleClass[l.role])} />
+              <span
+                key={l.role}
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
+              >
+                <span
+                  className={cn("size-2 rounded-sm border", roleClass[l.role])}
+                />
                 {l.label}
               </span>
             ))}
@@ -107,7 +113,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
       {/* stage — key remount animates each frame in */}
       <div
         key={step}
-        className="flex min-h-48 items-center justify-center px-6 py-8 duration-300 animate-in fade-in slide-in-from-bottom-1"
+        className="flex min-h-48 animate-in items-center justify-center px-6 py-8 duration-300 fade-in slide-in-from-bottom-1"
       >
         {frame.cells ? (
           <Cells frame={frame.cells} />
@@ -179,7 +185,9 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
               aria-label={`Go to step ${i + 1}`}
               className={cn(
                 "h-1.5 rounded-full transition-all",
-                i === step ? "w-5 bg-primary" : "w-1.5 bg-muted hover:bg-muted-foreground/40"
+                i === step
+                  ? "w-5 bg-primary"
+                  : "w-1.5 bg-muted hover:bg-muted-foreground/40"
               )}
             />
           ))}

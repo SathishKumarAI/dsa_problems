@@ -1,0 +1,373 @@
+// The three app-level dialogs — help ("how to use this"), keyboard shortcuts,
+// settings — mounted once in App, opened from lib/dialogs.ts. Owns their
+// content and the settings form; owns no preference logic (lib/store.ts).
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Kbd } from "@/components/ui/kbd"
+import { openDialog, useDialog } from "@/lib/dialogs"
+import { SHORTCUTS } from "@/lib/shortcuts"
+import {
+  DEFAULT_PREFS,
+  exportProgress,
+  importProgress,
+  resetProgress,
+  setPref,
+  usePrefs,
+} from "@/lib/store"
+import type { DialogName } from "@/lib/dialogs"
+import type { Prefs } from "@/lib/store"
+
+function Frame({
+  name,
+  title,
+  description,
+  children,
+}: {
+  name: DialogName
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
+  const open = useDialog() === name
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && openDialog(null)}>
+      <DialogContent className="max-h-[85svh] overflow-y-auto sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function H({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="mt-2 text-xs tracking-wide text-muted-foreground uppercase">
+      {children}
+    </h3>
+  )
+}
+
+// ---------- help ----------
+
+export function HelpDialog() {
+  return (
+    <Frame
+      name="help"
+      title="How to use dsa.patterns"
+      description="Earn the insight, then the name. Two minutes to read; everything else is on the page."
+    >
+      <div className="flex flex-col gap-3 text-[15px] leading-relaxed">
+        <H>the idea</H>
+        <p>
+          Every <b>journey</b> builds one problem all the way down. You start
+          with the <i>need</i> — a story that makes the problem exist — then
+          earn each approach by finding the previous one's weakness. Nothing is
+          named before you have felt why it is needed; the pattern's name
+          arrives at the reveal.
+        </p>
+        <H>reading a problem (act 1)</H>
+        <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+          <li>
+            <b>How to read this problem</b> — reread the ask, formalize it as
+            input → output, bring three inputs before any code.
+          </li>
+          <li>
+            <b>Bring three inputs</b> — the corner cases. <i>load this input</i>{" "}
+            puts one on the stage; every approach explains the case when it hits
+            it (teal callout under the narration).
+          </li>
+        </ul>
+        <H>the stage</H>
+        <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+          <li>
+            <b>Play / step / scrub</b> with the transport or <Kbd>space</Kbd>{" "}
+            <Kbd>←</Kbd> <Kbd>→</Kbd> <Kbd>r</Kbd>. Speed is a slider and is
+            remembered.
+          </li>
+          <li>
+            <b>Predict</b> cards pause playback before a key move and ask you to
+            call it. <b>Quiz</b> cards gate the next act. Both give XP.
+          </li>
+          <li>
+            <b>Presets</b> and the custom input box change the data; the chart
+            on the right counts each approach's steps on that input.
+          </li>
+          <li>
+            <b>Code It</b> (Two Sum) runs your own function in a worker, then{" "}
+            <i>Watch my code</i> turns its array accesses into the animation.
+          </li>
+        </ul>
+        <H>the layout</H>
+        <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+          <li>
+            Sidebar, stage and reading column each scroll on their own on wide
+            screens.
+          </li>
+          <li>
+            Close either rail from the button at its foot, or press <Kbd>f</Kbd>{" "}
+            to close both. A closed rail <b>peeks open on hover</b> and closes
+            again when you leave.
+          </li>
+          <li>
+            The reading column holds the approach's idea, what it is built from,
+            the code in four languages with the live line lit, takeaways, the
+            steps chart and the legend.
+          </li>
+        </ul>
+        <H>progress</H>
+        <p className="text-muted-foreground">
+          Acts earned, quizzes passed, XP and your day streak live in this
+          browser only. Settings (bottom of the sidebar) can copy them out as
+          JSON and paste them back on another machine.
+        </p>
+        <div className="flex gap-2 pt-1">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openDialog("shortcuts")}
+          >
+            keyboard shortcuts
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openDialog("settings")}
+          >
+            settings
+          </Button>
+        </div>
+      </div>
+    </Frame>
+  )
+}
+
+// ---------- shortcuts ----------
+
+export function ShortcutsDialog() {
+  return (
+    <Frame
+      name="shortcuts"
+      title="Keyboard shortcuts"
+      description="Keys are ignored while an input, select or textarea has focus."
+    >
+      <div className="flex flex-col gap-4">
+        {SHORTCUTS.map((g) => (
+          <div key={g.scope}>
+            <H>{g.scope}</H>
+            <table className="mt-1 w-full text-[15px]">
+              <tbody>
+                {g.items.map((s) => (
+                  <tr key={s.does} className="border-t border-border/60">
+                    <td className="w-44 py-1.5 pr-3 align-top whitespace-nowrap">
+                      {s.keys.map((k) => (
+                        <Kbd key={k} className="mr-1">
+                          {k}
+                        </Kbd>
+                      ))}
+                    </td>
+                    <td className="py-1.5 text-muted-foreground">{s.does}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
+      </div>
+    </Frame>
+  )
+}
+
+// ---------- settings ----------
+
+const FIELD =
+  "rounded-md border bg-background px-2 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+
+function Row({
+  label,
+  hint,
+  children,
+}: {
+  label: string
+  hint?: string
+  children: React.ReactNode
+}) {
+  return (
+    <label className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[10rem_1fr]">
+      <span className="text-sm">
+        {label}
+        {hint && (
+          <span className="block text-xs text-muted-foreground">{hint}</span>
+        )}
+      </span>
+      {children}
+    </label>
+  )
+}
+
+export function SettingsDialog() {
+  const prefs = usePrefs()
+  const [pasted, setPasted] = useState("")
+  const [msg, setMsg] = useState("")
+  const [armed, setArmed] = useState(false)
+
+  const copy = async () => {
+    const json = JSON.stringify(exportProgress(), null, 2)
+    try {
+      await navigator.clipboard.writeText(json)
+      setMsg(`copied ${json.length} characters`)
+    } catch {
+      setPasted(json)
+      setMsg(
+        "clipboard blocked — the JSON is in the box below, copy it from there"
+      )
+    }
+  }
+  const paste = () => {
+    try {
+      const n = importProgress(JSON.parse(pasted) as Record<string, unknown>)
+      setMsg(`imported ${n} keys`)
+      setPasted("")
+    } catch {
+      setMsg("that is not the JSON this app exported")
+    }
+  }
+  const reset = () => {
+    if (!armed) {
+      setArmed(true)
+      setTimeout(() => setArmed(false), 4000)
+      return
+    }
+    resetProgress()
+    setArmed(false)
+    setMsg("progress erased; preferences kept")
+  }
+
+  return (
+    <Frame
+      name="settings"
+      title="Settings"
+      description="Preferences are saved in this browser. Everything here has a sensible default."
+    >
+      <div className="flex flex-col gap-4">
+        <Row label="playback speed" hint={`${prefs.speed} / 100`}>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            value={prefs.speed}
+            onChange={(e) => setPref("speed", Number(e.target.value))}
+            aria-label="playback speed"
+          />
+        </Row>
+        <Row label="motion" hint="how far chips travel when they morph">
+          <select
+            className={FIELD}
+            value={prefs.motion}
+            onChange={(e) =>
+              setPref("motion", e.target.value as Prefs["motion"])
+            }
+          >
+            <option value="calm">calm</option>
+            <option value="normal">normal</option>
+            <option value="cinematic">cinematic</option>
+            <option value="off">off (no morph)</option>
+          </select>
+        </Row>
+        <Row label="code tab" hint="shared by every act and the visualizer">
+          <select
+            className={FIELD}
+            value={prefs.codeTab}
+            onChange={(e) => setPref("codeTab", e.target.value)}
+          >
+            <option value="pseudo">pseudocode</option>
+            <option value="python">Python 3</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+          </select>
+        </Row>
+        <Row label="reading column" hint="on the journey page">
+          <span className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={prefs.reading}
+              onChange={(e) => setPref("reading", e.target.checked)}
+            />
+            open (closed = icon rail, peeks on hover)
+          </span>
+        </Row>
+        <div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground"
+            onClick={() =>
+              (Object.keys(DEFAULT_PREFS) as (keyof Prefs)[]).forEach((k) =>
+                setPref(k, DEFAULT_PREFS[k])
+              )
+            }
+          >
+            reset preferences to defaults
+          </Button>
+        </div>
+
+        <H>progress — this browser only</H>
+        <p className="text-sm text-muted-foreground">
+          Acts earned, quizzes passed, XP, streak days, challenge scorecards.
+          Copy the JSON here and paste it on another machine to carry it over.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={copy}>
+            copy progress JSON
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={paste}
+            disabled={!pasted.trim()}
+          >
+            import pasted JSON
+          </Button>
+          <Button
+            size="sm"
+            variant={armed ? "destructive" : "ghost"}
+            onClick={reset}
+          >
+            {armed ? "click again to erase all progress" : "erase all progress"}
+          </Button>
+        </div>
+        <textarea
+          className={`${FIELD} min-h-24 font-mono text-xs`}
+          placeholder="paste exported JSON here"
+          value={pasted}
+          onChange={(e) => setPasted(e.target.value)}
+          aria-label="progress JSON"
+        />
+        {msg && (
+          <p className="text-sm text-muted-foreground" role="status">
+            {msg}
+          </p>
+        )}
+      </div>
+    </Frame>
+  )
+}
+
+export function AppDialogs() {
+  return (
+    <>
+      <HelpDialog />
+      <ShortcutsDialog />
+      <SettingsDialog />
+    </>
+  )
+}
