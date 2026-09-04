@@ -1,0 +1,201 @@
+# Feature log — every panel, every button, what it does, and its status
+
+Status values: **shipped** (verified the way a user hits it — the row says how) ·
+**partial** (works, with a named gap) · **backlog** (exists in `legacy/visualizer/` or is planned;
+tracked by number in `BACKLOG.md`). Every row names the file that owns it.
+
+Verification legend: `cdp` = driven in headless Chrome over the DevTools protocol this session
+(screenshots in the worklog entry), `test` = node test, `visual` = screenshot reviewed.
+
+---
+
+## 1. Shell
+
+| Feature | Behaviour | File | Status |
+|---|---|---|---|
+| Sidebar | Three groups: **Journeys** (one row per journey with `earned/acts` badge, ✓ when complete; the visualizer), **Patterns** (10 rows, glyph + name + `solved/total`), **Data rounds** (SQL, flashcards). Active row highlighted from the hash route. Every row is an `<a href="#/…">`, so back/forward and middle-click work. | `src/components/app-sidebar.tsx` | shipped (visual) |
+| Mobile header | Below `md`, a top bar with the sidebar trigger and the wordmark; the sidebar becomes a sheet. | `src/App.tsx`, `ui/sidebar.tsx` | shipped (cdp 390 px) |
+| Hash router | `#/`, `#/p/<pattern>`, `#/p/<pattern>/<problem>`, `#/journey/<slug>?act=&step=`, `#/algorithms?algo=`, `#/sql`, `#/flashcards`. Unknown routes fall back to home. `replaceQuery` mirrors state without history entries. | `src/lib/route.ts`, `App.tsx` | shipped (cdp) |
+| Wide layouts | Journey and visualizer pages get `max-w-7xl` with tighter padding; content pages stay `max-w-3xl/4xl`. | `App.tsx` | shipped |
+| Theme | Catppuccin Mocha, forced dark (`<html class="dark">`). Tokens in `index.css`: chart-1 mauve, chart-2 blue, chart-3 green, chart-4 peach, chart-5 red, yellow, teal. | `src/index.css` | shipped |
+| Reduced motion | `prefers-reduced-motion: reduce` zeroes CSS transitions/animations; FLIP checks it too. | `index.css`, `use-flip.ts` | shipped (code; not device-tested) |
+| Settings gear (theme, default speed, motion dial, restart, export/import) | — | `legacy/visualizer/js/ui-prefs.js` | backlog #B3 (speed + motion prefs exist in `lib/store.ts`; no UI for motion yet) |
+| Focus tiers (full / stage / cinema), collapsible rails | — | `legacy/visualizer/js/shell.js` | backlog #B4 |
+| `?` shortcuts overlay | — | `legacy/visualizer/js/ui-prefs.js` | backlog #B5 (shortcuts listed as text on the visualizer page) |
+| Command palette | — | — | backlog #B12 |
+
+## 2. Home
+
+| Feature | Behaviour | File | Status |
+|---|---|---|---|
+| Method statement | One paragraph: feel the weakness, earn the insight, then the name. | `home-view.tsx` | shipped |
+| Streak + XP | `streakOf(activity-days)` counts consecutive days ending today or yesterday; XP from the store. | `home-view.tsx`, `lib/store.ts` | shipped (visual; streak logic not unit-tested — B18) |
+| Journey cards | Title, subtitle, `earned/(acts−1)` (story act doesn't count), progress bar. "complete" when all acts earned. Click → journey. | `home-view.tsx` | shipped (visual) |
+| Visualizer card | Dashed card linking to `#/algorithms`. | `home-view.tsx` | shipped |
+| Practice-set progress | `solved/total` + progress bar; pattern grid with per-pattern counts; card click → pattern list. | `home-view.tsx` | shipped |
+| Roadmap DAG (patterns → problems with lock/done) | — | `legacy/visualizer/problems/index.html` | backlog #B9 |
+| Progress dashboard (acts done, quizzes passed, stalls) | — | legacy | backlog #B10 |
+
+## 3. Pattern list and problem page (practice set)
+
+| Feature | Behaviour | File | Status |
+|---|---|---|---|
+| Pattern header + filter | Glyph, name, blurb; text filter on title; empty state. | `problem-list.tsx` | shipped |
+| Problem row | Checkbox toggles solved (strikethrough), title/brief opens the problem, difficulty badge. | `problem-list.tsx`, `lib/progress.ts` | shipped |
+| Problem header | Title, difficulty, pattern glyph, time/space, solved checkbox. | `problem-detail.tsx` | shipped |
+| **Journey CTA** | When `journeyForProblem(id)` exists: a mauve card "Start the learning journey ▸" with the act count. Shows on Pair With Target Sum and Single Number. | `problem-detail.tsx` | shipped (visual) |
+| Statement + examples | Monospace `in`/`out` rows with optional note. | `problem-detail.tsx` | shipped |
+| Tabs: Hints / Walkthrough / Approach & Solution | Hints are an accordion (one open at a time). Walkthrough = static `StepPlayer`. Solutions = tabs per alternative + Optimal. | `problem-detail.tsx` | shipped |
+| Static walkthrough player | Frames with cells (roles focus/compare/window/done + pointer labels) or text; play (1.8 s/step), prev/next, restart, dot scrubber, ←/→ keys; terminal chrome + legend. | `step-player.tsx` | shipped (pre-existing) |
+| Code block | Mono `<pre>` with copy button (✓ for 1.5 s). | `code-block.tsx` | shipped |
+| SQL drills, flashcards | Unchanged from baseline. | `sql-view.tsx`, `flashcards-view.tsx` | shipped (pre-existing) |
+
+## 4. Journey page — the map
+
+```
+┌ header ───────────────────────────────────────────────────────────────────────┐
+│ ← Problem · Pattern                                     ★ 25 XP  ↺ restart   │
+│ Two Sum  LeetCode 1  subtitle                                                 │
+│ [01 The Problem ✓] → [02 Brute Force] → [🔒 ? · 5 more · locked]              │  ActStepper
+├ stage (left) ──────────────────────────┬ reading column (right) ──────────────┤
+│ act 02 · Brute Force      O(n²) · O(1)  │ insight (mauve, bold)                │
+│ ⚠ warning / ℹ preset banner            │ idea                                 │
+│ target = 43                             │ WHAT THIS APPROACH IS BUILT FROM     │
+│   ▲            ⭘                        │   Array only — …                     │
+│ [32][48][26][31][23][ 2][40][29][17]    │ ┌ pseudocode │ Python 3 │ Java │ C++ ┐│
+│  0   1   2   3   4   5   6   7   8      │ │ for i in 0..n-1:                  ││
+│ ───────────── panel ─────────────────   │ │ ▌  for j in i+1..n-1:   ← lit     ││
+│  32 + 48 = 80   target 43               │ └───────────────────────────────────┘│
+│ › 32 + 48 = 80 — not 43, keep looking   │ WHAT TO UNDERSTAND  › … › … › …      │
+│ ┌ predict / quiz / hints / reveal ────┐ │ WORK ON THIS INPUT (STEPS)           │
+│ └─────────────────────────────────────┘ │  Brute Force ████████████ 23         │
+│ ●──────────────────────── 6/23          │  Two Pointers ███ 9                  │
+│ ▶ Play  ‹ › ↺              speed ━━●━   │ LEGEND ▲ held · ⭘ current · ✓ answer │
+│ [random ▾] [⚄ new] [13, 19, 37…] target [27] [apply]  │ same problem elsewhere: … │
+└─────────────────────────────────────────┴──────────────────────────────────────┘
+```
+
+### 4.1 Header
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Back link | `← <problem title> · <pattern>` → the problem page; falls back to home when the journey has no problem. | `journey-page.tsx` | shipped |
+| XP badge | `★ n XP`, live from the store. | `journey-page.tsx`, `lib/store.ts` | shipped (cdp: 0 → 15 → 25) |
+| Restart journey | Sets `unlocked:<slug>` to 1, clears `quizzes:<slug>`, clears done ticks, returns to act 1. No confirm dialog. | `use-journey.ts` `restart` | shipped (code) — B19: add an undo toast |
+| Title row | Title, `LeetCode n`, subtitle. | `journey-page.tsx` | shipped |
+| Act stepper | One button per unlocked act: `01`/✓ + name + short. Current = mauve border. Clicking switches act (pauses, clears predict/quiz/hints). While anything is locked: one dashed node `🔒 ? · n more · locked` — never a name. A newly revealed act zooms in (700 ms). | `act-stepper.tsx` | shipped (cdp: 1 node → 2 nodes after reveal) |
+
+### 4.2 Stage header and banners
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Act strip | `act 05 · One-Pass Hash` left, complexity string right. Complexity is the *current* act's only — never a table. | `journey-page.tsx` | shipped |
+| Warning banner | Red, `role=alert`, `⚠ Contract broken: …` from `journey.classify`. Shown for presets like "no solution", "two singles". | `journey-page.tsx`, `use-journey.ts` | shipped (test for classify; visual) |
+| Info banner | Blue, `role=status`, the preset's `info` text (e.g. "n = 20. Watch the chart…"). Hidden when a warning is up. | same | shipped |
+| Data bar | `target = 27` when the data has a `target`. | `journey-page.tsx` | shipped |
+
+### 4.3 The stage proper
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Chip row | One chip per element, index below. Roles: **anchor** peach + ▲ above (held / left pointer); **focus** ring + yellow tint (current / right pointer); **answer** green + ✓; **dim** 25 % opacity (eliminated). A chip may be anchor+focus (both markers). Subscript `#n` for sorted views = original index. Empty stage shows "the stage is empty on purpose — the need comes first" during the story's `noChips` frames. | `chip-row.tsx`, `engine/chips.ts` | shipped (cdp) |
+| FLIP morph | After every frame, elements with `data-k` animate from their previous box (translate) — newcomers scale-fade in. Duration `clamp(80, delay×0.4, 280) × motion`. Two scopes (array row, panel) are snapshotted separately because sorted copies reuse keys. | `use-flip.ts`, `panels.tsx` | shipped (code; motion not screenshot-able) |
+| Panel: story | The `🎁 → 🛒 → ❓` scene on an empty stage. | `panels.tsx` | shipped (cdp) |
+| Panel: sum | `a + b = sum  target t` — sum green on hit, red on miss. | `panels.tsx` | shipped (cdp) |
+| Panel: need + hash | `need 17  43 − 26` line, then the hash map. | `panels.tsx` | shipped (cdp) |
+| Panel: hash map | **Above the waterline:** pills `key @ value` (or `key ×count`), probe pill outlined, hit pill green. **Waterline:** "under the surface — what `map[x]` actually does". **Below:** one column per bucket (`8` min, doubles past load 0.75), `↓` chains, probing bucket outlined/green. **Facts:** `hash(k) = k mod B = bucket b` with hop count or miss text; `n keys in B buckets — load 0.38` with a meter that turns peach near 0.75; a rehash note when the table has doubled; collision count or "no collisions yet". Scrolls horizontally on phones. | `hash-map-view.tsx`, `engine/hashmap.ts` | shipped (cdp + 5 tests) |
+| Panel: sorted view | Label + a second chip row with `#n` subscripts, L = ▲, R = ring, outside-range dim; sum equation under it. | `panels.tsx` | shipped (cdp) |
+| Panel: bits | 7-bit rows `x` and `acc`; on-bits blue, bits that just flipped ringed red; `= value` at the end. | `panels.tsx` | shipped (cdp) |
+| Panel: recap | Table approach / built from (mauve) / cost / insight, the "nobody invented four algorithms" note, two link cards (pattern page, next problem). | `panels.tsx` | shipped (cdp: 5 rows) |
+| Panel: challenge | See §4.6. | `challenge-editor.tsx` | shipped (cdp) |
+| Narration | `› note` under the stage, `aria-live=polite`, min-height so the layout never jumps. | `journey-page.tsx` | shipped |
+
+### 4.4 Interruptions (under the narration)
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Predict card | Blue card "YOU DRIVE — PREDICT THE NEXT MOVE". Appears when the *next* frame has `predict` and has not been asked on this timeline; playback pauses **before** that frame renders. Choice buttons; right = green, wrong = red + the right one green; feedback "exactly — watch:" / "not quite — watch what actually happens:"; after 0.7 s / 1.6 s the frame plays and playback resumes if it was playing. Scrubbing or ← skips the question. Asked once per direction (two pointers), once for the return (brute), once at i = 0 (hash), once at i = 1 (XOR). | `cards.tsx`, `use-journey.ts` guard | shipped (cdp brute act) |
+| Quiz card | Mauve card "CHECK YOURSELF (1/2)". Appears when an act finishes and the *next* act is still locked and the act has a quiz not yet passed (`quizzes:<slug>`). Wrong → explanation text + retry, counts towards the hint ladder; right → next question after 0.5 s; all right → `+5 XP`, act key recorded, reveal button appears. | `cards.tsx`, `use-journey.ts` | shipped (cdp: quizzes = ["story"]) |
+| Reveal button | Green: "I understand the problem — try solving it ▸" (act 1) / "I get it — what's the weakness? ▸" / the act's `nextLabel`. Click → `unlocked = idx+2`, `+10 XP`, switch to the new act, stepper node zooms in. If the next act was already unlocked (revisit), a plain "Next: <name> ▸" instead. | `use-journey.ts` `nextButton` | shipped (cdp: unlocked 1→2, xp 15) |
+| Hint ladder | Dashed card "STUCK? EARN IT WITH A SMALLER PUSH". Offered after **45 s** with no new frame shown, or after **2 wrong quiz answers**. "give me a nudge" → nudge; "a bigger hint" → concept; then the line to stare at. Never the answer. Resets on act change. | `cards.tsx`, `use-journey.ts` | shipped (code; timer path not screenshot-tested) |
+| Adaptive difficulty | Peach card "🔥 Flawless — no wrong answers, first-try green." + the journey's `harder.label` button → applies the harder preset. Only when zero wrong quiz answers this visit **and** the challenge passed on attempt 1. | `use-journey.ts`, `journey-page.tsx` | shipped (code; not exercised in cdp) |
+
+### 4.5 Transport and data controls
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Timeline | Native range 0..last; dragging pauses, clears any pending prediction, shows `pos/last`. | `controls.tsx` `Transport` | shipped (cdp) |
+| Play / Pause | Toggles; at the end, Play restarts from 0. Autoplay waits `delay × hold` per frame (hold 2–3 on narrative frames). | `use-player.ts` | shipped (code) |
+| ‹ back | Pauses, clears prediction, pos − 1. Disabled at 0. | `controls.tsx` | shipped |
+| › forward | Pauses, then steps; a predict frame ahead opens the predict card instead. Disabled at end. | same | shipped (cdp) |
+| ↺ restart act | Pauses, pos = 0, clears prediction. Disabled at 0. | same | shipped |
+| Speed | 1..100 → 2.0 s … 0.1 s per step (`delayFor`); stored pref shared with the visualizer. | `use-player.ts`, `lib/store.ts` | shipped |
+| Preset select | `random`, `answer at the extremes`, `equal values (3 + 3)`, `big (n = 20)`, `no solution`, `two valid pairs` (Two Sum); `random`, `n = 1`, `loner is the largest`, `big (n = 25)`, `two singles`, `a triple` (Single Number). Changing applies immediately and re-runs classify. | `controls.tsx` `DataControls`, journey `presets` | shipped (test: every preset drains) |
+| ⚄ new | Regenerates from the current preset. | same | shipped |
+| Custom input | Comma/space-separated integers (0–999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
+| Keyboard | `space` play/pause, `→` step, `←` back, `r` restart — ignored inside inputs/textarea/select. | `use-journey.ts` | shipped (code) |
+
+### 4.6 Code challenge (Two Sum act 6 "Code It")
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Editor | `function twoSum(nums, target) {` … `}` around a textarea seeded with the starter; Tab inserts two spaces. | `challenge-editor.tsx` | shipped |
+| ▶ Run tests | Runs the body in a Blob Worker against 6 cases (3 s timeout → "timed out — infinite loop?"); each case line `✓/✗ twoSum([…], t) → got`, `want …` on failure, edge tag (`equal values`, `duplicates`, `answer at extremes`). All green → "all 6 cases pass — you wrote it", `+25 XP` once, act finishes (gate `pass`), reveal button appears. | same, `use-journey.ts` `onChallengePass` | shipped (cdp: 6/6, 25 XP) |
+| 👁 Watch my code on this input | Trace mode: a Proxy records every `nums[i]` read/write (cap 400). Verdict "traced n array accesses — press Play to watch YOUR code"; the act's frames are rebuilt from the trace and the chips follow the learner's execution (read = ring, write = ▲), then the returned pair is checked and marked. New data clears the trace. | same, `two-sum.ts` challenge `run` | shipped (cdp: 14 accesses → 15 frames) |
+| Scorecard | correctness `p/n`, array touches vs reference (the one-pass map, counted the same way), edge cases ✓/✗, "new best — previous was n touches" from the last 50 runs in `scorecard:<slug>`. | same | shipped (cdp) |
+| Self-review | After green: 3 auto-checked items (returns [] or null on no solution; ≤ 1 loop; `.has` before `.set`) as ✓/✗ + 2 honest checkboxes. | same, `TWO_SUM_CHALLENGE.review` | shipped (visual) |
+| Set 2 (n = 400) | After green: "⚡ Set 2: same code, n = 400" → one big case (6 s timeout); shows still correct / wrong, two touch bars (yours peach, reference mauve), and the ratio verdict (> 5× = "THIS gap is what O-notation was trying to tell you"). | same | shipped (code; not exercised in cdp) |
+
+### 4.7 Reading column
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Insight + idea | Insight bold mauve (the weakness the previous act had), idea below. | `journey-page.tsx` | shipped |
+| Built from | The act's `tools`: name bold + role. | same | shipped |
+| Code panel | Tabs pseudocode / Python 3 / Java / C++ (only those present); active line lit with a mauve left bar; the tab choice is a stored pref shared by every act and the visualizer. | `code-panel.tsx` | shipped (cdp) |
+| Takeaways | Three `›` bullets. | `journey-page.tsx` | shipped |
+| Steps chart | Horizontal bars, one per **unlocked** algorithm act (never story, challenge, recap), single hue, active act saturated, direct labels, `title` tooltip. Data from `POST chart` with `upto = unlocked`. | `steps-chart.tsx`, `api/routes.ts` | shipped (cdp + test "never includes acts past upto") |
+| Legend | Four swatches with the marker channel drawn. | `chip-row.tsx` `Legend` | shipped |
+| Resources | "same problem elsewhere:" external links with ↗. | `journey-page.tsx` | shipped |
+
+### 4.8 Journey content
+
+| Journey | Acts | Presets | Challenge | Status |
+|---|---|---|---|---|
+| Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 6 | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
+| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 6 | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
+
+## 5. Algorithm visualizer
+
+| Element | Behaviour | File | Status |
+|---|---|---|---|
+| Picker | Groups sorting / searching / graphs; `?algo=` mirrored in the URL. | `algorithms-page.tsx` | shipped (cdp) |
+| Bars | One column per value, value label when n ≤ 24, colour: comparing yellow, swap/write red, pivot/range peach, final green, discarded grey, otherwise blue. Keys `v<value>#<occurrence>` so a swap FLIPs both columns. | `views.tsx` `BarsView` | shipped (cdp quick sort) |
+| Graph | SVG circle layout; edges grey, active edge yellow; nodes: current yellow, visited green, frontier peach; Dijkstra shows edge weights and `dist` above nodes (∞ until relaxed). | `views.tsx` `GraphView` | shipped (cdp BFS) |
+| Controls | size 4–60, shape select, target (search), nodes 4–14 (graph), new array/graph, compares · writes counter, transport + speed + keyboard. | `algorithms-page.tsx` | shipped |
+| Pseudocode | Line lit per frame. | `code-panel.tsx` | shipped |
+| Merge-sort write pulse, discard fade | — | legacy `visualizer.js` | backlog #B7 |
+
+## 6. State (localStorage, prefix `dsa:`)
+
+| Key | Written by | Read by |
+|---|---|---|
+| `solved` | problem rows / header checkbox | sidebar, home, lists |
+| `unlocked:<slug>` | reveal click, restart | stepper, chart, sidebar, home |
+| `quizzes:<slug>` | quiz pass, restart | quiz gate (skip if passed before) |
+| `xp` | quiz / unlock / challenge | badges |
+| `activity-days` | opening a journey | streak |
+| `scorecard:<slug>` | Run tests | "your best" |
+| `prefs` | speed slider, code tab | both players |
+
+Not yet stored: motion dial UI, sidebar widths, tour seen, SRS ladder, stalls (all backlog).
+
+## 7. API and engine (not on screen)
+
+| Feature | Status |
+|---|---|
+| `GET /api/problems`, `/problems/:id`, `/journeys`, `/journeys/:slug`; `POST preset / parse / classify / run / chart`; `GET /api/algorithms`, `/:key`; `POST /:key/run` | shipped (6 API tests; `curl` against the Vite middleware returned the journey list) |
+| Standalone server `npm run api` (port 8787, CORS `*`) | shipped (code; not load-tested) |
+| Client transport: HTTP under Vite / `VITE_API_URL`, in-process otherwise | shipped |
+| Content gate: schema, drain on sample, note on every frame, code tabs line-for-line, disclosure lint, presets drain, JSON-safe frames | shipped (10 tests) |
+| Correctness: sorts, binary search, BFS/DFS coverage, Dijkstra vs Bellman-Ford, hash arithmetic | shipped (10 tests) |
