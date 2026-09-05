@@ -287,6 +287,82 @@ describe(
       `)
     })
 
+    test("the quiz answers from the keyboard, and Esc closes the drawer (R7)", async () => {
+      // single-number, whose story quiz no earlier check has passed — but an
+      // earlier one left the ledger at 2, and the gate only shows while the
+      // next act is still locked, so put the ledger back first
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.removeItem('dsa:unlocked:single-number');
+        localStorage.removeItem('dsa:quizzes:single-number');
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/journey/single-number`)
+      await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        for (let i = 0; i < 24; i++) {
+          window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+          await wait(110);
+        }
+        return 1;
+      `)
+      await page.waitFor(
+        `!!document.querySelector('[role=radiogroup][aria-label=answers]')`
+      )
+      const quiz = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const g = document.querySelector('[role=radiogroup][aria-label=answers]');
+        if (!g) return { found: false };
+        const radios = [...g.querySelectorAll('[role=radio]')];
+        const pos = () => document.querySelector('[aria-label=timeline]').value;
+        radios[0].focus();
+        const first = document.activeElement.innerText.trim();
+        const posBefore = pos();
+        g.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+        await wait(200);
+        const second = document.activeElement.innerText.trim();
+        g.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+        await wait(200);
+        return {
+          found: true,
+          tabstops: radios.filter(r => r.tabIndex === 0).length,
+          moved: first !== second,
+          returned: document.activeElement.innerText.trim() === first,
+          // the journey's own ArrowRight must not also step the player
+          stepped: pos() !== posBefore,
+        };
+      `)
+      assert.ok(quiz.found, "the quiz gate never appeared")
+      assert.equal(quiz.tabstops, 1, "the group should be one tab stop")
+      assert.ok(quiz.moved, "ArrowDown did not move focus")
+      assert.ok(quiz.returned, "ArrowUp did not come back")
+      assert.equal(quiz.stepped, false, "the arrow keys also stepped the player")
+
+      const esc = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const flask = document.querySelector('[aria-label="test cases"][aria-controls]');
+        flask.click();
+        await wait(600);
+        const d = document.getElementById('test-cases');
+        const opened = d.getBoundingClientRect().width;
+        const sel = d.querySelector('[aria-label="input preset"]');
+        sel.focus();
+        sel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        await wait(600);
+        return {
+          opened,
+          closed: d.getBoundingClientRect().width,
+          focusBack: document.activeElement.getAttribute('aria-label'),
+          inert: d.hasAttribute('inert'),
+        };
+      `)
+      assert.ok(esc.opened > 200, "the drawer did not open")
+      assert.equal(esc.closed, 0, "Esc did not close the drawer")
+      assert.equal(esc.focusBack, "test cases", "focus was left in a closed drawer")
+      assert.equal(esc.inert, true, "a closed drawer should be inert")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
