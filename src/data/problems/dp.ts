@@ -26,11 +26,37 @@ export const dp: Problem[] = [
         a, b = b, a + b
     return b`,
     walkthrough: [
-      { cells: { values: [1, 1, "?", "?", "?"], labels: { 0: "w0", 1: "w1" } }, caption: "Base cases: one way to stand at the bottom, one way to reach step 1." },
-      { cells: { values: [1, 1, 2, "?", "?"], marks: { 0: "compare", 1: "compare", 2: "focus" } }, caption: "ways(2) = ways(1) + ways(0) = 2." },
-      { cells: { values: [1, 1, 2, 3, "?"], marks: { 1: "compare", 2: "compare", 3: "focus" } }, caption: "ways(3) = 2 + 1 = 3." },
-      { cells: { values: [1, 1, 2, 3, 5], marks: { 2: "compare", 3: "compare", 4: "focus" } }, caption: "ways(4) = 3 + 2 = 5. Each cell computed once from its two predecessors." },
-      { cells: { values: [1, 1, 2, 3, 5], marks: { 4: "done" } }, caption: "Answer 5 — matches the enumeration 1111, 112, 121, 211, 22." },
+      {
+        cells: { values: [1, 1, "?", "?", "?"], labels: { 0: "w0", 1: "w1" } },
+        caption:
+          "Base cases: one way to stand at the bottom, one way to reach step 1.",
+      },
+      {
+        cells: {
+          values: [1, 1, 2, "?", "?"],
+          marks: { 0: "compare", 1: "compare", 2: "focus" },
+        },
+        caption: "ways(2) = ways(1) + ways(0) = 2.",
+      },
+      {
+        cells: {
+          values: [1, 1, 2, 3, "?"],
+          marks: { 1: "compare", 2: "compare", 3: "focus" },
+        },
+        caption: "ways(3) = 2 + 1 = 3.",
+      },
+      {
+        cells: {
+          values: [1, 1, 2, 3, 5],
+          marks: { 2: "compare", 3: "compare", 4: "focus" },
+        },
+        caption:
+          "ways(4) = 3 + 2 = 5. Each cell computed once from its two predecessors.",
+      },
+      {
+        cells: { values: [1, 1, 2, 3, 5], marks: { 4: "done" } },
+        caption: "Answer 5 — matches the enumeration 1111, 112, 121, 211, 22.",
+      },
     ],
     alternatives: [
       {
@@ -83,17 +109,42 @@ def climb_ways(n: int) -> int:
         skip, take = max(skip, take), skip + x
     return max(skip, take)`,
     walkthrough: [
-      { cells: { values: [2, 7, 9, 3, 1] }, caption: "Pick non-adjacent values, maximise the sum." },
-      { cells: { values: [2, 7, 9, 3, 1], marks: { 0: "focus" } }, caption: "i=0: best = 2 (take it; nothing to conflict)." },
-      { cells: { values: [2, 7, 9, 3, 1], marks: { 1: "focus" } }, caption: "i=1: max(skip → 2, take → 7) = 7." },
-      { cells: { values: [2, 7, 9, 3, 1], marks: { 0: "done", 2: "focus" } }, caption: "i=2: max(7, 9 + 2) = 11 — take 9 with the earlier 2." },
-      { cells: { values: [2, 7, 9, 3, 1], marks: { 0: "done", 2: "done", 3: "compare" } }, caption: "i=3: max(11, 3 + 7) = 11 — skipping 3 wins." },
-      { cells: { values: [2, 7, 9, 3, 1], marks: { 0: "done", 2: "done", 4: "focus" } }, caption: "i=4: max(11, 1 + 11) = 12. Answer: 2 + 9 + 1." },
+      {
+        cells: { values: [2, 7, 9, 3, 1] },
+        caption: "Pick non-adjacent values, maximise the sum.",
+      },
+      {
+        cells: { values: [2, 7, 9, 3, 1], marks: { 0: "focus" } },
+        caption: "i=0: best = 2 (take it; nothing to conflict).",
+      },
+      {
+        cells: { values: [2, 7, 9, 3, 1], marks: { 1: "focus" } },
+        caption: "i=1: max(skip → 2, take → 7) = 7.",
+      },
+      {
+        cells: { values: [2, 7, 9, 3, 1], marks: { 0: "done", 2: "focus" } },
+        caption: "i=2: max(7, 9 + 2) = 11 — take 9 with the earlier 2.",
+      },
+      {
+        cells: {
+          values: [2, 7, 9, 3, 1],
+          marks: { 0: "done", 2: "done", 3: "compare" },
+        },
+        caption: "i=3: max(11, 3 + 7) = 11 — skipping 3 wins.",
+      },
+      {
+        cells: {
+          values: [2, 7, 9, 3, 1],
+          marks: { 0: "done", 2: "done", 4: "focus" },
+        },
+        caption: "i=4: max(11, 1 + 11) = 12. Answer: 2 + 9 + 1.",
+      },
     ],
     alternatives: [
       {
         name: "Recursion + memo",
-        summary: "best(i) tried top-down with caching. Same recurrence; the table version just removes the stack.",
+        summary:
+          "best(i) tried top-down with caching. Same recurrence; the table version just removes the stack.",
         complexity: { time: "O(n)", space: "O(n)" },
         python: `from functools import lru_cache
 
@@ -150,12 +201,43 @@ def max_take(nums: list[int]) -> int:
                 best[a] = best[a - c] + 1
     return -1 if best[amount] == INF else best[amount]`,
     walkthrough: [
-      { cells: { values: [0, "∞", "∞", "∞", "∞", "∞", "∞"], labels: { 0: "a=0", 6: "a=6" } }, caption: "Table over amounts 0–6. Coins: 1, 3, 4. best(0) = 0." },
-      { cells: { values: [0, 1, 2, "?", "?", "?", "?"], marks: { 1: "done", 2: "done" } }, caption: "a=1: coin 1 → 1. a=2: 1+1 → 2." },
-      { cells: { values: [0, 1, 2, 1, "?", "?", "?"], marks: { 3: "focus" } }, caption: "a=3: min(best(2)+1 = 3, best(0)+1 = 1) — single coin 3 wins." },
-      { cells: { values: [0, 1, 2, 1, 1, 2, "?"], marks: { 4: "done", 5: "done" } }, caption: "a=4: coin 4 alone → 1. a=5: 4+1 → 2." },
-      { cells: { values: [0, 1, 2, 1, 1, 2, 2], marks: { 3: "compare", 6: "focus" } }, caption: "a=6: min via coin 1 → 3, coin 3 → best(3)+1 = 2, coin 4 → best(2)+1 = 3. Answer 2 (3+3)." },
-      { cells: { values: [0, 1, 2, 1, 1, 2, 2], marks: { 6: "done" } }, caption: "Greedy would have said 3 coins (4+1+1). The table says 2." },
+      {
+        cells: {
+          values: [0, "∞", "∞", "∞", "∞", "∞", "∞"],
+          labels: { 0: "a=0", 6: "a=6" },
+        },
+        caption: "Table over amounts 0–6. Coins: 1, 3, 4. best(0) = 0.",
+      },
+      {
+        cells: {
+          values: [0, 1, 2, "?", "?", "?", "?"],
+          marks: { 1: "done", 2: "done" },
+        },
+        caption: "a=1: coin 1 → 1. a=2: 1+1 → 2.",
+      },
+      {
+        cells: { values: [0, 1, 2, 1, "?", "?", "?"], marks: { 3: "focus" } },
+        caption: "a=3: min(best(2)+1 = 3, best(0)+1 = 1) — single coin 3 wins.",
+      },
+      {
+        cells: {
+          values: [0, 1, 2, 1, 1, 2, "?"],
+          marks: { 4: "done", 5: "done" },
+        },
+        caption: "a=4: coin 4 alone → 1. a=5: 4+1 → 2.",
+      },
+      {
+        cells: {
+          values: [0, 1, 2, 1, 1, 2, 2],
+          marks: { 3: "compare", 6: "focus" },
+        },
+        caption:
+          "a=6: min via coin 1 → 3, coin 3 → best(3)+1 = 2, coin 4 → best(2)+1 = 3. Answer 2 (3+3).",
+      },
+      {
+        cells: { values: [0, 1, 2, 1, 1, 2, 2], marks: { 6: "done" } },
+        caption: "Greedy would have said 3 coins (4+1+1). The table says 2.",
+      },
     ],
     alternatives: [
       {

@@ -58,6 +58,19 @@ test("journeys: every revealed pattern id exists, and covers the journey's own p
   }
 })
 
+test("problems: a journeyed problem has no hand-written walkthrough (one source of truth)", () => {
+  const journeyed = new Set(JOURNEYS.map((j) => j.problemId))
+  for (const p of PROBLEMS)
+    if (journeyed.has(p.id))
+      assert.equal(
+        p.walkthrough,
+        undefined,
+        `${p.id} has both a journey and a static walkthrough — they drift (B1)`
+      )
+    else
+      assert.ok(p.walkthrough?.length, `${p.id} has no walkthrough at all`)
+})
+
 test("problems: journeyed problems carry Java and C++ for every approach", () => {
   const journeyed = new Set(JOURNEYS.map((j) => j.problemId))
   assert.ok(journeyed.size >= 2)

@@ -10,8 +10,16 @@ export const slidingWindow: Problem[] = [
     statement:
       "Given prices where prices[i] is a stock's price on day i, pick one day to buy and a later day to sell so profit is maximised. Return the profit, or 0 if no profitable trade exists.",
     examples: [
-      { input: "prices = [7, 1, 5, 3, 6, 4]", output: "5", note: "Buy at 1, sell at 6." },
-      { input: "prices = [5, 4, 3]", output: "0", note: "Prices only fall — don't trade." },
+      {
+        input: "prices = [7, 1, 5, 3, 6, 4]",
+        output: "5",
+        note: "Buy at 1, sell at 6.",
+      },
+      {
+        input: "prices = [5, 4, 3]",
+        output: "0",
+        note: "Prices only fall — don't trade.",
+      },
     ],
     hints: [
       "For each sell day, the best buy day is simply the cheapest price seen so far.",
@@ -29,12 +37,38 @@ export const slidingWindow: Problem[] = [
         best = max(best, p - lowest)
     return best`,
     walkthrough: [
-      { cells: { values: [7, 1, 5, 3, 6, 4] }, caption: "Track two numbers while scanning: lowest so far, best profit so far." },
-      { cells: { values: [7, 1, 5, 3, 6, 4], marks: { 0: "focus" } }, caption: "Day 0: lowest = 7, best = 0." },
-      { cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "focus" } }, caption: "Day 1: price 1 < 7 → new lowest. Selling today would lose." },
-      { cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "window", 2: "focus" } }, caption: "Day 2: 5 − 1 = 4 → best = 4." },
-      { cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "window", 4: "focus" } }, caption: "Day 4: 6 − 1 = 5 → best = 5. Day 3 (profit 2) didn't beat it." },
-      { cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "done", 4: "done" } }, caption: "Answer 5: buy at 1, sell at 6. One pass, two variables." },
+      {
+        cells: { values: [7, 1, 5, 3, 6, 4] },
+        caption:
+          "Track two numbers while scanning: lowest so far, best profit so far.",
+      },
+      {
+        cells: { values: [7, 1, 5, 3, 6, 4], marks: { 0: "focus" } },
+        caption: "Day 0: lowest = 7, best = 0.",
+      },
+      {
+        cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "focus" } },
+        caption: "Day 1: price 1 < 7 → new lowest. Selling today would lose.",
+      },
+      {
+        cells: {
+          values: [7, 1, 5, 3, 6, 4],
+          marks: { 1: "window", 2: "focus" },
+        },
+        caption: "Day 2: 5 − 1 = 4 → best = 4.",
+      },
+      {
+        cells: {
+          values: [7, 1, 5, 3, 6, 4],
+          marks: { 1: "window", 4: "focus" },
+        },
+        caption:
+          "Day 4: 6 − 1 = 5 → best = 5. Day 3 (profit 2) didn't beat it.",
+      },
+      {
+        cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "done", 4: "done" } },
+        caption: "Answer 5: buy at 1, sell at 6. One pass, two variables.",
+      },
     ],
     alternatives: [
       {
@@ -59,7 +93,11 @@ export const slidingWindow: Problem[] = [
     statement:
       "Given a string s, return the length of the longest contiguous substring containing no repeated character.",
     examples: [
-      { input: 's = "abcabcbb"', output: "3", note: '"abc" is the longest clean run.' },
+      {
+        input: 's = "abcabcbb"',
+        output: "3",
+        note: '"abc" is the longest clean run.',
+      },
       { input: 's = "bbbb"', output: "1" },
     ],
     hints: [
@@ -82,12 +120,54 @@ export const slidingWindow: Problem[] = [
         best = max(best, right - left + 1)
     return best`,
     walkthrough: [
-      { cells: { values: ["a", "b", "c", "a", "b"], marks: { 0: "window" }, labels: { 0: "L·R" } }, caption: '"abcab": window starts as just "a".' },
-      { cells: { values: ["a", "b", "c", "a", "b"], marks: { 0: "window", 1: "window", 2: "window" }, labels: { 0: "L", 2: "R" } }, caption: 'Grow right: "abc" — all unique, best = 3.' },
-      { cells: { values: ["a", "b", "c", "a", "b"], marks: { 0: "compare", 1: "window", 2: "window", 3: "compare" }, labels: { 0: "L", 3: "R" } }, caption: "Incoming 'a' already inside → rule broken." },
-      { cells: { values: ["a", "b", "c", "a", "b"], marks: { 1: "window", 2: "window", 3: "window" }, labels: { 1: "L", 3: "R" } }, caption: "Shrink left past the old 'a'. Window \"bca\" — clean again." },
-      { cells: { values: ["a", "b", "c", "a", "b"], marks: { 2: "window", 3: "window", 4: "window" }, labels: { 2: "L", 4: "R" } }, caption: "Incoming 'b' evicts the old 'b' the same way. Best stays 3." },
-      { cells: { values: ["a", "b", "c", "a", "b"], marks: { 0: "done", 1: "done", 2: "done" } }, caption: "Answer 3. Each character enters and leaves the window once — O(n)." },
+      {
+        cells: {
+          values: ["a", "b", "c", "a", "b"],
+          marks: { 0: "window" },
+          labels: { 0: "L·R" },
+        },
+        caption: '"abcab": window starts as just "a".',
+      },
+      {
+        cells: {
+          values: ["a", "b", "c", "a", "b"],
+          marks: { 0: "window", 1: "window", 2: "window" },
+          labels: { 0: "L", 2: "R" },
+        },
+        caption: 'Grow right: "abc" — all unique, best = 3.',
+      },
+      {
+        cells: {
+          values: ["a", "b", "c", "a", "b"],
+          marks: { 0: "compare", 1: "window", 2: "window", 3: "compare" },
+          labels: { 0: "L", 3: "R" },
+        },
+        caption: "Incoming 'a' already inside → rule broken.",
+      },
+      {
+        cells: {
+          values: ["a", "b", "c", "a", "b"],
+          marks: { 1: "window", 2: "window", 3: "window" },
+          labels: { 1: "L", 3: "R" },
+        },
+        caption: "Shrink left past the old 'a'. Window \"bca\" — clean again.",
+      },
+      {
+        cells: {
+          values: ["a", "b", "c", "a", "b"],
+          marks: { 2: "window", 3: "window", 4: "window" },
+          labels: { 2: "L", 4: "R" },
+        },
+        caption: "Incoming 'b' evicts the old 'b' the same way. Best stays 3.",
+      },
+      {
+        cells: {
+          values: ["a", "b", "c", "a", "b"],
+          marks: { 0: "done", 1: "done", 2: "done" },
+        },
+        caption:
+          "Answer 3. Each character enters and leaves the window once — O(n).",
+      },
     ],
     alternatives: [
       {
@@ -130,12 +210,16 @@ export const slidingWindow: Problem[] = [
       "Given strings s and t, return the shortest contiguous substring of s that contains every character of t, counting multiplicity. Return an empty string if none exists.",
     examples: [
       { input: 's = "ADOBECODEBANC", t = "ABC"', output: '"BANC"' },
-      { input: 's = "a", t = "aa"', output: '""', note: "Two a's needed, one available." },
+      {
+        input: 's = "a", t = "aa"',
+        output: '""',
+        note: "Two a's needed, one available.",
+      },
     ],
     hints: [
       "Grow right until the window covers t; then you have a candidate, but maybe a fat one.",
       "While covered, shrink from the left to find the tightest version before growing again.",
-      "Track \"how many required characters are fully satisfied\" as one integer so cover-checks are O(1), not a map comparison.",
+      'Track "how many required characters are fully satisfied" as one integer so cover-checks are O(1), not a map comparison.',
     ],
     approach:
       "Count the characters t needs. Slide the right edge, decrementing needs; when a character's need hits zero it is satisfied, tracked by a single counter. Once all are satisfied, advance the left edge while coverage holds, updating the best window each step; the first left-move that breaks coverage resumes right-expansion. Every index enters and leaves the window once.",
@@ -163,11 +247,27 @@ def min_window(s: str, t: str) -> str:
     length, i, j = best
     return "" if length == float("inf") else s[i : j + 1]`,
     walkthrough: [
-      { text: 's = ADOBECODEBANC   t = ABC\n\nneed: {A:1, B:1, C:1}   missing = 3', caption: "Count what t requires." },
-      { text: 'A D O B E C O D E B A N C\n└────────┘\nADOBEC — first covering window\n\nmissing = 0, length 6', caption: "Grow right until every requirement is met." },
-      { text: 'A D O B E C O D E B A N C\n  └──────┘? shrink test:\ndrop A → missing = 1 → stop\n\nbest so far: ADOBEC (6)', caption: "Shrink left while still covered; first break stops it." },
-      { text: 'continue right ... reach second B, then A:\n\nA D O B E C O D E B A N C\n          └───────┘\nCODEBA covers again — shrink → ODEBA? no C...\nshrink stops at C O D E B A (6)', caption: "Window re-covers as later duplicates arrive; keep tightening." },
-      { text: 'reach final C:\n\nA D O B E C O D E B A N C\n                  └─────┘\nBANC — length 4. Shrink breaks at B.\n\nanswer: "BANC"', caption: "Best window found: 4. Each index enters/leaves once — O(n)." },
+      {
+        text: "s = ADOBECODEBANC   t = ABC\n\nneed: {A:1, B:1, C:1}   missing = 3",
+        caption: "Count what t requires.",
+      },
+      {
+        text: "A D O B E C O D E B A N C\n└────────┘\nADOBEC — first covering window\n\nmissing = 0, length 6",
+        caption: "Grow right until every requirement is met.",
+      },
+      {
+        text: "A D O B E C O D E B A N C\n  └──────┘? shrink test:\ndrop A → missing = 1 → stop\n\nbest so far: ADOBEC (6)",
+        caption: "Shrink left while still covered; first break stops it.",
+      },
+      {
+        text: "continue right ... reach second B, then A:\n\nA D O B E C O D E B A N C\n          └───────┘\nCODEBA covers again — shrink → ODEBA? no C...\nshrink stops at C O D E B A (6)",
+        caption:
+          "Window re-covers as later duplicates arrive; keep tightening.",
+      },
+      {
+        text: 'reach final C:\n\nA D O B E C O D E B A N C\n                  └─────┘\nBANC — length 4. Shrink breaks at B.\n\nanswer: "BANC"',
+        caption: "Best window found: 4. Each index enters/leaves once — O(n).",
+      },
     ],
     alternatives: [
       {

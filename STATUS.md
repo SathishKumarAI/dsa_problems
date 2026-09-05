@@ -13,7 +13,8 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. Top unchecked **P0** in `docs/BACKLOG.md`. B1 is the last one.
+1. **Every P0 is done.** Next: the F-items in `docs/BACKLOG.md` (F3 panel kinds arrive with their
+   problem; F4–F8 are the animation proposals awaiting your review).
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

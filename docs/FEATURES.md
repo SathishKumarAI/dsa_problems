@@ -51,7 +51,8 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | **Journey CTA** | When `journeyForProblem(id)` exists: a mauve card "Start the learning journey ▸" with the act count. Shows on Pair With Target Sum and Single Number. | `problem-detail.tsx` | shipped (visual) |
 | Statement + examples | Monospace `in`/`out` rows with optional note. | `problem-detail.tsx` | shipped |
 | Tabs: Hints / Walkthrough / Approach & Solution | Hints are an accordion (one open at a time). Walkthrough = static `StepPlayer`. Solutions = tabs per alternative + Optimal. | `problem-detail.tsx` | shipped |
-| Static walkthrough player | Frames with cells (roles focus/compare/window/done + pointer labels) or text; play (1.8 s/step), prev/next, restart, dot scrubber, ←/→ keys; terminal chrome + legend. | `step-player.tsx` | shipped (pre-existing) |
+| Static walkthrough player | Frames with cells (roles focus/compare/window/done + pointer labels) or text; play (1.8 s/step), prev/next, restart, dot scrubber, ←/→ keys; terminal chrome + legend. Used by the **28 problems without a journey**. | `step-player.tsx` | shipped (pre-existing) |
+| Engine walkthrough | A problem **with** a journey draws the journey's own stage instead (same generators, chips, panels, narration, transport), picking the best act the learner has earned: never opened or finished → the optimal act; midway → the last earned act plus "This is the best approach you have earned so far" and a link back. The hand-written frames for those problems are deleted (B1). | `features/journey/mini-player.tsx` | shipped (test: both states; a problem may not have a journey *and* a static walkthrough) |
 | Code block | Mono `<pre>` with copy button (✓ for 1.5 s). | `code-block.tsx` | shipped |
 | SQL drills, flashcards | Unchanged from baseline. | `sql-view.tsx`, `flashcards-view.tsx` | shipped (pre-existing) |
 

@@ -17,6 +17,7 @@ import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import { href } from "@/lib/route"
+import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
 import { difficultyClass } from "@/lib/difficulty"
 import { setPref, usePrefs } from "@/lib/store"
@@ -174,7 +175,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
       <Tabs defaultValue="hints">
         <TabsList>
           <TabsTrigger value="hints">Hints</TabsTrigger>
-          {problem.walkthrough && (
+          {(journey || problem.walkthrough) && (
             <TabsTrigger value="walkthrough">Walkthrough</TabsTrigger>
           )}
           <TabsTrigger value="solution">Approach & Solution</TabsTrigger>
@@ -195,9 +196,15 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           </Accordion>
         </TabsContent>
 
-        {problem.walkthrough && (
+        {(journey || problem.walkthrough) && (
           <TabsContent value="walkthrough">
-            <StepPlayer frames={problem.walkthrough} />
+            {/* one source of truth: a problem with a journey draws the
+                journey's own frames, not a second hand-written copy (B1) */}
+            {journey ? (
+              <MiniPlayer journey={journey} />
+            ) : (
+              <StepPlayer frames={problem.walkthrough!} />
+            )}
           </TabsContent>
         )}
 

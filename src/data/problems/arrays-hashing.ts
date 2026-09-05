@@ -10,12 +10,16 @@ export const arraysHashing: Problem[] = [
     statement:
       "Given an integer array nums and an integer target, return the indices of two distinct elements whose sum equals target. Assume exactly one such pair exists.",
     examples: [
-      { input: "nums = [3, 6, 1, 5], target = 8", output: "[0, 3]", note: "3 + 5 = 8, at indices 0 and 3." },
+      {
+        input: "nums = [3, 6, 1, 5], target = 8",
+        output: "[0, 3]",
+        note: "3 + 5 = 8, at indices 0 and 3.",
+      },
       { input: "nums = [2, 2], target = 4", output: "[0, 1]" },
     ],
     hints: [
       "Brute force checks every pair — O(n²). What single question do you ask when standing on nums[i]?",
-      "The question is: \"have I already seen target - nums[i]?\" A hash map answers that in O(1).",
+      'The question is: "have I already seen target - nums[i]?" A hash map answers that in O(1).',
       "Store value → index as you scan. Check for the complement before inserting the current value, so you never pair an element with itself.",
     ],
     approach:
@@ -46,14 +50,6 @@ export const arraysHashing: Problem[] = [
     }
     return {};
 }`,
-    walkthrough: [
-      { cells: { values: [3, 6, 1, 5], labels: { 0: "i" } }, caption: "Target 8. Map empty; stand on 3." },
-      { cells: { values: [3, 6, 1, 5], marks: { 0: "focus" }, labels: { 0: "i" } }, caption: "Need 8 − 3 = 5. Not seen → store {3: 0}, move on." },
-      { cells: { values: [3, 6, 1, 5], marks: { 1: "focus" }, labels: { 1: "i" } }, caption: "Need 8 − 6 = 2. Not seen → store {3:0, 6:1}." },
-      { cells: { values: [3, 6, 1, 5], marks: { 2: "focus" }, labels: { 2: "i" } }, caption: "Need 8 − 1 = 7. Not seen → store {3:0, 6:1, 1:2}." },
-      { cells: { values: [3, 6, 1, 5], marks: { 0: "compare", 3: "focus" }, labels: { 3: "i" } }, caption: "Need 8 − 5 = 3 — seen at index 0. Return [0, 3]." },
-      { cells: { values: [3, 6, 1, 5], marks: { 0: "done", 3: "done" } }, caption: "One pass, one map: each element asks one O(1) question." },
-    ],
     alternatives: [
       {
         name: "Brute force",
@@ -164,10 +160,23 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
                 return out
     return out`,
     walkthrough: [
-      { text: "nums = [4, 4, 4, 6, 6, 2]   k = 2\n\ncounts: {4: 3, 6: 2, 2: 1}", caption: "Pass 1: hash-map count." },
-      { text: "buckets (index = count):\n\n[0] —\n[1] 2\n[2] 6\n[3] 4\n[4] —\n[5] —\n[6] —", caption: "Pass 2: value goes into bucket[count]. Counts can't exceed n = 6." },
-      { text: "read top-down:\n\n[6] —\n[5] —\n[4] —\n[3] 4   ← take\n[2] 6   ← take, have k=2, stop", caption: "Highest buckets first — no sort ever happens." },
-      { text: "answer: [4, 6]\n\ncount O(n) + bucket O(n) + read O(n) = O(n)", caption: "Bucket sort by count beats O(n log n) sorting." },
+      {
+        text: "nums = [4, 4, 4, 6, 6, 2]   k = 2\n\ncounts: {4: 3, 6: 2, 2: 1}",
+        caption: "Pass 1: hash-map count.",
+      },
+      {
+        text: "buckets (index = count):\n\n[0] —\n[1] 2\n[2] 6\n[3] 4\n[4] —\n[5] —\n[6] —",
+        caption:
+          "Pass 2: value goes into bucket[count]. Counts can't exceed n = 6.",
+      },
+      {
+        text: "read top-down:\n\n[6] —\n[5] —\n[4] —\n[3] 4   ← take\n[2] 6   ← take, have k=2, stop",
+        caption: "Highest buckets first — no sort ever happens.",
+      },
+      {
+        text: "answer: [4, 6]\n\ncount O(n) + bucket O(n) + read O(n) = O(n)",
+        caption: "Bucket sort by count beats O(n log n) sorting.",
+      },
     ],
     alternatives: [
       {
@@ -204,7 +213,11 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     statement:
       "Given an unsorted integer array, return the length of the longest sequence of consecutive integers present in it (order in the array does not matter). Target O(n) — sorting is the fallback, not the answer.",
     examples: [
-      { input: "nums = [50, 3, 2, 100, 4, 1]", output: "4", note: "1, 2, 3, 4 is the longest run." },
+      {
+        input: "nums = [50, 3, 2, 100, 4, 1]",
+        output: "4",
+        note: "1, 2, 3, 4 is the longest run.",
+      },
       { input: "nums = []", output: "0" },
     ],
     hints: [
@@ -227,12 +240,39 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
         best = max(best, length)
     return best`,
     walkthrough: [
-      { cells: { values: [50, 3, 2, 100, 4, 1] }, caption: "Load everything into a set: {50, 3, 2, 100, 4, 1}." },
-      { cells: { values: [50, 3, 2, 100, 4, 1], marks: { 0: "focus" } }, caption: "50: is 49 in the set? No → 50 starts a run. Walk: 51 absent. Length 1." },
-      { cells: { values: [50, 3, 2, 100, 4, 1], marks: { 1: "done", 2: "done" } }, caption: "3 and 2: predecessors (2 and 1) exist → NOT run starts. Skipped — this is what keeps it O(n)." },
-      { cells: { values: [50, 3, 2, 100, 4, 1], marks: { 3: "focus" } }, caption: "100: 99 absent → run of length 1." },
-      { cells: { values: [50, 3, 2, 100, 4, 1], marks: { 5: "focus" } }, caption: "1: 0 absent → run start. Walk: 2 ✓ 3 ✓ 4 ✓ 5 ✗. Length 4." },
-      { cells: { values: [50, 3, 2, 100, 4, 1], marks: { 1: "window", 2: "window", 4: "window", 5: "window" } }, caption: "Best run: 1, 2, 3, 4 → answer 4. Each value visited at most twice." },
+      {
+        cells: { values: [50, 3, 2, 100, 4, 1] },
+        caption: "Load everything into a set: {50, 3, 2, 100, 4, 1}.",
+      },
+      {
+        cells: { values: [50, 3, 2, 100, 4, 1], marks: { 0: "focus" } },
+        caption:
+          "50: is 49 in the set? No → 50 starts a run. Walk: 51 absent. Length 1.",
+      },
+      {
+        cells: {
+          values: [50, 3, 2, 100, 4, 1],
+          marks: { 1: "done", 2: "done" },
+        },
+        caption:
+          "3 and 2: predecessors (2 and 1) exist → NOT run starts. Skipped — this is what keeps it O(n).",
+      },
+      {
+        cells: { values: [50, 3, 2, 100, 4, 1], marks: { 3: "focus" } },
+        caption: "100: 99 absent → run of length 1.",
+      },
+      {
+        cells: { values: [50, 3, 2, 100, 4, 1], marks: { 5: "focus" } },
+        caption: "1: 0 absent → run start. Walk: 2 ✓ 3 ✓ 4 ✓ 5 ✗. Length 4.",
+      },
+      {
+        cells: {
+          values: [50, 3, 2, 100, 4, 1],
+          marks: { 1: "window", 2: "window", 4: "window", 5: "window" },
+        },
+        caption:
+          "Best run: 1, 2, 3, 4 → answer 4. Each value visited at most twice.",
+      },
     ],
     alternatives: [
       {
@@ -257,13 +297,18 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     title: "Single Number",
     pattern: "arrays-hashing",
     difficulty: "easy",
-    brief: "Every value appears twice except one — find it in O(n) time and O(1) space.",
+    brief:
+      "Every value appears twice except one — find it in O(n) time and O(1) space.",
     statement:
       "Given a non-empty integer array nums where every element appears exactly twice except for one element that appears once, return that single element. The follow-up asks for linear time and constant extra space.",
     examples: [
       { input: "nums = [2, 2, 1]", output: "1" },
       { input: "nums = [4, 1, 2, 1, 2]", output: "4" },
-      { input: "nums = [1]", output: "1", note: "n = 1 is the edge every solution must survive." },
+      {
+        input: "nums = [1]",
+        output: "1",
+        note: "n = 1 is the edge every solution must survive.",
+      },
     ],
     hints: [
       "A hash map of counts solves it in O(n) time — but the follow-up forbids O(n) space. What operation cancels a value against itself?",
@@ -288,18 +333,11 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     for (int x : nums) acc ^= x;
     return acc;
 }`,
-    walkthrough: [
-      { cells: { values: [4, 1, 2, 1, 2] }, caption: "acc = 0. XOR is the identity on 0." },
-      { cells: { values: [4, 1, 2, 1, 2], marks: { 0: "focus" }, labels: { 0: "x" } }, caption: "0 ^ 4 = 4." },
-      { cells: { values: [4, 1, 2, 1, 2], marks: { 0: "done", 1: "focus" }, labels: { 1: "x" } }, caption: "4 ^ 1 = 5." },
-      { cells: { values: [4, 1, 2, 1, 2], marks: { 0: "done", 1: "done", 2: "focus" }, labels: { 2: "x" } }, caption: "5 ^ 2 = 7." },
-      { cells: { values: [4, 1, 2, 1, 2], marks: { 0: "done", 1: "done", 2: "done", 3: "focus" }, labels: { 3: "x" } }, caption: "7 ^ 1 = 6 — the 1s cancelled." },
-      { cells: { values: [4, 1, 2, 1, 2], marks: { 0: "done", 1: "done", 2: "done", 3: "done", 4: "focus" }, labels: { 4: "x" } }, caption: "6 ^ 2 = 4 — the 2s cancelled. Return 4." },
-    ],
     alternatives: [
       {
         name: "Hash map",
-        summary: "Count every value, then return the one with count 1. Linear time, but the map is O(n) extra space — exactly what the follow-up forbids.",
+        summary:
+          "Count every value, then return the one with count 1. Linear time, but the map is O(n) extra space — exactly what the follow-up forbids.",
         complexity: { time: "O(n)", space: "O(n)" },
         python: `def single_number(nums: list[int]) -> int:
     counts: dict[int, int] = {}
@@ -326,7 +364,8 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
       },
       {
         name: "Sort & scan",
-        summary: "Sort, then twins are adjacent: walk in steps of two until a pair breaks. No map, but the sort costs O(n log n).",
+        summary:
+          "Sort, then twins are adjacent: walk in steps of two until a pair breaks. No map, but the sort costs O(n log n).",
         complexity: { time: "O(n log n)", space: "O(1)" },
         python: `def single_number(nums: list[int]) -> int:
     s = sorted(nums)

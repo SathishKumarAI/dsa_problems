@@ -10,7 +10,12 @@ export const heaps: Problem[] = [
     statement:
       "Design a class initialized with k and a list of numbers. Each call to add(x) inserts x and returns the kth largest value seen so far.",
     examples: [
-      { input: "k = 3, start = [4, 5, 8, 2]; add(3) → 4; add(5) → 5; add(10) → 5", output: "see calls", note: "After add(10) the three largest are 10, 8, 5." },
+      {
+        input:
+          "k = 3, start = [4, 5, 8, 2]; add(3) → 4; add(5) → 5; add(10) → 5",
+        output: "see calls",
+        note: "After add(10) the three largest are 10, 8, 5.",
+      },
     ],
     hints: [
       "You never care about anything smaller than the current kth largest.",
@@ -36,10 +41,22 @@ class KthLargest:
             heapq.heappop(self.heap)
         return self.heap[0]`,
     walkthrough: [
-      { text: "k = 3, start = [4, 5, 8, 2]\n\nheapify → pop smallest until size 3\nmin-heap: [4, 5, 8]   root = 4", caption: "Keep only the 3 largest. Root = 3rd largest = 4." },
-      { text: "add(3):  push → [3, 4, 5, 8]\n         size 4 > 3 → pop 3\n\nmin-heap: [4, 5, 8]   root = 4", caption: "3 can't be in the top three — evicted immediately." },
-      { text: "add(5):  push → [4, 5, 5, 8]\n         pop 4\n\nmin-heap: [5, 5, 8]   root = 5", caption: "New 5 pushes old 4 out of the top three." },
-      { text: "add(10): push → [5, 5, 8, 10]\n         pop 5\n\nmin-heap: [5, 8, 10]  root = 5", caption: "Top three are 10, 8, 5 — root answers in O(1)." },
+      {
+        text: "k = 3, start = [4, 5, 8, 2]\n\nheapify → pop smallest until size 3\nmin-heap: [4, 5, 8]   root = 4",
+        caption: "Keep only the 3 largest. Root = 3rd largest = 4.",
+      },
+      {
+        text: "add(3):  push → [3, 4, 5, 8]\n         size 4 > 3 → pop 3\n\nmin-heap: [4, 5, 8]   root = 4",
+        caption: "3 can't be in the top three — evicted immediately.",
+      },
+      {
+        text: "add(5):  push → [4, 5, 5, 8]\n         pop 4\n\nmin-heap: [5, 5, 8]   root = 5",
+        caption: "New 5 pushes old 4 out of the top three.",
+      },
+      {
+        text: "add(10): push → [5, 5, 8, 10]\n         pop 5\n\nmin-heap: [5, 8, 10]  root = 5",
+        caption: "Top three are 10, 8, 5 — root answers in O(1).",
+      },
     ],
     alternatives: [
       {
@@ -84,7 +101,10 @@ class KthLargest:
     statement:
       "Given points on a plane and an integer k, return the k points closest to the origin by Euclidean distance. Any order.",
     examples: [
-      { input: "points = [[1, 3], [-2, 2], [5, 8]], k = 2", output: "[[-2, 2], [1, 3]]" },
+      {
+        input: "points = [[1, 3], [-2, 2], [5, 8]], k = 2",
+        output: "[[-2, 2], [1, 3]]",
+      },
     ],
     hints: [
       "Comparing squared distances avoids the sqrt entirely.",
@@ -106,15 +126,29 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
             heapq.heappushpop(heap, (d, p))
     return [p for _, p in heap]`,
     walkthrough: [
-      { text: "points: [1,3] [-2,2] [5,8]   k = 2\n\ndist²:  [1,3]→10  [-2,2]→8  [5,8]→89", caption: "Squared distance is enough — ordering is identical to true distance." },
-      { text: "push [1,3]  (d²=10)\npush [-2,2] (d²=8)\n\nkept: {[1,3], [-2,2]}   worst kept: 10", caption: "First k points always enter the heap." },
-      { text: "[5,8]: d² = 89 > 10 (worst kept)\n→ skip\n\nkept: {[1,3], [-2,2]}", caption: "Farther than the worst kept point — rejected in O(1)." },
-      { text: "answer: [[-2,2], [1,3]]\n\nn log k, not n log n:\nonly the k kept points ever touch the heap", caption: "Bounded heap = the whole trick." },
+      {
+        text: "points: [1,3] [-2,2] [5,8]   k = 2\n\ndist²:  [1,3]→10  [-2,2]→8  [5,8]→89",
+        caption:
+          "Squared distance is enough — ordering is identical to true distance.",
+      },
+      {
+        text: "push [1,3]  (d²=10)\npush [-2,2] (d²=8)\n\nkept: {[1,3], [-2,2]}   worst kept: 10",
+        caption: "First k points always enter the heap.",
+      },
+      {
+        text: "[5,8]: d² = 89 > 10 (worst kept)\n→ skip\n\nkept: {[1,3], [-2,2]}",
+        caption: "Farther than the worst kept point — rejected in O(1).",
+      },
+      {
+        text: "answer: [[-2,2], [1,3]]\n\nn log k, not n log n:\nonly the k kept points ever touch the heap",
+        caption: "Bounded heap = the whole trick.",
+      },
     ],
     alternatives: [
       {
         name: "Sort all",
-        summary: "Sort every point by distance and slice. One line, n log n, perfectly fine when n is small or k ≈ n.",
+        summary:
+          "Sort every point by distance and slice. One line, n log n, perfectly fine when n is small or k ≈ n.",
         complexity: { time: "O(n log n)", space: "O(n)" },
         python: `def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
     return sorted(points, key=lambda p: p[0] ** 2 + p[1] ** 2)[:k]`,
@@ -159,7 +193,11 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
     statement:
       "Given task labels and a cooldown n, identical tasks must be at least n time-units apart. Each task takes one unit; you may idle. Return the minimum total units to finish everything.",
     examples: [
-      { input: "tasks = [A, A, A, B, B, B], n = 2", output: "8", note: "A B _ A B _ A B" },
+      {
+        input: "tasks = [A, A, A, B, B, B], n = 2",
+        output: "8",
+        note: "A B _ A B _ A B",
+      },
     ],
     hints: [
       "Greedy: always run the task with the most remaining copies (breaking it up matters most).",
@@ -187,10 +225,22 @@ def least_interval(tasks: list[str], n: int) -> int:
                 cooling.append((time + n + 1, count))
     return time`,
     walkthrough: [
-      { text: "tasks: A×3 B×3   n = 2\nheap: [A:3, B:3]   cooling: []", caption: "Counts in a max-heap; cooldown queue empty." },
-      { text: "t=1  run A (2 left) → cooling until t=4\nt=2  run B (2 left) → cooling until t=5\nt=3  nothing ready → idle", caption: "Most-frequent-first; both cooling, clock still ticks." },
-      { text: "t=4  A ready → run A (1 left) → cool to t=7\nt=5  B ready → run B (1 left) → cool to t=8\nt=6  idle", caption: "Same shape repeats: A B idle." },
-      { text: "t=7  run A (0 left)\nt=8  run B (0 left)\n\nA B _ A B _ A B   →  8 units", caption: "Heap and queue empty at t=8 — answer 8." },
+      {
+        text: "tasks: A×3 B×3   n = 2\nheap: [A:3, B:3]   cooling: []",
+        caption: "Counts in a max-heap; cooldown queue empty.",
+      },
+      {
+        text: "t=1  run A (2 left) → cooling until t=4\nt=2  run B (2 left) → cooling until t=5\nt=3  nothing ready → idle",
+        caption: "Most-frequent-first; both cooling, clock still ticks.",
+      },
+      {
+        text: "t=4  A ready → run A (1 left) → cool to t=7\nt=5  B ready → run B (1 left) → cool to t=8\nt=6  idle",
+        caption: "Same shape repeats: A B idle.",
+      },
+      {
+        text: "t=7  run A (0 left)\nt=8  run B (0 left)\n\nA B _ A B _ A B   →  8 units",
+        caption: "Heap and queue empty at t=8 — answer 8.",
+      },
     ],
     alternatives: [
       {
