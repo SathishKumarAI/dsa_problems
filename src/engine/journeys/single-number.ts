@@ -805,6 +805,7 @@ export const singleNumber: Journey<SingleNumberData> = {
       .filter((v) => Number.isInteger(v) && v >= 0 && v < 128)
     return nums.length ? { nums } : null
   },
+  reveals: ["arrays-hashing"],
   sample: { nums: [2, 2, 3] },
   edgeCases: [
     {

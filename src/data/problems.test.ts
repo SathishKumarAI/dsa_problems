@@ -41,6 +41,23 @@ test("problems: every Python block is a function; alternatives are worst → bes
   }
 })
 
+test("journeys: every revealed pattern id exists, and covers the journey's own pattern", () => {
+  const patterns = new Set(PATTERNS.map((p) => p.id))
+  for (const j of JOURNEYS) {
+    for (const id of j.reveals ?? [])
+      assert.ok(patterns.has(id), `${j.slug} reveals unknown pattern "${id}"`)
+    // the pattern its own problem sits under is the one the recap names, so
+    // leaving it out would leak that name in the catalogue while the journey
+    // is midway through teaching it
+    const own = PROBLEMS.find((p) => p.id === j.problemId)?.pattern
+    if (own)
+      assert.ok(
+        (j.reveals ?? []).includes(own),
+        `${j.slug} does not mask its own pattern "${own}"`
+      )
+  }
+})
+
 test("problems: journeyed problems carry Java and C++ for every approach", () => {
   const journeyed = new Set(JOURNEYS.map((j) => j.problemId))
   assert.ok(journeyed.size >= 2)

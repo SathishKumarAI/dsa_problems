@@ -1158,6 +1158,7 @@ export const twoSum: Journey<TwoSumData> = {
       : null
   },
   challenge: TWO_SUM_CHALLENGE,
+  reveals: ["two-pointers", "arrays-hashing"],
   sample: { nums: [2, 7, 11, 15], target: 9 },
   edgeCases: [
     {

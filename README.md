@@ -56,6 +56,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | FLIP morph | `src/features/journey/use-flip.ts` |
 | Algorithm visualizer page / bars + graph drawing | `src/features/algorithms/algorithms-page.tsx` / `views.tsx` |
 | Every localStorage key (progress, XP, prefs) · export / import / erase | `src/lib/store.ts` |
+| Whether a pattern's name may be shown yet | `src/lib/disclosure.ts` (journeys declare `reveals`) |
 | Help / shortcuts / settings dialogs | `src/components/app-dialogs.tsx` (open state: `src/lib/dialogs.ts`) |
 | Keyboard map (`?` renders it) · app-wide keys `?` `f` | `src/lib/shortcuts.ts` · `src/components/global-keys.tsx` |
 | Sidebar hover-peek | `src/components/ui/sidebar.tsx` (`data-peek`) |

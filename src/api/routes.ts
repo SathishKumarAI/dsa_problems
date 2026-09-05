@@ -61,6 +61,7 @@ export function journeyMeta(j: AnyJourney) {
       nextLabel: a.nextLabel ?? null,
     })),
     resources: j.resources,
+    reveals: j.reveals ?? [],
     edgeCases: j.edgeCases,
     presets: Object.fromEntries(
       Object.entries(j.presets).map(([k, p]) => [

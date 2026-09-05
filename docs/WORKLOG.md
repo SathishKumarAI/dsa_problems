@@ -4,6 +4,36 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — B8: the catalogue keeps the journey's secret
+
+Branch `feat/disclosure-mask`.
+
+**The leak.** The pedagogy rests on *no unearned name*, and the tests enforced it inside a journey
+— but the sidebar said **Two Pointers** in plain sight while Two Sum act 3 was busy building that
+exact idea without naming it. The legacy repo had an uncommitted branch for the same bug.
+
+**The decision.** Masking the whole catalogue would wreck it for someone who never opened a
+journey; leaving it alone breaks the one rule. So the mask follows an **active promise**: a
+pattern is hidden only while a journey that `reveals` it is *started and unfinished*. Never
+started, nothing promised, nothing hidden. Finished, you earned the name. And one click — "show
+names anyway", stored in `spoilers` — turns masking off forever, because the PRD's drill-runner
+persona should not have to play along.
+
+**What that is in code.** `Journey.reveals?: string[]` (pattern ids); `src/lib/disclosure.ts` is
+the only module that answers "may they see this name yet?"; four call sites ask it. The hook reads
+one key per journey, which is more keys than a hook may subscribe to in a loop, so `store.ts`
+gained `useStoreVersion()` — a single counter bumped on every write.
+
+**Two gates, one bug.** A content test asserts every `reveals` id exists **and** that a journey
+masks the pattern its own problem sits under (leaving that out is exactly how this leaks). The UI
+test walks the three states — not started, midway, finished — plus the opt-out. It failed on the
+first run: the sidebar footer's where-you-are line still read `DSA · pattern · Two Pointers`
+(G4). Fixed in the same PR.
+
+**Evidence.** `npm run check` 42/42 (was 41). `npm run test:ui` 20/20 (was 18). Live at
+`unlocked=3`: sidebar rows read `?|· · ·` for both masked patterns, `h1` is `· · ·`; at 1 and 7
+the names are back.
+
 ## 2026-09-05 — the stack lands on master, and the UI gets a gate (B2)
 
 ### The merge, and how it went wrong

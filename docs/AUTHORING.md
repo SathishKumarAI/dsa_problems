@@ -56,6 +56,7 @@ const hash: Act<TwoSumData, F> = {
 |---|---|
 | No act's `name`, `short`, `insight`, `idea`, `complexity`, `takeaways`, `hints`, `tools`, `quiz`, frame `note`s or `predict` text names a **later** act. Generic names (`The Problem`, `Code It`, `The Reveal`, `start here`…) are exempt. | disclosure test |
 | No preset `info` names any act past the story act (banners show from act 1). | disclosure test |
+| `reveals` lists every pattern id whose **name** the journey withholds until its recap, and must include the pattern its own problem sits under. The catalogue masks those names while the journey is started and unfinished. | `data/problems.test.ts` |
 | No `edgeCases` prose (`name`, `example`, `why`, `think`) names any act past the story act — it sits on act 0. Describe what breaks, never what fixes it. | disclosure test |
 | ≥ 3 `edgeCases`, unique keys, each `preset` exists, and on that preset **some act tags a frame `corner: key`** — every corner case is explained in play at least once. No frame tags an unknown key. | edge-case test |
 | Every frame has a non-empty `note`, present tense, one sentence. | drain test |

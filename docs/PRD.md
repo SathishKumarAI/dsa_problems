@@ -67,7 +67,7 @@ that fails them is a product regression, not a style nit.
 
 | # | Requirement | Enforced by |
 |---|---|---|
-| P1 | **No unearned name.** No act, subtitle, tool, hint, quiz, preset banner or chart row names an act the learner has not unlocked. | disclosure test; API `chart` filters by `upto`; stepper renders one anonymous "?" node |
+| P1 | **No unearned name.** No act, subtitle, tool, hint, quiz, preset banner, corner case or chart row names an act the learner has not unlocked — **and the catalogue does not name a pattern a started journey is still building** (`lib/disclosure.ts`, opt-out per learner). | disclosure test; edge-case lint; API `chart` filters by `upto`; stepper renders one anonymous "?" node; UI test asserts the mask |
 | P2 | **Insight before name.** Each act opens with the weakness it fixes; the canonical name is revealed in the recap act. | content review + `AUTHORING.md` checklist |
 | P3 | **Earned, not clicked through.** Unlocking = finish the act + pass its quiz + an explicit "I get it" click. `unlocked:<slug>` is written nowhere else. | `use-journey.ts` is the only writer |
 | P4 | **Every frame narrates.** A frame without a `note` fails the build. | schema test |

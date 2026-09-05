@@ -13,7 +13,7 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. Top unchecked **P0** in `docs/BACKLOG.md`. B1, B6, B7 and B8 remain.
+1. Top unchecked **P0** in `docs/BACKLOG.md`. B1, B6 and B7 remain.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)
@@ -40,7 +40,6 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 - Not covered by any test, so drive them by hand: autoplay timing, the 45 s hint timer, the Worker
   code challenge (Set 2 at n = 400), the adaptive-difficulty offer, hover-peek, reduced motion,
   and anything about colour or spacing.
-- The sidebar names "Two Pointers" as a pattern while Two Sum act 3 is locked (B8).
 - Corner-case callouts for `tiny`, `negatives`, `zero` are covered by tests, not seen by eye.
 - The engine/data chunk (204 kB) still loads on content pages because the sidebar reads
   `JOURNEYS` (noted on F1).
