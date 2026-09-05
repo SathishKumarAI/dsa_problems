@@ -47,6 +47,23 @@ a port; the original implementation is the reference, not the spec — the React
 | B26 | ☑ **Focus key** — `f` closes both rails / reopens both (`Esc` is left to dialogs). Shipped 2026-09-04 with hover-peek on closed rails. | Mouse-free focus for a keyboard-driven page. | S | legacy #41 |
 | B25 | ☐ **Retire `legacy/visualizer/`** once B3–B5, B9–B11, B13, B15–B17, B20 have shipped or been explicitly dropped. | It is reference material, not product; delete it when nothing left in it is un-ported. | S | — |
 
+## Open questions — your call, and nothing waits on them silently
+
+Every question raised while building, in one place, so none of them lives only in a chat log. Each
+one names the options and my recommendation; the recommendation is what a future session should do
+if you have not said otherwise. Answer one by editing its row and moving it to the shipped list.
+
+| # | Question | Options | My recommendation |
+|---|---|---|---|
+| Q1 | **Does the approach ladder replace the "Approach & Solution" tab, or sit beside it?** (R1) | (a) replace it — the ladder *is* the approaches, with reasoning between the rungs; (b) add a fifth tab and keep the current one | **(a) replace.** The problem page is already long, and two tabs showing the same code with different framing is the same drift B1 removed. |
+| Q2 | **Does the sidebar get a "Python" section?** | (a) no — the language is a preference (`codeTab`), not a place; keep DSA / DSA · patterns / SQL / Data science; (b) yes — a Python section holding language drills (comprehensions, generators, `collections`, `heapq`, `bisect`) as flashcards + a step player | **(a) for now, (b) once wave 1 of `PROBLEMS.md` is done.** A section with no content is a promise the app cannot keep; the drills are real content and deserve their own item when we write them. |
+| Q3 | **Do the corner cases become a shared library?** | (a) keep them per journey, repeating "smallest legal input" and "promise broken" prose; (b) a shared library with per-journey overrides | **(a) until three journeys repeat the same prose verbatim.** Two do so far. Abstracting content before the third example is how you get a schema that fits nothing. |
+| Q4 | **Light theme (Catppuccin Latte).** | (a) ship it with a toggle in settings; (b) stay dark-only and delete the unused `:root` block | **(a), but not next.** The chip grammar has never been contrast-checked on a light ground; that is a day of work with the audit's canvas method, not an afternoon. Until then the `:root` block is dead weight that reads as a half-finished feature. |
+| Q5 | **Server-side challenge execution.** | (a) build it when a non-browser client exists (B23); (b) never — the browser Worker is the product | **(a), deferred.** `node:vm` is not a sandbox; this needs isolated-vm or a container, and no client needs it today. |
+| Q6 | **Retire `legacy/visualizer/`?** (B25) | (a) delete once B3–B5, B9–B11, B13, B15–B17, B20 have shipped or been dropped; (b) delete now and rely on git history | **(a).** Several of those items are still unported and the folder is the only place their original implementation is readable. It costs nothing but disk. |
+| Q7 | **Archive `../dsa_visualizer`.** | (a) commit or discard its uncommitted `feat/disclosure-lint` branch, then move the folder to `~/coding/archive/`; (b) leave it | **(a).** Its one idea (masked catalogue entries) shipped here as B8, so nothing is left in it. Yours to do — I have not touched that folder. |
+| Q8 | **CI.** There is none; both gates run locally. | (a) a GitHub Action running `npm run check` on every PR, and `npm run test:ui` nightly (it needs a browser); (b) keep it local | **(a).** `npm run check` in CI is fifteen minutes of setup. The browser suite is slower and flakier, so nightly rather than per-PR. |
+
 ## Requested, specced, not started
 
 | # | Item | Why | Size | Tier |
