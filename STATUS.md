@@ -13,7 +13,7 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. Top unchecked **P0** in `docs/BACKLOG.md`. B1, B6 and B7 remain.
+1. Top unchecked **P0** in `docs/BACKLOG.md`. B1 and B7 remain.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

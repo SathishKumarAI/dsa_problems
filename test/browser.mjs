@@ -215,6 +215,15 @@ async function newPage(port, width, height) {
     },
     /** run an async body in the page; `return` its value */
     run: (body) => evaluate(`(async () => { ${body} })()`),
+    /** poll an expression until it is truthy — beats a fixed sleep, which is
+     *  where flake comes from */
+    waitFor: (expression, opts = {}) =>
+      until(() => evaluate(expression), {
+        tries: 25,
+        gap: 200,
+        what: expression.slice(0, 60),
+        ...opts,
+      }),
     eval: evaluate,
     async resize(w, h = 1000) {
       await send("Emulation.setDeviceMetricsOverride", {

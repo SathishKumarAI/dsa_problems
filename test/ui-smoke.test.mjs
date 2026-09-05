@@ -142,6 +142,9 @@ describe(
       await page.goto(`${server.base}/#/`)
       await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
       await page.goto(`${server.base}/#/journey/two-sum?act=hash&step=6`)
+      await page.waitFor(
+        `/act 05/i.test(document.querySelector('[aria-label=stage]')?.innerText ?? '')`
+      )
       const out = await page.run(`
         return {
           act: document.querySelector('[aria-label=stage]').innerText.slice(0, 40),
@@ -159,7 +162,8 @@ describe(
         const wait = ms => new Promise(r => setTimeout(r, ms));
         const before = document.querySelector('[aria-label=stage]').innerText.slice(0, 24);
         location.hash = '#/journey/two-sum?act=twoptr&step=2';
-        await wait(1200);
+        for (let i = 0; i < 20 && !/act 03/i.test(document.querySelector('[aria-label=stage]').innerText); i++)
+          await wait(150);
         return { before, after: document.querySelector('[aria-label=stage]').innerText.slice(0, 24) };
       `)
       assert.match(out.before, /act 02/i)
@@ -261,6 +265,39 @@ describe(
       await page.goto(`${server.base}/#/p/two-pointers`)
       const after = await page.eval("document.querySelector('h1').innerText")
       assert.match(after, /two pointers/i)
+    })
+
+    // ---------- 3c. the code challenge actually runs code ----------
+
+    test("the reference solution passes every case of a value-answer challenge", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(
+        `${FRESH} localStorage.setItem('dsa:unlocked:single-number', '7'); return 1`
+      )
+      await page.goto(`${server.base}/#/journey/single-number?act=challenge`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const ta = document.querySelector('textarea');
+        const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+        // for..of on purpose: the counting proxy sees Symbol.iterator, and a
+        // regex test on a Symbol used to throw for every case
+        set.call(ta, ['let acc = 0;', 'for (const x of nums) acc ^= x;', 'return acc;'].join(String.fromCharCode(10)));
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        await wait(300);
+        [...document.querySelectorAll('button')].find(b => /run tests/i.test(b.innerText))?.click();
+        await wait(2500);
+        const rows = [...document.querySelectorAll('.font-mono.text-xs > div')]
+          .map(e => e.innerText);
+        return {
+          rows: rows.length,
+          green: rows.filter(t => t.startsWith('✓')).length,
+          xp: localStorage.getItem('dsa:xp'),
+        };
+      `)
+      assert.equal(out.rows, 6, "expected six cases")
+      assert.equal(out.green, 6, "the reference solution did not pass")
+      assert.equal(out.xp, "25", "a first green challenge awards 25 XP")
+      assert.deepEqual(page.errors(), [])
     })
 
     // ---------- 4. the shell ----------

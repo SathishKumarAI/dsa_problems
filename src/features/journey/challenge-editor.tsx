@@ -14,8 +14,12 @@ import { K, getStored, setStored } from "@/lib/store"
 
 // The learner's function runs off the main thread; test mode counts array
 // touches for the learner AND the reference so step-efficiency is scored.
-const WORKER_SRC = `onmessage = (e) => {
-  const { code, cases, mode, nums, target, reference } = e.data;
+const WORKER_SRC = `
+// A proxy key can be a Symbol (for..of reads Symbol.iterator) and a regex
+// test on a Symbol throws, so ask for a string before testing.
+const isIndex = (p) => typeof p === "string" && /^\\d+$/.test(p);
+onmessage = (e) => {
+  const { code, cases, mode, nums, target, reference, answers } = e.data;
   let fn;
   try { fn = new Function("nums", "target", code); }
   catch (err) { postMessage({ error: String(err.message) }); return; }
@@ -23,8 +27,8 @@ const WORKER_SRC = `onmessage = (e) => {
     const events = [];
     const arr = nums.slice();
     const proxied = new Proxy(arr, {
-      get(t, p) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "get", i: +p, v: t[p] }); return t[p]; },
-      set(t, p, v) { if (/^\\d+$/.test(p) && events.length < 400) events.push({ op: "set", i: +p, v }); t[p] = v; return true; },
+      get(t, p) { if (isIndex(p) && events.length < 400) events.push({ op: "get", i: +p, v: t[p] }); return t[p]; },
+      set(t, p, v) { if (isIndex(p) && events.length < 400) events.push({ op: "set", i: +p, v }); t[p] = v; return true; },
     });
     let result = null, error = null;
     try { result = fn(proxied, target); } catch (err) { error = String(err.message); }
@@ -32,8 +36,8 @@ const WORKER_SRC = `onmessage = (e) => {
     return;
   }
   const counter = (arr, bump) => new Proxy(arr, {
-    get(t, p) { if (/^\\d+$/.test(p)) bump(); return t[p]; },
-    set(t, p, v) { if (/^\\d+$/.test(p)) bump(); t[p] = v; return true; },
+    get(t, p) { if (isIndex(p)) bump(); return t[p]; },
+    set(t, p, v) { if (isIndex(p)) bump(); t[p] = v; return true; },
   });
   let refFn = null;
   try { refFn = new Function("nums", "target", reference || ""); } catch {}
@@ -43,11 +47,13 @@ const WORKER_SRC = `onmessage = (e) => {
       const got = fn(counter(c.nums.slice(), () => touches++), c.target);
       if (refFn) { try { refFn(counter(c.nums.slice(), () => refTouches++), c.target); } catch {} }
       const isPair = Array.isArray(got) && got.length === 2;
-      const ok = c.expected.length === 0
-        ? Array.isArray(got) && got.length === 0
-        : c.anyPair
-          ? isPair && got[0] !== got[1] && c.nums[got[0]] + c.nums[got[1]] === c.target
-          : isPair && [...got].sort((a, b) => a - b).join() === c.expected.join();
+      const ok = answers === "value"
+        ? got === c.expected
+        : c.expected.length === 0
+          ? Array.isArray(got) && got.length === 0
+          : c.anyPair
+            ? isPair && got[0] !== got[1] && c.nums[got[0]] + c.nums[got[1]] === c.target
+            : isPair && [...got].sort((a, b) => a - b).join() === c.expected.join();
       return { ok, got: JSON.stringify(got), touches, refTouches };
     } catch (err) { return { ok: false, got: String(err.message), touches, refTouches }; }
   }) });
@@ -130,6 +136,7 @@ export function ChallengeEditor({
       code,
       cases: challenge.cases,
       reference: challenge.reference,
+      answers: challenge.answers,
     })
     if (out.error || !out.results) {
       setVerdict({ text: "syntax error: " + out.error, cls: "bad" })
@@ -187,7 +194,12 @@ export function ChallengeEditor({
     setBig("running")
     const c = challenge.big.make()
     const out = await runWorker(
-      { code, cases: [c], reference: challenge.reference },
+      {
+        code,
+        cases: [c],
+        reference: challenge.reference,
+        answers: challenge.answers,
+      },
       6000
     )
     if (out.error || !out.results)
@@ -256,11 +268,13 @@ export function ChallengeEditor({
           {results.map((r, i) => {
             const c = challenge.cases[i]
             const want =
-              c.expected.length === 0
-                ? "[]"
-                : c.anyPair
-                  ? `any pair hitting ${c.target}`
-                  : `[${c.expected}]`
+              challenge.answers === "value"
+                ? String(c.expected)
+                : Array.isArray(c.expected) && c.expected.length === 0
+                  ? "[]"
+                  : c.anyPair
+                    ? `any pair hitting ${c.target}`
+                    : `[${c.expected}]`
             return (
               <div
                 key={i}

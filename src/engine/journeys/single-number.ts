@@ -27,6 +27,7 @@ type F = Frame<{
   passed?: number
   x?: number | null
   acc?: number
+  op?: "get" | "set" // challenge replay: what the learner's code did
 }>
 
 // ---------- the problem's promise ----------
@@ -705,6 +706,235 @@ const xor: Act<SingleNumberData, F> = {
   },
 }
 
+// ---------- the challenge and the reveal ----------
+
+export const SINGLE_NUMBER_CHALLENGE = {
+  fname: "singleNumber",
+  answers: "value" as const,
+  signature: "function singleNumber(nums) {",
+  starter: "// nums is in scope — return the value that has no twin\\n\\n",
+  cases: [
+    { nums: [2, 2, 1], expected: 1 },
+    { nums: [4, 1, 2, 1, 2], expected: 4 },
+    { nums: [7], expected: 7, tag: "n = 1" },
+    { nums: [0, 4, 4], expected: 0, tag: "the answer is 0" },
+    { nums: [1, 1, 2, 2, 9], expected: 9, tag: "loner is last in order" },
+    { nums: [-3, 5, 5], expected: -3, tag: "negatives" },
+  ],
+  review: [
+    {
+      q: "One pass, no nested loops",
+      check: (c: string) => (c.match(/\bfor\b|\bwhile\b/g) || []).length <= 1,
+    },
+    {
+      q: "Constant space — no Map, Set, object or second array",
+      check: (c: string) => !/new (Map|Set)|\.sort\(/.test(c),
+    },
+    {
+      q: "0 is a legal answer — no truthiness test on the result",
+      check: (c: string) => !/if\s*\(\s*(acc|res|ans|result)\s*\)/.test(c),
+    },
+    {
+      q: "Say the property out loud: why does every paired value vanish, whatever the order?",
+    },
+    { q: "Could you re-derive this cold tomorrow, without the reference?" },
+  ],
+  big: {
+    n: 2001,
+    make: () => {
+      const pool = distinct(1000, 1, 9999)
+      const single = 12345
+      return {
+        nums: shuffled([single, ...pool.flatMap((v) => [v, v])]),
+        expected: single,
+      }
+    },
+  },
+  reference: "let acc = 0;\\nfor (const x of nums) acc ^= x;\\nreturn acc;",
+}
+
+const challenge: Act<SingleNumberData, F> = {
+  key: "challenge",
+  name: "Code It",
+  short: "prove it",
+  complexity: "your turn — all 6 cases must pass",
+  insight:
+    "Watching a trick is not owning it. It is yours when your fingers can produce it cold.",
+  tools: [
+    {
+      name: "Your call",
+      role: "count, sort, or fold. Whatever you reach for is the memory you pay for — the scorecard prices it against the one-integer answer.",
+    },
+  ],
+  idea: "Write the body of singleNumber(nums) below. It runs in a sandboxed Worker against the cases that hurt: n = 1, an answer of 0, the loner sitting last, and negatives. Any correct approach goes green; the constant-space one is the answer to give in a room.",
+  code: { pseudo: xor.code.pseudo },
+  takeaways: [
+    "n = 1 and an answer of 0 are the two cases that break a first draft",
+    "if you tested `if (result)` instead of a found-flag, the 0 case just caught you",
+    "reproduce it from memory — reading the reference twice is a signal, not a failure",
+  ],
+  gate: "pass",
+  chart: false,
+  hints: [
+    "Say the plan in one sentence before typing: walk once, and let the pairs cancel each other out.",
+    "You need an accumulator that forgets a value the second time it sees it. Which operator does that?",
+    "Skeleton: let acc = 0 → for (const x of nums) acc ^= x → return acc.",
+  ],
+  nextLabel: "It's green — show me what I earned ▸",
+  *run({ nums }, ctx) {
+    if (!ctx.trace) {
+      yield {
+        hold: 2,
+        line: -1,
+        note: "write the function body in the editor below, hit Run tests — or trace it and WATCH your own code walk the drawer",
+      }
+      return
+    }
+    const { events, result, error } = ctx.trace
+    if (!events.length) {
+      yield {
+        hold: 2,
+        note: "your code never touched nums 🤨 — it returned without reading the drawer",
+      }
+      return
+    }
+    for (let n = 0; n < events.length; n++) {
+      const e = events[n]
+      yield {
+        i: e.i,
+        op: e.op,
+        note: `access #${n + 1}: your code ${e.op === "get" ? `read nums[${e.i}] (${e.v})` : `wrote nums[${e.i}] = ${e.v}`}`,
+      }
+    }
+    if (error) {
+      yield { hold: 2, note: `then it threw: ${error}` }
+      return
+    }
+    const truth = classifySingle(nums)
+    const ok = truth.ok && result === truth.single
+    yield {
+      hold: 3,
+      answer: ok ? (result as number) : undefined,
+      note: ok
+        ? `returned ${result} — correct, in ${events.length} array accesses. One integer of memory would have needed exactly ${nums.length}.`
+        : `returned ${JSON.stringify(result)} — not the lone value here. Watch where the walk went wrong.`,
+    }
+  },
+  view(f, d) {
+    const answer =
+      f.answer !== undefined
+        ? range(d.nums.length).filter((k) => d.nums[k] === f.answer)
+        : []
+    return {
+      chips: chipRow(d.nums, {
+        focus: f.op === "get" && f.i !== undefined ? [f.i] : [],
+        anchor: f.op === "set" && f.i !== undefined ? [f.i] : [],
+        answer,
+      }),
+      panel: { kind: "challenge" },
+    }
+  },
+}
+
+const recap: Act<SingleNumberData, F> = {
+  key: "recap",
+  name: "The Reveal",
+  short: "what you earned",
+  complexity: "journey complete 🏁",
+  insight:
+    "Three of these approaches remember. The last one computes — and that is the whole idea.",
+  tools: [
+    {
+      name: "Array",
+      role: "the given. Searching it for a partner costs a scan — the weakness every other approach was built to fix.",
+    },
+    {
+      name: "Hash Map",
+      role: "buys the search with MEMORY: O(1) answers, O(n) space. The obvious trade, and the one the follow-up forbids.",
+    },
+    {
+      name: "Sorted array",
+      role: "buys it with ORDER: twins become neighbours, no map — but you pay O(n log n) and you must handle the loner landing last.",
+    },
+    {
+      name: "One integer",
+      role: "buys it with a PROPERTY of the data: x ^ x = 0. No structure at all. This is what 'use the algebra' looks like.",
+    },
+  ],
+  idea: 'You did not learn "Single Number". You earned the move that separates a good answer from the interview answer: when a structure feels heavy, ask whether an operation on the values already does the bookkeeping for you. XOR is that operation here — self-inverse, commutative, associative — and the same instinct finds the missing number, the swapped pair, and the two-loner variant.',
+  code: {
+    pseudo: [
+      "what transfers to the next problem:",
+      "  1. brute force first — name its weakness out loud",
+      "  2. does MEMORY help? (a map of counts)",
+      "  3. does ORDER help? (sort, then read neighbours)",
+      "  4. does a PROPERTY of the values help? (x ^ x = 0)",
+      "  5. every trick leans on a promise — say which one",
+    ],
+  },
+  takeaways: [
+    "memory, order, algebra: three ways to buy the same search, at three prices",
+    "the O(1)-space answer exists because the DATA has a property, not because the code is clever",
+    "a trick that leans on a promise lies confidently when the promise breaks — show that, do not hide it",
+  ],
+  chart: false,
+  *run() {
+    yield {
+      hold: 3,
+      note: "the fold you wrote in act 5 has a name: the XOR TRICK — the bit-manipulation family. The instinct behind it (look for an operation that cancels) is the part that transfers. Here's the scorecard.",
+    }
+  },
+  view(_f, d) {
+    return {
+      chips: null,
+      panel: {
+        kind: "recap",
+        caption: `four approaches on this drawer (${d.nums.length} socks)`,
+        rows: [
+          {
+            name: "Brute Force",
+            built: "array only",
+            cost: "O(n²) · O(1)",
+            insight: "ask every sock about every other sock",
+          },
+          {
+            name: "Hash Map",
+            built: "array + map of counts",
+            cost: "O(n) · O(n)",
+            insight: "remember what you have seen — memory buys the search",
+          },
+          {
+            name: "Sort & Scan",
+            built: "sorted copy",
+            cost: "O(n log n) · O(1)",
+            insight: "order puts twins side by side — no memory needed",
+          },
+          {
+            name: "XOR",
+            built: "one integer",
+            cost: "O(n) · O(1)",
+            insight: "the values cancel each other; no structure at all",
+          },
+        ],
+        note: "Next: the same instinct solves 'find the missing number' (XOR the values against the indices) and 'find the two loners' (split by a set bit). Or go back to where the map pattern was born.",
+        links: [
+          {
+            label: "Two Sum",
+            detail:
+              "where the hash-map lookup was earned — the other half of this trade",
+            href: "#/journey/two-sum",
+          },
+          {
+            label: "Arrays & Hashing",
+            detail: "the pattern page: what a map buys, and what it costs",
+            href: "#/p/arrays-hashing",
+          },
+        ],
+      },
+    }
+  },
+}
+
 // ---------- presets ----------
 
 function pairsPlusSingle(pairs: number): number[] {
@@ -719,7 +949,7 @@ export const singleNumber: Journey<SingleNumberData> = {
     "find the loner — then keep cutting the bill until the structure disappears",
   problemId: "single-number",
   leetcode: 136,
-  acts: [story, brute, hash, sort, xor],
+  acts: [story, brute, hash, sort, xor, challenge, recap],
   resources: [
     {
       label: "LeetCode 136",
@@ -805,6 +1035,7 @@ export const singleNumber: Journey<SingleNumberData> = {
       .filter((v) => Number.isInteger(v) && v >= 0 && v < 128)
     return nums.length ? { nums } : null
   },
+  challenge: SINGLE_NUMBER_CHALLENGE,
   reveals: ["arrays-hashing"],
   sample: { nums: [2, 2, 3] },
   edgeCases: [

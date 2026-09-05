@@ -55,8 +55,8 @@ included; the client keeps those in-process.
   "defaultPreset": "random",
   "harder": { "preset": "big", "label": "…" },
   "params": [{ "key": "target", "label": "target" }],
-  "challenge": { "fname": "twoSum", "signature": "…", "starter": "…", "cases": [ … ],
-                 "reference": "…", "review": ["…"], "big": { "n": 400 } },
+  "challenge": { "fname": "twoSum", "answers": "pair", "signature": "…", "starter": "…",
+                 "cases": [ … ], "reference": "…", "review": ["…"], "big": { "n": 400 } },
   "sample": { "nums": [2, 7, 11, 15], "target": 9 }
 }
 ```

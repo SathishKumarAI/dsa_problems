@@ -200,7 +200,9 @@ export interface Verdict {
 export interface ChallengeCase {
   nums: number[]
   target?: number
-  expected: number[]
+  // "pair" challenges expect two indices; "value" challenges expect one
+  // number (Single Number returns the loner, not where it sits)
+  expected: number[] | number
   tag?: string
   anyPair?: boolean
 }
@@ -212,6 +214,8 @@ export interface ReviewItem {
 
 export interface Challenge {
   fname: string
+  // how a result is judged: two indices (default) or one value
+  answers?: "pair" | "value"
   signature: string
   starter: string
   cases: ChallengeCase[]
