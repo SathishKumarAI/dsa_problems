@@ -7,6 +7,8 @@ anything on the stage.
 ## 1. The layers, and the one rule about imports
 
 ```
+App.tsx     the shell: sidebar · dialogs · global keys · lazy routes
+   │  imports
 features/   React pages and components          (journey/, algorithms/, plus components/)
    │  imports
 api/        client.ts (transport) · routes.ts (the whole HTTP API as one pure function)
@@ -14,8 +16,13 @@ api/        client.ts (transport) · routes.ts (the whole HTTP API as one pure f
 engine/     journeys, algorithms, hashmap, chips, types — DOM-free, node-testable
    │  imports
 data/       the practice-set content (problems, patterns, sql, flashcards)
-lib/        store.ts (localStorage), route.ts (hash router), utils, difficulty
+lib/        store.ts (localStorage) · route.ts (hash router) · dialogs.ts (which dialog is
+            open) · shortcuts.ts (the key map) · utils · difficulty
 ```
+
+`JourneyPage` and `AlgorithmsPage` are `React.lazy` chunks (`App.tsx`), so a content page never
+downloads the stage. The engine + data chunk is still shared and eager because the sidebar reads
+`JOURNEYS` for its rows — noted as the follow-up on backlog F1.
 
 **Imports point downward.** `engine/` never imports React or touches `document`; that is what
 lets `node --test` run it and lets `server/index.ts` serve it. `api/routes.ts` imports engine and
@@ -47,9 +54,11 @@ function* runHash({ nums, target }) {
 | `hold` | player | multiply the step delay — narrative frames need reading time |
 | `predict` | guard in `use-journey.ts` | `{q, choices, answer}` — playback pauses *before* this frame renders |
 | `noChips` | stage | story frames that open on an empty stage: need before data |
+| `corner` | stage | key into `journey.edgeCases` — this step is where that corner case bites; the page draws the teal callout while the frame is current. The frame's own `note` says what *this* approach did about it. |
+| `corner` | stage | key into `journey.edgeCases` — this step is where that corner case bites; the page draws the teal callout while the frame is current. The frame's own `note` says what *this* approach did about it. |
 | anything else | the act's own `view()` | private state: `seen`, `L`, `R`, `counts`, `acc`, `op`… |
 
-The engine reads the first five. Everything else is a contract between one generator and one
+The engine reads the first six. Everything else is a contract between one generator and one
 `view()`, which is why a new render kind needs no engine change.
 
 **Frames are drained up front** (`drain()` in `engine/index.ts`): step-back and scrubbing become
@@ -71,6 +80,7 @@ type PanelModel =
   | { kind: "sum"; eq } | { kind: "need"; need, hit, target, x, map }
   | { kind: "hash"; map: HashModel } | { kind: "sorted"; label, chips, eq? }
   | { kind: "bits"; rows } | { kind: "recap"; … } | { kind: "challenge" }
+  | { kind: "terms"; terms, target, need?, hit?, dup?, found, map? }
 ```
 
 Three consequences: the content test can assert on views without a DOM; React draws each kind
@@ -78,23 +88,61 @@ once in `features/journey/panels.tsx`; and a future non-React client (native, te
 the same model. Adding a panel kind = one union member in `engine/types.ts` + one case in
 `panels.tsx` + a `view()` that produces it.
 
+`terms` is the k-term equation (`a + b + c = sum` against a target, or `need` when the last term
+is unknown) plus the distinct answers found so far: the newest ringed, a dropped repeat struck
+through. It exists because a problem whose output is a *list of value tuples* has two things to
+show at once — the sum being tested and the set being built.
+
+`terms` is the k-term equation (`a + b + c = sum` against a target, or `need` when the last term
+is unknown) plus the distinct answers found so far: the newest ringed, a dropped repeat struck
+through. It exists because a problem whose output is a *list of value tuples* has two things to
+show at once — the sum being tested and the set being built.
+
 `HashModel` (`engine/hashmap.ts`) is the bucket layout the "iceberg" draws: toy hash
 `key mod buckets`, chaining, doubling past load 0.75, hop counts for the probe. `hit` (the
 algorithm's verdict) and `present` (key physically in the chain) are kept apart so the panel
 never claims a miss on a key it is visibly holding.
 
-## 4. Every box on the journey page
+## 4. The shell
+
+```
+┌ sidebar (rail) ─┬ inset ──────────────────────────────────────────────────────┐
+│ wordmark   [?]  │  the route's page                                            │
+│ DSA             │                                                              │
+│ DSA · patterns  │  ≥ lg on the journey route the inset is viewport-high and    │
+│ SQL             │  the page divides that height: header fixed, stage and       │
+│ Data science    │  reading column scroll on their own.                         │
+│ ─────────────── │                                                              │
+│ where you are   │                                                              │
+│ ⚙ settings      │                                                              │
+│ ⌨ shortcuts     │                                                              │
+│ ▣ collapse      │                                                              │
+└─────────────────┴──────────────────────────────────────────────────────────────┘
+```
+
+| Piece | File | Note |
+|---|---|---|
+| Sidebar | `components/app-sidebar.tsx` | Four groups; collapses to a 3 rem icon rail (`sidebar_state` cookie). Every row keeps an icon + tooltip so the rail stays navigable. |
+| Hover-peek | `components/ui/sidebar.tsx` (`data-peek`) | A closed rail opens **over** the content while hovered; the layout gap follows the real state, so nothing shifts. Mouse only — the buttons are the touch path. |
+| Dialogs | `components/app-dialogs.tsx`, state in `lib/dialogs.ts` | help ("how to use"), shortcuts (rendered from `lib/shortcuts.ts`), settings (speed, motion, code tab, reading column, copy / import / erase progress). |
+| App-wide keys | `components/global-keys.tsx` | `?` opens shortcuts, `f` closes both rails or reopens both. Page-local keys stay with their page. |
+
+`lib/shortcuts.ts` is the single key map: the dialog renders it and the handlers must agree with
+it. A new key means a new row there in the same commit.
+
+## 4b. Every box on the journey page
 
 ```
 ┌ header: back · title · subtitle · XP · restart ────────────────────────────────┐
 │ ActStepper — one node per unlocked act, one "?" for the rest                    │
-├ stage (features/journey/journey-page.tsx) ────────┬ reading column ────────────┤
+├ stage — scrolls on its own ≥ lg ──────────────────┬ reading column / rail ─────┤
 │ act strip · warning/info banner · data bar        │ insight + idea             │
-│ Stage (panels.tsx): ChipRow → Panel               │ tools ("built from")       │
-│ narration (aria-live)                             │ CodePanel (tabs, lit line) │
-│ PredictCard · QuizCard · reveal · adaptive · Hints│ takeaways                  │
-│ Transport (timeline, ▶ ‹ › ↺, speed)              │ StepsChart                 │
-│ DataControls (preset, new, custom, params, apply) │ Legend · resources         │
+│ Stage (panels.tsx): ChipRow → Panel               │ (act 1) how to read this   │
+│ narration (aria-live)                             │ (act 1) bring three inputs │
+│ EdgeCaseCard when frame.corner is set             │ tools ("built from")       │
+│ PredictCard · QuizCard · reveal · adaptive · Hints│ CodePanel (tabs, lit line) │
+│ Transport (timeline, ▶ ‹ › ↺, speed)              │ takeaways · StepsChart     │
+│ DataControls (preset, new, custom, params, apply) │ Legend · resources · ▣     │
 └───────────────────────────────────────────────────┴────────────────────────────┘
 ```
 
@@ -105,7 +153,13 @@ never claims a miss on a key it is visibly holding.
 | Chip row | `chip-row.tsx` | `model.chips` | The single source of truth on screen. Every approach renders the *same* input here so approaches are comparable. |
 | Panel | `panels.tsx` (+ `hash-map-view.tsx`) | `model.panel` | The approach-specific half: what the approach *holds*. |
 | Narration | `journey-page.tsx` | `frame.note` | The star of the page. Fixed min-height so the layout never jumps. |
+| Corner-case callout | `cards.tsx` `EdgeCaseCard` | `frame.corner` → `journey.edgeCases` | The case the learner was told to bring, biting where it bites. Read once on act 1, watched once per approach. |
+| Story-act cards | `cards.tsx` `HintList`, `EdgeCaseList` | `act.hints`, `journey.edgeCases`, `presetKey` | Act 1 teaches *reading a problem* (reread · formalize · bring inputs) and hands over the corner inputs with a button that loads each one. The idle hint ladder is suppressed there — those hints are about reading, not rescue. |
+| Corner-case callout | `cards.tsx` `EdgeCaseCard` | `frame.corner` → `journey.edgeCases` | The case the learner was told to bring, biting where it bites. Read once on act 1, watched once per approach. |
+| Story-act cards | `cards.tsx` `HintList`, `EdgeCaseList` | `act.hints`, `journey.edgeCases`, `presetKey` | Act 1 teaches *reading a problem* (reread · formalize · bring inputs) and hands over the corner inputs with a button that loads each one. The idle hint ladder is suppressed there — those hints are about reading, not rescue. |
 | Predict / quiz / hints / reveal | `cards.tsx`, hook | `pending`, `showQuiz`, `hintsOffered`, `nextButton` | The learn-by-doing interruptions. Order in the DOM = order of importance. |
+| Reading column / rail | `journey-page.tsx` `ReadingBody`, `ReadingToggle` | `prefs.reading` | Open: a 24 rem column that scrolls. Closed: a 2.75 rem rail whose hover overlay renders the **same** `ReadingBody`, so the peek can never drift from the column. |
+| Reading column / rail | `journey-page.tsx` `ReadingBody`, `ReadingToggle` | `prefs.reading` | Open: a 24 rem column that scrolls. Closed: a 2.75 rem rail whose hover overlay renders the **same** `ReadingBody`, so the peek can never drift from the column. |
 | Transport + data | `controls.tsx` | `player`, `presetKey`, `data` | A timeline, not a progress bar — every frame exists, so dragging backwards is free. |
 | Code panel | `code-panel.tsx` | `act.code`, `frame.line`, `prefs.codeTab` | Languages are line-for-line against the pseudocode so one index lights the right row in any tab. |
 | Steps chart | `steps-chart.tsx` | `chart` rows (API, `upto = unlocked`) | Comparison is the point; spoiling is not. The API filters, the UI never sees locked rows. |
@@ -186,6 +240,12 @@ duplication:
 The client picks HTTP when `import.meta.env.DEV` or `VITE_API_URL` is set. `docs/API.md` is the
 contract. The API is stateless by design: the engine has no state to leak.
 
+Journey meta carries `edgeCases` (the corner cases, prose and preset) alongside acts and presets,
+so a non-React client can render the "bring three inputs" card too.
+
+Journey meta carries `edgeCases` (the corner cases, prose and preset) alongside acts and presets,
+so a non-React client can render the "bring three inputs" card too.
+
 ## 8. State — everything is localStorage, nothing leaves the browser
 
 `lib/store.ts` owns every key behind `useSyncExternalStore`, with an in-memory cache and a
@@ -193,11 +253,30 @@ contract. The API is stateless by design: the engine has no state to leak.
 progressive-disclosure ledger; every path that advances it goes through the explicit "I get it"
 click.
 
+`prefs` (speed, code tab, motion, reading column) is read through `usePrefs`, which **merges the
+stored object over `DEFAULT_PREFS`** — a preference added after a user first saved must read as
+its default, not `undefined`. `exportProgress` / `importProgress` / `resetProgress` move
+everything *except* `prefs` (preferences are per device); the settings dialog is their only
+caller. One piece of state is deliberately not ours: the sidebar's open/closed flag lives in
+shadcn's `sidebar_state` cookie.
+
+`prefs` (speed, code tab, motion, reading column) is read through `usePrefs`, which **merges the
+stored object over `DEFAULT_PREFS`** — a preference added after a user first saved must read as
+its default, not `undefined`. `exportProgress` / `importProgress` / `resetProgress` move
+everything *except* `prefs` (preferences are per device); the settings dialog is their only
+caller. One piece of state is deliberately not ours: the sidebar's open/closed flag lives in
+shadcn's `sidebar_state` cookie.
+
 ## 9. Invariants — break these and the product breaks
 
 1. **Engine stays DOM-free and JSON-safe.** Tests and the server depend on it.
-2. **No unearned names.** Tested on content; the shell has a known leak (B8).
+2. **No unearned names.** Tested on content — act prose, frames, preset banners and `edgeCases`
+   prose. The shell has a known leak (B8).
 3. **Every frame has a `note`; code tabs match pseudocode line-for-line.** Tested.
+3b. **Every corner case is explained in play.** Each `edgeCases` entry must be tagged by some act
+   on its own preset, and no frame may tag a key that does not exist. Tested.
+3c. **A problem with a journey carries Python, Java and C++ on every approach** in the practice
+   set. Tested (`data/problems.test.ts`).
 4. **Every UI preference goes through `lib/store.ts`.** No component reads `localStorage`.
 5. **Palette lives in `src/index.css` only.** Components use tokens (`chart-1`…`chart-5`, `yellow`, `teal`).
 6. **New animation honours reduced motion.**
@@ -206,8 +285,8 @@ click.
 ## 10. Verification — what "done" means here
 
 ```
-npm run check      # tsc -b · eslint · node --test  (all must exit 0)
-npm run build      # vite build
+npm run check      # tsc -b · eslint · node --test  (all must exit 0; 41 tests today)
+npm run build      # vite build — index ~400 kB + shared engine/data ~204 kB + lazy chunks
 npm run dev        # then drive the page — the UI has no automated test yet (B2)
 ```
 

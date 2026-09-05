@@ -69,9 +69,9 @@ sidebar, home card, problem-page CTA, API and tests pick it up. Full guide: `doc
 src/engine      pure TS, DOM-free — runs in node, in the browser, on the server
 src/api         routes.ts (the API) · client.ts (transport)
 src/features    journey/ · algorithms/  (React over the engine's view models)
-src/components  practice-set views + shadcn ui/
+src/components  shell (sidebar, dialogs, global keys) + practice-set views + shadcn ui/
 src/data        practice-set content
-src/lib         store · route · utils
+src/lib         store · route · dialogs · shortcuts · utils
 server/         API mounts (node:http, Vite middleware)
 docs/           the manifest and the documents it names
 legacy/visualizer   the original vanilla-JS visualizer, history preserved — reference only, not built

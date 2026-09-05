@@ -81,6 +81,19 @@ Every platform separates *watching* (visualizer, video, animation) from
 This is backlog #26 and the north star for the flagship build: learn and
 implement stop being separate modes.
 
+## Books on disk (`../python-data-structures/docs/pdf/`)
+
+Added 2026-09-04. What each one is for, and where it landed, is tabled in
+[`PROBLEMS.md`](PROBLEMS.md) §Sources. The one that changed the product this round:
+
+| Book | Mechanism worth stealing | Where it landed |
+|---|---|---|
+| Waleed Khamies, *How to Solve Algorithm Problems* (2023) | §3.1 makes *reading* the problem an explicit, ordered step — understand, formalize as input → output, reread for hidden promises, **bring three inputs** (empty/smallest, medium, corner) — before any code | Act 1's "how to read this problem" and "bring three inputs" cards; `Journey.edgeCases`; the per-problem definition of done in `PROBLEMS.md` |
+
+The insight worth keeping: the three-inputs habit is *content*, not advice. Listing a corner case
+next to a button that loads it, and then explaining it again where it bites, teaches it twice —
+which is why `edgeCases` is data with a test behind it rather than a paragraph in a hint.
+
 ## Sources
 
 - [Ropes AI overview](https://creati.ai/ai-tools/ropes-ai/) · [features/review](https://opentools.ai/tools/ropes-ai) · [screening review](https://declom.com/ropes/)

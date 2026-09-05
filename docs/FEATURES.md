@@ -198,16 +198,24 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | `xp` | quiz / unlock / challenge | badges |
 | `activity-days` | opening a journey | streak |
 | `scorecard:<slug>` | Run tests | "your best" |
-| `prefs` | speed slider, code tab | both players |
+| `prefs` | speed slider, code tab / language strip, settings dialog | both players, journey layout, FLIP |
 
-Not yet stored: motion dial UI, sidebar widths, tour seen, SRS ladder, stalls (all backlog).
+`prefs` fields: `speed` (1–100), `codeTab` (`pseudo` · `python` · `java` · `cpp`), `motion`
+(`calm` · `normal` · `cinematic` · `off`), `reading` (journey reading column open). `usePrefs`
+merges over `DEFAULT_PREFS`, so a field added later reads as its default. The settings dialog can
+copy every key **except** `prefs` out as JSON, import it back, or erase it.
+
+Outside `dsa:` — the sidebar's open/closed flag is shadcn's `sidebar_state` cookie.
+
+Not yet stored: tour seen, SRS ladder, stalls, theme (all backlog).
 
 ## 7. API and engine (not on screen)
 
 | Feature | Status |
 |---|---|
-| `GET /api/problems`, `/problems/:id`, `/journeys`, `/journeys/:slug`; `POST preset / parse / classify / run / chart`; `GET /api/algorithms`, `/:key`; `POST /:key/run` | shipped (6 API tests; `curl` against the Vite middleware returned the journey list) |
+| `GET /api/problems`, `/problems/:id`, `/journeys`, `/journeys/:slug` (acts, presets, `edgeCases`, challenge); `POST preset / parse / classify / run / chart`; `GET /api/algorithms`, `/:key`; `POST /:key/run` | shipped (6 API tests; `curl` against the Vite middleware returned the journey list and the corner cases) |
 | Standalone server `npm run api` (port 8787, CORS `*`) | shipped (code; not load-tested) |
 | Client transport: HTTP under Vite / `VITE_API_URL`, in-process otherwise | shipped |
-| Content gate: schema, drain on sample, note on every frame, code tabs line-for-line, disclosure lint, presets drain, JSON-safe frames | shipped (10 tests) |
+| Content gate: schema, drain on sample, note on every frame, code tabs line-for-line, disclosure lint (acts, preset banners, corner-case prose), corner cases tagged on their preset, presets drain, JSON-safe frames | shipped (18 tests across three journeys) |
+| Practice-set gate (`data/problems.test.ts`): ids unique, patterns exist, every code block is a function, journeyed problems carry Python + Java + C++ on every approach | shipped (3 tests) |
 | Correctness: sorts, binary search, BFS/DFS coverage, Dijkstra vs Bellman-Ford, hash arithmetic | shipped (10 tests) |
