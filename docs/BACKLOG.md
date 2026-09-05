@@ -57,6 +57,28 @@ a port; the original implementation is the reference, not the spec — the React
 | G2 | `target = -s[k]` produced `-0` on the all-zeros preset, so `[0, -0, 0]` was not equal to `[0, 0, 0]`. | three-sum correctness test | ☑ fixed 2026-09-04 |
 | G3 | Two rows holding the same amount drew twice in the hash view (React duplicate key). | browser run | ☑ fixed 2026-09-04 |
 
+## UX audit findings (2026-09-05)
+
+Measured, not eyeballed — method, evidence and the reasoning behind each fix are in
+[`UX-AUDIT.md`](UX-AUDIT.md). Ordered as that document recommends.
+
+| # | Finding | Fix | Size | Tier |
+|---|---|---|---|---|
+| U10 | ☐ "the stage is empty on purpose" is the app's only contrast failure — 12 px at **3.64 : 1**. | full-opacity `text-muted-foreground` at 14 px (7.4 : 1) | XS | **P0** |
+| U7 | ☐ Line length runs to **110 ch** (problem statement), 89 ch (help), 81 ch (narration); comfort is 45–75. | `max-width: 68ch` on prose containers | S | **P0** |
+| U5 | ☐ Two notations for one number: sidebar `1/7`, home `0/6 earned`. | one helper, `n of m acts earned` everywhere | S | **P0** |
+| U3 | ☐ The visualizer ignores `?algo=` changed in-app (16 bars before and after). Same class as G1. | render-time adjust as in `use-journey.ts`, plus a UI test | S | **P0** |
+| U1 | ☐ The narration is inside the stage's scroll box and clips on long panels (recap: 975 px of content in an 816 px box, narration at y = 954). | sticky footer inside the stage, with the transport | S | **P0** |
+| U8 | ☐ The reading-column toggle floats over the card beneath it. | give the column a bottom lane, or dock the toggle to its header | S | P1 |
+| U4 | ☐ Settings renders a browser-blue range and a native checkbox next to styled controls. | `accent-primary`, shadcn `Checkbox`, segmented controls for motion and code tab | S | P1 |
+| U6 | ☐ **16 type steps**, most common size 12 px, reading column 15 px — chrome scale for a reading product. | six named steps; body 16/26, narration 19/30 | M | P1 |
+| U12 | ☐ No written system: 10 spacing values, 4 radii, 5 container widths. | `DESIGN.md` — 4 px grid, three radii, three widths | S | P1 |
+| U2 | ☐ A phone spends **378 px of 844** on chrome before the stage (stepper alone 214 px). | compact `act 05 / 07 ▾` + sheet below `lg`; XP and restart into an overflow | M | P1 |
+| U14 | ☐ The stepper wraps to four rows at 390 px and is the only wayfinding. | compact form below `xl`; act number in the stage header | S | P1 |
+| U11 | ☐ Transport buttons are 28 px and the timeline track 6 px — AA-legal, below the 44 px touch comfort. | `h-11 w-11` and a 12 px track below `lg` | S | P2 |
+| U9 | ☐ The visualizer ends at ~600 px of a 1000 px viewport; bars get 224 px. | viewport-height inset, `flex-1` stage, picker as a segmented row | M | P2 |
+| U13 | ☐ Home looks identical whether you have finished nothing or everything. | a "continue" card deep-linking to `?act=` | S | P2 |
+
 ## Animations and front-end proposals — for review (2026-09-04)
 
 Not committed to; ordered by my judgement of value ÷ size. P0 rows are ones I would ship without
