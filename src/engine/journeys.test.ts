@@ -9,6 +9,10 @@ import { test } from "node:test"
 import { JOURNEYS, drain } from "./index.ts"
 import { classifySingle, singleNumber } from "./journeys/single-number.ts"
 import { allTriplets, threeSum } from "./journeys/three-sum.ts"
+import {
+  classifySortedPair,
+  sortedPairSum,
+} from "./journeys/sorted-pair-sum.ts"
 import { classifyTwoSum, twoSum } from "./journeys/two-sum.ts"
 import type { AnyJourney, BaseFrame, Frame } from "./types.ts"
 
@@ -228,6 +232,56 @@ test("two-sum: every approach returns the promised pair, including the traps", (
       key
     )
   }
+})
+
+test("sorted-pair-sum: every approach returns the promised pair, including the traps", () => {
+  const cases = [
+    { nums: [1, 3, 6, 9], target: 12, want: [1, 3] },
+    { nums: [2, 7, 11, 15], target: 9, want: [0, 1] },
+    { nums: [1, 2], target: 3, want: [0, 1] },
+    { nums: [1, 3, 3, 8], target: 6, want: [1, 2] },
+    { nums: [-5, -2, 0, 2, 7], target: 0, want: [1, 3] },
+    { nums: [1, 4, 8, 20, 44], target: 45, want: [0, 4] },
+  ]
+  for (const c of cases) {
+    assert.ok(
+      classifySortedPair(c.nums, c.target).ok,
+      `${c.nums} is a legal case`
+    )
+    for (const key of ["brute", "hash", "squeeze"]) {
+      const act = sortedPairSum.acts.find((a) => a.key === key)!
+      const got = lastAnswer<number[]>(drain(act.run(c, {})))
+      assert.deepEqual(got, c.want, `${key} on [${c.nums}] target ${c.target}`)
+    }
+  }
+  // broken promise, no pair: nobody invents an answer
+  for (const key of ["brute", "hash", "squeeze"]) {
+    const act = sortedPairSum.acts.find((a) => a.key === key)!
+    assert.equal(
+      lastAnswer(drain(act.run({ nums: [1, 2, 5, 11], target: 99 }, {}))),
+      undefined,
+      key
+    )
+  }
+  // broken promise, out of order: this is the act's own teaching claim, so it
+  // is a test rather than a sentence — the squeeze MISSES an answer that is
+  // really there, while the approaches that never read the ordering find it
+  const unsorted = { nums: [9, 1, 3, 5], target: 8 }
+  const answerOf = (key: string) =>
+    lastAnswer<number[]>(
+      drain(sortedPairSum.acts.find((a) => a.key === key)!.run(unsorted, {}))
+    )
+  assert.deepEqual(
+    answerOf("brute"),
+    [2, 3],
+    "brute force does not read the order"
+  )
+  assert.deepEqual(answerOf("hash"), [2, 3], "the map does not read the order")
+  assert.equal(
+    answerOf("squeeze"),
+    undefined,
+    "the squeeze must walk past the answer when the ordering is broken"
+  )
 })
 
 test("three-sum: every approach returns the same distinct triples, including the traps", () => {

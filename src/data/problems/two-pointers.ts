@@ -44,33 +44,26 @@ export const twoPointers: Problem[] = [
         else:
             j -= 1
     return []`,
-    walkthrough: [
-      {
-        cells: { values: [1, 3, 6, 9], labels: { 0: "i", 3: "j" } },
-        caption: "Target 12. Pointers at both ends.",
-      },
-      {
-        cells: {
-          values: [1, 3, 6, 9],
-          marks: { 0: "compare", 3: "compare" },
-          labels: { 0: "i", 3: "j" },
-        },
-        caption: "1 + 9 = 10 < 12. Nothing left of j can rescue 1 — advance i.",
-      },
-      {
-        cells: {
-          values: [1, 3, 6, 9],
-          marks: { 0: "done", 1: "compare", 3: "compare" },
-          labels: { 1: "i", 3: "j" },
-        },
-        caption: "3 + 9 = 12 — hit. Return [1, 3].",
-      },
-      {
-        cells: { values: [1, 3, 6, 9], marks: { 1: "focus", 3: "focus" } },
-        caption:
-          "Each step throws away one element for good: O(n), O(1) space.",
-      },
-    ],
+    java: `public int[] sortedPairSum(int[] nums, int target) {
+    int i = 0, j = nums.length - 1;
+    while (i < j) {
+        int s = nums[i] + nums[j];
+        if (s == target) return new int[] {i, j};
+        if (s < target) i++;
+        else j--;
+    }
+    return new int[0];
+}`,
+    cpp: `vector<int> sortedPairSum(const vector<int>& nums, int target) {
+    int i = 0, j = (int)nums.size() - 1;
+    while (i < j) {
+        int s = nums[i] + nums[j];
+        if (s == target) return {i, j};
+        if (s < target) i++;
+        else j--;
+    }
+    return {};
+}`,
     alternatives: [
       {
         name: "Brute force",
@@ -83,6 +76,20 @@ export const twoPointers: Problem[] = [
             if nums[i] + nums[j] == target:
                 return [i, j]
     return []`,
+        java: `public int[] sortedPairSum(int[] nums, int target) {
+    for (int i = 0; i < nums.length; i++)
+        for (int j = i + 1; j < nums.length; j++)
+            if (nums[i] + nums[j] == target)
+                return new int[] {i, j};
+    return new int[0];
+}`,
+        cpp: `vector<int> sortedPairSum(const vector<int>& nums, int target) {
+    for (int i = 0; i < (int)nums.size(); i++)
+        for (int j = i + 1; j < (int)nums.size(); j++)
+            if (nums[i] + nums[j] == target)
+                return {i, j};
+    return {};
+}`,
       },
       {
         name: "Hash map",
@@ -98,6 +105,24 @@ export const twoPointers: Problem[] = [
             return [seen[target - x], i]
         seen[x] = i
     return []`,
+        java: `public int[] sortedPairSum(int[] nums, int target) {
+    Map<Integer, Integer> seen = new HashMap<>();
+    for (int i = 0; i < nums.length; i++) {
+        int need = target - nums[i];
+        if (seen.containsKey(need)) return new int[] {seen.get(need), i};
+        seen.put(nums[i], i);
+    }
+    return new int[0];
+}`,
+        cpp: `vector<int> sortedPairSum(const vector<int>& nums, int target) {
+    unordered_map<int, int> seen;
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int need = target - nums[i];
+        if (seen.count(need)) return {seen[need], i};
+        seen[nums[i]] = i;
+    }
+    return {};
+}`,
       },
     ],
   },

@@ -95,6 +95,45 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-05 — problem #4: Pair Sum in Sorted Array, and the promise as the lesson
+
+Pipeline row 4, the fourth journey. Branch `feat/journey-sorted-pair-sum`.
+
+**What this problem is for.** It looks like Two Sum with one extra word in the statement, and that
+word is the whole lesson: the array arrives *sorted*, and constant extra space is *required*. So the
+hash map — the correct, fast, interview-standard answer to the unsorted version — is earned in act 3
+and then given up in act 4. A journey where the best-known tool turns out to be the wrong one is a
+better lesson than a journey where each act is simply faster than the last.
+
+Six acts: The Problem · Brute Force · Hash Map · Two Pointers · Code It · The Reveal. Panels are the
+ones that already existed — chips, the sum equation, the hash view for the notepad — so nothing new
+was added to `types.ts` or `panels.tsx`.
+
+**Five corner cases**, one of them new to this repo: `unsorted`, a shelf that is not in order. It is
+the sharpest thing in the journey, because the failure it produces is not a crash. The pointers
+retire the answer and report that none exists, calmly. The `why` prose says exactly that, and the
+constraint it cites is the promise the whole problem rests on.
+
+**Two content bugs the tests caught, both mine, both in data I had written by hand:**
+
+- the "equal prices" preset was `[1, 3, 3, 5]` with target 6 — which also holds `1 + 5`, so the
+  promise of exactly one pair was broken by the preset that was supposed to demonstrate a *different*
+  corner case. `classifySortedPair` refused it. Now `[1, 3, 3, 8]`.
+- the `unsorted` preset was `[5, 1, 9, 3]` with target 12 — on which the squeeze *finds* the answer
+  anyway, because the left pointer happens to walk straight onto it. The teaching claim was false for
+  the very input chosen to demonstrate it. That is now `[9, 1, 3, 5]` with target 8, and it is
+  asserted rather than asserted-in-prose: the test requires brute force and the map to find `[2, 3]`
+  and the squeeze to return nothing.
+
+**Practice-set alignment** (B1): the hand-written walkthrough is deleted, so the problem page draws
+the journey's own frames, and Java and C++ now sit beside Python on all three approaches — the
+three-language rule applies the moment a problem has a journey.
+
+Evidence: `npm run check` 46 → **53 tests**; `npm run test:ui` 39 → **40 checks** (the route list is
+derived from `JOURNEYS`, so the new journey enrolled itself). Browser: all six acts deep-link and
+render with a clean console (5, 20, 10, 15, 1, 1 frames); the reference solution passes all six cases
+plus the n = 400 set and triggers the flawless-run offer.
+
 ## 2026-09-05 — the reference card: constraints, then the ladder (R2, R1)
 
 The last two items in "requested, specced, not started", and the answer to the ask that started
