@@ -9,7 +9,7 @@
 //   xp                number     total XP
 //   activity-days     string[]   ISO days with any activity (streak source)
 //   scorecard:<slug>  object[]   last 50 challenge runs
-//   prefs             object     speed, code tab, motion, reading column open
+//   prefs             object     speed, code tab, motion, reading column, problem panel
 //   spoilers          boolean    learner opted out of pattern-name masking
 
 import { useSyncExternalStore } from "react"
@@ -154,12 +154,16 @@ export interface Prefs {
   codeTab: string // pseudo | python | java | cpp
   motion: "calm" | "normal" | "cinematic" | "off"
   reading: boolean // journey page: reading column open (false = icon rail)
+  // journey page: which sections of the problem panel are open. null = the
+  // learner has never touched it, so the act decides (R3).
+  problemSections: string[] | null
 }
 export const DEFAULT_PREFS: Prefs = {
   speed: 50,
   codeTab: "pseudo",
   motion: "normal",
   reading: true,
+  problemSections: null,
 }
 
 // merged over the defaults so a pref added later reads as its default, not undefined

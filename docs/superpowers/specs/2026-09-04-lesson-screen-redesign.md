@@ -34,8 +34,8 @@ per view, semantic progress colour (green done, accent current, grey locked).
 | Sidebar nav with `x/y` badges | shipped (U5, `earnedOf()`) | `lib/progress.ts` |
 | Breadcrumb, XP badge, restart | shipped | `journey-page.tsx` |
 | Step chips with a locked count | shipped; locked acts are one "?" node by design | `act-stepper.tsx` |
-| Hints as a collapsed accordion, one click each | shipped — but **story act only** | `cards.tsx` `HintList` |
-| Edge cases listed, click to load that preset | shipped — but **story act only** | `cards.tsx` `EdgeCaseList` |
+| Hints as a collapsed accordion, one click each | shipped — story act only until **R3** put it on every act | `problem-panel.tsx` |
+| Edge cases listed, click to load that preset | shipped — story act only until **R3** put it on every act | `cards.tsx` `EdgeCaseList` |
 | Quiz with immediate feedback | shipped | `cards.tsx`, `panels.tsx` |
 | Preset dropdown, random, custom array, apply | shipped — in the footer, not a drawer | `controls.tsx` `DataControls` |
 | Prev/next/restart + scrubber | shipped — in the footer transport | `controls.tsx` `Transport` |

@@ -20,23 +20,18 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { AnyJourney } from "@/engine"
+import type { Problem } from "@/data"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { href } from "@/lib/route"
 import { setPref, usePrefs } from "@/lib/store"
 import { ActStepper } from "./act-stepper"
-import {
-  EdgeCaseCard,
-  EdgeCaseList,
-  HintLadder,
-  HintList,
-  PredictCard,
-  QuizCard,
-} from "./cards"
+import { EdgeCaseCard, HintLadder, PredictCard, QuizCard } from "./cards"
 import { ChallengeEditor } from "./challenge-editor"
 import { Legend } from "./chip-row"
 import { CodePanel } from "./code-panel"
 import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
+import { ProblemPanel } from "./problem-panel"
 import { StepsChart } from "./steps-chart"
 import { useJourney } from "./use-journey"
 import type { JourneyController } from "./use-journey"
@@ -74,9 +69,11 @@ function ReadingToggle({ open }: { open: boolean }) {
 function ReadingBody({
   j,
   journey,
+  problem,
 }: {
   j: JourneyController
   journey: AnyJourney
+  problem?: Problem
 }) {
   const { act, frame } = j
   const storyAct = j.actIndex === 0
@@ -89,14 +86,14 @@ function ReadingBody({
         <p className="text-muted-foreground">{act.idea}</p>
       </div>
 
-      {storyAct && act.hints?.length ? <HintList hints={act.hints} /> : null}
-      {storyAct && (
-        <EdgeCaseList
-          edges={journey.edgeCases}
-          current={j.presetKey}
-          onLoad={j.applyPreset}
-        />
-      )}
+      <ProblemPanel
+        journey={journey}
+        problem={problem}
+        storyAct={storyAct}
+        input={j.data ? journey.describe(j.data) : ""}
+        current={j.presetKey}
+        onLoad={j.applyPreset}
+      />
 
       {act.tools?.length ? (
         <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
@@ -422,7 +419,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                 className="absolute top-0 right-0 z-20 hidden max-h-full w-[26rem] flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 text-body shadow-2xl lg:flex"
                 data-testid="reading-peek"
               >
-                <ReadingBody j={j} journey={journey} />
+                <ReadingBody j={j} journey={journey} problem={problem} />
               </div>
             )}
             <ReadingToggle open={false} />
@@ -432,7 +429,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             className="flex flex-col gap-4 text-body lg:min-h-0 lg:overflow-y-auto lg:pr-1"
             aria-label="approach"
           >
-            <ReadingBody j={j} journey={journey} />
+            <ReadingBody j={j} journey={journey} problem={problem} />
             <ReadingToggle open />
           </aside>
         )}
