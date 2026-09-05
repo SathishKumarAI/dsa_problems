@@ -1,0 +1,11 @@
+{
+  "name": "dsa_visualizer",
+  "private": true,
+  "description": "VisuAlgo-style DSA learning site. No runtime deps, no build — jsdom is dev-only, for DOM smoke tests.",
+  "scripts": {
+    "test": "node js/test_sorts.js && node problems/test_two_sum.js && node problems/test_single_number.js && node patterns/test_two_pointers.js && node structures/test_structures.js && node problems/validate.js && node problems/test_dom.js"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

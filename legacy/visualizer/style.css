@@ -1,0 +1,412 @@
+/* All visuals live here. Catppuccin Mocha (dark) / Latte (light) palettes.
+   Theme is <html data-theme="dark|light">, set by js/ui-prefs.js before paint. */
+:root {
+  /* type scale (~1.125 modular) — use these, not literals, in every rule */
+  --fs-2xs: 0.65rem; /* chip sub-indices, bar labels */
+  --fs-xs: 0.72rem;  /* captions, legends, hints */
+  --fs-sm: 0.8rem;   /* secondary UI: labels, code, takeaways */
+  --fs-md: 0.9rem;   /* body copy, controls */
+  --fs-lg: 1.05rem;  /* narration, headings */
+  --fs-xl: 1.2rem;   /* stat numerals */
+
+  /* spacing rhythm */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+
+  /* AA-contrast companions: --on-<accent> = text sitting ON that accent
+     background; --<accent>-text = that accent used AS text on base/mantle.
+     Dark theme: raw accents already pass; light theme overrides below. */
+  --on-mauve: var(--crust);
+  --on-blue: var(--crust);
+  --on-green: var(--crust);
+  --on-yellow: var(--crust);
+  --on-peach: var(--crust);
+  --on-red: var(--crust);
+  --mauve-text: var(--mauve);
+  --blue-text: var(--blue);
+  --green-text: var(--green);
+  --yellow-text: var(--yellow);
+  --peach-text: var(--peach);
+  --red-text: var(--red);
+
+  --base: #1e1e2e;
+  --mantle: #181825;
+  --crust: #11111b;
+  --surface0: #313244;
+  --surface1: #45475a;
+  --text: #cdd6f4;
+  --subtext: #a6adc8;
+  --mauve: #cba6f7;
+  --blue: #89b4fa;
+  --green: #a6e3a1;
+  --red: #f38ba8;
+  --yellow: #f9e2af;
+  --peach: #fab387;
+}
+
+[data-theme="light"] {
+  /* white on the dark accents, near-black on the bright ones (all >= 4.5:1);
+     accents-as-text darken via color-mix until they pass on base/mantle */
+  --on-mauve: #ffffff;
+  --on-blue: #ffffff;
+  --on-red: #ffffff;
+  --on-green: #11111b;
+  --on-yellow: #11111b;
+  --on-peach: #11111b;
+  --mauve-text: color-mix(in srgb, #8839ef 85%, black);
+  --blue-text: color-mix(in srgb, #1e66f5 85%, black);
+  --red-text: color-mix(in srgb, #d20f39 85%, black);
+  --green-text: color-mix(in srgb, #40a02b 62%, black);
+  --yellow-text: color-mix(in srgb, #df8e1d 55%, black);
+  --peach-text: color-mix(in srgb, #fe640b 58%, black);
+
+  --base: #eff1f5;
+  --mantle: #e6e9ef;
+  --crust: #dce0e8;
+  --surface0: #ccd0da;
+  --surface1: #bcc0cc;
+  --text: #4c4f69;
+  --subtext: #5c5f77; /* Latte subtext1: subtext0 fails 4.5:1 on base */
+  --mauve: #8839ef;
+  --blue: #1e66f5;
+  --green: #40a02b;
+  --red: #d20f39;
+  --yellow: #df8e1d;
+  --peach: #fe640b;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--base);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--mantle);
+}
+
+/* --- landing hero (index.html): the method, then live progress cards --- */
+#hero {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+  padding: var(--sp-4) 1.25rem;
+  background: linear-gradient(135deg, var(--mantle), var(--base));
+  border-bottom: 1px solid var(--surface0);
+}
+#hero-copy { max-width: 26rem; }
+#hero-copy h2 { font-size: var(--fs-xl); color: var(--mauve-text); margin-bottom: var(--sp-2); }
+#hero-copy p { font-size: var(--fs-sm); color: var(--subtext); line-height: 1.5; }
+#hero-cards { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.hero-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 10px;
+  padding: var(--sp-3) var(--sp-4);
+  text-decoration: none;
+  max-width: 15rem;
+}
+.hero-card:hover { background: var(--surface0); }
+.hero-card b { display: block; color: var(--mauve-text); font-size: var(--fs-md); }
+.hero-card.pattern b { color: var(--blue-text); }
+.hero-card small { color: var(--subtext); font-size: var(--fs-xs); line-height: 1.35; display: block; margin-top: 0.15rem; }
+.ring { width: 2.6rem; height: 2.6rem; flex-shrink: 0; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke: var(--surface0); stroke-width: 3.5; }
+.ring circle + circle { stroke: var(--green); stroke-linecap: round; }
+.ring text {
+  transform: rotate(90deg);
+  transform-origin: 18px 18px;
+  fill: var(--subtext);
+  font-size: 0.62rem;
+  text-anchor: middle;
+}
+
+h1 { font-size: var(--fs-lg); color: var(--mauve-text); }
+
+#algo-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+
+#problems-link {
+  margin-left: auto;
+  font-size: var(--fs-sm);
+  color: var(--subtext);
+  text-decoration: none;
+}
+#problems-link:hover { color: var(--text); }
+
+/* settings gear (injected by ui-prefs.js); native <details> dropdown */
+#settings { position: relative; }
+#settings summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--fs-lg);
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+}
+#settings summary::-webkit-details-marker { display: none; }
+#settings summary:hover, #settings[open] summary { background: var(--surface0); }
+#settings-panel {
+  position: absolute;
+  right: 0;
+  top: 2rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  min-width: 13rem;
+}
+
+.reduce-motion * { transition: none !important; animation: none !important; }
+
+button {
+  background: var(--surface0);
+  color: var(--text);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: var(--fs-md);
+}
+button:hover { background: var(--surface1); }
+#algo-tabs button.active { background: var(--mauve); color: var(--on-mauve); }
+
+main {
+  flex: 1;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  min-height: 0;
+}
+
+#stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#bars {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.bar {
+  flex: 1;
+  background: var(--blue);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  transition: height 0.1s;
+}
+.bar span {
+  position: absolute;
+  top: -1.2rem;
+  width: 100%;
+  text-align: center;
+  font-size: var(--fs-2xs);
+  color: var(--subtext);
+}
+.bar.compare { background: var(--yellow); }
+.bar.swap    { background: var(--red); }
+.bar.pivot   { background: var(--peach); }
+.bar.sorted  { background: var(--green); }
+.bar.discard { background: var(--surface0); }
+.bar.discard span { color: var(--surface1); }
+
+#scrub {
+  width: 100%;
+  margin-top: 0.5rem;
+  accent-color: var(--mauve-text);
+  cursor: pointer;
+}
+
+/* --- graph render kind (BFS/DFS/Dijkstra on index.html) --- */
+#bars svg#graph { width: 100%; height: 100%; }
+.gedge { stroke: var(--surface1); stroke-width: 0.6; }
+.gedge.active { stroke: var(--red); stroke-width: 1.2; }
+.gweight { fill: var(--subtext); font-size: 3.2px; text-anchor: middle; dominant-baseline: middle; paint-order: stroke; stroke: var(--base); stroke-width: 1.4; }
+.gnode { fill: var(--surface0); stroke: var(--surface1); stroke-width: 0.5; }
+.gnode.frontier { fill: var(--yellow); }
+.gnode.visited { fill: var(--green); }
+.gnode.current { fill: var(--peach); stroke: var(--text); stroke-width: 0.8; }
+.glabel { fill: var(--text); font-size: 3.6px; text-anchor: middle; dominant-baseline: central; font-family: ui-monospace, monospace; pointer-events: none; paint-order: stroke; stroke: var(--base); stroke-width: 0.7; }
+.gdist { fill: var(--peach-text); font-size: 3px; text-anchor: middle; font-family: ui-monospace, monospace; }
+
+#status {
+  display: flex;
+  gap: 2rem;
+  padding-top: 0.75rem;
+  color: var(--subtext);
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums; /* step counters must not jitter */
+}
+#status b { color: var(--text); }
+#complexity { margin-left: auto; color: var(--peach-text); }
+
+/* focus mode: visualization + playback only (journey bar hidden via journey.css) */
+body.focus header,
+body.focus #side,
+body.focus #resize-handle { display: none; }
+
+#resize-handle {
+  width: 6px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  border-radius: 3px;
+  touch-action: none;
+}
+#resize-handle:hover, #resize-handle:active { background: var(--surface0); }
+
+#side {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+#pseudocode {
+  background: var(--mantle);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  overflow: auto;
+}
+#pseudocode .line.active {
+  background: var(--surface1);
+  border-radius: 4px;
+}
+#pseudocode .line { display: block; padding: 0 0.4rem; white-space: pre; }
+
+#explain {
+  font-size: var(--fs-sm);
+  color: var(--subtext);
+  min-height: 3em;
+}
+
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: var(--fs-xs);
+  color: var(--subtext);
+  margin-top: auto;
+}
+#legend span { display: flex; align-items: center; gap: 0.35rem; }
+#legend .sw {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  display: inline-block;
+}
+#legend .compare { background: var(--yellow); }
+#legend .swap    { background: var(--red); }
+#legend .pivot   { background: var(--peach); }
+#legend .sorted  { background: var(--green); }
+#legend .discard { background: var(--surface0); }
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: var(--mantle);
+}
+
+.group { display: flex; gap: 0.5rem; align-items: center; }
+
+label {
+  font-size: var(--fs-sm);
+  color: var(--subtext);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+input[type="range"] { accent-color: var(--mauve-text); }
+
+#btn-play { background: var(--green); color: var(--on-green); min-width: 5.5rem; }
+#btn-play.playing { background: var(--yellow); }
+
+#target { width: 4rem; background: var(--surface0); color: var(--text); border: none; border-radius: 6px; padding: 0.3rem 0.4rem; }
+
+#keys { margin-left: auto; }
+#keys-btn { font-size: var(--fs-xs); padding: 0.25rem 0.6rem; color: var(--subtext); background: none; }
+#keys-btn:hover { background: var(--surface0); }
+
+/* keyboard-shortcut overlay (injected by ui-prefs.js) */
+#shortcuts {
+  background: var(--mantle);
+  color: var(--text);
+  border: 1px solid var(--surface1);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  min-width: 20rem;
+}
+#shortcuts::backdrop { background: rgba(0, 0, 0, 0.55); }
+#shortcuts h2 { font-size: var(--fs-md); color: var(--mauve-text); margin-bottom: 0.8rem; }
+#shortcuts table { border-collapse: collapse; margin-bottom: 1rem; }
+#shortcuts td { padding: 0.3rem 0.9rem 0.3rem 0; font-size: var(--fs-md); color: var(--subtext); }
+#shortcuts kbd {
+  background: var(--surface0);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 0.15rem 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+/* stacked layout: let the page scroll naturally instead of cramming both
+   panels into one viewport; the visualization keeps a workable height */
+@media (max-width: 800px) {
+  body { height: auto; min-height: 100vh; }
+  main { flex-direction: column; }
+  #stage { min-width: 0; }
+  #bars { min-height: 45vh; }
+  #side { width: 100% !important; }
+  #resize-handle { display: none; }
+  #keys { display: none; } /* the ? button matters on desktop; keys don't exist on touch */
+}
+
+/* touch: every interactive target at least 44px tall */
+@media (pointer: coarse) {
+  button, select, #custom, #target-input {
+    min-height: 44px;
+  }
+  input[type="range"] { min-height: 44px; }
+  footer { gap: 0.75rem; }
+}
+
+/* keyboard focus: visible ring on every interactive element, both themes */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--mauve-text);
+  outline-offset: 2px;
+}

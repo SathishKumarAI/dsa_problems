@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap — learning journeys</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="journey.css">
+<script src="../js/ui-prefs.js"></script>
+<style>
+  #review { display: flex; flex-direction: column; gap: 0.6rem; max-width: 46rem; }
+  #review:not(:empty) { margin-bottom: 1.5rem; }
+  .review-card {
+    display: block;
+    background: color-mix(in srgb, var(--yellow) 12%, var(--mantle));
+    border: 1px solid color-mix(in srgb, var(--yellow) 40%, var(--surface0));
+    border-radius: 8px;
+    padding: 0.7rem 1rem;
+    text-decoration: none;
+  }
+  .review-card b { color: var(--yellow-text); }
+  .review-card p { color: var(--subtext); font-size: var(--fs-sm); margin-top: 0.25rem; }
+  #dashboard { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; max-width: 46rem; }
+  .stat-tile {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    min-width: 8.5rem;
+  }
+  .stat-tile b { display: block; font-size: 1.3rem; color: var(--mauve); font-variant-numeric: tabular-nums; }
+  .stat-tile span { font-size: 0.72rem; color: var(--subtext); }
+  #stalls { max-width: 46rem; margin-bottom: 1.5rem; }
+  #stalls:empty { display: none; }
+  #stalls .track-label { margin-bottom: 0.5rem; }
+  .stall-row { display: flex; gap: 0.75rem; font-size: var(--fs-sm); color: var(--subtext); padding: 0.2rem 0; }
+  .stall-row b { color: var(--text); font-weight: normal; }
+  .stall-row span:last-child { font-variant-numeric: tabular-nums; }
+  #roadmap { display: flex; flex-direction: column; gap: 1.5rem; max-width: 46rem; }
+  .track { display: flex; flex-direction: column; gap: 0.6rem; }
+  .track-label { font-size: 0.75rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.08em; }
+  .track-row { display: flex; align-items: stretch; gap: 0.6rem; flex-wrap: wrap; }
+  .rarrow { align-self: center; color: var(--surface1); font-size: 1.2rem; }
+  .rcard {
+    background: var(--mantle);
+    border: 1px solid var(--surface0);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    text-decoration: none;
+    min-width: 15rem;
+    max-width: 19rem;
+    flex: 1;
+  }
+  .rcard:hover { background: var(--surface0); }
+  .rcard b { color: var(--mauve); }
+  .rcard.pattern b { color: var(--blue); }
+  .rcard p { color: var(--subtext); font-size: 0.8rem; margin-top: 0.3rem; line-height: 1.4; }
+  .rcard .status { display: block; margin-top: 0.45rem; font-size: 0.72rem; color: var(--subtext); }
+  .rcard .status::before { content: "○ "; }
+  .rcard.started .status { color: var(--yellow); }
+  .rcard.started .status::before { content: "◐ "; }
+  .rcard.done .status { color: var(--green); }
+  .rcard.done .status::before { content: "● "; }
+  .rcard.ghost {
+    border-style: dashed;
+    background: none;
+    pointer-events: none;
+  }
+  .rcard.ghost b { color: var(--subtext); }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="../index.html">DSA Visualizer</a> · Roadmap</h1>
+  <span id="subtitle">a visible path — patterns are the destinations, problems are how you get there</span>
+</header>
+<main>
+  <section id="stage">
+    <div id="review"></div>
+    <div id="dashboard"></div>
+    <div id="stalls"></div>
+    <div id="roadmap"></div>
+  </section>
+</main>
+<script src="../js/catalog.js"></script>
+<script>
+// group the shared catalog into tracks; hrefs are root-relative → prefix ../
+const TRACKS = [...new Set(CATALOG.map((e) => e.track))].map((label) => ({
+  label,
+  nodes: CATALOG.filter((e) => e.track === label).map((e) =>
+    e.ghost ? e : { ...e, href: "../" + e.href }
+  ),
+}));
+
+// --- review queue: finished journeys resurface on the srs decay ladder ---
+const srs = JSON.parse(localStorage.getItem("srs") || "{}");
+const todayISO = new Date().toISOString().slice(0, 10);
+document.getElementById("review").innerHTML = Object.entries(srs)
+  .filter(([, e]) => e.due <= todayISO)
+  .map(([pathname, e]) => {
+    const entry = CATALOG.find((c) => !c.ghost && new URL("../" + c.href, location.href).pathname === pathname);
+    if (!entry) return "";
+    const days = Math.max(1, Math.round((Date.now() - new Date(e.earned)) / 864e5));
+    return `<a class="review-card" href="../${entry.href}">
+      <b>🔁 Review due: ${entry.title}</b>
+      <p>You earned this ${days} day${days === 1 ? "" : "s"} ago — can you solve it cold? One pass keeps it yours.</p>
+    </a>`;
+  })
+  .join("");
+
+// --- dashboard: everything derived from localStorage, nothing phones home ---
+const nodes = TRACKS.flatMap((t) => t.nodes).filter((n) => !n.ghost && !n.noProgress);
+const unlockedOf = (n) =>
+  Number(localStorage.getItem("unlocked:" + new URL(n.href, location.href).pathname)) || 0;
+const actsDone = nodes.reduce((s, n) => s + Math.max(0, Math.min(unlockedOf(n), n.acts) - 1), 0);
+const journeysDone = nodes.filter((n) => unlockedOf(n) >= n.acts).length;
+const quizzesPassed = nodes.reduce((s, n) => {
+  const key = "quizzes:" + new URL(n.href, location.href).pathname;
+  return s + JSON.parse(localStorage.getItem(key) || "[]").length;
+}, 0);
+
+// streak: consecutive days with activity, ending today or yesterday
+const days = new Set(JSON.parse(localStorage.getItem("activity-days") || "[]"));
+let streak = 0;
+const d = new Date();
+if (!days.has(d.toISOString().slice(0, 10))) d.setDate(d.getDate() - 1); // today not yet — count from yesterday
+while (days.has(d.toISOString().slice(0, 10))) {
+  streak++;
+  d.setDate(d.getDate() - 1);
+}
+
+document.getElementById("dashboard").innerHTML = [
+  [`★ ${Number(localStorage.getItem("xp") || 0)}`, "XP earned"],
+  [streak, streak === 1 ? "day streak" : "day streak 🔥"],
+  [actsDone, "acts completed"],
+  [quizzesPassed, "quizzes passed"],
+  [`${journeysDone}/${nodes.length}`, "journeys finished"],
+].map(([v, label]) => `<div class="stat-tile"><b>${v}</b><span>${label}</span></div>`).join("");
+
+// --- stall spots: the acts you sat in longest / left from (local only) ---
+const stalls = Object.entries(JSON.parse(localStorage.getItem("stalls") || "{}"))
+  .map(([k, e]) => ({ pathname: k.split("|")[0], ...e }))
+  .filter((e) => e.secs >= 60 || e.quits > 0)
+  .sort((a, b) => b.secs - a.secs)
+  .slice(0, 4);
+if (stalls.length) {
+  const mins = (s) => (s < 60 ? s + "s" : Math.round(s / 60) + " min");
+  document.getElementById("stalls").innerHTML =
+    `<div class="track-label">where you linger — worth a re-watch?</div>` +
+    stalls
+      .map((e) => {
+        const c = CATALOG.find((c) => !c.ghost && new URL("../" + c.href, location.href).pathname === e.pathname);
+        return `<div class="stall-row"><b>${c ? c.title : e.pathname} · ${e.name}</b><span>${mins(e.secs)}${e.quits ? ` · left ${e.quits}× (last at step ${e.step})` : ""}</span></div>`;
+      })
+      .join("");
+}
+
+const roadmapEl = document.getElementById("roadmap");
+roadmapEl.innerHTML = TRACKS.map((t) => {
+  const cards = t.nodes.map((n) => {
+    if (n.ghost) return `<span class="rcard ghost"><b>${n.title}</b><p>${n.sub}</p></span>`;
+    if (n.noProgress) {
+      return `<a class="rcard" href="${n.href}"><b>${n.title}</b><p>${n.sub}</p><span class="status">optional · timed</span></a>`;
+    }
+    const key = "unlocked:" + new URL(n.href, location.href).pathname;
+    const unlocked = Number(localStorage.getItem(key)) || 0;
+    const state = unlocked >= n.acts ? "done" : unlocked > 1 ? "started" : "";
+    const status = unlocked >= n.acts ? "journey complete" : unlocked > 1 ? `${unlocked}/${n.acts} acts unlocked` : "not started";
+    return `<a class="rcard ${state}${n.pattern ? " pattern" : ""}" href="${n.href}">
+      <b>${n.title}</b><p>${n.sub}</p><span class="status">${status}</span>
+    </a>`;
+  });
+  return `<div class="track"><div class="track-label">${t.label}</div><div class="track-row">${cards.join('<span class="rarrow">→</span>')}</div></div>`;
+}).join("");
+</script>
+</body>
+</html>
