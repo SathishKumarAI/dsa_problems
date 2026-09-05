@@ -4,6 +4,31 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — a measured UI/UX audit
+
+Branch `docs/ux-audit`. `docs/UX-AUDIT.md`, and U1–U14 in the backlog.
+
+Every surface driven over CDP at three viewports with a seeded ledger, measuring contrast (630 text
+nodes, composited on a canvas so `oklab()` and alpha are handled), focus (real `Tab` presses), the
+type scale, spacing, radii, line length, target sizes and layout.
+
+**Two of my own measurements were wrong first, and both are worth remembering.** Parsing
+`oklab()` colours as RGB produced a list of fictional contrast failures (ratios like 1.12);
+compositing on a canvas is the only honest method. And `element.focus()` does not set
+`:focus-visible`, so the first pass claimed *40 of 40 controls have no focus ring* — real Tab
+presses show 26 of 26 do. A check that says everything is broken is usually the broken thing.
+
+**The verdict.** The stage is good and the accessibility floor is high: median contrast 8.4 : 1,
+one failing string in the app, a focus ring on every tab stop, no horizontal scroll at any
+viewport, colour never the only channel. What holds it back is the frame — 12 px is the most common
+text size in a product about reading, lines run to 110 characters, and a phone spends 378 px of 844
+on chrome before the stage starts. 16 type steps, 10 spacing values, 4 radii and 5 container widths
+mean the interface has conventions but no system.
+
+**Two real bugs fell out of it:** the visualizer ignores `?algo=` changed in-app (the same class as
+G1, fixed on the journey earlier the same day), and the narration — the page's designated star —
+clips inside the stage's own scroll box on long panels.
+
 ## 2026-09-05 — B1: one source of truth for a problem's walkthrough
 
 Branch `feat/unify-walkthrough`.

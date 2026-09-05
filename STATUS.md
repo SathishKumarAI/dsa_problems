@@ -13,8 +13,9 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. **Every P0 is done.** Next: the F-items in `docs/BACKLOG.md` (F3 panel kinds arrive with their
-   problem; F4–F8 are the animation proposals awaiting your review).
+1. **Every P0 in the original backlog is done.** The new P0s are the UX-audit items:
+   U10, U7, U5, U3, U1 — half a day for a visibly tidier product (`docs/UX-AUDIT.md` §6).
+2. Then U1/U8/U4, then the type scale (U6 + U12) as one pass.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

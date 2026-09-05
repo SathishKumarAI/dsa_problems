@@ -7,6 +7,7 @@ into the file that owns the nearest question, never into a new file.
 |---|---|---|---|
 | What are we building, for whom, and what is out of scope? | [`PRD.md`](PRD.md) | requirements.md, spec.md, product.md | P0 |
 | What is on screen, what does every button do, what state is it in? | [`FEATURES.md`](FEATURES.md) | feature-log.md, ui.md, components.md | P0 |
+| How good does it look and feel, measured — and what would I fix? | [`UX-AUDIT.md`](UX-AUDIT.md) | design-review.md, a11y.md | P1 |
 | What do we build next, and why that order? | [`BACKLOG.md`](BACKLOG.md) | todo.md, tasks.md, issues.md | P0 |
 | Where is this going over the next quarters? | [`ROADMAP.md`](ROADMAP.md) | future.md, futurelog.md, vision.md | P1 |
 | Which problem is next, what is done for a problem, which book informs it? | [`PROBLEMS.md`](PROBLEMS.md) | problems-todo.md, curriculum.md, leetcode.md | P0 |

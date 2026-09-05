@@ -15,6 +15,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | How to add a journey without spoiling it | `docs/AUTHORING.md` |
 | The API contract | `docs/API.md` |
 | Where the last session stopped | `STATUS.md` |
+| Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (items U1–U14 in the backlog) |
 | What shipped when | `docs/WORKLOG.md` |
 | Why an item exists | `docs/RESEARCH.md`, `docs/PRD.md` |
 
