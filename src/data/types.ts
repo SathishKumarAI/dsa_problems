@@ -38,6 +38,10 @@ export interface Solution extends Code {
   name: string // short tab label: "Brute force", "Sorting", "Hash map"
   summary: string
   complexity: { time: string; space: string }
+  // The weakness in the PREVIOUS rung of the ladder that this one removes.
+  // Absent on the first rung, which has nothing before it (docs/PROBLEMS.md
+  // §P1). A journeyed problem gets this from the act's `insight` instead.
+  whyNow?: string
 }
 
 export interface Problem extends Code {
@@ -46,6 +50,7 @@ export interface Problem extends Code {
   pattern: string // Pattern.id
   difficulty: Difficulty
   brief: string // one-liner for list rows
+  leetcode: string // slug on leetcode.com — the page's primary action links out
   statement: string
   // What the input promises: bounds, and the guarantees that turn a corner
   // case from trivia into a decision (docs/PROBLEMS.md §P1). Written in our
@@ -54,6 +59,7 @@ export interface Problem extends Code {
   examples: Example[]
   hints: string[] // progressive: nudge -> idea -> almost-there
   approach: string
+  whyNow?: string // why the optimal rung beats the last alternative (see Solution)
   complexity: { time: string; space: string }
   walkthrough?: Frame[] // stepped visualization of the approach on an example
   alternatives?: Solution[] // other ways in, worst-to-best order; optimal stays top-level

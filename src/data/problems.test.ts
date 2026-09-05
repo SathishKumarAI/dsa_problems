@@ -7,6 +7,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { JOURNEYS } from "../engine/index.ts"
 import { PATTERNS, PROBLEMS } from "./index.ts"
+import { ladderOf } from "../lib/ladder.ts"
 import type { Code } from "./types.ts"
 
 const looksLikeFunction = {
@@ -55,6 +56,28 @@ test("problems: every problem states its constraints, in our own words", () => {
       )
     }
   }
+})
+
+test("problems: the approach ladder is well-formed, worst → best", () => {
+  for (const p of PROBLEMS) {
+    // the ladder a learner who has never opened the journey sees
+    const journey = JOURNEYS.find((j) => j.problemId === p.id)
+    const { rungs } = ladderOf(p, journey, Number.MAX_SAFE_INTEGER)
+    assert.ok(rungs.length >= 1, `${p.id}: no rungs`)
+    assert.equal(rungs[0].whyNow, undefined, `${p.id}: the first rung has nothing before it`)
+    for (const r of rungs) {
+      assert.ok(r.name.trim(), `${p.id}: a rung with no name`)
+      assert.ok(/O\(/.test(r.cost), `${p.id}/${r.name}: cost does not read as a complexity`)
+      assert.ok(r.idea.trim().length > 40, `${p.id}/${r.name}: the idea needs a sentence or two`)
+      assert.ok(r.code.python.trim(), `${p.id}/${r.name}: no Python`)
+    }
+  }
+})
+
+test("problems: every LeetCode slug is a slug, and unique", () => {
+  const slugs = PROBLEMS.map((p) => p.leetcode)
+  for (const s of slugs) assert.match(s, /^[a-z0-9-]+$/, `bad slug "${s}"`)
+  assert.equal(new Set(slugs).size, slugs.length, "two problems point at one LeetCode page")
 })
 
 test("journeys: every revealed pattern id exists, and covers the journey's own pattern", () => {

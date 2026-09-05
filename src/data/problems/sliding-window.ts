@@ -6,6 +6,7 @@ export const slidingWindow: Problem[] = [
     title: "Single Buy/Sell Profit",
     pattern: "sliding-window",
     difficulty: "easy",
+    leetcode: "best-time-to-buy-and-sell-stock",
     brief: "Max profit from one buy and one later sell.",
     statement:
       "Given prices where prices[i] is a stock's price on day i, pick one day to buy and a later day to sell so profit is maximised. Return the profit, or 0 if no profitable trade exists.",
@@ -95,6 +96,7 @@ export const slidingWindow: Problem[] = [
     title: "Longest Substring Without Repeats",
     pattern: "sliding-window",
     difficulty: "medium",
+    leetcode: "longest-substring-without-repeating-characters",
     brief: "Longest run of characters with no duplicates.",
     statement:
       "Given a string s, return the length of the longest contiguous substring containing no repeated character.",
@@ -216,6 +218,7 @@ export const slidingWindow: Problem[] = [
     title: "Smallest Covering Window",
     pattern: "sliding-window",
     difficulty: "hard",
+    leetcode: "minimum-window-substring",
     brief: "Shortest substring of s containing every character of t.",
     statement:
       "Given strings s and t, return the shortest contiguous substring of s that contains every character of t, counting multiplicity. Return an empty string if none exists.",

@@ -6,6 +6,7 @@ export const stack: Problem[] = [
     title: "Balanced Brackets",
     pattern: "stack",
     difficulty: "easy",
+    leetcode: "valid-parentheses",
     brief: "Is every bracket opened and closed in the right order?",
     statement:
       "Given a string of the characters ()[]{} only, decide whether it is well-formed: every opener has a matching closer of the same kind, closed in last-opened-first-closed order.",
@@ -77,6 +78,7 @@ export const stack: Problem[] = [
     title: "Days Until Warmer",
     pattern: "stack",
     difficulty: "medium",
+    leetcode: "daily-temperatures",
     brief: "For each day, how many days until a strictly warmer one?",
     statement:
       "Given daily temperatures, return an array where answer[i] is the number of days you wait after day i for a strictly warmer temperature, or 0 if it never comes.",
@@ -193,6 +195,7 @@ export const stack: Problem[] = [
     title: "Largest Rectangle in Histogram",
     pattern: "stack",
     difficulty: "hard",
+    leetcode: "largest-rectangle-in-histogram",
     brief: "Biggest rectangle fitting under a histogram's bars.",
     statement:
       "Given bar heights of a histogram (all width 1), return the area of the largest axis-aligned rectangle that fits entirely under the bars.",

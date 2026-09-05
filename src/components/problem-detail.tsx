@@ -1,6 +1,9 @@
-// One problem's page: statement + examples, progressive hints, walkthrough
-// visualization, approach + solution. Tabs keep spoilers behind a click.
-import { ArrowLeftIcon, RouteIcon } from "lucide-react"
+// One problem's page: statement, constraints and examples, then progressive
+// hints, the walkthrough, and the approach ladder — every way in, worst to
+// best, each rung carrying the weakness in the one before it (R1). Tabs keep
+// spoilers behind a click; the primary action is solving it on LeetCode,
+// because this page explains and does not host an editor.
+import { ArrowLeftIcon, ExternalLinkIcon, RouteIcon } from "lucide-react"
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +19,9 @@ import { cn } from "@/lib/utils"
 import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
+import type { AnyJourney } from "@/engine"
+import { ladderOf, leetcodeUrl } from "@/lib/ladder"
+import { K, useStored } from "@/lib/store"
 import { href } from "@/lib/route"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
@@ -37,27 +43,13 @@ const LANGS: { key: keyof Code; label: string }[] = [
 
 // One approach: cost line, summary, code with a language strip. The language
 // is the same `codeTab` pref the journey uses (its "pseudo" maps to Python here).
-function SolutionBlock({
-  summary,
-  time,
-  space,
-  code,
-}: {
-  summary: string
-  time: string
-  space: string
-  code: Code
-}) {
+function SolutionBlock({ summary, code }: { summary: string; code: Code }) {
   const { codeTab } = usePrefs()
   const langs = LANGS.filter((l) => code[l.key])
   const lang =
     langs.find((l) => l.key === codeTab)?.key ?? ("python" as keyof Code)
   return (
     <div className="flex flex-col gap-4 pt-2">
-      <div className="flex gap-4 font-mono text-xs text-muted-foreground">
-        <span>time {time}</span>
-        <span>space {space}</span>
-      </div>
       <p className="max-w-[35em] text-body text-muted-foreground">{summary}</p>
       {langs.length > 1 && (
         <div className="flex gap-0.5" role="tablist" aria-label="language">
@@ -80,6 +72,58 @@ function SolutionBlock({
         </div>
       )}
       <CodeBlock code={code[lang] ?? code.python} />
+    </div>
+  )
+}
+
+// The ladder. Rungs read worst → best; the "why now" line sits BETWEEN them,
+// because it belongs to the step from one to the next, not to either rung.
+function ApproachLadder({
+  problem,
+  journey,
+}: {
+  problem: Problem
+  journey?: AnyJourney
+}) {
+  const unlocked = Math.max(
+    useStored<number>(K.unlocked(journey?.slug ?? ""), 1),
+    1
+  )
+  const { rungs, capped, hidden } = ladderOf(problem, journey, unlocked)
+  return (
+    <div className="flex flex-col gap-6 pt-2" aria-label="approach ladder">
+      {rungs.map((r, i) => (
+        <div key={r.key} className="flex flex-col gap-3">
+          {r.whyNow && (
+            <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
+              {r.whyNow}
+            </p>
+          )}
+          <div className="flex flex-wrap items-baseline gap-x-3">
+            <span className="font-mono text-meta text-muted-foreground">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <b className="text-body">{r.name}</b>
+            <span className="font-mono text-xs text-muted-foreground">
+              {r.cost}
+            </span>
+          </div>
+          <SolutionBlock summary={r.idea} code={r.code} />
+        </div>
+      ))}
+      {capped && journey && (
+        <p className="text-ui text-muted-foreground">
+          {hidden} more {hidden === 1 ? "approach is" : "approaches are"} still
+          ahead of you.{" "}
+          <a
+            href={href(`/journey/${journey.slug}`)}
+            className="text-chart-1 underline-offset-2 hover:underline"
+          >
+            Continue the journey ▸
+          </a>{" "}
+          — each one opens when the previous one runs out of road.
+        </p>
+      )}
     </div>
   )
 }
@@ -113,6 +157,19 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           >
             {problem.difficulty}
           </Badge>
+        </div>
+        {/* the page explains; the learner writes and submits the code on
+            LeetCode, so that is the primary action and there is no editor */}
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={leetcodeUrl(problem.leetcode)}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            Solve on LeetCode
+            <ExternalLinkIcon className="size-4" />
+          </a>
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span className="font-mono">{pattern.glyph}</span>
@@ -196,7 +253,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           {(journey || problem.walkthrough) && (
             <TabsTrigger value="walkthrough">Walkthrough</TabsTrigger>
           )}
-          <TabsTrigger value="solution">Approach & Solution</TabsTrigger>
+          <TabsTrigger value="solution">Approaches</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hints">
@@ -227,43 +284,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         )}
 
         <TabsContent value="solution">
-          {problem.alternatives?.length ? (
-            <Tabs defaultValue="optimal">
-              <TabsList variant="line">
-                {problem.alternatives.map((alt) => (
-                  <TabsTrigger key={alt.name} value={alt.name}>
-                    {alt.name}
-                  </TabsTrigger>
-                ))}
-                <TabsTrigger value="optimal">Optimal</TabsTrigger>
-              </TabsList>
-              {problem.alternatives.map((alt) => (
-                <TabsContent key={alt.name} value={alt.name}>
-                  <SolutionBlock
-                    summary={alt.summary}
-                    time={alt.complexity.time}
-                    space={alt.complexity.space}
-                    code={alt}
-                  />
-                </TabsContent>
-              ))}
-              <TabsContent value="optimal">
-                <SolutionBlock
-                  summary={problem.approach}
-                  time={problem.complexity.time}
-                  space={problem.complexity.space}
-                  code={problem}
-                />
-              </TabsContent>
-            </Tabs>
-          ) : (
-            <SolutionBlock
-              summary={problem.approach}
-              time={problem.complexity.time}
-              space={problem.complexity.space}
-              code={problem}
-            />
-          )}
+          <ApproachLadder problem={problem} journey={journey} />
         </TabsContent>
       </Tabs>
     </div>

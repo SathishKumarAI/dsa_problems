@@ -6,6 +6,7 @@ export const binarySearch: Problem[] = [
     title: "Find a Target in Sorted Array",
     pattern: "binary-search",
     difficulty: "easy",
+    leetcode: "binary-search",
     brief: "Index of target in a sorted array, or -1.",
     statement:
       "Given a sorted integer array and a target, return the target's index or -1 if absent. Must run in O(log n).",
@@ -109,6 +110,7 @@ export const binarySearch: Problem[] = [
     title: "Minimum in Rotated Sorted Array",
     pattern: "binary-search",
     difficulty: "medium",
+    leetcode: "find-minimum-in-rotated-sorted-array",
     brief: "Find the smallest value after an unknown rotation.",
     statement:
       "A sorted array of distinct values was rotated at an unknown pivot (e.g. [4,5,6,1,2,3]). Return its minimum element in O(log n).",
@@ -227,6 +229,7 @@ export const binarySearch: Problem[] = [
     title: "Slowest Sufficient Eating Speed",
     pattern: "binary-search",
     difficulty: "medium",
+    leetcode: "koko-eating-bananas",
     brief: "Binary search the answer, not the array.",
     statement:
       "Given piles of bananas and h hours, choose the smallest integer speed k (bananas/hour) so all piles can be finished within h hours. Each hour you eat from one pile only; a pile of p bananas takes ceil(p / k) hours.",

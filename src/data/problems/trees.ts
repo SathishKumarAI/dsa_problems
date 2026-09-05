@@ -6,6 +6,7 @@ export const trees: Problem[] = [
     title: "Maximum Depth of Binary Tree",
     pattern: "trees",
     difficulty: "easy",
+    leetcode: "maximum-depth-of-binary-tree",
     brief: "How many levels deep does the tree go?",
     statement:
       "Given the root of a binary tree, return its maximum depth — the number of nodes on the longest root-to-leaf path. An empty tree has depth 0.",
@@ -92,6 +93,7 @@ def max_depth(root) -> int:
     title: "Validate a Binary Search Tree",
     pattern: "trees",
     difficulty: "medium",
+    leetcode: "validate-binary-search-tree",
     brief: "Is every node within the bounds its ancestors imply?",
     statement:
       "Given the root of a binary tree, decide whether it is a valid BST: every node in a left subtree is strictly less than its ancestor, every node in a right subtree strictly greater.",
@@ -177,6 +179,7 @@ def max_depth(root) -> int:
     title: "Level Order Traversal",
     pattern: "trees",
     difficulty: "medium",
+    leetcode: "binary-tree-level-order-traversal",
     brief: "Node values grouped level by level.",
     statement:
       "Given the root of a binary tree, return its node values grouped by depth, top to bottom, left to right within a level.",

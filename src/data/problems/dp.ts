@@ -6,6 +6,7 @@ export const dp: Problem[] = [
     title: "Ways to Climb Stairs",
     pattern: "dp",
     difficulty: "easy",
+    leetcode: "climbing-stairs",
     brief: "Count paths up n steps taking 1 or 2 at a time.",
     statement:
       "You climb a staircase of n steps, moving up 1 or 2 steps at a time. Return how many distinct sequences of moves reach the top.",
@@ -94,6 +95,7 @@ def climb_ways(n: int) -> int:
     title: "Non-Adjacent Maximum Take",
     pattern: "dp",
     difficulty: "medium",
+    leetcode: "house-robber",
     brief: "Max sum picking values with no two adjacent.",
     statement:
       "Given non-negative values in a row, choose a subset with no two adjacent elements so the sum is maximised. Return the sum.",
@@ -187,6 +189,7 @@ def max_take(nums: list[int]) -> int:
     title: "Fewest Coins for Amount",
     pattern: "dp",
     difficulty: "medium",
+    leetcode: "coin-change",
     brief: "Minimum coins summing to a target, or -1.",
     statement:
       "Given coin denominations (unlimited supply) and an amount, return the fewest coins that sum exactly to it, or -1 if impossible.",

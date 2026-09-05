@@ -504,6 +504,47 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("the approach ladder reads worst → best and obeys the ledger (R1)", async () => {
+      const read = `
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        [...document.querySelectorAll('[role=tab]')]
+          .find(t => /approaches/i.test(t.innerText))?.click();
+        await wait(600);
+        const l = document.querySelector('[aria-label="approach ladder"]');
+        const cta = [...document.querySelectorAll('a')]
+          .find(a => /solve on leetcode/i.test(a.innerText));
+        return {
+          names: l ? [...l.querySelectorAll('b')].map(b => b.innerText) : [],
+          capped: l ? /still ahead of you/.test(l.innerText) : false,
+          cta: cta ? cta.href : null,
+          editor: !!document.querySelector('textarea'),
+        };
+      `
+      // never opened the journey: the whole ladder, ending on the best rung
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:single-number'); return 1`)
+      await page.goto(`${server.base}/#/p/arrays-hashing/single-number`)
+      const all = await page.run(read)
+      assert.ok(all.names.length >= 3, `expected several rungs, got ${all.names.length}`)
+      assert.equal(all.names[all.names.length - 1], "XOR", "the best rung should be last")
+      assert.equal(all.capped, false, "nothing should be held back before starting")
+      assert.equal(all.cta, "https://leetcode.com/problems/single-number/")
+      assert.equal(all.editor, false, "the problem page must not grow an editor")
+
+      // midway through the journey: only what has been earned
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:single-number', '3'); return 1`)
+      await page.goto(`${server.base}/#/p/arrays-hashing/single-number`)
+      const capped = await page.run(read)
+      assert.ok(
+        capped.names.length < all.names.length,
+        `the ledger did not cap the ladder: ${JSON.stringify(capped.names)}`
+      )
+      assert.equal(capped.capped, true, "no nudge back to the journey")
+      assert.equal(capped.names.includes("XOR"), false, "an unearned rung leaked")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {

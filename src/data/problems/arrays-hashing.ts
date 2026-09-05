@@ -6,6 +6,7 @@ export const arraysHashing: Problem[] = [
     title: "Pair With Target Sum",
     pattern: "arrays-hashing",
     difficulty: "easy",
+    leetcode: "two-sum",
     brief: "Find two indices whose values add up to a target.",
     statement:
       "Given an integer array nums and an integer target, return the indices of two distinct elements whose sum equals target. Assume exactly one such pair exists.",
@@ -136,6 +137,7 @@ export const arraysHashing: Problem[] = [
     title: "Top K Frequent Elements",
     pattern: "arrays-hashing",
     difficulty: "medium",
+    leetcode: "top-k-frequent-elements",
     brief: "Return the k values that appear most often.",
     statement:
       "Given an integer array nums and an integer k, return the k elements that occur most frequently. Order among the answers does not matter.",
@@ -221,6 +223,7 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     title: "Longest Consecutive Sequence",
     pattern: "arrays-hashing",
     difficulty: "medium",
+    leetcode: "longest-consecutive-sequence",
     brief: "Length of the longest run of consecutive integers, unsorted input.",
     statement:
       "Given an unsorted integer array, return the length of the longest sequence of consecutive integers present in it (order in the array does not matter). Target O(n) — sorting is the fallback, not the answer.",
@@ -315,6 +318,7 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     title: "Single Number",
     pattern: "arrays-hashing",
     difficulty: "easy",
+    leetcode: "single-number",
     brief:
       "Every value appears twice except one — find it in O(n) time and O(1) space.",
     statement:
