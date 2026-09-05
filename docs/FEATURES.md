@@ -146,6 +146,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | ⚄ new | Regenerates from the current preset. | same | shipped |
 | Custom input | Comma/space-separated integers (−999…999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
 | Keyboard | `space` play/pause, `→` step, `←` back, `r` restart — ignored inside inputs/textarea/select. | `use-journey.ts` | shipped (code) |
+| Test-case drawer (≥ lg) | A flask in the header toggles an 18 rem column between the stage and the reading column, holding the preset select, ⚄ new, the custom input and **apply**. It is a **column, not an overlay**: opening it narrows the stage rather than covering the data you are about to change. `inert` while closed so its fields leave the tab order at width 0; state is pref `drawer`. Below `lg` there is no room to push, so the same controls stay in the stage footer. | `journey-page.tsx`, `controls.tsx` `DataControls` | shipped (UI test at 1440 px: the closed drawer measures 0, opening it takes > 100 px off the stage, the open drawer measures > 200 px, its left edge is not over the stage, and the preset select is inside it) |
 
 ### 4.6 Code challenge (Two Sum act 6, Single Number act 6)
 
