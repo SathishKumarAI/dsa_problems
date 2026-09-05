@@ -41,6 +41,22 @@ test("problems: every Python block is a function; alternatives are worst → bes
   }
 })
 
+test("problems: every problem states its constraints, in our own words", () => {
+  for (const p of PROBLEMS) {
+    assert.ok(
+      p.constraints.length >= 2,
+      `${p.id}: at least two constraints — the bounds and what the input promises`
+    )
+    for (const c of p.constraints) {
+      assert.ok(c.trim().length > 0, `${p.id}: an empty constraint`)
+      assert.ok(
+        !/^constraints?:/i.test(c.trim()),
+        `${p.id}: "${c}" repeats the heading the UI already draws`
+      )
+    }
+  }
+})
+
 test("journeys: every revealed pattern id exists, and covers the journey's own pattern", () => {
   const patterns = new Set(PATTERNS.map((p) => p.id))
   for (const j of JOURNEYS) {

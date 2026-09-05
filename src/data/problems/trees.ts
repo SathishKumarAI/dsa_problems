@@ -9,6 +9,11 @@ export const trees: Problem[] = [
     brief: "How many levels deep does the tree go?",
     statement:
       "Given the root of a binary tree, return its maximum depth — the number of nodes on the longest root-to-leaf path. An empty tree has depth 0.",
+    constraints: [
+      "0 <= node count <= 10^4",
+      "-100 <= node value <= 100",
+      "an empty tree has depth 0",
+    ],
     examples: [{ input: "root = [3, 9, 20, null, null, 15, 7]", output: "3" }],
     hints: [
       "Express the answer for a node in terms of its children's answers.",
@@ -90,6 +95,12 @@ def max_depth(root) -> int:
     brief: "Is every node within the bounds its ancestors imply?",
     statement:
       "Given the root of a binary tree, decide whether it is a valid BST: every node in a left subtree is strictly less than its ancestor, every node in a right subtree strictly greater.",
+    constraints: [
+      "1 <= node count <= 10^4",
+      "-2^31 <= node value <= 2^31 - 1",
+      "every value in the left subtree must be strictly smaller than the node and every value on the right strictly larger — the bound is inherited, not local",
+      "the value range reaches the integer limits, so a sentinel of -infinity/+infinity must not be a plain int",
+    ],
     examples: [
       { input: "root = [5, 1, 8]", output: "true" },
       {
@@ -169,6 +180,11 @@ def max_depth(root) -> int:
     brief: "Node values grouped level by level.",
     statement:
       "Given the root of a binary tree, return its node values grouped by depth, top to bottom, left to right within a level.",
+    constraints: [
+      "0 <= node count <= 2000",
+      "-1000 <= node value <= 1000",
+      "each level is returned left to right, as its own list",
+    ],
     examples: [
       {
         input: "root = [3, 9, 20, null, null, 15, 7]",

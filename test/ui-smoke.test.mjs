@@ -473,6 +473,37 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("a problem states its constraints, and a corner case cites one (R2)", async () => {
+      await page.goto(`${server.base}/#/p/arrays-hashing/single-number`)
+      const page1 = await page.run(`
+        const c = document.querySelector('[aria-label=constraints]');
+        return {
+          found: !!c,
+          lines: c ? [...c.querySelectorAll('li')].map(l => l.innerText.trim()) : [],
+        };
+      `)
+      assert.ok(page1.found, "no constraints block on the problem page")
+      assert.ok(page1.lines.length >= 2, "expected at least two constraints")
+      assert.ok(
+        page1.lines.some((l) => /nums\.length/.test(l)),
+        `constraints do not mention the input's bounds: ${JSON.stringify(page1.lines)}`
+      )
+
+      await page.goto(`${server.base}/#/journey/single-number?act=story`)
+      const cited = await page.run(`
+        const li = [...document.querySelectorAll('[aria-label="corner cases"] > li')];
+        return li.map(l => l.innerText.split(String.fromCharCode(10))
+          .filter(x => x.startsWith('from')).length);
+      `)
+      assert.ok(cited.length >= 3, "expected at least three corner cases")
+      assert.deepEqual(
+        cited.filter((n) => n === 0),
+        [],
+        "a corner case does not cite the constraint it comes from"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {

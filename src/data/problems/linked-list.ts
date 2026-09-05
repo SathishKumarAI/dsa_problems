@@ -9,6 +9,11 @@ export const linkedList: Problem[] = [
     brief: "Flip all next-pointers in place.",
     statement:
       "Given the head of a singly linked list, reverse it in place and return the new head.",
+    constraints: [
+      "0 <= list length <= 5000",
+      "-5000 <= node value <= 5000",
+      "an empty list is legal input",
+    ],
     examples: [{ input: "1 → 2 → 3 → ∅", output: "3 → 2 → 1 → ∅" }],
     hints: [
       "You only ever need three pointers: previous, current, and a saved next.",
@@ -90,6 +95,12 @@ def reverse_list(head: Node | None) -> Node | None:
     brief: "Does the list loop back on itself?",
     statement:
       "Given the head of a linked list, return true if following next-pointers ever revisits a node (a cycle), false if the walk reaches the end.",
+    constraints: [
+      "0 <= list length <= 10^4",
+      "-10^5 <= node value <= 10^5",
+      "the cycle, if any, is entered from some node's next pointer",
+      "O(1) extra space is the point — a visited set solves it and misses the lesson",
+    ],
     examples: [
       { input: "1 → 2 → 3 → (back to 2)", output: "true" },
       { input: "1 → 2 → ∅", output: "false" },
@@ -154,6 +165,12 @@ def reverse_list(head: Node | None) -> Node | None:
     brief: "Splice two sorted lists into one sorted list.",
     statement:
       "Given the heads of two sorted linked lists, merge them into one sorted list by splicing existing nodes (no new value nodes) and return its head.",
+    constraints: [
+      "0 <= each list length <= 50",
+      "-100 <= node value <= 100",
+      "both lists are sorted ascending",
+      "either list may be empty",
+    ],
     examples: [
       { input: "a = 1 → 3 → 5, b = 2 → 4", output: "1 → 2 → 3 → 4 → 5" },
     ],

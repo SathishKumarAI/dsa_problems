@@ -9,6 +9,12 @@ export const binarySearch: Problem[] = [
     brief: "Index of target in a sorted array, or -1.",
     statement:
       "Given a sorted integer array and a target, return the target's index or -1 if absent. Must run in O(log n).",
+    constraints: [
+      "1 <= nums.length <= 10^4",
+      "-10^4 <= nums[i], target <= 10^4",
+      "nums is sorted ascending and every value is distinct",
+      "return -1 when the target is absent",
+    ],
     examples: [
       { input: "nums = [-3, 0, 4, 9, 12], target = 9", output: "3" },
       { input: "nums = [-3, 0, 4, 9, 12], target = 2", output: "-1" },
@@ -106,6 +112,12 @@ export const binarySearch: Problem[] = [
     brief: "Find the smallest value after an unknown rotation.",
     statement:
       "A sorted array of distinct values was rotated at an unknown pivot (e.g. [4,5,6,1,2,3]). Return its minimum element in O(log n).",
+    constraints: [
+      "1 <= nums.length <= 5000",
+      "-5000 <= nums[i] <= 5000",
+      "every value is distinct",
+      "nums is a sorted array rotated between 1 and n times — a rotation of n leaves it sorted",
+    ],
     examples: [
       { input: "nums = [4, 5, 6, 1, 2, 3]", output: "1" },
       {
@@ -218,6 +230,12 @@ export const binarySearch: Problem[] = [
     brief: "Binary search the answer, not the array.",
     statement:
       "Given piles of bananas and h hours, choose the smallest integer speed k (bananas/hour) so all piles can be finished within h hours. Each hour you eat from one pile only; a pile of p bananas takes ceil(p / k) hours.",
+    constraints: [
+      "1 <= piles.length <= 10^4",
+      "piles.length <= h <= 10^9",
+      "1 <= piles[i] <= 10^9",
+      "one pile per hour at most: an hour spent on a pile smaller than the speed is still a whole hour",
+    ],
     examples: [{ input: "piles = [3, 6, 7, 11], h = 8", output: "4" }],
     hints: [
       'The check "can speed k finish in h hours?" is monotonic: if k works, every faster speed works.',

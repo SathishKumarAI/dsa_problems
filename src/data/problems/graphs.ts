@@ -9,6 +9,11 @@ export const graphs: Problem[] = [
     brief: "Connected groups of land cells in a grid.",
     statement:
       "Given a grid of '1' (land) and '0' (water), count the islands — groups of land cells connected horizontally or vertically.",
+    constraints: [
+      "1 <= grid.length, grid[0].length <= 300",
+      "each cell is 0 (water) or 1 (land)",
+      "only the four orthogonal neighbours connect — diagonals do not",
+    ],
     examples: [{ input: "grid = [[1,1,0],[0,1,0],[0,0,1]]", output: "2" }],
     hints: [
       "Every unvisited land cell you encounter starts exactly one new island.",
@@ -128,6 +133,12 @@ def count_islands(grid: list[list[int]]) -> int:
     brief: "Order tasks so every prerequisite comes first.",
     statement:
       'Given numCourses and prerequisite pairs [a, b] meaning "b before a", return any valid order to take all courses, or [] if impossible (a cycle exists).',
+    constraints: [
+      "1 <= numCourses <= 2000",
+      "0 <= prerequisites.length <= 5000",
+      "every pair is [course, prerequisite] with distinct entries",
+      "a cycle means no valid order exists; return an empty list",
+    ],
     examples: [
       {
         input: "numCourses = 4, prereqs = [[1,0],[2,0],[3,1],[3,2]]",
@@ -219,6 +230,12 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
     brief: "Minutes for rot to spread to every fresh cell.",
     statement:
       "In a grid, 0 = empty, 1 = fresh, 2 = rotten. Every minute, fresh cells adjacent to a rotten cell rot. Return the minutes until nothing fresh remains, or -1 if some cell can never rot.",
+    constraints: [
+      "1 <= grid.length, grid[0].length <= 10",
+      "each cell is 0 (empty), 1 (fresh) or 2 (rotten)",
+      "rot spreads to the four orthogonal neighbours, one step per minute",
+      "return -1 if any fresh fruit can never be reached",
+    ],
     examples: [
       { input: "grid = [[2,1,1],[1,1,0],[0,1,1]]", output: "4" },
       {

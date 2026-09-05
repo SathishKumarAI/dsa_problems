@@ -221,6 +221,12 @@ export function EdgeCaseCard({ edge }: { edge: EdgeCase }) {
         </span>
       </div>
       <p className="text-body">{edge.why}</p>
+      {edge.constraint && (
+        <p className="text-ui text-muted-foreground">
+          <span className="mr-2 font-mono text-meta text-teal">from</span>
+          <span className="font-mono">{edge.constraint}</span>
+        </p>
+      )}
       <p className="text-body text-muted-foreground">
         <span className="mr-2 font-mono text-meta text-teal">think</span>
         {edge.think}
@@ -267,6 +273,12 @@ export function EdgeCaseList({
               </span>
             </div>
             <p className="text-muted-foreground">{e.why}</p>
+            {e.constraint && (
+              <p className="text-ui text-muted-foreground">
+                <span className="mr-2 font-mono text-xs text-teal">from</span>
+                <span className="font-mono">{e.constraint}</span>
+              </p>
+            )}
             <p className="text-muted-foreground">
               <span className="mr-2 font-mono text-xs text-teal">think</span>
               {e.think}
