@@ -170,7 +170,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   return (
     <div className="mx-auto flex w-full max-w-stage flex-col gap-4 lg:h-full">
       {/* header */}
-      <header className="flex flex-col gap-3">
+      <header className="flex flex-col gap-2 lg:gap-3">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           {problem && pattern ? (
             <a
@@ -197,12 +197,13 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           <Button
             size="sm"
             variant="ghost"
-            className="text-muted-foreground"
+            className="min-h-11 text-muted-foreground lg:min-h-8"
             onClick={j.restart}
             title="re-lock every act and start again"
+            aria-label="restart journey"
           >
             <RotateCcwIcon data-icon="inline-start" />
-            restart journey
+            <span className="hidden sm:inline">restart journey</span>
           </Button>
         </div>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
@@ -214,7 +215,9 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               LeetCode {journey.leetcode}
             </span>
           )}
-          <p className="text-ui text-muted-foreground">{journey.subtitle}</p>
+          <p className="hidden text-ui text-muted-foreground md:block">
+            {journey.subtitle}
+          </p>
         </div>
         <ActStepper
           journey={journey}

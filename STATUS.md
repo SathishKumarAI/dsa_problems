@@ -13,10 +13,11 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. UX-audit **batch 4**: mobile as a designed layout — U2 (378 px of chrome before the stage),
-   U14 (the stepper wraps to four rows), U11 (28 px touch targets).
-2. Then U9 (the visualizer's vertical space) and U13 (a home page that knows you).
-   Batches 1–3 shipped 2026-09-05; `docs/DESIGN.md` now holds the tokens.
+1. UX-audit **batch 5**: U9 (the visualizer ends at ~600 px of a 1000 px viewport) and U13 (home
+   looks identical whether you have finished nothing or everything).
+2. Then **P1** in `docs/PROBLEMS.md`: the reference-card rebuild (constraints, hints, approaches
+   worst→best in three languages). The learner codes on LeetCode; this app explains.
+   Batches 1–4 shipped 2026-09-05; `docs/DESIGN.md` holds the tokens.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

@@ -73,9 +73,9 @@ Measured, not eyeballed — method, evidence and the reasoning behind each fix a
 | U4 | ☑ Fixed 2026-09-05 — `accent-primary` on the range, the app's `Checkbox`, and a `Segmented` radiogroup for motion and code tab so all four values are visible at once. | | S | — |
 | U6 | ☑ Fixed 2026-09-05 — six role-named steps in `@theme` (`text-meta` … `text-display`); every sentence is now ≥ 14 px, the reading column 16/26 and the narration 19/30. A UI test fails if prose drops below 14 px. | | M | — |
 | U12 | ☑ Fixed 2026-09-05 — [`DESIGN.md`](DESIGN.md): the type scale, the 4 px grid, the four token radii, three container widths (`max-w-reading` / `max-w-page` / `max-w-stage`), colour roles, motion envelope and target sizes. | | S | — |
-| U2 | ☐ A phone spends **378 px of 844** on chrome before the stage (stepper alone 214 px). | compact `act 05 / 07 ▾` + sheet below `lg`; XP and restart into an overflow | M | P1 |
-| U14 | ☐ The stepper wraps to four rows at 390 px and is the only wayfinding. | compact form below `xl`; act number in the stage header | S | P1 |
-| U11 | ☐ Transport buttons are 28 px and the timeline track 6 px — AA-legal, below the 44 px touch comfort. | `h-11 w-11` and a 12 px track below `lg` | S | P2 |
+| U2 | ☑ Fixed 2026-09-05 — header **378 → 170 px**, stage top **463 → 271 px**: the stepper is one row below `xl` opening the ribbon in a bottom sheet, the subtitle hides below `md`, and "restart journey" becomes its icon below `sm`. | | M | — |
+| U14 | ☑ Fixed 2026-09-05 — `act 05 / 07 · One-Pass Hash ▾` opens the full ribbon (stacked, with ↓ connectors) in a sheet; a lock icon shows when acts remain. | | S | — |
+| U11 | ☑ Fixed 2026-09-05 — below `lg` the transport, the act pill, the preset select, the custom input and **apply** are all ≥ 44 px, and the timeline track is 12 px. A mouse keeps the compact row. | | S | — |
 | U9 | ☐ The visualizer ends at ~600 px of a 1000 px viewport; bars get 224 px. | viewport-height inset, `flex-1` stage, picker as a segmented row | M | P2 |
 | U13 | ☐ Home looks identical whether you have finished nothing or everything. | a "continue" card deep-linking to `?act=` | S | P2 |
 

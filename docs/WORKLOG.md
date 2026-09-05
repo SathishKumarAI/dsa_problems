@@ -4,6 +4,26 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — UX batch 4: mobile as a designed layout (U2, U14, U11)
+
+Branch `feat/mobile-layout`.
+
+The phone was the desktop layout stacked: **378 px of an 844 px screen** spent before the stage, the
+act stepper alone taking 214 px as seven chips wrapped into four rows.
+
+- **U14** — the stepper has two shapes now. Above `xl` it is the ribbon it always was. Below, it is
+  one row — `act 05 / 07 · One-Pass Hash ▾`, with a lock icon while acts remain — that opens the
+  full ribbon in a bottom sheet, stacked with ↓ connectors. Same component, same unlock policy.
+- **U2** — with the stepper compact, the subtitle hides below `md` and "restart journey" drops to its
+  icon below `sm`. Header **378 → 170 px**; the stage starts at **271 px** instead of 463.
+- **U11** — below `lg` the transport buttons, the act pill, the preset select, the custom input and
+  **apply** are all at least 44 px, and the timeline track is 12 px instead of 6. A mouse keeps the
+  compact row — the sizes are viewport-conditional, not a blanket increase.
+
+Evidence: `npm run check` 43/43. `npm run test:ui` **29/29** (was 28) — the new check resizes to
+390 × 844 and asserts the header is under 220 px, the stage starts above 320 px, every transport
+control is ≥ 44 px, the pill opens a sheet listing all seven acts, and nothing scrolls sideways.
+
 ## 2026-09-05 — UX batch 3: a type scale, and a system written down (U6, U12)
 
 Branch `feat/type-scale`.
