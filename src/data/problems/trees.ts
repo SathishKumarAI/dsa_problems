@@ -21,6 +21,8 @@ export const trees: Problem[] = [
       "depth(node) = 1 + max(depth(left), depth(right)).",
       "The base case — depth(None) = 0 — is the entire termination logic.",
     ],
+    whyNow:
+      "Both iterative versions manage a container by hand to do what the call stack already does. The recursion is three lines and says exactly what depth means.",
     approach:
       "Pure structural recursion. A missing node contributes 0; any real node contributes 1 plus the deeper of its two subtrees. The recursion visits every node once. (An iterative BFS counting levels gives the same answer if recursion depth is a concern.)",
     complexity: { time: "O(n)", space: "O(h) recursion stack" },
@@ -71,6 +73,8 @@ def max_depth(root) -> int:
       },
       {
         name: "Iterative DFS",
+        whyNow:
+          "Counting levels means holding a whole level in memory, which is the widest part of the tree. A stack of node-and-depth pairs carries one path at a time instead.",
         summary:
           "Explicit stack of (node, depth) pairs — recursion without the call stack.",
         complexity: { time: "O(n)", space: "O(n)" },
@@ -116,6 +120,8 @@ def max_depth(root) -> int:
       "Pass down the (low, high) interval each node must fall inside.",
       "Going left tightens the upper bound to the node's value; going right tightens the lower bound.",
     ],
+    whyNow:
+      "The in-order walk is correct, but it only ever compares neighbours, so the rule looks like a coincidence. Carrying an allowed interval down the tree states the real invariant: a value is bounded by every ancestor, not just by its predecessor.",
     approach:
       "Recurse with an allowed open interval, initially (-∞, +∞). A node is valid if its value lies inside its interval and both subtrees validate against tightened intervals: left gets (low, node.val), right gets (node.val, high). This encodes every ancestor constraint at once — the classic wrong answer (compare each node with its direct children only) accepts trees where a deep node violates a distant ancestor.",
     complexity: { time: "O(n)", space: "O(h)" },
@@ -199,6 +205,8 @@ def max_depth(root) -> int:
       "A queue holds the frontier. How do you know where one level ends?",
       "Snapshot the queue's length before the loop — that many pops is exactly one level.",
     ],
+    whyNow:
+      "Depth-first assembly happens to produce the right order - a fact about pre-order, not about levels, and it leaves you trusting an accident. A queue processes exactly one level per round, so the shape of the walk matches the shape of the answer.",
     approach:
       "BFS with a queue seeded with the root. Each round, record the current queue length k, pop exactly k nodes (that's one full level), collect their values, and push their children — which form the next level. The length snapshot is what turns plain BFS into level-grouped BFS.",
     complexity: { time: "O(n)", space: "O(w) — widest level" },

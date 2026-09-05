@@ -33,6 +33,8 @@ export const slidingWindow: Problem[] = [
       "One pass: carry the running minimum and the running best profit.",
       "Selling before buying is impossible by construction — the minimum you compare against always comes from earlier days.",
     ],
+    whyNow:
+      "Every buy/sell pair asks the same question over and over. Walking once while remembering the cheapest day so far answers it with two numbers and no nested loop.",
     approach:
       "Scan left to right holding two numbers: the lowest price seen so far and the best profit so far. Each day, profit-if-sold-today is price minus that minimum; update both trackers. This is a shrunk sliding window: the left edge is always the historical minimum.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -118,6 +120,8 @@ export const slidingWindow: Problem[] = [
       "Extend right one character at a time. When the new character breaks the rule, what must leave?",
       "Shrink from the left until the duplicate is gone. A set (or last-seen index map) tells you when you're clean.",
     ],
+    whyNow:
+      "The jump version needs a table of last positions before it can move at all. A window plus a set of what is inside it needs only the characters in play and one rule - grow right, shrink left on a repeat - which is why this is the one to remember.",
     approach:
       "Two indices bound a window; a set holds the characters inside it. Push the right edge forward one character per step. If the incoming character already sits in the set, pop characters from the left until it doesn't. The window is valid after every step, so tracking its maximum size answers the problem. Each character enters and leaves the window at most once — linear time.",
     complexity: { time: "O(n)", space: "O(min(n, alphabet))" },
@@ -198,6 +202,8 @@ export const slidingWindow: Problem[] = [
       },
       {
         name: "Last-seen jump",
+        whyNow:
+          "Testing every substring re-reads characters it has already checked. Remembering where each character last appeared lets the left edge jump straight past a repeat instead of rediscovering it.",
         summary:
           "Refinement of the window: remember each character's last index and jump the left edge straight past a duplicate instead of shrinking one step at a time. Same O(n), fewer operations per character.",
         complexity: { time: "O(n)", space: "O(min(n, alphabet))" },
@@ -241,6 +247,8 @@ export const slidingWindow: Problem[] = [
       "While covered, shrink from the left to find the tightest version before growing again.",
       'Track "how many required characters are fully satisfied" as one integer so cover-checks are O(1), not a map comparison.',
     ],
+    whyNow:
+      "Comparing counters for every candidate substring re-counts characters that never changed. A window updated one character at a time keeps a single count of how many are satisfied and reads the answer off it.",
     approach:
       "Count the characters t needs. Slide the right edge, decrementing needs; when a character's need hits zero it is satisfied, tracked by a single counter. Once all are satisfied, advance the left edge while coverage holds, updating the best window each step; the first left-move that breaks coverage resumes right-expansion. Every index enters and leaves the window once.",
     complexity: { time: "O(|s| + |t|)", space: "O(alphabet)" },

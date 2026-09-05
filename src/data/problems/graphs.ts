@@ -21,6 +21,8 @@ export const graphs: Problem[] = [
       "Flood-fill from it (DFS or BFS) and mark everything reachable as visited.",
       "Sinking visited land in place ('1' → '0') doubles as the visited set.",
     ],
+    whyNow:
+      "Union-Find carries a parent array and a not-quite-constant factor for what is really one pass over a grid. Sinking each island as it is found is the same linear work with nothing to maintain.",
     approach:
       "Scan every cell. On finding land, increment the island count and flood-fill from it, sinking each connected land cell so it is never counted again. Each cell is touched a constant number of times. The grid is an implicit graph: cells are vertices, 4-adjacency is the edge set.",
     complexity: {
@@ -97,6 +99,8 @@ def count_islands(grid: list[list[int]]) -> int:
       },
       {
         name: "Union-Find",
+        whyNow:
+          "Flood fill answers this grid, but the moment cells arrive one at a time there is nothing to fill from. Union-Find merges neighbours as they appear and counts roots at the end.",
         summary:
           "Union every land cell with its right/down land neighbours; islands = distinct roots among land cells. Overkill here, essential when the grid mutates (add-land queries).",
         complexity: { time: "O(cells · α)", space: "O(cells)" },
@@ -153,6 +157,8 @@ def count_islands(grid: list[list[int]]) -> int:
       "Track in-degree (unmet prereq count) per course; start with all zeros in a queue.",
       "Taking a course decrements its dependents' in-degrees — new zeros join the queue. Fewer than numCourses processed ⇒ cycle.",
     ],
+    whyNow:
+      "Post-order produces a valid schedule, but it reveals a cycle only through a three-colour trick and hands the answer back reversed. Kahn's queue builds the order forwards and detects the cycle by counting what it could not place.",
     approach:
       "Kahn's algorithm. Build the adjacency list and in-degree table. Seed a queue with all zero-in-degree courses. Repeatedly take one, append it to the order, and decrement each dependent; any dependent hitting zero becomes available. If the final order is shorter than numCourses, some courses never freed up — a cycle.",
     complexity: { time: "O(V + E)", space: "O(V + E)" },
@@ -252,6 +258,8 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
       "Seed the queue with every initially rotten cell at time 0.",
       "BFS level = one minute. Count fresh cells up front to detect the unreachable case.",
     ],
+    whyNow:
+      "Rescanning the whole grid every minute re-reads cells that will never change again. Seeding a queue with every rotten cell visits each cell once, and the minutes fall out of the level count.",
     approach:
       "Multi-source BFS: enqueue every rotten cell as a starting point and count fresh cells. Process the queue level by level; each level is one minute, rotting fresh neighbours and enqueueing them. When the queue drains, either the fresh count hit zero (answer = minutes elapsed) or some cells were never reached (-1). Seeding multiple sources is what models simultaneous spread.",
     complexity: { time: "O(rows × cols)", space: "O(rows × cols)" },

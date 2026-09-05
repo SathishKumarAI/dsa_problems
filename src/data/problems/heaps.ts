@@ -29,6 +29,8 @@ export const heaps: Problem[] = [
       "Keep only the k largest values. Which structure evicts its smallest in O(log k)?",
       "A min-heap of size k: its root IS the kth largest.",
     ],
+    whyNow:
+      "Shifting is still linear per add, and nothing here needs the full order - only the kth value. A min-heap of size k keeps that value at the root and costs a logarithm per add.",
     approach:
       "Maintain a min-heap holding exactly the k largest values seen. On add, push the new value; if the heap grows past k, pop the minimum (which by definition is no longer in the top k). The root is then the kth largest at all times. Keeping the heap small (k, not n) is the entire point.",
     complexity: { time: "O(log k) per add", space: "O(k)" },
@@ -83,6 +85,8 @@ class KthLargest:
       },
       {
         name: "Sorted insert (bisect)",
+        whyNow:
+          "Re-sorting on every add redoes work that was already in order. Inserting into a sorted list keeps the order for the price of shifting elements.",
         summary:
           "Keep the list sorted and insert with bisect. Insertion is O(n) due to shifting, but far better constants than re-sorting; still loses to the heap asymptotically.",
         complexity: { time: "O(n) per add", space: "O(n)" },
@@ -125,6 +129,8 @@ class KthLargest:
       "Same shape as kth-largest: keep the k best in a bounded heap.",
       "Python's heapq is a min-heap — store negated distance to evict the farthest of the kept k.",
     ],
+    whyNow:
+      "Quickselect is expected linear, but it needs every point in memory at once and degrades on unlucky pivots. A heap bounded at k streams the input and gives the same answer at a cost you can promise.",
     approach:
       "Keep a heap of the k closest points seen so far, keyed by negative squared distance so the worst kept point sits at the root. For each point beyond the first k, compare against that root: closer means replace (one pushpop), farther means skip. n log k beats sorting when k is small.",
     complexity: { time: "O(n log k)", space: "O(k)" },
@@ -169,6 +175,8 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
       },
       {
         name: "Quickselect",
+        whyNow:
+          "Sorting orders all n points when only k of them are wanted. Partitioning around a pivot puts the k closest in front without ordering any of them.",
         summary:
           "Partition around a random pivot distance until the first k positions hold the k closest (unordered). Expected linear — the asymptotic winner, with the worst quadratic tail and the most code.",
         complexity: { time: "O(n) expected", space: "O(1) in-place" },
@@ -225,6 +233,8 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
       "A max-heap of remaining counts gives you that task; a queue holds cooling tasks with their release times.",
       "Time advances by 1 per unit; a task leaving the heap re-enters via the cooldown queue.",
     ],
+    whyNow:
+      "The formula gives the length in one line but never says what actually runs when, and it has to special-case the tasks tied for most frequent. Simulating with a max-heap produces the schedule itself, which is what the follow-up asks for.",
     approach:
       "Max-heap of remaining counts (negated for Python). Each tick: pop the most frequent available task, run it, and if copies remain, park it in a queue stamped with when its cooldown ends. Move queue heads back into the heap as their timestamps expire. When both structures are empty, the clock is the answer. Running the most frequent task first is safe because it is the one that forces idles if postponed.",
     complexity: { time: "O(total ticks × log 26)", space: "O(26)" },

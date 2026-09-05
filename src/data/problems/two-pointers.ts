@@ -28,6 +28,8 @@ export const twoPointers: Problem[] = [
       "Put one pointer at each end. What does the current sum tell you about which pointer must move?",
       "Sum too small → only moving the left pointer right can help. Too big → move the right pointer left.",
     ],
+    whyNow:
+      "The map spends O(n) memory to remember what the ordering already tells you. Two pointers read the same information off the array itself, in constant space.",
     approach:
       "Start i at the front, j at the back. If nums[i] + nums[j] is too small, no pair using nums[i] can work with anything left of j (those are smaller still), so advance i. If too big, retreat j by the mirror argument. Each step permanently discards one element, so the walk terminates in n steps.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -84,6 +86,8 @@ export const twoPointers: Problem[] = [
       },
       {
         name: "Hash map",
+        whyNow:
+          "The double loop asks whether a partner exists by trying every candidate. One pass with a map answers it in a single lookup - but this is the answer for an unsorted array, and this array is sorted.",
         summary:
           "The unsorted-array solution still works — but it spends O(n) memory to ignore information the input already gives you for free.",
         complexity: { time: "O(n)", space: "O(n)" },
@@ -124,6 +128,8 @@ export const twoPointers: Problem[] = [
       "Shrinking width is always a loss unless the limiting side improves. Which pointer is pointless to move?",
       "Moving the taller side can never help: width drops and the short side still caps the height. Always move the shorter one.",
     ],
+    whyNow:
+      "Measuring every pair is n squared comparisons for one number. Moving the pointer at the shorter line inward discards only the pairs that line already capped, so a single sweep is enough.",
     approach:
       "Two pointers at the extremes. Record the area, then move the pointer at the shorter line inward — keeping it could only pair it with narrower widths while it stays the cap. This greedy discard is safe because every skipped pair is provably no better than one already measured.",
     complexity: { time: "O(n)", space: "O(1)" },
