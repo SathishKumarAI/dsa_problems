@@ -9,9 +9,7 @@ export const trees: Problem[] = [
     brief: "How many levels deep does the tree go?",
     statement:
       "Given the root of a binary tree, return its maximum depth — the number of nodes on the longest root-to-leaf path. An empty tree has depth 0.",
-    examples: [
-      { input: "root = [3, 9, 20, null, null, 15, 7]", output: "3" },
-    ],
+    examples: [{ input: "root = [3, 9, 20, null, null, 15, 7]", output: "3" }],
     hints: [
       "Express the answer for a node in terms of its children's answers.",
       "depth(node) = 1 + max(depth(left), depth(right)).",
@@ -25,10 +23,22 @@ export const trees: Problem[] = [
         return 0
     return 1 + max(max_depth(root.left), max_depth(root.right))`,
     walkthrough: [
-      { text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7", caption: "The example tree. Ask each node: how deep is your subtree?" },
-      { text: "depth(9)  = 1 + max(0, 0) = 1\ndepth(15) = 1 + max(0, 0) = 1\ndepth(7)  = 1 + max(0, 0) = 1", caption: "Leaves: both children are None (depth 0)." },
-      { text: "depth(20) = 1 + max(depth(15), depth(7))\n          = 1 + max(1, 1) = 2", caption: "Internal node combines its children's answers." },
-      { text: "depth(3) = 1 + max(depth(9), depth(20))\n         = 1 + max(1, 2) = 3", caption: "Root: answer is 3. Every node computed exactly once." },
+      {
+        text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7",
+        caption: "The example tree. Ask each node: how deep is your subtree?",
+      },
+      {
+        text: "depth(9)  = 1 + max(0, 0) = 1\ndepth(15) = 1 + max(0, 0) = 1\ndepth(7)  = 1 + max(0, 0) = 1",
+        caption: "Leaves: both children are None (depth 0).",
+      },
+      {
+        text: "depth(20) = 1 + max(depth(15), depth(7))\n          = 1 + max(1, 1) = 2",
+        caption: "Internal node combines its children's answers.",
+      },
+      {
+        text: "depth(3) = 1 + max(depth(9), depth(20))\n         = 1 + max(1, 2) = 3",
+        caption: "Root: answer is 3. Every node computed exactly once.",
+      },
     ],
     alternatives: [
       {
@@ -55,7 +65,8 @@ def max_depth(root) -> int:
       },
       {
         name: "Iterative DFS",
-        summary: "Explicit stack of (node, depth) pairs — recursion without the call stack.",
+        summary:
+          "Explicit stack of (node, depth) pairs — recursion without the call stack.",
         complexity: { time: "O(n)", space: "O(n)" },
         python: `def max_depth(root) -> int:
     best = 0
@@ -81,7 +92,11 @@ def max_depth(root) -> int:
       "Given the root of a binary tree, decide whether it is a valid BST: every node in a left subtree is strictly less than its ancestor, every node in a right subtree strictly greater.",
     examples: [
       { input: "root = [5, 1, 8]", output: "true" },
-      { input: "root = [5, 1, 8, null, null, 6, 4]", output: "false", note: "4 sits in 5's right subtree but 4 < 5." },
+      {
+        input: "root = [5, 1, 8, null, null, 6, 4]",
+        output: "false",
+        note: "4 sits in 5's right subtree but 4 < 5.",
+      },
     ],
     hints: [
       "Checking only child vs parent misses deep violations — a grandchild can break a grandparent's rule.",
@@ -102,10 +117,25 @@ def max_depth(root) -> int:
 
     return valid(root, float("-inf"), float("inf"))`,
     walkthrough: [
-      { text: "        5 (-∞, +∞)\n       / \\\n      1   8\n         / \\\n        6   4", caption: "Each node must fall inside an interval inherited from its ancestors." },
-      { text: "1: interval (-∞, 5)   ✓\n8: interval (5, +∞)   ✓", caption: "Children of 5: left tightens the upper bound, right the lower." },
-      { text: "6: interval (5, 8)    ✓\n4: interval (5, 8)    ✗   4 ≤ 5", caption: "4 satisfies its parent 8, but violates ancestor 5 — intervals catch it." },
-      { text: "parent-only check:  4 < 8  ✓  (wrong: accepts)\ninterval check:     4 ∉ (5, 8)  ✗  (correct: rejects)", caption: "Why bounds beat local comparisons." },
+      {
+        text: "        5 (-∞, +∞)\n       / \\\n      1   8\n         / \\\n        6   4",
+        caption:
+          "Each node must fall inside an interval inherited from its ancestors.",
+      },
+      {
+        text: "1: interval (-∞, 5)   ✓\n8: interval (5, +∞)   ✓",
+        caption:
+          "Children of 5: left tightens the upper bound, right the lower.",
+      },
+      {
+        text: "6: interval (5, 8)    ✓\n4: interval (5, 8)    ✗   4 ≤ 5",
+        caption:
+          "4 satisfies its parent 8, but violates ancestor 5 — intervals catch it.",
+      },
+      {
+        text: "parent-only check:  4 < 8  ✓  (wrong: accepts)\ninterval check:     4 ∉ (5, 8)  ✗  (correct: rejects)",
+        caption: "Why bounds beat local comparisons.",
+      },
     ],
     alternatives: [
       {
@@ -140,7 +170,10 @@ def max_depth(root) -> int:
     statement:
       "Given the root of a binary tree, return its node values grouped by depth, top to bottom, left to right within a level.",
     examples: [
-      { input: "root = [3, 9, 20, null, null, 15, 7]", output: "[[3], [9, 20], [15, 7]]" },
+      {
+        input: "root = [3, 9, 20, null, null, 15, 7]",
+        output: "[[3], [9, 20], [15, 7]]",
+      },
     ],
     hints: [
       "Breadth-first search visits nodes in exactly this order.",
@@ -169,10 +202,22 @@ def level_order(root) -> list[list[int]]:
         out.append(level)
     return out`,
     walkthrough: [
-      { text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7\n\nqueue: [3]", caption: "Seed the queue with the root." },
-      { text: "len(queue) = 1 — pop 1 node\n\nvisit 3, push 9, 20\nout: [[3]]\nqueue: [9, 20]", caption: "Round 1: the snapshot (1) bounds the level." },
-      { text: "len(queue) = 2 — pop 2 nodes\n\nvisit 9 (no children), visit 20, push 15, 7\nout: [[3], [9, 20]]\nqueue: [15, 7]", caption: "Round 2: children pushed now belong to the NEXT round." },
-      { text: "len(queue) = 2 — pop 2 nodes\n\nvisit 15, visit 7\nout: [[3], [9, 20], [15, 7]]\nqueue: []", caption: "Round 3: queue drains — done." },
+      {
+        text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7\n\nqueue: [3]",
+        caption: "Seed the queue with the root.",
+      },
+      {
+        text: "len(queue) = 1 — pop 1 node\n\nvisit 3, push 9, 20\nout: [[3]]\nqueue: [9, 20]",
+        caption: "Round 1: the snapshot (1) bounds the level.",
+      },
+      {
+        text: "len(queue) = 2 — pop 2 nodes\n\nvisit 9 (no children), visit 20, push 15, 7\nout: [[3], [9, 20]]\nqueue: [15, 7]",
+        caption: "Round 2: children pushed now belong to the NEXT round.",
+      },
+      {
+        text: "len(queue) = 2 — pop 2 nodes\n\nvisit 15, visit 7\nout: [[3], [9, 20], [15, 7]]\nqueue: []",
+        caption: "Round 3: queue drains — done.",
+      },
     ],
     alternatives: [
       {

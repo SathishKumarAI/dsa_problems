@@ -10,7 +10,11 @@ export const twoPointers: Problem[] = [
     statement:
       "Given an array sorted in non-decreasing order and a target, return the indices of two distinct elements that sum to target, using constant extra space. Assume exactly one answer exists.",
     examples: [
-      { input: "nums = [1, 3, 6, 9], target = 12", output: "[1, 3]", note: "3 + 9 = 12." },
+      {
+        input: "nums = [1, 3, 6, 9], target = 12",
+        output: "[1, 3]",
+        note: "3 + 9 = 12.",
+      },
     ],
     hints: [
       "The hash-map trick works but spends O(n) memory. What does sortedness buy you?",
@@ -32,10 +36,31 @@ export const twoPointers: Problem[] = [
             j -= 1
     return []`,
     walkthrough: [
-      { cells: { values: [1, 3, 6, 9], labels: { 0: "i", 3: "j" } }, caption: "Target 12. Pointers at both ends." },
-      { cells: { values: [1, 3, 6, 9], marks: { 0: "compare", 3: "compare" }, labels: { 0: "i", 3: "j" } }, caption: "1 + 9 = 10 < 12. Nothing left of j can rescue 1 — advance i." },
-      { cells: { values: [1, 3, 6, 9], marks: { 0: "done", 1: "compare", 3: "compare" }, labels: { 1: "i", 3: "j" } }, caption: "3 + 9 = 12 — hit. Return [1, 3]." },
-      { cells: { values: [1, 3, 6, 9], marks: { 1: "focus", 3: "focus" } }, caption: "Each step throws away one element for good: O(n), O(1) space." },
+      {
+        cells: { values: [1, 3, 6, 9], labels: { 0: "i", 3: "j" } },
+        caption: "Target 12. Pointers at both ends.",
+      },
+      {
+        cells: {
+          values: [1, 3, 6, 9],
+          marks: { 0: "compare", 3: "compare" },
+          labels: { 0: "i", 3: "j" },
+        },
+        caption: "1 + 9 = 10 < 12. Nothing left of j can rescue 1 — advance i.",
+      },
+      {
+        cells: {
+          values: [1, 3, 6, 9],
+          marks: { 0: "done", 1: "compare", 3: "compare" },
+          labels: { 1: "i", 3: "j" },
+        },
+        caption: "3 + 9 = 12 — hit. Return [1, 3].",
+      },
+      {
+        cells: { values: [1, 3, 6, 9], marks: { 1: "focus", 3: "focus" } },
+        caption:
+          "Each step throws away one element for good: O(n), O(1) space.",
+      },
     ],
     alternatives: [
       {
@@ -73,7 +98,11 @@ export const twoPointers: Problem[] = [
     statement:
       "Given an array heights where heights[i] is the height of a vertical line at position i, choose two lines so the area between them (width × shorter height) is maximised. Return that area.",
     examples: [
-      { input: "heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]", output: "49", note: "Lines of height 8 and 7, seven apart: 7 × 7 = 49." },
+      {
+        input: "heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]",
+        output: "49",
+        note: "Lines of height 8 and 7, seven apart: 7 × 7 = 49.",
+      },
     ],
     hints: [
       "Area is limited by the shorter line. Start with maximum width — both ends.",
@@ -94,11 +123,47 @@ export const twoPointers: Problem[] = [
             j -= 1
     return best`,
     walkthrough: [
-      { cells: { values: [1, 8, 6, 2, 5, 4, 8, 3, 7], labels: { 0: "i", 8: "j" } }, caption: "Max width first. Area = 8 × min(1, 7) = 8." },
-      { cells: { values: [1, 8, 6, 2, 5, 4, 8, 3, 7], marks: { 0: "compare", 8: "compare" }, labels: { 0: "i", 8: "j" } }, caption: "Left line (1) is shorter — it caps every wider pairing. Move i." },
-      { cells: { values: [1, 8, 6, 2, 5, 4, 8, 3, 7], marks: { 0: "done", 1: "focus", 8: "focus" }, labels: { 1: "i", 8: "j" } }, caption: "8 and 7, width 7: area = 7 × 7 = 49. New best." },
-      { cells: { values: [1, 8, 6, 2, 5, 4, 8, 3, 7], marks: { 1: "compare", 8: "compare" }, labels: { 1: "i", 8: "j" } }, caption: "Right (7) is shorter now — move j inward. Later pairs never beat 49." },
-      { cells: { values: [1, 8, 6, 2, 5, 4, 8, 3, 7], marks: { 1: "done", 8: "done" } }, caption: "Answer 49. Every discarded pair was provably ≤ a measured one." },
+      {
+        cells: {
+          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
+          labels: { 0: "i", 8: "j" },
+        },
+        caption: "Max width first. Area = 8 × min(1, 7) = 8.",
+      },
+      {
+        cells: {
+          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
+          marks: { 0: "compare", 8: "compare" },
+          labels: { 0: "i", 8: "j" },
+        },
+        caption:
+          "Left line (1) is shorter — it caps every wider pairing. Move i.",
+      },
+      {
+        cells: {
+          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
+          marks: { 0: "done", 1: "focus", 8: "focus" },
+          labels: { 1: "i", 8: "j" },
+        },
+        caption: "8 and 7, width 7: area = 7 × 7 = 49. New best.",
+      },
+      {
+        cells: {
+          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
+          marks: { 1: "compare", 8: "compare" },
+          labels: { 1: "i", 8: "j" },
+        },
+        caption:
+          "Right (7) is shorter now — move j inward. Later pairs never beat 49.",
+      },
+      {
+        cells: {
+          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
+          marks: { 1: "done", 8: "done" },
+        },
+        caption:
+          "Answer 49. Every discarded pair was provably ≤ a measured one.",
+      },
     ],
     alternatives: [
       {
@@ -124,7 +189,10 @@ export const twoPointers: Problem[] = [
     statement:
       "Given an integer array, return every unique triplet [a, b, c] with a + b + c = 0. The same triplet must not appear twice in the output.",
     examples: [
-      { input: "nums = [-1, 0, 1, 2, -1, -4]", output: "[[-1, -1, 2], [-1, 0, 1]]" },
+      {
+        input: "nums = [-1, 0, 1, 2, -1, -4]",
+        output: "[[-1, -1, 2], [-1, 0, 1]]",
+      },
     ],
     hints: [
       "Sort first. Duplicates become adjacent and the pair search gets cheap.",
@@ -201,14 +269,6 @@ export const twoPointers: Problem[] = [
     }
     return out;
 }`,
-    walkthrough: [
-      { cells: { values: [-4, -1, -1, 0, 1, 2] }, caption: "Sorted: [-4, -1, -1, 0, 1, 2]. Fix each k, pair-search the suffix." },
-      { cells: { values: [-4, -1, -1, 0, 1, 2], marks: { 0: "focus" }, labels: { 0: "k", 1: "i", 5: "j" } }, caption: "k = -4, need pair summing 4. -1+2=1 too small → i++. 0+2, 1+2 also fail. No pair." },
-      { cells: { values: [-4, -1, -1, 0, 1, 2], marks: { 1: "focus" }, labels: { 1: "k", 2: "i", 5: "j" } }, caption: "k = -1, need 1. -1+2 = 1 ✓ → triplet [-1, -1, 2]. Move both pointers." },
-      { cells: { values: [-4, -1, -1, 0, 1, 2], marks: { 1: "focus", 3: "compare", 4: "compare" }, labels: { 1: "k", 3: "i", 4: "j" } }, caption: "Still k = -1: 0+1 = 1 ✓ → [-1, 0, 1]. Pointers cross — next k." },
-      { cells: { values: [-4, -1, -1, 0, 1, 2], marks: { 2: "done" }, labels: { 2: "k" } }, caption: "k at second -1: same as previous k — skipped. Duplicate triplets never emitted." },
-      { cells: { values: [-4, -1, -1, 0, 1, 2], marks: { 1: "done", 2: "done", 3: "done", 4: "done", 5: "done" } }, caption: "Output: [[-1,-1,2], [-1,0,1]]. Sort + fixed-k pair search = O(n²)." },
-    ],
     alternatives: [
       {
         name: "Brute force",

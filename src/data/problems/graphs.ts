@@ -9,9 +9,7 @@ export const graphs: Problem[] = [
     brief: "Connected groups of land cells in a grid.",
     statement:
       "Given a grid of '1' (land) and '0' (water), count the islands — groups of land cells connected horizontally or vertically.",
-    examples: [
-      { input: "grid = [[1,1,0],[0,1,0],[0,0,1]]", output: "2" },
-    ],
+    examples: [{ input: "grid = [[1,1,0],[0,1,0],[0,0,1]]", output: "2" }],
     hints: [
       "Every unvisited land cell you encounter starts exactly one new island.",
       "Flood-fill from it (DFS or BFS) and mark everything reachable as visited.",
@@ -19,7 +17,10 @@ export const graphs: Problem[] = [
     ],
     approach:
       "Scan every cell. On finding land, increment the island count and flood-fill from it, sinking each connected land cell so it is never counted again. Each cell is touched a constant number of times. The grid is an implicit graph: cells are vertices, 4-adjacency is the edge set.",
-    complexity: { time: "O(rows × cols)", space: "O(rows × cols) worst-case stack" },
+    complexity: {
+      time: "O(rows × cols)",
+      space: "O(rows × cols) worst-case stack",
+    },
     python: `def count_islands(grid: list[list[int]]) -> int:
     rows, cols = len(grid), len(grid[0])
 
@@ -37,18 +38,36 @@ export const graphs: Problem[] = [
                 sink(r, c)
     return count`,
     walkthrough: [
-      { text: "1 1 0\n0 1 0\n0 0 1\n\ncount = 0", caption: "Scan row by row for unvisited land." },
-      { text: "▓ 1 0        ▓ = found land at (0,0)\n0 1 0\n0 0 1\n\ncount = 1 — flood fill starts", caption: "First land cell → new island. Sink everything connected." },
-      { text: "0 0 0\n0 0 0\n0 0 1\n\ncount = 1 — three cells sunk", caption: "(0,0), (0,1), (1,1) were one island; all sunk to water." },
-      { text: "0 0 0\n0 0 0\n0 0 ▓\n\ncount = 2 — flood fill sinks it", caption: "Scan continues; (2,2) is untouched land → second island." },
-      { text: "0 0 0\n0 0 0\n0 0 0\n\nanswer: 2", caption: "Grid drained. Each cell visited O(1) times." },
+      {
+        text: "1 1 0\n0 1 0\n0 0 1\n\ncount = 0",
+        caption: "Scan row by row for unvisited land.",
+      },
+      {
+        text: "▓ 1 0        ▓ = found land at (0,0)\n0 1 0\n0 0 1\n\ncount = 1 — flood fill starts",
+        caption: "First land cell → new island. Sink everything connected.",
+      },
+      {
+        text: "0 0 0\n0 0 0\n0 0 1\n\ncount = 1 — three cells sunk",
+        caption: "(0,0), (0,1), (1,1) were one island; all sunk to water.",
+      },
+      {
+        text: "0 0 0\n0 0 0\n0 0 ▓\n\ncount = 2 — flood fill sinks it",
+        caption: "Scan continues; (2,2) is untouched land → second island.",
+      },
+      {
+        text: "0 0 0\n0 0 0\n0 0 0\n\nanswer: 2",
+        caption: "Grid drained. Each cell visited O(1) times.",
+      },
     ],
     alternatives: [
       {
         name: "BFS flood fill",
         summary:
           "Identical counting, queue instead of recursion. Preferable on huge grids where the DFS recursion could blow the stack.",
-        complexity: { time: "O(rows × cols)", space: "O(min(rows, cols)) frontier" },
+        complexity: {
+          time: "O(rows × cols)",
+          space: "O(min(rows, cols)) frontier",
+        },
         python: `from collections import deque
 
 def count_islands(grid: list[list[int]]) -> int:
@@ -108,9 +127,13 @@ def count_islands(grid: list[list[int]]) -> int:
     difficulty: "medium",
     brief: "Order tasks so every prerequisite comes first.",
     statement:
-      "Given numCourses and prerequisite pairs [a, b] meaning \"b before a\", return any valid order to take all courses, or [] if impossible (a cycle exists).",
+      'Given numCourses and prerequisite pairs [a, b] meaning "b before a", return any valid order to take all courses, or [] if impossible (a cycle exists).',
     examples: [
-      { input: "numCourses = 4, prereqs = [[1,0],[2,0],[3,1],[3,2]]", output: "[0, 1, 2, 3]", note: "[0, 2, 1, 3] equally valid." },
+      {
+        input: "numCourses = 4, prereqs = [[1,0],[2,0],[3,1],[3,2]]",
+        output: "[0, 1, 2, 3]",
+        note: "[0, 2, 1, 3] equally valid.",
+      },
     ],
     hints: [
       "A course with no unmet prerequisites can be taken right now.",
@@ -139,16 +162,28 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
                 queue.append(nxt)
     return order if len(order) == num else []`,
     walkthrough: [
-      { text: "0 → 1 → 3\n └→ 2 ─┘\n\nin-degree: 0:0  1:1  2:1  3:2", caption: "Edges point prerequisite → dependent." },
-      { text: "queue: [0]   order: []\n\ntake 0 → order [0]\n1 and 2 drop to in-degree 0", caption: "Only course 0 starts available." },
-      { text: "queue: [1, 2]   order: [0]\n\ntake 1 → 3 drops to 1\ntake 2 → 3 drops to 0", caption: "Each taken course unlocks its dependents." },
-      { text: "queue: [3]   order: [0, 1, 2]\n\ntake 3 → order [0, 1, 2, 3]", caption: "All 4 processed = no cycle. Valid schedule found." },
+      {
+        text: "0 → 1 → 3\n └→ 2 ─┘\n\nin-degree: 0:0  1:1  2:1  3:2",
+        caption: "Edges point prerequisite → dependent.",
+      },
+      {
+        text: "queue: [0]   order: []\n\ntake 0 → order [0]\n1 and 2 drop to in-degree 0",
+        caption: "Only course 0 starts available.",
+      },
+      {
+        text: "queue: [1, 2]   order: [0]\n\ntake 1 → 3 drops to 1\ntake 2 → 3 drops to 0",
+        caption: "Each taken course unlocks its dependents.",
+      },
+      {
+        text: "queue: [3]   order: [0, 1, 2]\n\ntake 3 → order [0, 1, 2, 3]",
+        caption: "All 4 processed = no cycle. Valid schedule found.",
+      },
     ],
     alternatives: [
       {
         name: "DFS post-order",
         summary:
-          "DFS each unvisited course; a node finishes only after everything it unlocks. Reversed finish order is a valid schedule. Cycle detection needs a third color (\"in progress\") — meeting a gray node means a back edge.",
+          'DFS each unvisited course; a node finishes only after everything it unlocks. Reversed finish order is a valid schedule. Cycle detection needs a third color ("in progress") — meeting a gray node means a back edge.',
         complexity: { time: "O(V + E)", space: "O(V + E)" },
         python: `def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
     after: dict[int, list[int]] = {c: [] for c in range(num)}
@@ -186,7 +221,11 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
       "In a grid, 0 = empty, 1 = fresh, 2 = rotten. Every minute, fresh cells adjacent to a rotten cell rot. Return the minutes until nothing fresh remains, or -1 if some cell can never rot.",
     examples: [
       { input: "grid = [[2,1,1],[1,1,0],[0,1,1]]", output: "4" },
-      { input: "grid = [[0,2],[1,0]]", output: "-1", note: "The fresh cell is unreachable." },
+      {
+        input: "grid = [[0,2],[1,0]]",
+        output: "-1",
+        note: "The fresh cell is unreachable.",
+      },
     ],
     hints: [
       "Rot spreads from ALL rotten cells simultaneously — one BFS per source is wrong and slow.",
@@ -221,17 +260,32 @@ def minutes_to_rot(grid: list[list[int]]) -> int:
         minutes += 1
     return -1 if fresh else minutes`,
     walkthrough: [
-      { text: "2 1 1\n1 1 0\n0 1 1\n\nqueue: [(0,0)]   fresh = 6", caption: "One rotten source; six fresh cells." },
-      { text: "minute 1:\n2 2 1\n2 1 0\n0 1 1\n\nfresh = 4", caption: "Level 1 of BFS: both neighbours of the source rot." },
-      { text: "minute 2:\n2 2 2\n2 2 0\n0 1 1\n\nfresh = 2", caption: "The frontier advances one ring per minute." },
-      { text: "minute 3:\n2 2 2\n2 2 0\n0 2 1\n\nminute 4:\n2 2 2\n2 2 0\n0 2 2\n\nfresh = 0 → answer 4", caption: "Queue drains with fresh = 0: everything rotted in 4 minutes." },
+      {
+        text: "2 1 1\n1 1 0\n0 1 1\n\nqueue: [(0,0)]   fresh = 6",
+        caption: "One rotten source; six fresh cells.",
+      },
+      {
+        text: "minute 1:\n2 2 1\n2 1 0\n0 1 1\n\nfresh = 4",
+        caption: "Level 1 of BFS: both neighbours of the source rot.",
+      },
+      {
+        text: "minute 2:\n2 2 2\n2 2 0\n0 1 1\n\nfresh = 2",
+        caption: "The frontier advances one ring per minute.",
+      },
+      {
+        text: "minute 3:\n2 2 2\n2 2 0\n0 2 1\n\nminute 4:\n2 2 2\n2 2 0\n0 2 2\n\nfresh = 0 → answer 4",
+        caption: "Queue drains with fresh = 0: everything rotted in 4 minutes.",
+      },
     ],
     alternatives: [
       {
         name: "Simulate whole grid",
         summary:
           "Each minute, scan the entire grid and rot every fresh cell adjacent to a rotten one; repeat until a pass changes nothing. Correct and obvious — but each minute costs a full scan, so a long thin snake of cells goes quadratic.",
-        complexity: { time: "O((rows × cols)²) worst", space: "O(rows × cols)" },
+        complexity: {
+          time: "O((rows × cols)²) worst",
+          space: "O(rows × cols)",
+        },
         python: `def minutes_to_rot(grid: list[list[int]]) -> int:
     rows, cols = len(grid), len(grid[0])
     minutes = 0

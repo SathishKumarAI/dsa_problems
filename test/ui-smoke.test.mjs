@@ -300,6 +300,40 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // ---------- 3d. one source of truth for a journeyed problem ----------
+
+    test("a journeyed problem draws its walkthrough from the engine, capped by the ledger", async () => {
+      const openTab = `
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        [...document.querySelectorAll('[role=tab]')].find(t => /walkthrough/i.test(t.innerText))?.click();
+        await wait(1200);
+        const panel = document.querySelector('[role=tabpanel]:not([hidden])') ?? document.querySelector('main');
+        return {
+          act: panel.querySelector('b')?.innerText ?? '',
+          note: [...panel.querySelectorAll('[aria-live=polite]')].pop()?.innerText ?? '',
+          chips: panel.querySelectorAll('[data-k]').length,
+          capped: /best approach you have earned/i.test(panel.innerText),
+        };
+      `
+      // never opened the journey → the optimal approach, uncapped
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const fresh = await page.run(openTab)
+      assert.match(fresh.act, /one-pass hash/i)
+      assert.ok(fresh.chips > 0, "the engine stage did not render")
+      assert.ok(fresh.note.length > 10, "no narration")
+      assert.equal(fresh.capped, false)
+
+      // midway through the journey → only the approach already earned
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '2'); return 1`)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const mid = await page.run(openTab)
+      assert.match(mid.act, /brute force/i, "the page spoiled an unearned approach")
+      assert.equal(mid.capped, true)
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 4. the shell ----------
 
     test("`f` closes both rails and reopens them; `?` opens the shortcuts dialog", async () => {

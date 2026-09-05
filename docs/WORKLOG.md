@@ -4,6 +4,28 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — B1: one source of truth for a problem's walkthrough
+
+Branch `feat/unify-walkthrough`.
+
+Three problems had two explanations of themselves: a hand-written `walkthrough` array on the
+practice-set page, and a journey with generators, panels and narration. Two sources drift, and the
+journey is the richer one.
+
+`MiniPlayer` embeds the journey's own stage on the problem page — same generators, chip grammar and
+panels, driven by `api.run` on the journey's sample. It **respects the ledger**: someone who never
+opened the journey (or finished it) sees the optimal act; someone midway sees only the best
+approach they have earned, with "This is the best approach you have earned so far" and a link back.
+The reference card can no longer spoil the build-up.
+
+The hand-written frames for the three journeyed problems are deleted, and a test now fails if a
+problem has both — or if a problem without a journey has none.
+
+Evidence: `npm run check` **43/43** (new one-source-of-truth test). `npm run test:ui` **22/22**
+(fresh ledger → "One-Pass Hash" with chips and narration; `unlocked=2` → "Brute Force" plus the
+capped notice). Stepping twice moved the narration from "at 2: I need 7 — haven't seen it yet" to
+"at 7: I need 2 — and I've SEEN it, at index 0!".
+
 ## 2026-09-05 — B7: merge sort stops teleporting
 
 Branch `feat/bars-write-pulse`.

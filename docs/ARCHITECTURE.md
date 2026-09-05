@@ -165,6 +165,7 @@ it. A new key means a new row there in the same commit.
 | Code panel | `code-panel.tsx` | `act.code`, `frame.line`, `prefs.codeTab` | Languages are line-for-line against the pseudocode so one index lights the right row in any tab. |
 | Steps chart | `steps-chart.tsx` | `chart` rows (API, `upto = unlocked`) | Comparison is the point; spoiling is not. The API filters, the UI never sees locked rows. |
 | Challenge | `challenge-editor.tsx` | own state + `scorecard:<slug>` | Watching ≠ writing. Runs in a Blob Worker; the main thread never evals. |
+| Mini player | `mini-player.tsx` | `unlocked:<slug>`, `prefs.speed` | The same stage embedded on a practice-set problem page (B1). It picks the best act the learner has **earned**, so the reference card cannot spoil the journey, and says so when it caps. |
 
 ## 5. The state machine (`features/journey/use-journey.ts`)
 

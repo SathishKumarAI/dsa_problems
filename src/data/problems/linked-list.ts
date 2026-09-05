@@ -9,9 +9,7 @@ export const linkedList: Problem[] = [
     brief: "Flip all next-pointers in place.",
     statement:
       "Given the head of a singly linked list, reverse it in place and return the new head.",
-    examples: [
-      { input: "1 → 2 → 3 → ∅", output: "3 → 2 → 1 → ∅" },
-    ],
+    examples: [{ input: "1 → 2 → 3 → ∅", output: "3 → 2 → 1 → ∅" }],
     hints: [
       "You only ever need three pointers: previous, current, and a saved next.",
       "At each node: remember where you were going, point backwards, step forward.",
@@ -32,17 +30,32 @@ def reverse_list(head: Node | None) -> Node | None:
         prev, curr = curr, nxt
     return prev`,
     walkthrough: [
-      { text: "prev   curr\n ∅      1 → 2 → 3 → ∅", caption: "Start: prev is None, curr at head." },
-      { text: "       save nxt = 2\n ∅ ← 1      2 → 3 → ∅\nprev'  curr'", caption: "Point 1 back at None, step both pointers." },
-      { text: "       save nxt = 3\n ∅ ← 1 ← 2      3 → ∅\n       prev   curr", caption: "Point 2 back at 1, step forward." },
-      { text: " ∅ ← 1 ← 2 ← 3      ∅\n            prev   curr", caption: "Point 3 back at 2. curr is now None — loop ends." },
-      { text: "return prev\n\n3 → 2 → 1 → ∅", caption: "prev holds the new head. Three pointers, zero extra memory." },
+      {
+        text: "prev   curr\n ∅      1 → 2 → 3 → ∅",
+        caption: "Start: prev is None, curr at head.",
+      },
+      {
+        text: "       save nxt = 2\n ∅ ← 1      2 → 3 → ∅\nprev'  curr'",
+        caption: "Point 1 back at None, step both pointers.",
+      },
+      {
+        text: "       save nxt = 3\n ∅ ← 1 ← 2      3 → ∅\n       prev   curr",
+        caption: "Point 2 back at 1, step forward.",
+      },
+      {
+        text: " ∅ ← 1 ← 2 ← 3      ∅\n            prev   curr",
+        caption: "Point 3 back at 2. curr is now None — loop ends.",
+      },
+      {
+        text: "return prev\n\n3 → 2 → 1 → ∅",
+        caption: "prev holds the new head. Three pointers, zero extra memory.",
+      },
     ],
     alternatives: [
       {
         name: "Copy to array",
         summary:
-          "Collect values, rebuild a reversed list. Obvious, allocates n nodes, and disqualifies you from the \"in place\" requirement — but it's the honest baseline.",
+          'Collect values, rebuild a reversed list. Obvious, allocates n nodes, and disqualifies you from the "in place" requirement — but it\'s the honest baseline.',
         complexity: { time: "O(n)", space: "O(n)" },
         python: `def reverse_list(head: Node | None) -> Node | None:
     vals = []
@@ -98,10 +111,23 @@ def reverse_list(head: Node | None) -> Node | None:
             return True
     return False`,
     walkthrough: [
-      { text: "1 → 2 → 3 → 4\n    ↑       │\n    └───────┘\n\nslow = 1, fast = 1", caption: "List with a cycle: 4 points back to 2." },
-      { text: "slow: 1 → 2\nfast: 1 → 3\n\n(slow +1, fast +2)", caption: "Step 1: runners separate." },
-      { text: "slow: 2 → 3\nfast: 3 → 2  (via 4, wrapping)", caption: "Step 2: fast wraps around the cycle." },
-      { text: "slow: 3 → 4\nfast: 2 → 4\n\nslow is fast  →  cycle!", caption: "Step 3: they collide. Gap shrinks by 1 per step inside the loop — collision is guaranteed." },
+      {
+        text: "1 → 2 → 3 → 4\n    ↑       │\n    └───────┘\n\nslow = 1, fast = 1",
+        caption: "List with a cycle: 4 points back to 2.",
+      },
+      {
+        text: "slow: 1 → 2\nfast: 1 → 3\n\n(slow +1, fast +2)",
+        caption: "Step 1: runners separate.",
+      },
+      {
+        text: "slow: 2 → 3\nfast: 3 → 2  (via 4, wrapping)",
+        caption: "Step 2: fast wraps around the cycle.",
+      },
+      {
+        text: "slow: 3 → 4\nfast: 2 → 4\n\nslow is fast  →  cycle!",
+        caption:
+          "Step 3: they collide. Gap shrinks by 1 per step inside the loop — collision is guaranteed.",
+      },
     ],
     alternatives: [
       {
@@ -133,7 +159,7 @@ def reverse_list(head: Node | None) -> Node | None:
     ],
     hints: [
       "Repeatedly take the smaller of the two front nodes.",
-      "A dummy head node kills every \"is this the first node?\" special case.",
+      'A dummy head node kills every "is this the first node?" special case.',
       "When one list runs out, the other is already sorted — attach the whole remainder.",
     ],
     approach:
@@ -150,11 +176,26 @@ def reverse_list(head: Node | None) -> Node | None:
     tail.next = a or b
     return dummy.next`,
     walkthrough: [
-      { text: "a: 1 → 3 → 5\nb: 2 → 4\n\nout: [dummy] →", caption: "Dummy head avoids special-casing the first splice." },
-      { text: "1 ≤ 2 — take 1 from a\n\na: 3 → 5\nb: 2 → 4\nout: [dummy] → 1", caption: "Compare fronts, splice the smaller." },
-      { text: "2 < 3 — take 2 from b\n\na: 3 → 5\nb: 4\nout: [dummy] → 1 → 2", caption: "Tail always points at the last spliced node." },
-      { text: "3 ≤ 4 — take 3        4 < 5 — take 4\n\na: 5\nb: ∅\nout: [dummy] → 1 → 2 → 3 → 4", caption: "b just emptied." },
-      { text: "attach remainder of a in one step\n\nout: [dummy] → 1 → 2 → 3 → 4 → 5\nreturn dummy.next", caption: "The leftover list is already sorted — no loop needed." },
+      {
+        text: "a: 1 → 3 → 5\nb: 2 → 4\n\nout: [dummy] →",
+        caption: "Dummy head avoids special-casing the first splice.",
+      },
+      {
+        text: "1 ≤ 2 — take 1 from a\n\na: 3 → 5\nb: 2 → 4\nout: [dummy] → 1",
+        caption: "Compare fronts, splice the smaller.",
+      },
+      {
+        text: "2 < 3 — take 2 from b\n\na: 3 → 5\nb: 4\nout: [dummy] → 1 → 2",
+        caption: "Tail always points at the last spliced node.",
+      },
+      {
+        text: "3 ≤ 4 — take 3        4 < 5 — take 4\n\na: 5\nb: ∅\nout: [dummy] → 1 → 2 → 3 → 4",
+        caption: "b just emptied.",
+      },
+      {
+        text: "attach remainder of a in one step\n\nout: [dummy] → 1 → 2 → 3 → 4 → 5\nreturn dummy.next",
+        caption: "The leftover list is already sorted — no loop needed.",
+      },
     ],
     alternatives: [
       {

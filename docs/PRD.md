@@ -149,8 +149,9 @@ the Vite dev middleware, the standalone Node server and the in-process client us
 0. **Sidebar sections.** Requested split: Python / DSA / SQL. Shipped DSA / DSA · patterns / SQL /
    Data science; a Python section has no content yet — options in `PROBLEMS.md` §Open questions.
 
-1. Should the practice set's static walkthroughs be generated from the journey engine for the
-   two flagship problems, retiring the hand-written frames? (Leaning yes — one source of truth.)
+1. ~~Should the practice set's static walkthroughs be generated from the journey engine?~~
+   **Answered 2026-09-05 (B1): yes.** A problem with a journey renders the engine's frames, capped
+   by the ledger; the hand-written frames for those problems are gone and a test forbids both.
 2. Server-side challenge execution would let a CLI or a phone client take the challenge. It also
    means running untrusted code; `node:vm` is not a sandbox. Deferred until a client needs it.
 3. Light theme: the tokens exist (`:root` block); the chip grammar has not been checked for AA on
