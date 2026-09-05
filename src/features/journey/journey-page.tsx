@@ -49,10 +49,11 @@ function Label({ children }: { children: React.ReactNode }) {
   )
 }
 
-// sits at the foot of the reading column / its rail; sticky so it is reachable mid-scroll
+// The foot of the reading column (or its rail). It sits in a bordered lane of
+// its own rather than floating over the card beneath it — UX audit U8.
 function ReadingToggle({ open }: { open: boolean }) {
   return (
-    <div className="sticky bottom-4 mt-auto flex w-full justify-end lg:justify-center">
+    <div className="sticky bottom-0 mt-auto flex w-full justify-end border-t bg-background/95 py-2 backdrop-blur-sm lg:justify-center">
       <Button
         size="icon-sm"
         variant="outline"
@@ -235,7 +236,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
       >
         {/* ---------- the stage ---------- */}
         <section
-          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0 lg:overflow-y-auto"
+          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
@@ -247,66 +248,74 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             </span>
           </div>
 
-          {(j.warning || j.info) && (
-            <p
-              className={cn(
-                "border-b px-4 py-2 text-sm",
-                j.warning
-                  ? "bg-chart-5/10 text-chart-5"
-                  : "bg-chart-2/10 text-chart-2"
+          {/* the middle scrolls; the narration and the controls below it do
+              not, so the sentence explaining the step is always on screen
+              (UX audit U1) */}
+          <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            {(j.warning || j.info) && (
+              <p
+                className={cn(
+                  "border-b px-4 py-2 text-sm",
+                  j.warning
+                    ? "bg-chart-5/10 text-chart-5"
+                    : "bg-chart-2/10 text-chart-2"
+                )}
+                role={j.warning ? "alert" : "status"}
+              >
+                {j.warning ? "⚠ " + j.warning : j.info}
+              </p>
+            )}
+
+            {j.data && "target" in j.data && (
+              <div className="px-4 pt-4 font-mono text-base text-muted-foreground">
+                target ={" "}
+                <b className="text-foreground">{String(j.data.target)}</b>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-5 px-3 py-8 md:px-6">
+              {model ? (
+                <Stage
+                  model={model}
+                  stepDelay={j.delay}
+                  challenge={
+                    journey.challenge && j.data ? (
+                      <ChallengeEditor
+                        slug={journey.slug}
+                        challenge={journey.challenge}
+                        data={j.data as { nums: number[]; target?: number }}
+                        onPass={j.onChallengePass}
+                        onTrace={j.setTrace}
+                      />
+                    ) : null
+                  }
+                />
+              ) : (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  loading…
+                </div>
               )}
-              role={j.warning ? "alert" : "status"}
-            >
-              {j.warning ? "⚠ " + j.warning : j.info}
-            </p>
-          )}
-
-          {j.data && "target" in j.data && (
-            <div className="px-4 pt-4 font-mono text-base text-muted-foreground">
-              target ={" "}
-              <b className="text-foreground">{String(j.data.target)}</b>
             </div>
-          )}
 
-          <div className="flex flex-col gap-5 px-3 py-8 md:px-6">
-            {model ? (
-              <Stage
-                model={model}
-                stepDelay={j.delay}
-                challenge={
-                  journey.challenge && j.data ? (
-                    <ChallengeEditor
-                      slug={journey.slug}
-                      challenge={journey.challenge}
-                      data={j.data as { nums: number[]; target?: number }}
-                      onPass={j.onChallengePass}
-                      onTrace={j.setTrace}
-                    />
-                  ) : null
-                }
-              />
-            ) : (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                loading…
+            {/* a corner case biting on this very frame */}
+            {edge && (
+              <div className="border-t px-4 py-3">
+                <EdgeCaseCard edge={edge} />
               </div>
             )}
           </div>
 
-          {/* narration: the star of the page */}
-          <p
-            className="mx-auto min-h-16 max-w-[35em] border-t bg-background/40 px-6 py-4 text-center text-base leading-relaxed lg:text-lg"
-            aria-live="polite"
-          >
-            <span className="mr-1 text-primary">›</span>
-            {frame?.note ?? ""}
-          </p>
-
-          {/* a corner case biting on this very frame */}
-          {edge && (
-            <div className="border-t px-4 py-3">
-              <EdgeCaseCard edge={edge} />
-            </div>
-          )}
+          {/* Narration: the star of the page. It lives below the scrolling
+            middle, so no panel can push it out of view (UX audit U1). */}
+          <div className="border-t bg-background/40">
+            <p
+              className="mx-auto min-h-16 max-w-[35em] px-6 py-4 text-center text-base leading-relaxed lg:text-lg"
+              aria-live="polite"
+            >
+              <span className="mr-1 text-primary">›</span>
+              {frame?.note ?? ""}
+            </p>
+          </div>
 
           {/* interruptions: predict / quiz / hints / reveal */}
           {(j.predict || j.quiz || j.hints || j.nextButton || j.adaptive) && (

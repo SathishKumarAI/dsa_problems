@@ -3,6 +3,8 @@
 // content and the settings form; owns no preference logic (lib/store.ts).
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -192,6 +194,46 @@ export function ShortcutsDialog() {
 const FIELD =
   "rounded-md border bg-background px-2 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 
+// Four values you want to compare read better as segments than as a dropdown,
+// and a dropdown here rendered in the browser's own chrome (UX audit U4).
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  value: T
+  options: { value: T; label: string }[]
+  onChange: (v: T) => void
+  label: string
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="inline-flex flex-wrap gap-0.5 rounded-lg border bg-background p-0.5"
+    >
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={o.value === value}
+          onClick={() => onChange(o.value)}
+          className={cn(
+            "rounded-md px-2.5 py-1 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            o.value === value
+              ? "bg-primary text-[var(--primary-foreground)]"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function Row({
   label,
   hint,
@@ -267,43 +309,43 @@ export function SettingsDialog() {
             value={prefs.speed}
             onChange={(e) => setPref("speed", Number(e.target.value))}
             aria-label="playback speed"
+            className="h-1.5 w-full cursor-pointer accent-primary"
           />
         </Row>
         <Row label="motion" hint="how far chips travel when they morph">
-          <select
-            className={FIELD}
+          <Segmented
+            label="motion"
             value={prefs.motion}
-            onChange={(e) =>
-              setPref("motion", e.target.value as Prefs["motion"])
-            }
-          >
-            <option value="calm">calm</option>
-            <option value="normal">normal</option>
-            <option value="cinematic">cinematic</option>
-            <option value="off">off (no morph)</option>
-          </select>
+            onChange={(v) => setPref("motion", v)}
+            options={[
+              { value: "calm", label: "calm" },
+              { value: "normal", label: "normal" },
+              { value: "cinematic", label: "cinematic" },
+              { value: "off", label: "off" },
+            ]}
+          />
         </Row>
         <Row label="code tab" hint="shared by every act and the visualizer">
-          <select
-            className={FIELD}
+          <Segmented
+            label="code tab"
             value={prefs.codeTab}
-            onChange={(e) => setPref("codeTab", e.target.value)}
-          >
-            <option value="pseudo">pseudocode</option>
-            <option value="python">Python 3</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
-          </select>
+            onChange={(v) => setPref("codeTab", v)}
+            options={[
+              { value: "pseudo", label: "pseudocode" },
+              { value: "python", label: "Python 3" },
+              { value: "java", label: "Java" },
+              { value: "cpp", label: "C++" },
+            ]}
+          />
         </Row>
         <Row label="reading column" hint="on the journey page">
-          <span className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox
               checked={prefs.reading}
-              onChange={(e) => setPref("reading", e.target.checked)}
+              onCheckedChange={(v) => setPref("reading", v === true)}
             />
             open (closed = icon rail, peeks on hover)
-          </span>
+          </label>
         </Row>
         <div>
           <Button

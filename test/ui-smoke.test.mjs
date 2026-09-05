@@ -384,6 +384,42 @@ describe(
       assert.ok(ch <= 80, `longest measure is ${ch}ch, want <= 80`)
     })
 
+    test("the narration stays on screen even on a long panel (U1)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.goto(`${server.base}/#/journey/two-sum?act=recap&step=1`)
+      const out = await page.run(`
+        const stage = document.querySelector('[aria-label=stage]');
+        const note = [...stage.querySelectorAll('[aria-live=polite]')].pop();
+        const nb = note.getBoundingClientRect();
+        const sb = stage.getBoundingClientRect();
+        return {
+          text: note.innerText.trim().slice(0, 20),
+          insideStage: nb.bottom <= sb.bottom + 2,
+          inViewport: nb.top >= 0 && nb.bottom <= innerHeight + 2,
+        };
+      `)
+      assert.ok(out.text.length > 3, "no narration rendered")
+      assert.ok(out.insideStage, "the narration is below the stage's own fold")
+      assert.ok(out.inViewport, "the narration is off screen")
+    })
+
+    test("the reading-column toggle does not sit on top of the text (U8)", async () => {
+      await page.goto(`${server.base}/#/journey/two-sum?act=recap&step=1`)
+      const out = await page.run(`
+        const btn = document.querySelector('[aria-label$="reading column"]');
+        const r = btn.getBoundingClientRect();
+        const behind = document.elementFromPoint(r.left - 10, r.top + r.height / 2);
+        const lane = btn.closest('div');
+        return {
+          laneHasBorder: getComputedStyle(lane).borderTopWidth !== '0px',
+          behindText: (behind?.innerText ?? '').trim().slice(0, 30),
+        };
+      `)
+      assert.ok(out.laneHasBorder, "the toggle has no lane of its own")
+      assert.equal(out.behindText, "", "the toggle overlaps content")
+    })
+
     // ---------- 4. the shell ----------
 
     test("`f` closes both rails and reopens them; `?` opens the shortcuts dialog", async () => {
@@ -414,15 +450,19 @@ describe(
         const wait = ms => new Promise(r => setTimeout(r, ms));
         document.querySelector('[aria-label=settings]')?.click();
         await wait(500);
-        const sel = document.querySelector('[role=dialog] select');
-        if (!sel) return { opened: false };
-        const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
-        setter.call(sel, 'cinematic');
-        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        const seg = [...document.querySelectorAll('[role=dialog] [role=radio]')]
+          .find(b => b.textContent.trim() === 'cinematic');
+        if (!seg) return { opened: false };
+        seg.click();
         await wait(300);
-        return { opened: true, stored: JSON.parse(localStorage.getItem('dsa:prefs') ?? '{}').motion };
+        return {
+          opened: true,
+          checked: seg.getAttribute('aria-checked'),
+          stored: JSON.parse(localStorage.getItem('dsa:prefs') ?? '{}').motion,
+        };
       `)
       assert.ok(set.opened, "the settings dialog did not open")
+      assert.equal(set.checked, "true", "the segmented control did not select")
       assert.equal(set.stored, "cinematic")
       await page.goto(`${server.base}/#/journey/two-sum`)
       const after = await page.run(

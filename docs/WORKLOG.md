@@ -4,6 +4,30 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — UX batch 2: the stage keeps its footer (U1, U8, U4)
+
+Branch `fix/ux-batch-2`.
+
+**U1 — and the fix that did not work.** The obvious move was `position: sticky; bottom: 0` on the
+narration. It pins the sentence, and it also lets the transport and the data controls scroll
+*underneath* it, which trades a readability bug for an unreachable-control bug. The real fix is
+structural: the stage stops being one scroll box. The act strip is fixed, a middle div takes
+`flex-1 min-h-0 overflow-y-auto` (banner, target line, stage, corner-case card), and narration,
+interruptions, transport and data controls sit below it as a footer that nothing can push away.
+Below `lg` nothing scrolls internally, so the page behaves as before.
+
+**U8** — the reading-column toggle now sits in a bordered lane with its own background, the same
+treatment the sidebar's collapse control already had, instead of floating over the card beneath it.
+
+**U4** — settings speaks the app's language: `accent-primary` on the range (it rendered in the
+browser's default blue), the app's `Checkbox` for the boolean, and a small `Segmented` radiogroup
+for motion and code tab — four values each, all visible at once, which is the point of the setting.
+
+Evidence: `npm run check` 43/43. `npm run test:ui` **27/27** (was 25) — two new checks: the
+narration's rect stays inside the stage and the viewport on the recap act, and nothing sits behind
+the reading toggle. Browser: `accent-color: rgb(203, 166, 247)` on the range, 8 radio segments,
+one native control left (the JSON textarea, which should be native).
+
 ## 2026-09-05 — UX batch 1: the four small corrections (U10, U7, U5, U3)
 
 Branch `fix/ux-batch-1`.

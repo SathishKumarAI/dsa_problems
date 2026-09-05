@@ -68,9 +68,9 @@ Measured, not eyeballed — method, evidence and the reasoning behind each fix a
 | U7 | ☑ Fixed 2026-09-05 — prose capped at `35em` (**110 → 68 characters**). `ch` is the width of "0", ~1.3× the average character, so a `68ch` cap still rendered ~90; `em` matches the metric. | | S | — |
 | U5 | ☑ Fixed 2026-09-05 — `earnedOf()` / `useEarned()` in `lib/progress.ts`; sidebar badge, its tooltip, the home card and its bar all read from it. | | S | — |
 | U3 | ☑ Fixed 2026-09-05 — render-time adjust as in `use-journey.ts`; a UI test switches the hash and asserts the bars give way to the graph. | | S | — |
-| U1 | ☐ The narration is inside the stage's scroll box and clips on long panels (recap: 975 px of content in an 816 px box, narration at y = 954). | sticky footer inside the stage, with the transport | S | **P0** |
-| U8 | ☐ The reading-column toggle floats over the card beneath it. | give the column a bottom lane, or dock the toggle to its header | S | P1 |
-| U4 | ☐ Settings renders a browser-blue range and a native checkbox next to styled controls. | `accent-primary`, shadcn `Checkbox`, segmented controls for motion and code tab | S | P1 |
+| U1 | ☑ Fixed 2026-09-05 — the stage stopped being one scroll box: act strip fixed, a scrolling middle, then narration + interruptions + transport as a footer that cannot be pushed away. A sticky narration was tried first and rejected — it let the transport scroll underneath it. | | S | — |
+| U8 | ☑ Fixed 2026-09-05 — the toggle sits in a bordered lane with its own background, matching the sidebar's collapse control. | | S | — |
+| U4 | ☑ Fixed 2026-09-05 — `accent-primary` on the range, the app's `Checkbox`, and a `Segmented` radiogroup for motion and code tab so all four values are visible at once. | | S | — |
 | U6 | ☐ **16 type steps**, most common size 12 px, reading column 15 px — chrome scale for a reading product. | six named steps; body 16/26, narration 19/30 | M | P1 |
 | U12 | ☐ No written system: 10 spacing values, 4 radii, 5 container widths. | `DESIGN.md` — 4 px grid, three radii, three widths | S | P1 |
 | U2 | ☐ A phone spends **378 px of 844** on chrome before the stage (stepper alone 214 px). | compact `act 05 / 07 ▾` + sheet below `lg`; XP and restart into an overflow | M | P1 |
