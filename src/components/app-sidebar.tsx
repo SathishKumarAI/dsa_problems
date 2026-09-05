@@ -284,7 +284,7 @@ export function AppSidebar({ view }: { view: string }) {
       </SidebarContent>
       <SidebarFooter>
         <div
-          className={`truncate px-2 text-[11px] text-muted-foreground ${WIDE}`}
+          className={`truncate px-2 text-meta text-muted-foreground ${WIDE}`}
           aria-live="polite"
           data-testid="where"
         >

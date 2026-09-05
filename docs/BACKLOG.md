@@ -71,8 +71,8 @@ Measured, not eyeballed — method, evidence and the reasoning behind each fix a
 | U1 | ☑ Fixed 2026-09-05 — the stage stopped being one scroll box: act strip fixed, a scrolling middle, then narration + interruptions + transport as a footer that cannot be pushed away. A sticky narration was tried first and rejected — it let the transport scroll underneath it. | | S | — |
 | U8 | ☑ Fixed 2026-09-05 — the toggle sits in a bordered lane with its own background, matching the sidebar's collapse control. | | S | — |
 | U4 | ☑ Fixed 2026-09-05 — `accent-primary` on the range, the app's `Checkbox`, and a `Segmented` radiogroup for motion and code tab so all four values are visible at once. | | S | — |
-| U6 | ☐ **16 type steps**, most common size 12 px, reading column 15 px — chrome scale for a reading product. | six named steps; body 16/26, narration 19/30 | M | P1 |
-| U12 | ☐ No written system: 10 spacing values, 4 radii, 5 container widths. | `DESIGN.md` — 4 px grid, three radii, three widths | S | P1 |
+| U6 | ☑ Fixed 2026-09-05 — six role-named steps in `@theme` (`text-meta` … `text-display`); every sentence is now ≥ 14 px, the reading column 16/26 and the narration 19/30. A UI test fails if prose drops below 14 px. | | M | — |
+| U12 | ☑ Fixed 2026-09-05 — [`DESIGN.md`](DESIGN.md): the type scale, the 4 px grid, the four token radii, three container widths (`max-w-reading` / `max-w-page` / `max-w-stage`), colour roles, motion envelope and target sizes. | | S | — |
 | U2 | ☐ A phone spends **378 px of 844** on chrome before the stage (stepper alone 214 px). | compact `act 05 / 07 ▾` + sheet below `lg`; XP and restart into an overflow | M | P1 |
 | U14 | ☐ The stepper wraps to four rows at 390 px and is the only wayfinding. | compact form below `xl`; act number in the stage header | S | P1 |
 | U11 | ☐ Transport buttons are 28 px and the timeline track 6 px — AA-legal, below the 44 px touch comfort. | `h-11 w-11` and a 12 px track below `lg` | S | P2 |

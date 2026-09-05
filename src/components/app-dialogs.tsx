@@ -53,7 +53,7 @@ function Frame({
 
 function H({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mt-2 text-xs tracking-wide text-muted-foreground uppercase">
+    <h3 className="mt-2 text-meta tracking-wide text-muted-foreground uppercase">
       {children}
     </h3>
   )
@@ -68,7 +68,7 @@ export function HelpDialog() {
       title="How to use dsa.patterns"
       description="Earn the insight, then the name. Two minutes to read; everything else is on the page."
     >
-      <div className="flex max-w-[35em] flex-col gap-3 text-[15px] leading-relaxed">
+      <div className="flex max-w-[35em] flex-col gap-3 text-body">
         <H>the idea</H>
         <p>
           Every <b>journey</b> builds one problem all the way down. You start
@@ -166,7 +166,7 @@ export function ShortcutsDialog() {
         {SHORTCUTS.map((g) => (
           <div key={g.scope}>
             <H>{g.scope}</H>
-            <table className="mt-1 w-full text-[15px]">
+            <table className="mt-1 w-full text-body">
               <tbody>
                 {g.items.map((s) => (
                   <tr key={s.does} className="border-t border-border/60">
@@ -363,7 +363,7 @@ export function SettingsDialog() {
         </div>
 
         <H>progress — this browser only</H>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           Acts earned, quizzes passed, XP, streak days, challenge scorecards.
           Copy the JSON here and paste it on another machine to carry it over.
         </p>

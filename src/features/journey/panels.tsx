@@ -22,7 +22,7 @@ function SumEq({
         <span className="text-muted-foreground">need</span>
         <b
           className={cn(
-            "text-4xl",
+            "text-display",
             need.hit ? "text-chart-3" : "text-foreground"
           )}
         >
@@ -42,7 +42,7 @@ function SumEq({
       <span className="text-muted-foreground">+</span>
       <span>{eq.b}</span>
       <span className="text-muted-foreground">=</span>
-      <b className={cn("text-4xl", ok ? "text-chart-3" : "text-chart-5")}>
+      <b className={cn("text-display", ok ? "text-chart-3" : "text-chart-5")}>
         {eq.sum}
       </b>
       <span className="ml-2 text-sm text-muted-foreground">
@@ -107,7 +107,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
               <span className="text-muted-foreground">+</span>
               <b
                 className={cn(
-                  "text-4xl",
+                  "text-display",
                   p.hit ? "text-chart-3" : "text-foreground"
                 )}
               >
@@ -122,7 +122,10 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
             <>
               <span className="text-muted-foreground">=</span>
               <b
-                className={cn("text-4xl", ok ? "text-chart-3" : "text-chart-5")}
+                className={cn(
+                  "text-display",
+                  ok ? "text-chart-3" : "text-chart-5"
+                )}
               >
                 {sum}
               </b>
@@ -134,7 +137,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
         </div>
       )}
       <div className="flex flex-col gap-1.5">
-        <div className="text-xs tracking-wide text-muted-foreground uppercase">
+        <div className="text-meta tracking-wide text-muted-foreground uppercase">
           found — distinct triples ({p.found.length})
         </div>
         <div className="flex flex-wrap gap-2" aria-label="found">
@@ -171,13 +174,13 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
 function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+      <div className="text-meta tracking-wide text-muted-foreground uppercase">
         {p.caption}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-[15px]">
+        <table className="w-full text-body">
           <thead>
-            <tr className="text-left text-[11px] tracking-wide text-muted-foreground uppercase">
+            <tr className="text-left text-meta tracking-wide text-muted-foreground uppercase">
               <th className="py-1 pr-3 font-medium">approach</th>
               <th className="py-1 pr-3 font-medium text-chart-1">built from</th>
               <th className="py-1 pr-3 font-medium">cost</th>
@@ -200,7 +203,7 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
           </tbody>
         </table>
       </div>
-      <p className="text-[15px] text-muted-foreground">{p.note}</p>
+      <p className="text-body text-muted-foreground">{p.note}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {p.links.map((l) => (
           <a
@@ -247,7 +250,7 @@ export function Panel({
     case "sorted":
       return (
         <div className="flex flex-col gap-3">
-          <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+          <div className="text-meta tracking-wide text-muted-foreground uppercase">
             {panel.label}
           </div>
           <ChipRow chips={panel.chips} indexed={false} />
@@ -257,7 +260,7 @@ export function Panel({
     case "bits":
       return (
         <div className="flex flex-col gap-2">
-          <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+          <div className="text-meta tracking-wide text-muted-foreground uppercase">
             accumulator (bit view) — ring = bits that just flipped
           </div>
           {panel.rows.map((r) => (

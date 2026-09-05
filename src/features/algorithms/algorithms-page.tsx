@@ -159,10 +159,10 @@ export function AlgorithmsPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+        <h1 className="font-heading text-title font-semibold tracking-tight">
           Algorithm visualizer
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="max-w-[35em] text-body text-muted-foreground">
           Every algorithm is a generator of steps; the stage knows nothing about
           the algorithm. Bars morph, they don't teleport.
         </p>
@@ -173,7 +173,7 @@ export function AlgorithmsPage() {
         <nav className="flex flex-col gap-4" aria-label="algorithms">
           {GROUPS.map((g) => (
             <div key={g.label} className="flex flex-col gap-1">
-              <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+              <div className="text-meta tracking-wide text-muted-foreground uppercase">
                 {g.label}
               </div>
               {g.keys.map((k) => (
@@ -202,7 +202,7 @@ export function AlgorithmsPage() {
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
             <span className="text-sm font-medium">{algo.name}</span>
-            <span className="ml-auto font-mono text-[11px] text-muted-foreground">
+            <span className="ml-auto font-mono text-meta text-muted-foreground">
               {algo.complexity}
             </span>
           </div>
@@ -321,9 +321,7 @@ export function AlgorithmsPage() {
             line={frame?.line ?? -1}
           />
           <div className="rounded-xl border bg-card p-4 text-xs text-muted-foreground">
-            <div className="mb-2 text-[11px] tracking-wide uppercase">
-              legend
-            </div>
+            <div className="mb-2 text-meta tracking-wide uppercase">legend</div>
             <div className="flex flex-col gap-1">
               <span>
                 <i className="mr-2 inline-block size-2.5 rounded-sm bg-yellow" />

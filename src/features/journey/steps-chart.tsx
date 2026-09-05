@@ -26,7 +26,7 @@ export function StepsChart({
       className="flex flex-col gap-2"
       aria-label="steps per approach on this input"
     >
-      <figcaption className="text-[11px] tracking-wide text-muted-foreground uppercase">
+      <figcaption className="text-meta tracking-wide text-muted-foreground uppercase">
         work on this input (steps)
       </figcaption>
       <div className="flex flex-col gap-1.5" role="table">

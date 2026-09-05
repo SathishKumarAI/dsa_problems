@@ -420,6 +420,34 @@ describe(
       assert.equal(out.behindText, "", "the toggle overlaps content")
     })
 
+    test("no sentence is set below the ui step, and the measure holds (U6, U7, U12)", async () => {
+      const probe = `
+        const px = v => parseFloat(v) || 0;
+        const own = el => [...el.childNodes].filter(n => n.nodeType === 3)
+          .map(n => n.textContent.trim()).join(' ');
+        const els = [...document.querySelectorAll('main *, [role=dialog] *')];
+        const small = els.filter(e => {
+          const cs = getComputedStyle(e);
+          return own(e).length > 55 && px(cs.fontSize) < 14 && !cs.fontFamily.includes('mono');
+        }).map(e => own(e).slice(0, 40));
+        const wide = [...document.querySelectorAll('main p')]
+          .filter(e => e.textContent.trim().length > 110)
+          .map(e => Math.round(e.getBoundingClientRect().width / (px(getComputedStyle(e).fontSize) * 0.5)));
+        return { small, maxCh: Math.max(0, ...wide) };
+      `
+      for (const route of [
+        "#/",
+        "#/journey/two-sum?act=story&step=2",
+        "#/p/arrays-hashing/pair-sum",
+        "#/algorithms?algo=quick",
+      ]) {
+        await page.goto(`${server.base}/${route}`)
+        const out = await page.run(probe)
+        assert.deepEqual(out.small, [], `${route}: prose set below 14px`)
+        assert.ok(out.maxCh <= 80, `${route}: longest measure ${out.maxCh}ch`)
+      }
+    })
+
     // ---------- 4. the shell ----------
 
     test("`f` closes both rails and reopens them; `?` opens the shortcuts dialog", async () => {

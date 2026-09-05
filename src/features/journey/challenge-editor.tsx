@@ -301,7 +301,7 @@ export function ChallengeEditor({
 
       {results && (
         <div className="grid gap-1 rounded-lg border bg-background/40 p-3 text-xs sm:grid-cols-3">
-          <div className="text-[11px] tracking-wide text-muted-foreground uppercase sm:col-span-3">
+          <div className="text-meta tracking-wide text-muted-foreground uppercase sm:col-span-3">
             scorecard — how you solved it
           </div>
           <div>
@@ -351,7 +351,7 @@ export function ChallengeEditor({
 
       {allPass && challenge.review.length > 0 && (
         <div className="flex flex-col gap-1 rounded-lg border bg-background/40 p-3 text-xs">
-          <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+          <div className="text-meta tracking-wide text-muted-foreground uppercase">
             self-review — what a mentor would ask
           </div>
           {challenge.review.map((it, i) => {
@@ -399,7 +399,7 @@ export function ChallengeEditor({
           )}
           {big && big !== "running" && (
             <>
-              <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+              <div className="text-meta tracking-wide text-muted-foreground uppercase">
                 {big.ok ? "still correct" : "✗ wrong on the big input"} at n ={" "}
                 {challenge.big.n}
               </div>

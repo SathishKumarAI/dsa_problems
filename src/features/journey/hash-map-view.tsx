@@ -13,7 +13,7 @@ export function HashMapView({ map }: { map: HashModel }) {
   const probing = map.probe !== null
   return (
     <div className="flex flex-col gap-3" aria-label="hash map">
-      <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+      <div className="text-meta tracking-wide text-muted-foreground uppercase">
         {map.label}
       </div>
 
@@ -46,7 +46,7 @@ export function HashMapView({ map }: { map: HashModel }) {
       </div>
 
       {/* the waterline */}
-      <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 text-meta text-muted-foreground">
         <span className="h-px flex-1 bg-gradient-to-r from-chart-2/60 to-transparent" />
         under the surface — what{" "}
         <code className="font-mono text-chart-2">map[x]</code> actually does
@@ -122,7 +122,7 @@ export function HashMapView({ map }: { map: HashModel }) {
               {map.slot}
             </b>
             {map.probe! < 0 && (
-              <span className="text-[11px]">
+              <span className="text-meta">
                 {" "}
                 (the mod that wraps negatives up, like Python's %)
               </span>

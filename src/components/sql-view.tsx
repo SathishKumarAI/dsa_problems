@@ -14,7 +14,7 @@ import { difficultyClass } from "@/lib/difficulty"
 
 export function SqlView() {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
       <header className="flex flex-col gap-2">
         <div className="font-mono text-sm text-primary">SELECT ⋯ OVER ()</div>
         <h1 className="font-heading text-2xl font-semibold">

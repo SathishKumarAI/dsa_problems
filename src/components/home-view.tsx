@@ -40,7 +40,7 @@ function JourneyCard({
           {earned.done ? "complete" : `${earned.short} earned`}
         </span>
       </div>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
+      <p className="text-ui text-muted-foreground">{subtitle}</p>
       <div className="h-1.5 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-chart-1 transition-[width]"
@@ -65,12 +65,12 @@ export function HomeView({
   const done = PROBLEMS.filter((p) => solved.has(p.id)).length
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-page flex-col gap-8">
       <header className="flex flex-col gap-3 pt-4">
         <h1 className="font-mono text-3xl font-semibold tracking-tight">
           dsa<span className="text-primary">.patterns</span>
         </h1>
-        <p className="max-w-[35em] text-sm text-muted-foreground">
+        <p className="max-w-[35em] text-body text-muted-foreground">
           Feel the weakness, earn the insight, then learn its name. Three
           problems are built all the way down — story, the corner cases to
           bring, approaches you unlock one at a time, your own code as the
@@ -86,7 +86,7 @@ export function HomeView({
       </header>
 
       <section className="flex flex-col gap-3">
-        <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+        <div className="text-meta tracking-wide text-muted-foreground uppercase">
           learning journeys
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -116,7 +116,7 @@ export function HomeView({
 
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <span className="text-[11px] tracking-wide text-muted-foreground uppercase">
+          <span className="text-meta tracking-wide text-muted-foreground uppercase">
             practice set
           </span>
           <span className="font-mono text-sm tabular-nums">

@@ -29,7 +29,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 
 | Change | File |
 |---|---|
-| Theme colours (Catppuccin token mapping, `yellow`, `teal`) | `src/index.css` |
+| Theme colours, type scale, container widths (all tokens) | `src/index.css` (the decisions: `docs/DESIGN.md`) |
 | Routes (`#/journey/…`, `#/algorithms`, `#/p/…`) | `src/lib/route.ts`, `src/App.tsx` |
 | Add / edit a **journey** (acts, generators, presets, quiz, challenge) | `src/engine/journeys/<slug>.ts` → register in `src/engine/index.ts` |
 | Frame / act / journey / stage-model contracts (incl. `EdgeCase`, frame `corner`) | `src/engine/types.ts` |

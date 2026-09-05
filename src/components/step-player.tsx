@@ -46,7 +46,7 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
           </div>
           <span
             className={cn(
-              "flex h-4 items-center font-mono text-[11px] transition-colors",
+              "flex h-4 items-center font-mono text-meta transition-colors",
               frame.labels?.[i] ? "text-primary" : "text-muted-foreground/40"
             )}
           >
@@ -98,7 +98,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
             {legend.map((l) => (
               <span
                 key={l.role}
-                className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
+                className="flex items-center gap-1.5 text-meta text-muted-foreground"
               >
                 <span
                   className={cn("size-2 rounded-sm border", roleClass[l.role])}
