@@ -124,6 +124,18 @@
     --sidebar-ring: #cba6f7;
 }
 
+/* a merge-sort write: the value is replaced in place, so there is no motion
+   for FLIP to show — the bar pulses instead. Reduced motion zeroes it below. */
+@keyframes write-pulse {
+  0%   { transform: scaleY(0.72); filter: brightness(1.5); }
+  60%  { transform: scaleY(1.06); filter: brightness(1.2); }
+  100% { transform: scaleY(1);    filter: brightness(1); }
+}
+
+@utility animate-write-pulse {
+  animation: write-pulse 260ms ease-out;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

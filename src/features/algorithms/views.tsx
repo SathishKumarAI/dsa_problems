@@ -8,6 +8,7 @@ import { useRef } from "react"
 import { cn } from "@/lib/utils"
 import type { ArrayFrame, GraphFrame } from "@/engine/algorithms"
 import { useFlip } from "@/features/journey/use-flip"
+import { usePrefs } from "@/lib/store"
 
 export function BarsView({
   frame,
@@ -18,6 +19,9 @@ export function BarsView({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   useFlip(ref, frame, stepDelay)
+  // a swap moves two bars past each other and FLIP shows it; a write replaces
+  // a value in place, where there is nothing to move — so it gets a pulse
+  const { motion } = usePrefs()
   const seen = new Map<number, number>()
   const max = Math.max(...frame.arr, 1)
   const sorted = new Set(frame.sorted)
@@ -38,13 +42,15 @@ export function BarsView({
             ? "bg-yellow"
             : mark === "swap"
               ? "bg-chart-5"
-              : mark === "pivot"
-                ? "bg-chart-4"
-                : sorted.has(i)
-                  ? "bg-chart-3"
-                  : discard.has(i)
-                    ? "bg-muted"
-                    : "bg-chart-2/70"
+              : mark === "write"
+                ? "bg-chart-1"
+                : mark === "pivot"
+                  ? "bg-chart-4"
+                  : sorted.has(i)
+                    ? "bg-chart-3"
+                    : discard.has(i)
+                      ? "bg-muted/60 opacity-40"
+                      : "bg-chart-2/70"
         return (
           <div
             key={`${v}#${n}`}
@@ -64,8 +70,9 @@ export function BarsView({
             )}
             <div
               className={cn(
-                "w-full rounded-t-[4px] transition-colors duration-200",
-                state
+                "w-full origin-bottom rounded-t-[4px] transition-[background-color,opacity] duration-200",
+                state,
+                mark === "write" && motion !== "off" && "animate-write-pulse"
               )}
               style={{ height: `${(v / max) * 88}%`, minHeight: 4 }}
             />
