@@ -36,9 +36,8 @@ import { JOURNEYS } from "@/engine"
 import { openDialog } from "@/lib/dialogs"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import type { Mask } from "@/lib/disclosure"
-import { useSolved } from "@/lib/progress"
+import { useEarned, useSolved } from "@/lib/progress"
 import { href, useRoute } from "@/lib/route"
-import { K, useStored } from "@/lib/store"
 
 // text that has no room on the icon rail
 const WIDE = "group-data-[collapsible=icon]:hidden"
@@ -56,7 +55,7 @@ function JourneyItem({
   acts: number
   active: boolean
 }) {
-  const unlocked = Math.min(useStored<number>(K.unlocked(slug), 1), acts)
+  const earned = useEarned(slug, acts)
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -68,11 +67,8 @@ function JourneyItem({
         <RouteIcon className="size-3.5 shrink-0 text-chart-1" />
         <span className="truncate">{title}</span>
       </SidebarMenuButton>
-      <SidebarMenuBadge
-        className="font-mono"
-        title={`${unlocked} of ${acts} acts earned`}
-      >
-        {unlocked >= acts ? "✓" : `${unlocked}/${acts}`}
+      <SidebarMenuBadge className="font-mono" title={earned.long}>
+        {earned.done ? "✓" : earned.short}
       </SidebarMenuBadge>
     </SidebarMenuItem>
   )

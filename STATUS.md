@@ -13,9 +13,9 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. **Every P0 in the original backlog is done.** The new P0s are the UX-audit items:
-   U10, U7, U5, U3, U1 — half a day for a visibly tidier product (`docs/UX-AUDIT.md` §6).
-2. Then U1/U8/U4, then the type scale (U6 + U12) as one pass.
+1. UX-audit **batch 2**: U1 (sticky narration), U8 (the toggle overlaps text), U4 (settings uses
+   native controls). Batch 1 shipped 2026-09-05.
+2. Then the type scale and the written system (U6 + U12) as one pass, then mobile (U2, U14, U11).
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

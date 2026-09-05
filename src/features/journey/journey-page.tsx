@@ -294,7 +294,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
 
           {/* narration: the star of the page */}
           <p
-            className="min-h-16 border-t bg-background/40 px-6 py-4 text-center text-base leading-relaxed lg:text-lg"
+            className="mx-auto min-h-16 max-w-[35em] border-t bg-background/40 px-6 py-4 text-center text-base leading-relaxed lg:text-lg"
             aria-live="polite"
           >
             <span className="mr-1 text-primary">›</span>

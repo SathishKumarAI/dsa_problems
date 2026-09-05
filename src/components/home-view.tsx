@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
 import { JOURNEYS } from "@/engine"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
-import { useSolved } from "@/lib/progress"
+import { useEarned, useSolved } from "@/lib/progress"
 import { href } from "@/lib/route"
 import { K, streakOf, useStored } from "@/lib/store"
 
@@ -27,8 +27,7 @@ function JourneyCard({
   subtitle: string
   acts: number
 }) {
-  const unlocked = Math.min(useStored<number>(K.unlocked(slug), 1), acts)
-  const pct = ((unlocked - 1) / (acts - 1)) * 100
+  const earned = useEarned(slug, acts)
   return (
     <a
       href={href(`/journey/${slug}`)}
@@ -38,14 +37,14 @@ function JourneyCard({
         <RouteIcon className="size-4 text-chart-1" />
         <span className="font-medium">{title}</span>
         <span className="ml-auto font-mono text-xs text-muted-foreground">
-          {unlocked >= acts ? "complete" : `${unlocked - 1}/${acts - 1} earned`}
+          {earned.done ? "complete" : `${earned.short} earned`}
         </span>
       </div>
       <p className="text-sm text-muted-foreground">{subtitle}</p>
       <div className="h-1.5 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-chart-1 transition-[width]"
-          style={{ width: `${pct}%` }}
+          style={{ width: `${earned.pct}%` }}
         />
       </div>
     </a>
@@ -71,7 +70,7 @@ export function HomeView({
         <h1 className="font-mono text-3xl font-semibold tracking-tight">
           dsa<span className="text-primary">.patterns</span>
         </h1>
-        <p className="max-w-prose text-sm text-muted-foreground">
+        <p className="max-w-[35em] text-sm text-muted-foreground">
           Feel the weakness, earn the insight, then learn its name. Three
           problems are built all the way down — story, the corner cases to
           bring, approaches you unlock one at a time, your own code as the

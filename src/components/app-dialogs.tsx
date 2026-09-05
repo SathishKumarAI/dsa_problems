@@ -66,7 +66,7 @@ export function HelpDialog() {
       title="How to use dsa.patterns"
       description="Earn the insight, then the name. Two minutes to read; everything else is on the page."
     >
-      <div className="flex flex-col gap-3 text-[15px] leading-relaxed">
+      <div className="flex max-w-[35em] flex-col gap-3 text-[15px] leading-relaxed">
         <H>the idea</H>
         <p>
           Every <b>journey</b> builds one problem all the way down. You start

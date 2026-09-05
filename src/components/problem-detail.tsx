@@ -58,7 +58,9 @@ function SolutionBlock({
         <span>time {time}</span>
         <span>space {space}</span>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">{summary}</p>
+      <p className="max-w-[35em] text-sm leading-relaxed text-muted-foreground">
+        {summary}
+      </p>
       {langs.length > 1 && (
         <div className="flex gap-0.5" role="tablist" aria-label="language">
           {langs.map((l) => (
@@ -147,7 +149,9 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
       )}
 
       <section className="flex flex-col gap-4">
-        <p className="text-sm leading-relaxed">{problem.statement}</p>
+        <p className="max-w-[35em] text-sm leading-relaxed">
+          {problem.statement}
+        </p>
         <div className="flex flex-col gap-2">
           {problem.examples.map((ex, i) => (
             <div

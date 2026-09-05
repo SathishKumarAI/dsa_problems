@@ -298,7 +298,7 @@ export function Stage({
         {model.chips ? (
           <ChipRow chips={model.chips} />
         ) : (
-          <div className="text-xs text-muted-foreground/60">
+          <div className="text-sm text-muted-foreground">
             the stage is empty on purpose — the need comes first
           </div>
         )}

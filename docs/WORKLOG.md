@@ -4,6 +4,27 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — UX batch 1: the four small corrections (U10, U7, U5, U3)
+
+Branch `fix/ux-batch-1`.
+
+- **U10** — the app's only contrast failure was the first sentence of act 1. The empty-stage line
+  goes from `text-xs` at 60 % opacity (**3.64 : 1**) to `text-sm` at full opacity (**7.4 : 1**).
+- **U7** — prose capped so a line stays readable. **`ch` was the wrong unit**: it measures the "0"
+  glyph, about 1.3× the average character, so `max-w-[68ch]` still rendered ~90 characters (630 px at
+  14 px type). The caps ship as `35em` — 0.5 em per character is the heuristic the audit measured
+  with, and it lands at 68.
+- **U5** — `earnedOf()` / `useEarned()` in `lib/progress.ts` is the only place journey progress is
+  phrased now. Sidebar badge, its tooltip, the home card and its bar all read from it, so `1/7` and
+  `0/6 earned` for the same moment became `2/6` and `2/6 earned`.
+- **U3** — the visualizer follows an `?algo=` link changed while the page is open, with the same
+  render-time adjust that fixed the journey's deep link (G1).
+
+Three new browser checks: the algo hash switch (bars give way to the graph), sidebar and home card
+agreeing, and the longest measure on the problem page staying under 80 characters.
+
+Evidence: `npm run check` 43/43. `npm run test:ui` **25/25** (was 22).
+
 ## 2026-09-05 — a measured UI/UX audit
 
 Branch `docs/ux-audit`. `docs/UX-AUDIT.md`, and U1–U14 in the backlog.
