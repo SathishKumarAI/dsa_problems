@@ -171,23 +171,25 @@ The request mentioned scraping LeetCode, GeeksforGeeks, Stack Overflow and simil
 If the intent is a personal offline copy of LeetCode's own text, that is a different thing from this
 repo and should stay out of it.
 
-### Definition of done
+### Definition of done — shipped 2026-09-05 (PRs #32, #33, #34)
 
-- [ ] `constraints: string[]` on `Problem`, rendered under the statement; corner cases cite one.
-- [ ] `ApproachRung` type; the ladder rendered worst → best with the "why now" line between rungs.
-- [ ] Journeyed problems generate their ladder from the journey's acts (no second copy).
-- [ ] Python 3 on every rung; Java and C++ where they differ structurally.
-- [ ] "Solve on LeetCode ↗" as the page's primary action; no editor is added.
-- [ ] Ladder respects the ledger the way the walkthrough does: a started, unfinished journey shows
+- [x] `constraints: string[]` on `Problem`, rendered under the statement; corner cases cite one
+      (`EdgeCase.constraint`).
+- [x] `Rung` in `src/lib/ladder.ts`; the ladder rendered worst → best with the "why now" line
+      between rungs.
+- [x] Journeyed problems generate their ladder from the journey's acts (no second copy).
+- [x] Python 3 on every rung; Java and C++ where they differ structurally.
+- [x] "Solve on LeetCode ↗" as the page's primary action, from `Problem.leetcode`; no editor added.
+- [x] Ladder respects the ledger the way the walkthrough does: a started, unfinished journey shows
       only rungs already earned, with a link back.
-- [ ] `npm run check` + `npm run test:ui`, a FEATURES row, and a content test that every rung has a
-      cost, a "why now" (except the first) and Python.
+- [x] `npm run check` (46) + `npm run test:ui` (39), a FEATURES row, and content tests: every rung
+      has a cost, Python, an idea, and a "why now" (except the first); every LeetCode slug is unique.
 
-### Open question for the learner
+### The open question, answered
 
-Does the ladder belong on the **problem page** (one page per problem, scroll to compare) or as a
-**fifth tab** beside Hints / Walkthrough / Approach & Solution? The page is already long; my
-inclination is to replace "Approach & Solution" with the ladder rather than add to it.
+Does the ladder belong on the problem page or as a fifth tab? **Neither, in the end**: it replaced
+"Approach & Solution" (backlog Q1, option a), so the tab strip is Hints / Walkthrough / Approaches
+and the page did not grow a fourth place to look for the same code.
 
 ## Open questions
 
