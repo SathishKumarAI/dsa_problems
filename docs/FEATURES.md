@@ -54,6 +54,8 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Code block | Mono `<pre>` with copy button (✓ for 1.5 s). | `code-block.tsx` | shipped |
 | SQL drills, flashcards | Unchanged from baseline. | `sql-view.tsx`, `flashcards-view.tsx` | shipped (pre-existing) |
 
+| Approach & Solution → language strip | Python 3 / Java / C++ buttons above the code block (only languages present); choice is the shared `codeTab` pref (`pseudo` falls back to Python). Journeyed problems carry all three for every approach (test). | `problem-detail.tsx` `SolutionBlock`, `data/types.ts` `Code` | shipped (cdp: pair-sum → Java tab → `public int[] pairSum…`, pref `java`; three-sum brute force → Java stays selected) |
+
 ## 4. Journey page — the map
 
 ```

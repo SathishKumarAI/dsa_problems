@@ -55,7 +55,7 @@ asking. The problem pipeline itself lives in `PROBLEMS.md` and is not repeated h
 | # | Proposal | Why | Size | Tier |
 |---|---|---|---|---|
 | F1 | ☑ **Code splitting** — `React.lazy` for the journey and visualizer features (B22). Shipped 2026-09-04: 673.77 kB in one chunk → 400 kB index + 204 kB shared engine/data + lazy 44 / 21 / 9 kB. Follow-up: the sidebar imports `JOURNEYS` from the engine, so the engine chunk is still eager — a slug/title/acts registry would make it lazy too. | Content pages should not download the engine. Mechanical. | S | **P0** |
-| F2 | ☐ **Three-language code on the practice set** — `Solution.java` / `.cpp` beside `python`, tabs on the problem page sharing the `codeTab` pref. | The explicit ask: full code in Python 3, Java, C++ per approach. Unblocks the pipeline's DoD. | S (type + UI) · content per problem | **P0** |
+| F2 | ☑ **Three-language code on the practice set** — `Code {python, java?, cpp?}` on `Problem` and `Solution`, language strip on the problem page sharing the `codeTab` pref; Java + C++ for every approach of Two Sum, Single Number, Triplets Summing to Zero; `data/problems.test.ts` requires all three languages once a problem has a journey. Shipped 2026-09-04 (`feat/practice-code-tabs`). | The explicit ask: full code in Python 3, Java, C++ per approach. Unblocks the pipeline's DoD. | S · content per problem | **P0** |
 | F3 | ☐ **Window / stack / bars panel kinds** — `window` (a span over chips + the set beside it), `stack` (vertical chips, push/pop FLIP), `bars` (heights, port from the visualizer with a shaded area). | Wave 1–2 of `PROBLEMS.md` needs exactly these three; one PR each, arriving with the problem that proves it. | M each | **P0** with the problem |
 | F4 | ☐ **Corner cases met** — a teal dot on a stepper node once that act has shown a corner-case callout; header counter "cases met 3/4"; +3 XP the first time each case is seen. | The gamified loop the ask describes: the learner *collects* the edge cases instead of reading them. Data already exists (`frame.corner`). | S | P1 |
 | F5 | ☐ **Hold indicator on Play** — a thin ring on the Play button that fills while a `hold` frame waits. | Autoplay looks frozen on narrative frames (`hold: 3` = 6 s at default speed); users press Play twice. | S | P1 |
@@ -70,6 +70,7 @@ asking. The problem pipeline itself lives in `PROBLEMS.md` and is not repeated h
 ## Shipped this round (2026-09-04)
 
 - ☑ B4 collapsible rails + a bigger type scale on the journey page (stage 717 → 1280 px at 1440 wide).
+- ☑ F2 three-language code on the practice set (type, tabs, test; 9 approaches × Java + C++).
 - ☑ F1 / B22 code splitting: 673.77 kB single chunk → 400 kB index (127 kB gzip) + 204 kB shared engine/data (67 kB gzip) + lazy journey 44 kB, FLIP 21 kB, visualizer 9 kB.
 - ☑ Shell: independent scroll panels on the journey page, hover-peek on closed rails, `f` focus key, settings dialog (B3), `?` shortcuts dialog (B5), help dialog, sidebar regrouped DSA / DSA · patterns / SQL / Data science with a where-you-are footer line.
 - ☑ Corner cases as content: `edgeCases` per journey (4 + 4), story-act cards (how to read · bring three inputs), in-play callout on `corner`-tagged frames, gated by a test that every case is explained on its preset. New presets `tiny`, `negatives` (Two Sum), `zero` (Single Number).

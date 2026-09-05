@@ -4,6 +4,23 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — three-language code on the practice set (F2)
+
+Branch `feat/practice-code-tabs`, stacked on `perf/code-splitting`.
+
+`Code {python, java?, cpp?}` on `Problem` and `Solution`; `SolutionBlock` shows a Python 3 / Java /
+C++ strip sharing the journey's `codeTab` pref. Java and C++ written for every approach of Two Sum
+(one-pass hash, brute, sort + two pointers), Single Number (XOR, hash counts, sort & scan) and
+Triplets Summing to Zero (sort + two pointers, brute, hash per anchor) — 18 new blocks. New
+`src/data/problems.test.ts`: ids unique, patterns valid, every block looks like a function, and a
+journeyed problem must carry all three languages on every approach (31 → 34 tests).
+
+Evidence: `npm run check` 34/34. CDP: `#/p/arrays-hashing/pair-sum` → Approach & Solution → tabs
+`Python 3 · Java · C++`, Java click → first line `public int[] pairSum(int[] nums, int target) {`,
+`prefs.codeTab=java`; `#/p/two-pointers/three-sum-zero` → Brute force → Java still selected. Not
+compiled: the Java/C++ blocks were reviewed by eye, not run — a compile check is a follow-up if a
+toolchain is added.
+
 ## 2026-09-04 (later) — code splitting (F1 / B22)
 
 Branch `perf/code-splitting`, stacked on `docs/problem-pipeline`.

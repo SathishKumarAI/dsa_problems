@@ -25,14 +25,22 @@ export interface Frame {
 
 // An alternative way to solve a problem (brute force, sorting-based, …).
 // The problem's top-level approach/python is always the recommended one.
-export interface Solution {
+// Code in three languages. `python` is required; `java` / `cpp` arrive per
+// problem as the pipeline reaches it (docs/PROBLEMS.md) and are required
+// once the problem has a journey (data/problems.test.ts).
+export interface Code {
+  python: string
+  java?: string
+  cpp?: string
+}
+
+export interface Solution extends Code {
   name: string // short tab label: "Brute force", "Sorting", "Hash map"
   summary: string
   complexity: { time: string; space: string }
-  python: string
 }
 
-export interface Problem {
+export interface Problem extends Code {
   id: string
   title: string
   pattern: string // Pattern.id
@@ -43,7 +51,6 @@ export interface Problem {
   hints: string[] // progressive: nudge -> idea -> almost-there
   approach: string
   complexity: { time: string; space: string }
-  python: string
   walkthrough?: Frame[] // stepped visualization of the approach on an example
   alternatives?: Solution[] // other ways in, worst-to-best order; optimal stays top-level
 }
