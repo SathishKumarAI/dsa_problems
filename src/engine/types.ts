@@ -19,6 +19,7 @@ export interface BaseFrame {
   hold?: number // multiply the step delay (narrative frames need reading time)
   predict?: Predict // playback pauses BEFORE this frame renders and asks
   noChips?: boolean // story frames that open on an empty stage
+  corner?: string // key into journey.edgeCases — this step is where that corner case bites
   predictDone?: boolean // engine bookkeeping: asked once per build
 }
 
@@ -99,6 +100,18 @@ export type PanelModel =
   | { kind: "hash"; map: HashModel }
   | { kind: "sorted"; label: string; chips: ChipModel[]; eq?: SumModel }
   | { kind: "bits"; rows: BitRowModel[] }
+  | {
+      // k-term equation against a target + the distinct answers so far:
+      // terms [a, b, c] → "a + b + c = sum"; with `need`, "a + b + ? — need n"
+      kind: "terms"
+      terms: number[]
+      target: number
+      need?: number
+      hit?: boolean
+      dup?: boolean // the newest hit was a repeat and was dropped
+      found: number[][]
+      map?: HashModel
+    }
   | {
       kind: "recap"
       caption: string
@@ -212,6 +225,20 @@ export interface Resource {
   url: string
 }
 
+// A corner case the learner should bring before writing code (Khamies, "How
+// to Solve Algorithm Problems" §3.1.4: empty-case, medium-case, corner-case
+// inputs). Shown in the story act's reading column; a frame tagged
+// `corner: key` explains it in play. Prose is visible from act 0, so it may
+// not name any technique — describe what breaks, not what fixes it.
+export interface EdgeCase {
+  key: string
+  name: string // "two equal values"
+  example: string // "[3, 1, 3, 8], target 6 → [0, 2]"
+  why: string // how it bites: what a naive solution gets wrong here
+  think: string // the question to ask yourself before coding
+  preset: string // the preset that loads this input
+}
+
 export interface Journey<D = { nums: number[] }> {
   slug: string
   title: string
@@ -229,6 +256,7 @@ export interface Journey<D = { nums: number[] }> {
   parse: (text: string, params: Record<string, string>) => D | null
   challenge?: Challenge
   sample: D
+  edgeCases: EdgeCase[] // every one must be tagged by some frame on its preset (journeys.test.ts)
 }
 
 export type AnyJourney = Journey<{ nums: number[]; [k: string]: unknown }>

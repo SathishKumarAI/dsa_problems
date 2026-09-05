@@ -13,12 +13,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import type { Pattern, Problem } from "@/data"
+import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import { href } from "@/lib/route"
 import { CodeBlock } from "./code-block"
 import { difficultyClass } from "@/lib/difficulty"
+import { setPref, usePrefs } from "@/lib/store"
 import { StepPlayer } from "./step-player"
 
 interface Props {
@@ -27,6 +28,14 @@ interface Props {
   onBack: () => void
 }
 
+const LANGS: { key: keyof Code; label: string }[] = [
+  { key: "python", label: "Python 3" },
+  { key: "java", label: "Java" },
+  { key: "cpp", label: "C++" },
+]
+
+// One approach: cost line, summary, code with a language strip. The language
+// is the same `codeTab` pref the journey uses (its "pseudo" maps to Python here).
 function SolutionBlock({
   summary,
   time,
@@ -36,8 +45,12 @@ function SolutionBlock({
   summary: string
   time: string
   space: string
-  code: string
+  code: Code
 }) {
+  const { codeTab } = usePrefs()
+  const langs = LANGS.filter((l) => code[l.key])
+  const lang =
+    langs.find((l) => l.key === codeTab)?.key ?? ("python" as keyof Code)
   return (
     <div className="flex flex-col gap-4 pt-2">
       <div className="flex gap-4 font-mono text-xs text-muted-foreground">
@@ -45,7 +58,27 @@ function SolutionBlock({
         <span>space {space}</span>
       </div>
       <p className="text-sm leading-relaxed text-muted-foreground">{summary}</p>
-      <CodeBlock code={code} />
+      {langs.length > 1 && (
+        <div className="flex gap-0.5" role="tablist" aria-label="language">
+          {langs.map((l) => (
+            <button
+              key={l.key}
+              role="tab"
+              aria-selected={l.key === lang}
+              onClick={() => setPref("codeTab", l.key)}
+              className={cn(
+                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                l.key === lang
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <CodeBlock code={code[lang] ?? code.python} />
     </div>
   )
 }
@@ -185,7 +218,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
                     summary={alt.summary}
                     time={alt.complexity.time}
                     space={alt.complexity.space}
-                    code={alt.python}
+                    code={alt}
                   />
                 </TabsContent>
               ))}
@@ -194,7 +227,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
                   summary={problem.approach}
                   time={problem.complexity.time}
                   space={problem.complexity.space}
-                  code={problem.python}
+                  code={problem}
                 />
               </TabsContent>
             </Tabs>
@@ -203,7 +236,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
               summary={problem.approach}
               time={problem.complexity.time}
               space={problem.complexity.space}
-              code={problem.python}
+              code={problem}
             />
           )}
         </TabsContent>

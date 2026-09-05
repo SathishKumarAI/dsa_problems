@@ -31,7 +31,7 @@ export function HashMapView({ map }: { map: HashModel }) {
               key={e.key}
               data-k={`m${e.key}`}
               className={cn(
-                "rounded-md border px-2 py-0.5 font-mono text-xs tabular-nums transition-colors",
+                "rounded-md border px-2.5 py-1 font-mono text-sm tabular-nums transition-colors",
                 isProbe && map.hit
                   ? "border-chart-3 bg-chart-3/20 text-chart-3"
                   : isProbe
@@ -88,7 +88,7 @@ export function HashMapView({ map }: { map: HashModel }) {
                       <span
                         data-k={`b${e.key}`}
                         className={cn(
-                          "rounded border px-1 font-mono text-[11px] tabular-nums",
+                          "rounded border px-1.5 font-mono text-xs tabular-nums",
                           mark && map.hit
                             ? "border-chart-3 bg-chart-3/20 text-chart-3"
                             : mark

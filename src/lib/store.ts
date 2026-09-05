@@ -9,7 +9,7 @@
 //   xp                number     total XP
 //   activity-days     string[]   ISO days with any activity (streak source)
 //   scorecard:<slug>  object[]   last 50 challenge runs
-//   prefs             object     speed, code tab, motion
+//   prefs             object     speed, code tab, motion, reading column open
 
 import { useSyncExternalStore } from "react"
 
@@ -58,6 +58,46 @@ export function removeStored(key: string) {
   listeners.get(key)?.forEach((l) => l())
 }
 
+// ---------- whole-store moves (settings dialog) ----------
+
+const ownKeys = () => {
+  const out: string[] = []
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k?.startsWith(PREFIX)) out.push(k.slice(PREFIX.length))
+    }
+  } catch {
+    // no storage — nothing to list
+  }
+  return out
+}
+
+export function exportProgress(): Record<string, unknown> {
+  return Object.fromEntries(
+    ownKeys()
+      .filter((k) => k !== K.prefs) // preferences are per device
+      .map((k) => [k, read(k, null)])
+  )
+}
+
+// returns how many keys were written; throws on a non-object
+export function importProgress(obj: Record<string, unknown>): number {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj))
+    throw new Error("bad")
+  let n = 0
+  for (const [k, v] of Object.entries(obj)) {
+    if (k === K.prefs) continue
+    setStored(k, v)
+    n++
+  }
+  return n
+}
+
+export function resetProgress() {
+  for (const k of ownKeys()) if (k !== K.prefs) removeStored(k)
+}
+
 export function useStored<T>(key: string, fallback: T): T {
   return useSyncExternalStore(
     (l) => {
@@ -87,14 +127,20 @@ export interface Prefs {
   speed: number // slider 1..100
   codeTab: string // pseudo | python | java | cpp
   motion: "calm" | "normal" | "cinematic" | "off"
+  reading: boolean // journey page: reading column open (false = icon rail)
 }
 export const DEFAULT_PREFS: Prefs = {
   speed: 50,
   codeTab: "pseudo",
   motion: "normal",
+  reading: true,
 }
 
-export const usePrefs = () => useStored<Prefs>(K.prefs, DEFAULT_PREFS)
+// merged over the defaults so a pref added later reads as its default, not undefined
+export const usePrefs = (): Prefs => ({
+  ...DEFAULT_PREFS,
+  ...useStored<Partial<Prefs>>(K.prefs, DEFAULT_PREFS),
+})
 export const setPref = <P extends keyof Prefs>(k: P, v: Prefs[P]) =>
   updateStored(K.prefs, DEFAULT_PREFS, (p) => ({ ...p, [k]: v }))
 

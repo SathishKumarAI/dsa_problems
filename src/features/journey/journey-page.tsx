@@ -1,23 +1,37 @@
 // One journey on screen. Owns layout only — the stage (data, narration,
 // approach panel, timeline, controls) on the left, the reading column
 // (insight, tools, code, takeaways, chart, legend, resources) on the right,
-// the act stepper on top. Every behaviour comes from useJourney.
-// Panel map: docs/FEATURES.md §Journey page.
+// the act stepper on top. On lg the header stays put and the two columns
+// scroll independently (App gives the inset the viewport height). The
+// reading column collapses to an icon rail (toggle at its foot, pref
+// `reading`) that peeks open on hover.
+// Every behaviour comes from useJourney. Panel map: docs/FEATURES.md §Journey page.
 
 import {
   ArrowLeftIcon,
   ExternalLinkIcon,
   FlameIcon,
+  PanelRightCloseIcon,
+  PanelRightOpenIcon,
   RotateCcwIcon,
   StarIcon,
 } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { AnyJourney } from "@/engine"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { href } from "@/lib/route"
+import { setPref, usePrefs } from "@/lib/store"
 import { ActStepper } from "./act-stepper"
-import { HintLadder, PredictCard, QuizCard } from "./cards"
+import {
+  EdgeCaseCard,
+  EdgeCaseList,
+  HintLadder,
+  HintList,
+  PredictCard,
+  QuizCard,
+} from "./cards"
 import { ChallengeEditor } from "./challenge-editor"
 import { Legend } from "./chip-row"
 import { CodePanel } from "./code-panel"
@@ -25,12 +39,118 @@ import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
 import { StepsChart } from "./steps-chart"
 import { useJourney } from "./use-journey"
+import type { JourneyController } from "./use-journey"
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+    <div className="text-xs tracking-wide text-muted-foreground uppercase">
       {children}
     </div>
+  )
+}
+
+// sits at the foot of the reading column / its rail; sticky so it is reachable mid-scroll
+function ReadingToggle({ open }: { open: boolean }) {
+  return (
+    <div className="sticky bottom-4 mt-auto flex w-full justify-end lg:justify-center">
+      <Button
+        size="icon-sm"
+        variant="outline"
+        className="bg-card text-muted-foreground"
+        aria-label={open ? "hide reading column" : "show reading column"}
+        aria-expanded={open}
+        title={open ? "hide reading column (focus)" : "show reading column"}
+        onClick={() => setPref("reading", !open)}
+      >
+        {open ? <PanelRightCloseIcon /> : <PanelRightOpenIcon />}
+      </Button>
+    </div>
+  )
+}
+
+// Everything in the reading column, so the open column and the hover-peek
+// overlay of the closed rail draw the same thing.
+function ReadingBody({
+  j,
+  journey,
+}: {
+  j: JourneyController
+  journey: AnyJourney
+}) {
+  const { act, frame } = j
+  const storyAct = j.actIndex === 0
+  return (
+    <>
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        {act.insight && (
+          <p className="font-semibold text-chart-1">{act.insight}</p>
+        )}
+        <p className="text-muted-foreground">{act.idea}</p>
+      </div>
+
+      {storyAct && act.hints?.length ? <HintList hints={act.hints} /> : null}
+      {storyAct && (
+        <EdgeCaseList
+          edges={journey.edgeCases}
+          current={j.presetKey}
+          onLoad={j.applyPreset}
+        />
+      )}
+
+      {act.tools?.length ? (
+        <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+          <Label>what this approach is built from</Label>
+          {act.tools.map((t) => (
+            <div key={t.name}>
+              <b>{t.name}</b>{" "}
+              <span className="text-muted-foreground">— {t.role}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <CodePanel code={act.code} line={frame?.line ?? -1} />
+
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        <Label>what to understand</Label>
+        <ul className="flex flex-col gap-1.5 text-muted-foreground">
+          {act.takeaways.map((t, i) => (
+            <li key={i} className="flex gap-2">
+              <span className="text-chart-1">›</span>
+              {t}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {j.chart.length > 0 && (
+        <div className="rounded-xl border bg-card p-4">
+          <StepsChart rows={j.chart} active={j.actKey} />
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+        <Label>legend</Label>
+        <Legend />
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        same problem elsewhere:{" "}
+        {journey.resources.map((r, i) => (
+          <span key={r.url}>
+            {i > 0 && " · "}
+            <a
+              href={r.url}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-foreground hover:underline"
+            >
+              {r.label} <ExternalLinkIcon className="size-3" />
+            </a>
+          </span>
+        ))}
+      </p>
+    </>
   )
 }
 
@@ -39,9 +159,15 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const problem = PROBLEMS.find((p) => p.id === journey.problemId)
   const pattern = problem && PATTERNS.find((p) => p.id === problem.pattern)
   const { act, model, frame } = j
+  const reading = usePrefs().reading
+  const edge = frame?.corner
+    ? journey.edgeCases.find((e) => e.key === frame.corner)
+    : undefined
+  const [peek, setPeek] = useState(false)
+  const storyAct = j.actIndex === 0
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-4 lg:h-full">
       {/* header */}
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -99,17 +225,24 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
         />
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div
+        className={cn(
+          "grid gap-5 lg:min-h-0 lg:flex-1",
+          reading
+            ? "lg:grid-cols-[minmax(0,1fr)_24rem]"
+            : "lg:grid-cols-[minmax(0,1fr)_2.75rem]"
+        )}
+      >
         {/* ---------- the stage ---------- */}
         <section
-          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg"
+          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0 lg:overflow-y-auto"
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-sm text-muted-foreground">
               act {String(j.actIndex + 1).padStart(2, "0")} · {act.name}
             </span>
-            <span className="ml-auto font-mono text-[11px] text-muted-foreground">
+            <span className="ml-auto font-mono text-xs text-muted-foreground">
               {act.complexity}
             </span>
           </div>
@@ -117,7 +250,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           {(j.warning || j.info) && (
             <p
               className={cn(
-                "border-b px-4 py-2 text-xs",
+                "border-b px-4 py-2 text-sm",
                 j.warning
                   ? "bg-chart-5/10 text-chart-5"
                   : "bg-chart-2/10 text-chart-2"
@@ -129,13 +262,13 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           )}
 
           {j.data && "target" in j.data && (
-            <div className="px-4 pt-3 font-mono text-sm text-muted-foreground">
+            <div className="px-4 pt-4 font-mono text-base text-muted-foreground">
               target ={" "}
               <b className="text-foreground">{String(j.data.target)}</b>
             </div>
           )}
 
-          <div className="flex flex-col gap-4 px-2 py-5">
+          <div className="flex flex-col gap-5 px-3 py-8 md:px-6">
             {model ? (
               <Stage
                 model={model}
@@ -161,12 +294,19 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
 
           {/* narration: the star of the page */}
           <p
-            className="min-h-14 border-t bg-background/40 px-5 py-3 text-center text-sm leading-relaxed"
+            className="min-h-16 border-t bg-background/40 px-6 py-4 text-center text-base leading-relaxed lg:text-lg"
             aria-live="polite"
           >
             <span className="mr-1 text-primary">›</span>
             {frame?.note ?? ""}
           </p>
+
+          {/* a corner case biting on this very frame */}
+          {edge && (
+            <div className="border-t px-4 py-3">
+              <EdgeCaseCard edge={edge} />
+            </div>
+          )}
 
           {/* interruptions: predict / quiz / hints / reveal */}
           {(j.predict || j.quiz || j.hints || j.nextButton || j.adaptive) && (
@@ -214,7 +354,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                   </Button>
                 </div>
               )}
-              {j.hints && (
+              {j.hints && !storyAct && (
                 <HintLadder
                   hints={j.hints.hints}
                   tier={j.hints.tier}
@@ -257,73 +397,33 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           </div>
         </section>
 
-        {/* ---------- the reading column ---------- */}
-        <aside className="flex flex-col gap-4" aria-label="approach">
-          <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-            {act.insight && (
-              <p className="text-sm font-semibold text-chart-1">
-                {act.insight}
-              </p>
+        {/* ---------- the reading column (or its rail) ---------- */}
+        {!reading ? (
+          <aside
+            className="relative flex rounded-xl border bg-card p-1 lg:flex-col"
+            aria-label="approach (collapsed)"
+            onMouseEnter={() => setPeek(true)}
+            onMouseLeave={() => setPeek(false)}
+          >
+            {peek && (
+              <div
+                className="absolute top-0 right-0 z-20 hidden max-h-full w-[26rem] flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 text-[15px] leading-relaxed shadow-2xl lg:flex"
+                data-testid="reading-peek"
+              >
+                <ReadingBody j={j} journey={journey} />
+              </div>
             )}
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {act.idea}
-            </p>
-          </div>
-
-          {act.tools?.length ? (
-            <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-              <Label>what this approach is built from</Label>
-              {act.tools.map((t) => (
-                <div key={t.name} className="text-sm">
-                  <b>{t.name}</b>{" "}
-                  <span className="text-muted-foreground">— {t.role}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
-
-          <CodePanel code={act.code} line={frame?.line ?? -1} />
-
-          <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-            <Label>what to understand</Label>
-            <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-              {act.takeaways.map((t, i) => (
-                <li key={i} className="flex gap-2">
-                  <span className="text-chart-1">›</span>
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {j.chart.length > 0 && (
-            <div className="rounded-xl border bg-card p-4">
-              <StepsChart rows={j.chart} active={j.actKey} />
-            </div>
-          )}
-
-          <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-            <Label>legend</Label>
-            <Legend />
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            same problem elsewhere:{" "}
-            {journey.resources.map((r, i) => (
-              <span key={r.url}>
-                {i > 0 && " · "}
-                <a
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-foreground hover:underline"
-                >
-                  {r.label} <ExternalLinkIcon className="size-3" />
-                </a>
-              </span>
-            ))}
-          </p>
-        </aside>
+            <ReadingToggle open={false} />
+          </aside>
+        ) : (
+          <aside
+            className="flex flex-col gap-4 text-[15px] leading-relaxed lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+            aria-label="approach"
+          >
+            <ReadingBody j={j} journey={journey} />
+            <ReadingToggle open />
+          </aside>
+        )}
       </div>
     </div>
   )

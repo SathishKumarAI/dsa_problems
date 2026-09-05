@@ -21,8 +21,9 @@ problem, or `null`.
 
 ### `GET /api/problems/:id`
 
-The full problem (statement, examples, hints, approach, complexity, python, walkthrough,
-alternatives) plus `journey`.
+The full problem (statement, examples, hints, approach, complexity, walkthrough, alternatives)
+plus `journey`. Code fields are `python` and — where the problem has a journey — `java` and
+`cpp`, on the problem itself and on every entry in `alternatives`.
 
 ## Journeys
 
@@ -30,7 +31,8 @@ alternatives) plus `journey`.
 
 ```json
 [{ "slug": "two-sum", "title": "Two Sum", "problemId": "pair-sum", "acts": 7 },
- { "slug": "single-number", "title": "Single Number", "problemId": "single-number", "acts": 5 }]
+ { "slug": "single-number", "title": "Single Number", "problemId": "single-number", "acts": 5 },
+ { "slug": "three-sum", "title": "Triplets Summing to Zero", "problemId": "three-sum-zero", "acts": 5 }]
 ```
 
 ### `GET /api/journeys/:slug`
@@ -47,6 +49,8 @@ included; the client keeps those in-process.
              "takeaways": ["…"], "hints": ["…"], "quiz": [{ "q": "…", "choices": ["…"], "answer": 1, "explain": "…" }],
              "gate": null, "chart": true, "nextLabel": null }, …],
   "resources": [{ "label": "LeetCode 1", "url": "…" }],
+  "edgeCases": [{ "key": "duplicates", "name": "two equal values", "example": "[3, 1, 3, 8], target 6 → [0, 2]",
+                  "why": "…", "think": "…", "preset": "duplicates" }, …],
   "presets": { "random": { "label": "random", "info": null }, "big": { "label": "big (n = 20)", "info": "…" } },
   "defaultPreset": "random",
   "harder": { "preset": "big", "label": "…" },

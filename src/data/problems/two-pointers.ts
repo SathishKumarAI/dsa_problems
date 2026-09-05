@@ -158,6 +158,49 @@ export const twoPointers: Problem[] = [
                 while i < j and nums[j] == nums[j + 1]:
                     j -= 1
     return out`,
+    java: `public List<List<Integer>> threeSum(int[] nums) {
+    Arrays.sort(nums);
+    List<List<Integer>> out = new ArrayList<>();
+    for (int k = 0; k + 2 < nums.length; k++) {
+        if (nums[k] > 0) break;
+        if (k > 0 && nums[k] == nums[k - 1]) continue;
+        int i = k + 1, j = nums.length - 1;
+        while (i < j) {
+            int s = nums[k] + nums[i] + nums[j];
+            if (s < 0) i++;
+            else if (s > 0) j--;
+            else {
+                out.add(List.of(nums[k], nums[i], nums[j]));
+                i++; j--;
+                while (i < j && nums[i] == nums[i - 1]) i++;
+                while (i < j && nums[j] == nums[j + 1]) j--;
+            }
+        }
+    }
+    return out;
+}`,
+    cpp: `vector<vector<int>> threeSum(vector<int> nums) {
+    sort(nums.begin(), nums.end());
+    vector<vector<int>> out;
+    int n = nums.size();
+    for (int k = 0; k + 2 < n; k++) {
+        if (nums[k] > 0) break;
+        if (k > 0 && nums[k] == nums[k - 1]) continue;
+        int i = k + 1, j = n - 1;
+        while (i < j) {
+            int s = nums[k] + nums[i] + nums[j];
+            if (s < 0) i++;
+            else if (s > 0) j--;
+            else {
+                out.push_back({nums[k], nums[i], nums[j]});
+                i++; j--;
+                while (i < j && nums[i] == nums[i - 1]) i++;
+                while (i < j && nums[j] == nums[j + 1]) j--;
+            }
+        }
+    }
+    return out;
+}`,
     walkthrough: [
       { cells: { values: [-4, -1, -1, 0, 1, 2] }, caption: "Sorted: [-4, -1, -1, 0, 1, 2]. Fix each k, pair-search the suffix." },
       { cells: { values: [-4, -1, -1, 0, 1, 2], marks: { 0: "focus" }, labels: { 0: "k", 1: "i", 5: "j" } }, caption: "k = -4, need pair summing 4. -1+2=1 too small → i++. 0+2, 1+2 also fail. No pair." },
@@ -181,6 +224,32 @@ export const twoPointers: Problem[] = [
                 if nums[i] + nums[j] + nums[k] == 0:
                     found.add(tuple(sorted((nums[i], nums[j], nums[k]))))
     return [list(t) for t in found]`,
+        java: `public List<List<Integer>> threeSum(int[] nums) {
+    Set<List<Integer>> found = new HashSet<>();
+    int n = nums.length;
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            for (int k = j + 1; k < n; k++)
+                if (nums[i] + nums[j] + nums[k] == 0) {
+                    List<Integer> t = new ArrayList<>(List.of(nums[i], nums[j], nums[k]));
+                    Collections.sort(t);
+                    found.add(t);
+                }
+    return new ArrayList<>(found);
+}`,
+        cpp: `vector<vector<int>> threeSum(const vector<int>& nums) {
+    set<vector<int>> found;
+    int n = nums.size();
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            for (int k = j + 1; k < n; k++)
+                if (nums[i] + nums[j] + nums[k] == 0) {
+                    vector<int> t = {nums[i], nums[j], nums[k]};
+                    sort(t.begin(), t.end());
+                    found.insert(t);
+                }
+    return vector<vector<int>>(found.begin(), found.end());
+}`,
       },
       {
         name: "Hash per anchor",
@@ -202,6 +271,37 @@ export const twoPointers: Problem[] = [
                     out.append(triple)
             seen.add(x)
     return out`,
+        java: `public List<List<Integer>> threeSum(int[] nums) {
+    Arrays.sort(nums);
+    Set<List<Integer>> out = new LinkedHashSet<>();
+    for (int k = 0; k + 2 < nums.length; k++) {
+        if (k > 0 && nums[k] == nums[k - 1]) continue;
+        Set<Integer> seen = new HashSet<>();
+        int target = -nums[k];
+        for (int m = k + 1; m < nums.length; m++) {
+            int x = nums[m];
+            if (seen.contains(target - x)) out.add(List.of(nums[k], target - x, x));
+            seen.add(x);
+        }
+    }
+    return new ArrayList<>(out);
+}`,
+        cpp: `vector<vector<int>> threeSum(vector<int> nums) {
+    sort(nums.begin(), nums.end());
+    set<vector<int>> out;
+    int n = nums.size();
+    for (int k = 0; k + 2 < n; k++) {
+        if (k > 0 && nums[k] == nums[k - 1]) continue;
+        unordered_set<int> seen;
+        int target = -nums[k];
+        for (int m = k + 1; m < n; m++) {
+            int x = nums[m];
+            if (seen.count(target - x)) out.insert({nums[k], target - x, x});
+            seen.insert(x);
+        }
+    }
+    return vector<vector<int>>(out.begin(), out.end());
+}`,
       },
     ],
   },

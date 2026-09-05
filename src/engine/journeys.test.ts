@@ -8,6 +8,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { JOURNEYS, drain } from "./index.ts"
 import { classifySingle, singleNumber } from "./journeys/single-number.ts"
+import { allTriplets, threeSum } from "./journeys/three-sum.ts"
 import { classifyTwoSum, twoSum } from "./journeys/two-sum.ts"
 import type { AnyJourney, BaseFrame, Frame } from "./types.ts"
 
@@ -106,6 +107,36 @@ for (const j of JOURNEYS) {
     }
   })
 
+  test(`${j.slug}: edge cases — well-formed, and each one is explained in play at least once`, () => {
+    assert.ok(j.edgeCases.length >= 3, "bring at least three corner cases")
+    const keys = j.edgeCases.map((e) => e.key)
+    assert.equal(new Set(keys).size, keys.length, "edge keys unique")
+    for (const e of j.edgeCases) {
+      for (const k of ["name", "example", "why", "think"] as const)
+        assert.ok(e[k], `${e.key}.${k}`)
+      assert.ok(j.presets[e.preset], `${e.key} preset "${e.preset}" exists`)
+      // the preset that loads it must make some act tag a frame with it
+      const d = j.presets[e.preset].make()
+      const tagged = j.acts.some((a) =>
+        drain(a.run(d, {})).some((f) => f.corner === e.key)
+      )
+      assert.ok(
+        tagged,
+        `edge "${e.key}" is never explained on preset ${e.preset}`
+      )
+    }
+    // and no frame points at an edge case that does not exist
+    const data = [j.sample, ...Object.values(j.presets).map((p) => p.make())]
+    for (const d of data)
+      for (const a of j.acts)
+        for (const f of drain(a.run(d, {})))
+          if (f.corner)
+            assert.ok(
+              keys.includes(f.corner),
+              `${a.key}: unknown edge "${f.corner}"`
+            )
+  })
+
   test(`${j.slug}: every preset makes data the generators accept`, () => {
     for (const [k, p] of Object.entries(j.presets)) {
       const d = p.make()
@@ -148,6 +179,14 @@ for (const j of JOURNEYS) {
           !new RegExp(`\\b${esc(s)}\\b`, "i").test(p.info ?? ""),
           `preset ${k} leaks "${s}"`
         )
+    // edge cases sit in the story act's reading column — same rule
+    for (const e of j.edgeCases)
+      for (const s of spoilers)
+        for (const text of [e.name, e.example, e.why, e.think])
+          assert.ok(
+            !new RegExp(`\\b${esc(s)}\\b`, "i").test(text),
+            `edge case ${e.key} leaks "${s}": ${text.slice(0, 80)}`
+          )
   })
 }
 
@@ -183,6 +222,44 @@ test("two-sum: every approach returns the promised pair, including the traps", (
       undefined,
       key
     )
+  }
+})
+
+test("three-sum: every approach returns the same distinct triples, including the traps", () => {
+  const cases = [
+    {
+      nums: [-1, 0, 1, 2, -1, -4],
+      want: [
+        [-1, -1, 2],
+        [-1, 0, 1],
+      ],
+    },
+    { nums: [0, 0, 0, 0], want: [[0, 0, 0]] },
+    { nums: [1, 2, 3, 4], want: [] },
+    { nums: [-1, 0, 1], want: [[-1, 0, 1]] },
+    {
+      nums: [3, -2, -1, 0, 2, -3, 1, 1],
+      want: allTriplets([3, -2, -1, 0, 2, -3, 1, 1]),
+    },
+    {
+      nums: [-2, 0, 1, 1, 2],
+      want: [
+        [-2, 0, 2],
+        [-2, 1, 1],
+      ],
+    },
+  ]
+  const norm = (t: number[][]) =>
+    t
+      .map((x) => [...x].sort((a, b) => a - b))
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
+  for (const c of cases) {
+    assert.deepEqual(allTriplets(c.nums), norm(c.want))
+    for (const key of ["brute", "hash", "twoptr"]) {
+      const act = threeSum.acts.find((a) => a.key === key)!
+      const got = lastAnswer<number[][]>(drain(act.run(c, {})))
+      assert.deepEqual(norm(got ?? []), norm(c.want), `${key} on [${c.nums}]`)
+    }
   }
 })
 

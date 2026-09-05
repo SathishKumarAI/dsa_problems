@@ -8,6 +8,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | Question | File |
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
+| Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
 | Change → file | `README.md` |
@@ -23,6 +24,9 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   can see: not in the stepper, banners, chart, hints, quiz, URL. Locked acts are one "?" node.
   `unlocked:<slug>` is written only by the reveal click in `use-journey.ts` (and restart).
 - **Insight before name.** An act opens with the previous act's weakness; names arrive in the recap.
+- **Corner cases are content, taught twice.** `journey.edgeCases` (technique-neutral prose, read on
+  the story act) + frames tagged `corner: key` (explained in play). The test requires every case to
+  be tagged on its own preset.
 - **The content test is the gate.** `src/engine/journeys.test.ts` enforces schema, drain, notes,
   line-for-line code tabs and the disclosure rule. Don't weaken it; extend it.
 
@@ -38,6 +42,8 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   never import from it. Delete it when B25 says so.
 
 ## Traps
+
+- `-x` on a zero is `-0` and fails `deepEqual`; write `0 - x` when a value can be zero (three-sum hash act).
 
 - **React Compiler lint rules** (`react-hooks` v7): no sync `setState` in effects, no ref reads in
   render, no mutating frames. Use render-time adjusts (`if (x !== prev) { setPrev(x); … }`) or

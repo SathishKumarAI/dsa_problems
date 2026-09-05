@@ -4,7 +4,7 @@ One app: a pattern-organised interview practice set (10 patterns × 3 problems, 
 flashcards) plus **learning journeys** — problems built all the way down, Brilliant/Khan style:
 the need first, approaches unlocked one at a time by the previous one's weakness, predictions
 mid-playback, quiz gates, your own code driving the animation, and the pattern named only at the
-reveal. Two journeys today: **Two Sum** and **Single Number**. Plus a sorting / search / graph
+reveal. Three journeys today: **Two Sum**, **Single Number** and **Triplets Summing to Zero**. Plus a sorting / search / graph
 visualizer whose bars morph instead of teleporting.
 
 Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha, forced dark.
@@ -31,7 +31,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Theme colours (Catppuccin token mapping, `yellow`, `teal`) | `src/index.css` |
 | Routes (`#/journey/…`, `#/algorithms`, `#/p/…`) | `src/lib/route.ts`, `src/App.tsx` |
 | Add / edit a **journey** (acts, generators, presets, quiz, challenge) | `src/engine/journeys/<slug>.ts` → register in `src/engine/index.ts` |
-| Frame / act / journey / stage-model contracts | `src/engine/types.ts` |
+| Frame / act / journey / stage-model contracts (incl. `EdgeCase`, frame `corner`) | `src/engine/types.ts` |
 | The hash-map bucket arithmetic | `src/engine/hashmap.ts` |
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
@@ -44,7 +44,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Chip grammar (▲ ring ✓ fade) + legend | `src/features/journey/chip-row.tsx` |
 | Approach panels (sum, need, sorted, bits, recap) + FLIP scopes | `src/features/journey/panels.tsx` |
 | Hash map drawn as a hash map | `src/features/journey/hash-map-view.tsx` |
-| Quiz / predict / hint cards | `src/features/journey/cards.tsx` |
+| Quiz / predict / hint cards · corner-case callout · story-act cards (how to read, bring three inputs) | `src/features/journey/cards.tsx` |
 | Code tabs + line highlight | `src/features/journey/code-panel.tsx` |
 | Steps chart | `src/features/journey/steps-chart.tsx` |
 | Transport, speed, preset / custom input | `src/features/journey/controls.tsx` |
@@ -52,7 +52,10 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Act stepper (locked "?" node) | `src/features/journey/act-stepper.tsx` |
 | FLIP morph | `src/features/journey/use-flip.ts` |
 | Algorithm visualizer page / bars + graph drawing | `src/features/algorithms/algorithms-page.tsx` / `views.tsx` |
-| Every localStorage key (progress, XP, prefs) | `src/lib/store.ts` |
+| Every localStorage key (progress, XP, prefs) · export / import / erase | `src/lib/store.ts` |
+| Help / shortcuts / settings dialogs | `src/components/app-dialogs.tsx` (open state: `src/lib/dialogs.ts`) |
+| Keyboard map (`?` renders it) · app-wide keys `?` `f` | `src/lib/shortcuts.ts` · `src/components/global-keys.tsx` |
+| Sidebar hover-peek | `src/components/ui/sidebar.tsx` (`data-peek`) |
 | Sidebar / home / problem page / list | `src/components/app-sidebar.tsx` · `home-view.tsx` · `problem-detail.tsx` · `problem-list.tsx` |
 | Practice-set content (problems, patterns, SQL, flashcards) | `src/data/…` |
 | Static walkthrough player (practice set) | `src/components/step-player.tsx` |
@@ -66,9 +69,9 @@ sidebar, home card, problem-page CTA, API and tests pick it up. Full guide: `doc
 src/engine      pure TS, DOM-free — runs in node, in the browser, on the server
 src/api         routes.ts (the API) · client.ts (transport)
 src/features    journey/ · algorithms/  (React over the engine's view models)
-src/components  practice-set views + shadcn ui/
+src/components  shell (sidebar, dialogs, global keys) + practice-set views + shadcn ui/
 src/data        practice-set content
-src/lib         store · route · utils
+src/lib         store · route · dialogs · shortcuts · utils
 server/         API mounts (node:http, Vite middleware)
 docs/           the manifest and the documents it names
 legacy/visualizer   the original vanilla-JS visualizer, history preserved — reference only, not built

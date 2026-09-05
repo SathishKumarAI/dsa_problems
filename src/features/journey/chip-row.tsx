@@ -10,21 +10,21 @@ import { cn } from "@/lib/utils"
 import type { ChipModel } from "@/engine"
 
 const ROLE = {
-  base: "relative flex h-11 min-w-11 items-center justify-center rounded-lg border px-2 font-mono text-base font-medium tabular-nums transition-[background-color,border-color,color,opacity] duration-300",
+  base: "relative flex h-14 min-w-14 items-center justify-center rounded-lg border px-2.5 font-mono text-xl font-medium tabular-nums transition-[background-color,border-color,color,opacity] duration-300",
   neutral: "border-border bg-card text-foreground",
   anchor:
-    "border-chart-4 bg-chart-4/15 text-chart-4 before:absolute before:-top-4 before:text-[10px] before:text-chart-4 before:content-['▲']",
+    "border-chart-4 bg-chart-4/15 text-chart-4 before:absolute before:-top-5 before:text-xs before:text-chart-4 before:content-['▲']",
   focus:
     "border-foreground bg-[var(--yellow)]/20 text-foreground ring-2 ring-foreground/80 ring-offset-2 ring-offset-background",
   answer:
-    "border-chart-3 bg-chart-3/20 text-chart-3 before:absolute before:-top-4 before:text-[10px] before:text-chart-3 before:content-['✓']",
+    "border-chart-3 bg-chart-3/20 text-chart-3 before:absolute before:-top-5 before:text-xs before:text-chart-3 before:content-['✓']",
   dim: "opacity-25",
 }
 
 export function Chip({ chip, index }: { chip: ChipModel; index?: number }) {
   const r = chip.roles
   return (
-    <div className="flex flex-col items-center gap-1 pt-4" data-k={chip.key}>
+    <div className="flex flex-col items-center gap-1.5 pt-5" data-k={chip.key}>
       <div
         className={cn(
           ROLE.base,
@@ -41,7 +41,7 @@ export function Chip({ chip, index }: { chip: ChipModel; index?: number }) {
       >
         {chip.value}
         {chip.sub && (
-          <span className="absolute -right-1 -bottom-1 rounded bg-background px-0.5 font-mono text-[9px] leading-none text-muted-foreground">
+          <span className="absolute -right-1 -bottom-1 rounded bg-background px-0.5 font-mono text-[11px] leading-none text-muted-foreground">
             {chip.sub}
           </span>
         )}
@@ -49,7 +49,7 @@ export function Chip({ chip, index }: { chip: ChipModel; index?: number }) {
       {index !== undefined && (
         <span
           className={cn(
-            "font-mono text-[10px] leading-none",
+            "font-mono text-xs leading-none",
             r.includes("dim")
               ? "text-muted-foreground/30"
               : "text-muted-foreground/70"
@@ -73,7 +73,7 @@ export function ChipRow({
 }) {
   return (
     <div
-      className={cn("flex flex-wrap items-end justify-center gap-2", className)}
+      className={cn("flex flex-wrap items-end justify-center gap-2.5", className)}
       aria-label="array"
     >
       {chips.map((c, i) => (
@@ -85,7 +85,7 @@ export function ChipRow({
 
 export function Legend() {
   const item = (cls: string, marker: string, label: string) => (
-    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <span
         className={cn(
           "relative inline-flex size-3.5 items-center justify-center rounded border",

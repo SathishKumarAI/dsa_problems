@@ -3,9 +3,19 @@ import { useState } from "react"
 import { SearchIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
-import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item"
+import {
+  Item,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "@/components/ui/item"
 import { cn } from "@/lib/utils"
 import type { Pattern } from "@/data"
 import { problemsByPattern } from "@/data"
@@ -46,7 +56,9 @@ export function ProblemList({ pattern, onOpen }: Props) {
         <Empty>
           <EmptyHeader>
             <EmptyTitle>No matches</EmptyTitle>
-            <EmptyDescription>No problem title contains “{query}”.</EmptyDescription>
+            <EmptyDescription>
+              No problem title contains “{query}”.
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -59,15 +71,25 @@ export function ProblemList({ pattern, onOpen }: Props) {
                   onCheckedChange={() => toggleSolved(p.id)}
                   aria-label={`Mark ${p.title} solved`}
                 />
-                <button className="flex-1 text-left" onClick={() => onOpen(p.id)}>
+                <button
+                  className="flex-1 text-left"
+                  onClick={() => onOpen(p.id)}
+                >
                   <ItemContent>
-                    <ItemTitle className={cn(solved.has(p.id) && "text-muted-foreground line-through")}>
+                    <ItemTitle
+                      className={cn(
+                        solved.has(p.id) && "text-muted-foreground line-through"
+                      )}
+                    >
                       {p.title}
                     </ItemTitle>
                     <ItemDescription>{p.brief}</ItemDescription>
                   </ItemContent>
                 </button>
-                <Badge variant="outline" className={cn("font-mono", difficultyClass[p.difficulty])}>
+                <Badge
+                  variant="outline"
+                  className={cn("font-mono", difficultyClass[p.difficulty])}
+                >
                   {p.difficulty}
                 </Badge>
               </div>

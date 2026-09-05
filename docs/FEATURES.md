@@ -13,15 +13,19 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 
 | Feature | Behaviour | File | Status |
 |---|---|---|---|
-| Sidebar | Three groups: **Journeys** (one row per journey with `earned/acts` badge, ✓ when complete; the visualizer), **Patterns** (10 rows, glyph + name + `solved/total`), **Data rounds** (SQL, flashcards). Active row highlighted from the hash route. Every row is an `<a href="#/…">`, so back/forward and middle-click work. | `src/components/app-sidebar.tsx` | shipped (visual) |
+| Sidebar | Four groups: **DSA** (one row per journey with `earned/acts` badge, ✓ when complete; the visualizer), **DSA · patterns** (10 rows, glyph + name + `solved/total`), **SQL** (drills), **Data science** (flashcards). Header: wordmark + **?** help button. Footer: where-you-are line (`DSA · journey · Two Sum`), **settings**, **shortcuts**, **collapse**. Active row highlighted from the hash route. Every row is an `<a href="#/…">`, so back/forward and middle-click work. | `src/components/app-sidebar.tsx` **Collapse** button at the foot of the rail shrinks it to a 3 rem icon rail (icons + tooltips, badges and labels hidden, wordmark becomes `d.`); the button stays on the rail to expand again. State persists in the `sidebar_state` cookie (shadcn default). | `src/components/app-sidebar.tsx` | shipped (cdp: 256 → 48 px, toggle at y = 960 of 1000) |
 | Mobile header | Below `md`, a top bar with the sidebar trigger and the wordmark; the sidebar becomes a sheet. | `src/App.tsx`, `ui/sidebar.tsx` | shipped (cdp 390 px) |
+| Lazy features | Journey page and algorithm visualizer are `React.lazy` chunks behind a `Suspense` "loading…" line; content pages never download them. Engine/data chunk is still shared and eager (sidebar reads `JOURNEYS`). | `App.tsx` | shipped (build: 400 + 204 kB initial, 44 / 21 / 9 kB lazy; cdp: all three routes render, 0 errors) |
 | Hash router | `#/`, `#/p/<pattern>`, `#/p/<pattern>/<problem>`, `#/journey/<slug>?act=&step=`, `#/algorithms?algo=`, `#/sql`, `#/flashcards`. Unknown routes fall back to home. `replaceQuery` mirrors state without history entries. | `src/lib/route.ts`, `App.tsx` | shipped (cdp) |
-| Wide layouts | Journey and visualizer pages get `max-w-7xl` with tighter padding; content pages stay `max-w-3xl/4xl`. | `App.tsx` | shipped |
+| Wide layouts | Journey page grows to `max-w-[110rem]` (fills the width both rails free up); visualizer `max-w-7xl`; content pages stay `max-w-3xl/4xl`. | `App.tsx`, `journey-page.tsx` | shipped (cdp: stage 717 → 1072 → 1280 px as the two rails close) |
 | Theme | Catppuccin Mocha, forced dark (`<html class="dark">`). Tokens in `index.css`: chart-1 mauve, chart-2 blue, chart-3 green, chart-4 peach, chart-5 red, yellow, teal. | `src/index.css` | shipped |
 | Reduced motion | `prefers-reduced-motion: reduce` zeroes CSS transitions/animations; FLIP checks it too. | `index.css`, `use-flip.ts` | shipped (code; not device-tested) |
-| Settings gear (theme, default speed, motion dial, restart, export/import) | — | `legacy/visualizer/js/ui-prefs.js` | backlog #B3 (speed + motion prefs exist in `lib/store.ts`; no UI for motion yet) |
-| Focus tiers (full / stage / cinema), collapsible rails | — | `legacy/visualizer/js/shell.js` | backlog #B4 |
-| `?` shortcuts overlay | — | `legacy/visualizer/js/ui-prefs.js` | backlog #B5 (shortcuts listed as text on the visualizer page) |
+| Settings dialog | Footer **settings** → dialog: playback speed (range), motion dial (calm / normal / cinematic / off), code tab, reading column on/off, reset preferences; **progress**: copy JSON (clipboard, falls back to filling the textarea), import pasted JSON, erase all progress (two clicks within 4 s). Preferences are not exported (per device). No theme toggle until B14. | `app-dialogs.tsx` `SettingsDialog`, `lib/store.ts` `exportProgress/importProgress/resetProgress` | shipped (cdp: motion → `cinematic` stored; copy fell back to textarea in headless; import of 2 keys → `xp=99`, `unlocked:single-number=4`) |
+| Collapsible rails (focus) | Both rails close from a button at their foot and stay as a thin rail holding that button. Left: sidebar (above). Right: journey reading column → 2.75 rem rail, pref `reading` in `dsa:prefs`. **`f`** closes both / reopens both (`GlobalKeys`). | `app-sidebar.tsx`, `journey-page.tsx` `ReadingToggle`, `global-keys.tsx` | shipped (cdp: `f` → 256→48 px and 384→44 px, again → back) |
+| Hover-peek | A closed rail opens **over** the content while the pointer is on it and closes when it leaves; the layout gap keeps the rail width so nothing shifts. Left: `ui/sidebar.tsx` `data-peek` (container 48 → 256 px, gap stays 48). Right: `journey-page.tsx` overlay `data-testid=reading-peek` (26 rem, scrolls, same `ReadingBody`). Hover only — touch devices use the buttons. | `ui/sidebar.tsx`, `journey-page.tsx` | shipped (cdp: mouseover/mouseout dispatched) |
+| Independent scroll panels (journey, ≥ lg) | The inset is viewport-high; header + stepper stay put; the **stage** and the **reading column** each scroll on their own (`overflow-y-auto`), as does the fixed sidebar. Below `lg` the page scrolls normally. | `App.tsx` (`panels`), `journey-page.tsx` | shipped (cdp: page scrollHeight 1000 = viewport, aside 818/1063 scrolls) |
+| `?` shortcuts dialog | `?` anywhere (or footer **shortcuts**) → dialog rendering `lib/shortcuts.ts` by scope: everywhere (`?`, `f`, `Esc`), journey + visualizer (`space`, `→`, `←`, `r`), mouse (hover-peek, scrub). Keys ignored in inputs. | `app-dialogs.tsx` `ShortcutsDialog`, `lib/shortcuts.ts`, `global-keys.tsx` | shipped (cdp: 9 rows) |
+| Help dialog ("how to use") | **?** icon in the sidebar header (and the mobile top bar) → dialog: the idea, reading a problem, the stage, the layout, progress; buttons to shortcuts and settings. | `app-dialogs.tsx` `HelpDialog` | shipped (cdp: 5 sections) |
 | Command palette | — | — | backlog #B12 |
 
 ## 2. Home
@@ -49,6 +53,8 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Static walkthrough player | Frames with cells (roles focus/compare/window/done + pointer labels) or text; play (1.8 s/step), prev/next, restart, dot scrubber, ←/→ keys; terminal chrome + legend. | `step-player.tsx` | shipped (pre-existing) |
 | Code block | Mono `<pre>` with copy button (✓ for 1.5 s). | `code-block.tsx` | shipped |
 | SQL drills, flashcards | Unchanged from baseline. | `sql-view.tsx`, `flashcards-view.tsx` | shipped (pre-existing) |
+
+| Approach & Solution → language strip | Python 3 / Java / C++ buttons above the code block (only languages present); choice is the shared `codeTab` pref (`pseudo` falls back to Python). Journeyed problems carry all three for every approach (test). | `problem-detail.tsx` `SolutionBlock`, `data/types.ts` `Code` | shipped (cdp: pair-sum → Java tab → `public int[] pairSum…`, pref `java`; three-sum brute force → Java stays selected) |
 
 ## 4. Journey page — the map
 
@@ -117,6 +123,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Predict card | Blue card "YOU DRIVE — PREDICT THE NEXT MOVE". Appears when the *next* frame has `predict` and has not been asked on this timeline; playback pauses **before** that frame renders. Choice buttons; right = green, wrong = red + the right one green; feedback "exactly — watch:" / "not quite — watch what actually happens:"; after 0.7 s / 1.6 s the frame plays and playback resumes if it was playing. Scrubbing or ← skips the question. Asked once per direction (two pointers), once for the return (brute), once at i = 0 (hash), once at i = 1 (XOR). | `cards.tsx`, `use-journey.ts` guard | shipped (cdp brute act) |
 | Quiz card | Mauve card "CHECK YOURSELF (1/2)". Appears when an act finishes and the *next* act is still locked and the act has a quiz not yet passed (`quizzes:<slug>`). Wrong → explanation text + retry, counts towards the hint ladder; right → next question after 0.5 s; all right → `+5 XP`, act key recorded, reveal button appears. | `cards.tsx`, `use-journey.ts` | shipped (cdp: quizzes = ["story"]) |
 | Reveal button | Green: "I understand the problem — try solving it ▸" (act 1) / "I get it — what's the weakness? ▸" / the act's `nextLabel`. Click → `unlocked = idx+2`, `+10 XP`, switch to the new act, stepper node zooms in. If the next act was already unlocked (revisit), a plain "Next: <name> ▸" instead. | `use-journey.ts` `nextButton` | shipped (cdp: unlocked 1→2, xp 15) |
+| Corner-case callout | Teal card "CORNER CASE · <name>" + the example in mono, the journey's `why` and a `think` line, under the narration while the current frame carries `corner: <key>`. The frame's own note says what this approach did about it. Every corner case is tagged by at least one act on its own preset (test). Never on the story act's hint ladder — the story act shows hints up front instead. | `cards.tsx` `EdgeCaseCard`, `journey-page.tsx`, journey `edgeCases` | shipped (cdp: brute on `duplicates` → `data-edge=duplicates` after the predict; sort on `max` → `last`) |
 | Hint ladder | Dashed card "STUCK? EARN IT WITH A SMALLER PUSH". Offered after **45 s** with no new frame shown, or after **2 wrong quiz answers**. "give me a nudge" → nudge; "a bigger hint" → concept; then the line to stare at. Never the answer. Resets on act change. | `cards.tsx`, `use-journey.ts` | shipped (code; timer path not screenshot-tested) |
 | Adaptive difficulty | Peach card "🔥 Flawless — no wrong answers, first-try green." + the journey's `harder.label` button → applies the harder preset. Only when zero wrong quiz answers this visit **and** the challenge passed on attempt 1. | `use-journey.ts`, `journey-page.tsx` | shipped (code; not exercised in cdp) |
 
@@ -130,9 +137,9 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | › forward | Pauses, then steps; a predict frame ahead opens the predict card instead. Disabled at end. | same | shipped (cdp) |
 | ↺ restart act | Pauses, pos = 0, clears prediction. Disabled at 0. | same | shipped |
 | Speed | 1..100 → 2.0 s … 0.1 s per step (`delayFor`); stored pref shared with the visualizer. | `use-player.ts`, `lib/store.ts` | shipped |
-| Preset select | `random`, `answer at the extremes`, `equal values (3 + 3)`, `big (n = 20)`, `no solution`, `two valid pairs` (Two Sum); `random`, `n = 1`, `loner is the largest`, `big (n = 25)`, `two singles`, `a triple` (Single Number). Changing applies immediately and re-runs classify. | `controls.tsx` `DataControls`, journey `presets` | shipped (test: every preset drains) |
+| Preset select | `random`, `answer at the extremes`, `equal values (3 + 3)`, `big (n = 20)`, `n = 2 (smallest legal)`, `negatives (target 0)`, `no solution`, `two valid pairs` (Two Sum); `random`, `n = 1`, `loner is the largest`, `loner is 0`, `big (n = 25)`, `two singles`, `a triple` (Single Number). Changing applies immediately and re-runs classify. | `controls.tsx` `DataControls`, journey `presets` | shipped (test: every preset drains) |
 | ⚄ new | Regenerates from the current preset. | same | shipped |
-| Custom input | Comma/space-separated integers (0–999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
+| Custom input | Comma/space-separated integers (−999…999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
 | Keyboard | `space` play/pause, `→` step, `←` back, `r` restart — ignored inside inputs/textarea/select. | `use-journey.ts` | shipped (code) |
 
 ### 4.6 Code challenge (Two Sum act 6 "Code It")
@@ -151,19 +158,24 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Element | Behaviour | File | Status |
 |---|---|---|---|
 | Insight + idea | Insight bold mauve (the weakness the previous act had), idea below. | `journey-page.tsx` | shipped |
+| How to read this problem (story act only) | Accordion of the story act's `hints`, labelled **reread · formalize · bring inputs** (Khamies §3.1: understand, formalize as input → output, reread for hidden promises, bring examples). Visible up front instead of the idle hint ladder, one click each. | `cards.tsx` `HintList` | shipped (cdp: 3 triggers, first opens) |
+| Bring three inputs (story act only) | Teal card listing every `edgeCases` entry: name, example (mono), `why`, `think`, and a **load this input** button that applies its preset (becomes **loaded ✓**, `aria-pressed`). Prose is technique-neutral so it may sit on act 0 (disclosure test covers it). | `cards.tsx` `EdgeCaseList`, `use-journey.ts` `applyPreset` | shipped (cdp: click → preset `duplicates`, data `3, 1, 3, 8`, banner) |
 | Built from | The act's `tools`: name bold + role. | same | shipped |
-| Code panel | Tabs pseudocode / Python 3 / Java / C++ (only those present); active line lit with a mauve left bar; the tab choice is a stored pref shared by every act and the visualizer. | `code-panel.tsx` | shipped (cdp) |
+| Code panel | Tabs pseudocode / Python 3 / Java / C++ (only those present); active line lit with a mauve left bar; the tab choice is a stored pref shared by every act and the visualizer. Hidden with the column when it is collapsed — the stage is the focus. | `code-panel.tsx` | shipped (cdp) |
 | Takeaways | Three `›` bullets. | `journey-page.tsx` | shipped |
 | Steps chart | Horizontal bars, one per **unlocked** algorithm act (never story, challenge, recap), single hue, active act saturated, direct labels, `title` tooltip. Data from `POST chart` with `upto = unlocked`. | `steps-chart.tsx`, `api/routes.ts` | shipped (cdp + test "never includes acts past upto") |
 | Legend | Four swatches with the marker channel drawn. | `chip-row.tsx` `Legend` | shipped |
 | Resources | "same problem elsewhere:" external links with ↗. | `journey-page.tsx` | shipped |
+| Reading toggle | Sticky button at the foot of the column (`PanelRightClose`) collapses it to a rail with the same button (`PanelRightOpen`); below `lg` the rail is a full-width bar. `aria-expanded` mirrors the state. | `journey-page.tsx` `ReadingToggle`, `lib/store.ts` `prefs.reading` | shipped (cdp: 384 → 44 px, prefs written) |
+| Type scale | Reading column 15 px, narration 16 px (18 px ≥ `lg`), chips 56 px tall / 20 px digits, sum equation 24/36 px, code 13.5 px on 28 px lines, bit cells 36 px. | `journey-page.tsx`, `chip-row.tsx`, `panels.tsx`, `code-panel.tsx`, `hash-map-view.tsx` | shipped (cdp computed: narration 18px, chip 56) |
 
 ### 4.8 Journey content
 
 | Journey | Acts | Presets | Challenge | Status |
 |---|---|---|---|---|
-| Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 6 | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
-| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 6 | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
+| Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 8 + 4 corner cases (tiny, duplicates, negatives, nosolution) | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
+| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 7 + 4 corner cases (single, last, zero, broken) | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
+| Triplets Summing to Zero (LeetCode 15) | The Problem · Brute Force · Anchor + Hash · Anchor + Two Pointers · The Reveal | 6 + 4 corner cases (tiny, dupes, zeros, none) | — (output is a list of triples; harness compares pairs) | shipped (test: 3 approaches agree on 6 inputs incl. all-zeros and no-answer; the test caught a real dedup bug in the hash act before it shipped) |
 
 ## 5. Algorithm visualizer
 
@@ -186,16 +198,24 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | `xp` | quiz / unlock / challenge | badges |
 | `activity-days` | opening a journey | streak |
 | `scorecard:<slug>` | Run tests | "your best" |
-| `prefs` | speed slider, code tab | both players |
+| `prefs` | speed slider, code tab / language strip, settings dialog | both players, journey layout, FLIP |
 
-Not yet stored: motion dial UI, sidebar widths, tour seen, SRS ladder, stalls (all backlog).
+`prefs` fields: `speed` (1–100), `codeTab` (`pseudo` · `python` · `java` · `cpp`), `motion`
+(`calm` · `normal` · `cinematic` · `off`), `reading` (journey reading column open). `usePrefs`
+merges over `DEFAULT_PREFS`, so a field added later reads as its default. The settings dialog can
+copy every key **except** `prefs` out as JSON, import it back, or erase it.
+
+Outside `dsa:` — the sidebar's open/closed flag is shadcn's `sidebar_state` cookie.
+
+Not yet stored: tour seen, SRS ladder, stalls, theme (all backlog).
 
 ## 7. API and engine (not on screen)
 
 | Feature | Status |
 |---|---|
-| `GET /api/problems`, `/problems/:id`, `/journeys`, `/journeys/:slug`; `POST preset / parse / classify / run / chart`; `GET /api/algorithms`, `/:key`; `POST /:key/run` | shipped (6 API tests; `curl` against the Vite middleware returned the journey list) |
+| `GET /api/problems`, `/problems/:id`, `/journeys`, `/journeys/:slug` (acts, presets, `edgeCases`, challenge); `POST preset / parse / classify / run / chart`; `GET /api/algorithms`, `/:key`; `POST /:key/run` | shipped (6 API tests; `curl` against the Vite middleware returned the journey list and the corner cases) |
 | Standalone server `npm run api` (port 8787, CORS `*`) | shipped (code; not load-tested) |
 | Client transport: HTTP under Vite / `VITE_API_URL`, in-process otherwise | shipped |
-| Content gate: schema, drain on sample, note on every frame, code tabs line-for-line, disclosure lint, presets drain, JSON-safe frames | shipped (10 tests) |
+| Content gate: schema, drain on sample, note on every frame, code tabs line-for-line, disclosure lint (acts, preset banners, corner-case prose), corner cases tagged on their preset, presets drain, JSON-safe frames | shipped (18 tests across three journeys) |
+| Practice-set gate (`data/problems.test.ts`): ids unique, patterns exist, every code block is a function, journeyed problems carry Python + Java + C++ on every approach | shipped (3 tests) |
 | Correctness: sorts, binary search, BFS/DFS coverage, Dijkstra vs Bellman-Ford, hash arithmetic | shipped (10 tests) |
