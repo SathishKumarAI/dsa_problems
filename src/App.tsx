@@ -104,7 +104,7 @@ export default function App() {
             <Button
               size="icon-sm"
               variant="ghost"
-              className="ml-auto text-muted-foreground"
+              className="ml-auto size-11 text-muted-foreground"
               aria-label="how to use this app"
               onClick={() => openDialog("help")}
             >

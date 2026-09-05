@@ -448,6 +448,45 @@ describe(
       }
     })
 
+    test("a phone spends less chrome on the way to the stage, and the stepper is one row (U2, U14, U11)", async () => {
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.goto(`${server.base}/#/journey/two-sum?act=hash&step=6`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const header = document.querySelector('header').getBoundingClientRect();
+        const stage = document.querySelector('[aria-label=stage]').getBoundingClientRect();
+        const pill = [...document.querySelectorAll('header button')]
+          .find(b => b.getAttribute('aria-haspopup') === 'dialog');
+        const transport = ['Play', 'Step back', 'Step forward', 'Restart act']
+          .map(l => document.querySelector('[aria-label="' + l + '"]'))
+          .filter(Boolean)
+          .map(el => Math.round(el.getBoundingClientRect().height));
+        pill?.click();
+        await wait(600);
+        const sheetActs = document.querySelectorAll('[role=dialog] nav button').length;
+        return {
+          headerH: Math.round(header.height),
+          stageTop: Math.round(stage.top),
+          pillH: pill ? Math.round(pill.getBoundingClientRect().height) : 0,
+          transport,
+          sheetActs,
+          scrollW: document.documentElement.scrollWidth,
+        };
+      `)
+      await page.resize(1440)
+      assert.ok(out.headerH <= 220, `header is ${out.headerH}px of chrome`)
+      assert.ok(out.stageTop <= 320, `the stage starts at ${out.stageTop}px`)
+      assert.ok(out.pillH >= 44, "the act pill is not a touch target")
+      assert.ok(
+        out.transport.every((h) => h >= 44),
+        `transport heights ${out.transport.join(", ")}`
+      )
+      assert.ok(out.sheetActs >= 7, "the sheet did not list the acts")
+      assert.equal(out.scrollW, 390)
+    })
+
     // ---------- 4. the shell ----------
 
     test("`f` closes both rails and reopens them; `?` opens the shortcuts dialog", async () => {
