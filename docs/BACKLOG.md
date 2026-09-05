@@ -47,6 +47,13 @@ a port; the original implementation is the reference, not the spec — the React
 | B26 | ☑ **Focus key** — `f` closes both rails / reopens both (`Esc` is left to dialogs). Shipped 2026-09-04 with hover-peek on closed rails. | Mouse-free focus for a keyboard-driven page. | S | legacy #41 |
 | B25 | ☐ **Retire `legacy/visualizer/`** once B3–B5, B9–B11, B13, B15–B17, B20 have shipped or been explicitly dropped. | It is reference material, not product; delete it when nothing left in it is un-ported. | S | — |
 
+## Requested, specced, not started
+
+| # | Item | Why | Size | Tier |
+|---|---|---|---|---|
+| R1 | ☐ **The reference card** — problem page reads statement → constraints → hints → an **approach ladder** (naive first, each rung carrying the weakness that forces the next), Python 3 always plus Java/C++ where the shape differs, and "solve on LeetCode ↗" as the primary action. **No editor** — the learner codes on LeetCode; this app explains. Full spec, including what we will and will not source from other sites: [`PROBLEMS.md`](PROBLEMS.md) §P1. | Requested 2026-09-05: "I want to see the solutions here, especially Python 3 and different approaches — the brute force naive approach followed by others — and why we are moving forward to this new solution." Reasoning is the product; the editor is not. | L | **P1** |
+| R2 | ☐ **`constraints: string[]` on `Problem`** — rendered under the statement, and each corner case cites the constraint it comes from. | A corner case is trivia until a constraint makes it a decision. Prerequisite for R1. | S | **P1** |
+
 ## Bugs found by the gates
 
 | # | Bug | Found by | State |

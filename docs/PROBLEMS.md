@@ -116,6 +116,79 @@ Shipped 2026-09-04 (`feat/practice-code-tabs`): `Code {python, java?, cpp?}` on 
 journey. Backfilled: Two Sum, Single Number, Triplets Summing to Zero (9 approaches). The rest
 land with their problem's PR, in pipeline order.
 
+## P1 — the reference card (requested 2026-09-05)
+
+**The ask, in the learner's words:** the problem page should read the way a problem page reads on
+LeetCode — statement, then constraints, then hints — and then show **the solutions**: the naive one
+first, then each better one, in Python 3 (Java and C++ where they add something), with the reasoning
+for *why* you would move from one to the next. **No editor here.** The learner writes and submits
+code on LeetCode; this app is for understanding, revisiting and drilling the reasoning.
+
+### What this changes
+
+| Today | After |
+|---|---|
+| Statement, three hints, walkthrough, "Approach & Solution" tabs (optimal + alternatives) | Statement, **constraints**, examples, hints, then an **approach ladder** — worst to best, each with the weakness that forces the next |
+| Code shown per tab, no argument between them | Every rung answers: what it costs, what breaks it, what the next rung fixes |
+| A journeyed problem also embeds the engine stage | Unchanged — the stage stays; the ladder sits under it |
+| No editor (never had one) | Still none, deliberately. A **"solve on LeetCode ↗"** button is the call to action |
+
+### The shape of one rung
+
+```
+name            "Brute force" · "Sort + two pointers" · "One-pass hash"
+cost            time · space, and the n where it stops being fine
+idea            two or three sentences, plain words
+why now         the weakness in the PREVIOUS rung that this one removes
+code            Python 3 (always) · Java · C++ (where the language changes the shape)
+watch out       the corner case that breaks a first draft of THIS approach
+```
+
+The ladder is the same content the journey already owns (`Act.insight`, `Act.idea`, `Act.code`,
+`edgeCases`), so for a journeyed problem it should be **generated from the journey**, not written
+twice — the B1 rule. For the other 28, it is authored in `data/problems/*.ts`.
+
+### Constraints: a new field
+
+`Problem` gains `constraints: string[]` (`1 <= nums.length <= 10^4`, `-10^9 <= nums[i] <= 10^9`,
+"exactly one valid answer exists"). They are what turn a corner case from trivia into a decision, so
+the corner-case list should cite the constraint it comes from.
+
+### Sourcing, and the line we do not cross
+
+The request mentioned scraping LeetCode, GeeksforGeeks, Stack Overflow and similar.
+
+- **We do not copy problem statements, editorials or explanations from those sites.** They are
+  copyrighted. Every statement in this repo is an original write-up of a classic, public-knowledge
+  problem, and that continues.
+- **What we do instead:** state the problem in our own words, link out to the original
+  (`resources` already does this), and write our own explanations. Standard algorithms and their
+  textbook implementations are public knowledge; a site's particular prose is not.
+- **Research sources** for the reasoning: the books already on disk (`Sources on disk` above), plus
+  the language's own documentation. Where a specific site's framing genuinely shaped a rung, cite it
+  by link rather than reproducing it.
+
+If the intent is a personal offline copy of LeetCode's own text, that is a different thing from this
+repo and should stay out of it.
+
+### Definition of done
+
+- [ ] `constraints: string[]` on `Problem`, rendered under the statement; corner cases cite one.
+- [ ] `ApproachRung` type; the ladder rendered worst → best with the "why now" line between rungs.
+- [ ] Journeyed problems generate their ladder from the journey's acts (no second copy).
+- [ ] Python 3 on every rung; Java and C++ where they differ structurally.
+- [ ] "Solve on LeetCode ↗" as the page's primary action; no editor is added.
+- [ ] Ladder respects the ledger the way the walkthrough does: a started, unfinished journey shows
+      only rungs already earned, with a link back.
+- [ ] `npm run check` + `npm run test:ui`, a FEATURES row, and a content test that every rung has a
+      cost, a "why now" (except the first) and Python.
+
+### Open question for the learner
+
+Does the ladder belong on the **problem page** (one page per problem, scroll to compare) or as a
+**fifth tab** beside Hints / Walkthrough / Approach & Solution? The page is already long; my
+inclination is to replace "Approach & Solution" with the ladder rather than add to it.
+
 ## Open questions (discuss before wave 2)
 
 1. **A "Python" sidebar section.** Requested; there is no Python-only content yet. Options: (a) the
