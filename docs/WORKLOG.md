@@ -4,6 +4,29 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — docs refresh: the maps catch up with the code
+
+Branch `docs/refresh-after-shell-work`. Docs only.
+
+Five branches shipped in one day and `ARCHITECTURE.md` had not been touched since the merge, so it
+described a shell, a frame contract and a panel union that no longer existed. Refreshed:
+
+| File | What was stale |
+|---|---|
+| `ARCHITECTURE.md` | no shell section (sidebar, dialogs, global keys, hover-peek, scroll panels); frame contract missing `corner`; `PanelModel` missing `terms`; state section missing `prefs` merge semantics, export/import and the `sidebar_state` cookie; invariants missing the corner-case and three-language rules; layer diagram missing `lib/dialogs.ts`, `lib/shortcuts.ts` and the lazy chunks |
+| `PRD.md` | "two journeys" everywhere; non-goals still listed the settings gear, export/import and focus tiers as unbuilt; no P9 (corner cases) or P10 (three languages); §5.1 missing the act-1 cards, the callout and the layout; no payload requirement |
+| `API.md` | `GET /api/journeys` sample listed two journeys; problem payload did not mention `java` / `cpp` |
+| `FEATURES.md` | `prefs` row named two fields of four; no export/import or cookie note; test counts from before the new gates |
+| `RESEARCH.md` | no entry for the books on disk — Khamies §3.1 is where the corner-case work came from |
+| `README.md` | `src/lib` and `src/components` one-liners predate `dialogs.ts` / `shortcuts.ts` / the shell |
+
+**Evidence.** A claim-checker script (scratchpad, not in the repo) reads the repo and asserts the
+docs agree: journeys and act counts in `API.md` and `FEATURES.md` vs `JOURNEYS`, every
+`PanelModel` kind documented in `AUTHORING.md` **and** `ARCHITECTURE.md`, every `K` key and every
+`Prefs` field named in `FEATURES.md`, the stated test count vs `npm test`, and every relative
+link. Result: journeys `two-sum` 7 acts / `single-number` 5 / `three-sum` 5, 10 panel kinds, 7
+store keys, 4 prefs, 41 tests, 26 links, 0 broken — no mismatches.
+
 ## 2026-09-04 (later) — third journey: Triplets Summing to Zero
 
 Branch `feat/journey-three-sum`, stacked on `feat/practice-code-tabs`. `docs/PROBLEMS.md` #3.

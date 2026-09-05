@@ -10,8 +10,9 @@ insight at a time* — and animates the way 3Blue1Brown's Manim animates — *st
 don't teleport*. Every other DSA site tells you the answer and then shows you why it works. This
 one withholds the name until you have felt the weakness it fixes. The product is the result of
 merging two repositories: a pattern-organised practice site (31 problems, SQL drills, stats
-flashcards) and a vanilla-JS visualizer with two deeply built "learning journeys" (Two Sum,
-Single Number) plus a sorting/search/graph visualizer.
+flashcards) and a vanilla-JS visualizer with two deeply built "learning journeys" plus a
+sorting/search/graph visualizer. Three journeys exist today (Two Sum, Single Number, Triplets
+Summing to Zero); the rest of the 31 problems are queued one at a time in `PROBLEMS.md`.
 
 ## 2. Users
 
@@ -27,15 +28,21 @@ Single Number) plus a sorting/search/graph visualizer.
 **Goals (this release)**
 
 1. One repository, one app, one navigation. The two former repos are not distinguishable to a user.
-2. Two problems built to completion as journeys: **Two Sum** (7 acts) and **Single Number**
-   (5 acts). "Completion" = story → approaches earned one at a time → quiz gates → predict mode →
-   code challenge with the learner's own code driving the animation (Two Sum) → the reveal.
+2. Problems built to **completion** as journeys, one at a time: **Two Sum** (7 acts),
+   **Single Number** (5), **Triplets Summing to Zero** (5). "Completion" = read the problem like
+   a book (restate, formalize, bring three inputs) → story → approaches earned one at a time →
+   corner cases explained where they bite → quiz gates → predict mode → code challenge with the
+   learner's own code driving the animation (where the harness fits) → the reveal. The queue and
+   the per-problem definition of done live in `PROBLEMS.md`.
 3. Stage graphics that a designer would not call dated: a colourblind-safe chip grammar, a hash
    map drawn as buckets and chains, bit rows for XOR, bars that morph, a single-hue steps chart.
 4. A small HTTP API in front of the same engine, so content and frames can be served to any
    client, and so the engine stays DOM-free by construction.
 5. Code laid out so the next journey is one content file, and so a change means opening one
    small file (see the change → file table in the root README).
+5b. A shell that gets out of the way: each panel scrolls on its own, either rail closes to a thin
+   strip (and peeks back on hover), and settings / shortcuts / "how to use" are one click or one
+   key away.
 6. Documentation that lets the next session start from fact: this PRD, a feature audit, a backlog,
    a roadmap, an architecture map, an API contract, an authoring guide, a worklog.
 
@@ -44,9 +51,13 @@ Single Number) plus a sorting/search/graph visualizer.
 - Accounts, sync, or any server-side persistence. Progress is localStorage. (Roadmap Q2.)
 - Running learner code on the server. The code challenge runs in a browser Worker.
 - Porting the visualizer's pattern page, structure explorers, timed challenge, first-visit tour,
-  spaced repetition, stall analytics, export/import, settings gear, focus tiers. All tracked in
-  `BACKLOG.md`; the original source stays reachable under `legacy/visualizer/`.
-- More than two journeys. Depth before breadth; the machinery must be proven on two first.
+  spaced repetition, stall analytics. All tracked in `BACKLOG.md`; the original source stays
+  reachable under `legacy/visualizer/`. (The settings dialog, export/import and focus rails
+  shipped 2026-09-04 — B3, B4, B5, B26.)
+- Breadth over depth. One problem is in flight at a time and it ships complete; a "tab bar of
+  approaches" is not a journey.
+- An automated UI test (B2). Every UI claim in this repo is a browser run recorded in the worklog
+  until that lands.
 - Light theme. The app is Catppuccin Mocha, forced dark, until the palette work in the roadmap.
 
 ## 4. The pedagogy — requirements that are invariants
@@ -64,6 +75,8 @@ that fails them is a product regression, not a style nit.
 | P6 | **Predict before render.** Playback pauses *before* a predict frame draws; scrubbing skips predictions (review is not learning). | player guard |
 | P7 | **Broken promises are allowed in.** Presets that break the problem's contract (two singles, no solution) are shown with a warning, because watching XOR lie is the lesson. | `classify` + warning banner |
 | P8 | **Motion is continuous.** Re-renders FLIP keyed elements; `prefers-reduced-motion` and the motion preference can turn it off. | `use-flip.ts` |
+| P9 | **Corner cases are taught twice.** Every journey ships ≥ 3 corner cases in technique-neutral prose (read on act 1, loadable with one click) and each is *explained in play* by at least one approach on its own preset. | edge-case test; `frame.corner` |
+| P10 | **Every approach exists in three languages.** A journeyed problem carries Python, Java and C++ for every approach, line-for-line against the pseudocode. | line-count test; `data/problems.test.ts` |
 
 ## 5. Functional requirements
 
@@ -78,9 +91,13 @@ that fails them is a product regression, not a style nit.
   params (target), apply. Invalid custom input shows an inline error and keeps the old data.
 - Warning banner (red) when the input breaks the contract; info banner (blue) for a preset's note.
 - Reading column: insight + idea, "what this approach is built from", code panel with tabs,
-  takeaways, steps chart (unlocked algorithm acts only), legend, resources.
+  takeaways, steps chart (unlocked algorithm acts only), legend, resources. On act 1 it also
+  carries "how to read this problem" (reread · formalize · bring inputs) and "bring three inputs"
+  — every corner case with a button that loads it.
 - Interruptions under the narration: predict card, quiz card, hint ladder, reveal button, adaptive
-  difficulty offer.
+  difficulty offer, and the corner-case callout on any frame tagged `corner`.
+- Layout: on wide screens the stage and the reading column scroll independently; either rail
+  closes from a button at its foot (or `f`) and peeks open on hover.
 - Code challenge (Two Sum act 6): editor, Run tests, Watch my code on this input, per-case results
   with edge tags, scorecard (correctness, array touches vs reference, best-ever), self-review
   (auto-checked where a regex honestly can), Set 2 at n = 400 with the touch-count bars.
@@ -98,7 +115,9 @@ that fails them is a product regression, not a style nit.
 ### 5.3 Practice set (carried over)
 
 - 10 patterns × 3 problems (+ Single Number = 31), each with statement, examples, three
-  progressive hints, a static walkthrough, approach, complexity, worked Python and alternatives.
+  progressive hints, a static walkthrough, approach, complexity, worked code and alternatives.
+  Code is Python, plus Java and C++ wherever the problem has a journey (a language strip shares
+  the journey's `codeTab` preference).
 - Solved checkbox per problem; counts in sidebar and home. Problems with a journey show a CTA.
 - SQL drills, stats flashcards: unchanged.
 
@@ -116,7 +135,8 @@ the Vite dev middleware, the standalone Node server and the in-process client us
 | Accessibility | Every state has a non-colour channel (marker / icon / fade); `:focus-visible` rings on every control; narration is `aria-live="polite"`; reduced motion honoured | chip grammar, `index.css` |
 | Responsiveness | 390 px viewport has no horizontal scroll; bucket table scrolls inside its own box | verified via CDP screenshot |
 | Privacy | No network call carries learner data anywhere but the local API; nothing leaves the browser | there is no analytics endpoint |
-| Quality gate | `npm run check` (tsc, eslint, node tests) exits 0 on every commit | CI-less today; run locally |
+| Quality gate | `npm run check` (tsc, eslint, node tests) exits 0 on every commit | CI-less today; run locally — 41 tests |
+| Payload | A content page must not download the stage | `React.lazy` on the journey and visualizer; index ~400 kB + shared ~204 kB, journey chunk ~44 kB |
 
 ## 7. Success metrics (local, no tracking)
 
