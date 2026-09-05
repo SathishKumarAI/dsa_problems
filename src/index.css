@@ -183,6 +183,18 @@
   animation: answer-pulse 520ms ease-out;
 }
 
+/* an act just finished: its ribbon node takes the done colour flat for a beat
+   before settling back (R8). Flat fill, no glow — the ✓ is the lasting mark. */
+@keyframes step-done {
+  0%   { background-color: color-mix(in oklab, var(--chart-3) 35%, transparent);
+         border-color: var(--chart-3); }
+  100% { background-color: transparent; border-color: var(--border); }
+}
+
+@utility animate-step-done {
+  animation: step-done 320ms ease-out;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
