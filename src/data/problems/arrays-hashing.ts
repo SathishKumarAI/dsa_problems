@@ -28,6 +28,24 @@ export const arraysHashing: Problem[] = [
             return [seen[target - x], i]
         seen[x] = i
     return []`,
+    java: `public int[] pairSum(int[] nums, int target) {
+    Map<Integer, Integer> seen = new HashMap<>();
+    for (int i = 0; i < nums.length; i++) {
+        int need = target - nums[i];
+        if (seen.containsKey(need)) return new int[]{seen.get(need), i};
+        seen.put(nums[i], i);
+    }
+    return new int[0];
+}`,
+    cpp: `vector<int> pairSum(const vector<int>& nums, int target) {
+    unordered_map<int, int> seen;
+    for (int i = 0; i < (int)nums.size(); i++) {
+        auto it = seen.find(target - nums[i]);
+        if (it != seen.end()) return {it->second, i};
+        seen[nums[i]] = i;
+    }
+    return {};
+}`,
     walkthrough: [
       { cells: { values: [3, 6, 1, 5], labels: { 0: "i" } }, caption: "Target 8. Map empty; stand on 3." },
       { cells: { values: [3, 6, 1, 5], marks: { 0: "focus" }, labels: { 0: "i" } }, caption: "Need 8 − 3 = 5. Not seen → store {3: 0}, move on." },
@@ -48,6 +66,19 @@ export const arraysHashing: Problem[] = [
             if nums[i] + nums[j] == target:
                 return [i, j]
     return []`,
+        java: `public int[] pairSum(int[] nums, int target) {
+    for (int i = 0; i < nums.length; i++)
+        for (int j = i + 1; j < nums.length; j++)
+            if (nums[i] + nums[j] == target) return new int[]{i, j};
+    return new int[0];
+}`,
+        cpp: `vector<int> pairSum(const vector<int>& nums, int target) {
+    int n = nums.size();
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++)
+            if (nums[i] + nums[j] == target) return {i, j};
+    return {};
+}`,
       },
       {
         name: "Sort + two pointers",
@@ -66,6 +97,35 @@ export const arraysHashing: Problem[] = [
         else:
             j -= 1
     return []`,
+        java: `public int[] pairSum(int[] nums, int target) {
+    Integer[] order = new Integer[nums.length];
+    for (int k = 0; k < nums.length; k++) order[k] = k;
+    Arrays.sort(order, (a, b) -> Integer.compare(nums[a], nums[b]));
+    int i = 0, j = nums.length - 1;
+    while (i < j) {
+        int s = nums[order[i]] + nums[order[j]];
+        if (s == target) {
+            int[] ans = {order[i], order[j]};
+            Arrays.sort(ans);
+            return ans;
+        }
+        if (s < target) i++; else j--;
+    }
+    return new int[0];
+}`,
+        cpp: `vector<int> pairSum(const vector<int>& nums, int target) {
+    int n = nums.size();
+    vector<int> order(n);
+    iota(order.begin(), order.end(), 0);
+    sort(order.begin(), order.end(), [&](int a, int b) { return nums[a] < nums[b]; });
+    int i = 0, j = n - 1;
+    while (i < j) {
+        int s = nums[order[i]] + nums[order[j]];
+        if (s == target) return {min(order[i], order[j]), max(order[i], order[j])};
+        if (s < target) i++; else j--;
+    }
+    return {};
+}`,
       },
     ],
   },
@@ -218,6 +278,16 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     for x in nums:
         acc ^= x
     return acc`,
+    java: `public int singleNumber(int[] nums) {
+    int acc = 0;
+    for (int x : nums) acc ^= x;
+    return acc;
+}`,
+    cpp: `int singleNumber(const vector<int>& nums) {
+    int acc = 0;
+    for (int x : nums) acc ^= x;
+    return acc;
+}`,
     walkthrough: [
       { cells: { values: [4, 1, 2, 1, 2] }, caption: "acc = 0. XOR is the identity on 0." },
       { cells: { values: [4, 1, 2, 1, 2], marks: { 0: "focus" }, labels: { 0: "x" } }, caption: "0 ^ 4 = 4." },
@@ -239,6 +309,20 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
         if c == 1:
             return x
     return -1`,
+        java: `public int singleNumber(int[] nums) {
+    Map<Integer, Integer> counts = new HashMap<>();
+    for (int x : nums) counts.merge(x, 1, Integer::sum);
+    for (Map.Entry<Integer, Integer> e : counts.entrySet())
+        if (e.getValue() == 1) return e.getKey();
+    return -1;
+}`,
+        cpp: `int singleNumber(const vector<int>& nums) {
+    unordered_map<int, int> counts;
+    for (int x : nums) counts[x]++;
+    for (auto& [x, c] : counts)
+        if (c == 1) return x;
+    return -1;
+}`,
       },
       {
         name: "Sort & scan",
@@ -250,6 +334,19 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
         if s[i] != s[i + 1]:
             return s[i]
     return s[-1]`,
+        java: `public int singleNumber(int[] nums) {
+    int[] s = nums.clone();
+    Arrays.sort(s);
+    for (int i = 0; i + 1 < s.length; i += 2)
+        if (s[i] != s[i + 1]) return s[i];
+    return s[s.length - 1];
+}`,
+        cpp: `int singleNumber(vector<int> nums) {
+    sort(nums.begin(), nums.end());
+    for (int i = 0; i + 1 < (int)nums.size(); i += 2)
+        if (nums[i] != nums[i + 1]) return nums[i];
+    return nums.back();
+}`,
       },
     ],
   },

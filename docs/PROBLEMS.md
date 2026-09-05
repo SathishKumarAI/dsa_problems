@@ -55,9 +55,9 @@ today (the journey acts carry all four when the journey ships).
 
 | # | Problem (id) | Pattern | Diff. | Approaches (worst → best) | Code today | Panel kinds | Book | Status |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Two Sum (`pair-sum` → journey `two-sum`) | arrays & hashing | easy | brute · sort + two pointers · two-pass hash · one-pass hash | py (+ journey: 4 langs) | chips, sorted, sum, hash | Khamies §3.2.1 | ✓ |
-| 2 | Single Number (`single-number`) | arrays & hashing | easy | brute · hash counts · sort & scan · XOR | py (+ journey: 4 langs) | chips, hash, sorted, bits | Xu ch. bit manipulation | ✓ |
-| 3 | Triplets Summing to Zero (`three-sum-zero`) | two pointers | medium | brute O(n³) · hash per anchor · sort + anchor + two pointers (skip duplicates) | py | chips, sorted, sum (anchor ▲ + L/R) | Khamies §3.2.2 | ▶ |
+| 1 | Two Sum (`pair-sum` → journey `two-sum`) | arrays & hashing | easy | brute · sort + two pointers · two-pass hash · one-pass hash | py · java · cpp | chips, sorted, sum, hash | Khamies §3.2.1 | ✓ |
+| 2 | Single Number (`single-number`) | arrays & hashing | easy | brute · hash counts · sort & scan · XOR | py · java · cpp | chips, hash, sorted, bits | Xu ch. bit manipulation | ✓ |
+| 3 | Triplets Summing to Zero (`three-sum-zero`) | two pointers | medium | brute O(n³) · hash per anchor · sort + anchor + two pointers (skip duplicates) | py · java · cpp | chips, sorted, sum (anchor ▲ + L/R) | Khamies §3.2.2 | ▶ |
 | 4 | Pair Sum in Sorted Array (`sorted-pair-sum`) | two pointers | easy | brute · hash · two pointers (sorted input, no sort) | py | chips, sum | Khamies §5.1 | ☐ |
 | 5 | Widest Container (`container-water`) | two pointers | medium | brute · two pointers moving the shorter wall | py | **bars** (port `BarsView` into a panel kind, with a shaded area) | Xu two pointers | ☐ |
 | 6 | Single Buy/Sell Profit (`best-trade`) | sliding window | easy | brute · running minimum | py | bars + a running-min line | Xu sliding windows | ☐ |
@@ -108,15 +108,11 @@ today (the journey acts carry all four when the journey ships).
 
 ## Cross-cutting item — code in three languages on the practice set
 
-The practice-set `Solution` type carries `python` only. Before wave 1 problem 3 ships:
-
-- extend `Solution` / `Problem` with `java?` and `cpp?` (same shape as the journey's `CodeTabs`),
-- render tabs on the problem page (`problem-detail.tsx` `SolutionBlock`), pref-shared with the
-  journey's `codeTab`,
-- add a content test: every `python` block parses as a function definition; `java` / `cpp` present
-  when the journey for that problem exists.
-
-Backfill order = the pipeline order; a problem's languages land in its own PR.
+Shipped 2026-09-04 (`feat/practice-code-tabs`): `Code {python, java?, cpp?}` on `Problem` and
+`Solution`; language strip on the problem page (`SolutionBlock`), pref-shared with the journey's
+`codeTab`; `data/problems.test.ts` requires Java + C++ on every approach once the problem has a
+journey. Backfilled: Two Sum, Single Number, Triplets Summing to Zero (9 approaches). The rest
+land with their problem's PR, in pipeline order.
 
 ## Open questions (discuss before wave 2)
 
