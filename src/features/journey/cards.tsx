@@ -228,7 +228,7 @@ export function EdgeCaseList({
         cases below show where a first draft breaks. Load one, then step through
         the approaches you have earned — each explains the case when it hits it.
       </p>
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-3" aria-label="corner cases">
         {edges.map((e) => (
           <li
             key={e.key}

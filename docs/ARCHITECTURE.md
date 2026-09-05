@@ -286,10 +286,19 @@ shadcn's `sidebar_state` cookie.
 
 ```
 npm run check      # tsc -b · eslint · node --test  (all must exit 0; 41 tests today)
+npm run test:ui    # vite build + preview + system Chrome over CDP  (18 checks, ~28 s)
 npm run build      # vite build — index ~400 kB + shared engine/data ~204 kB + lazy chunks
-npm run dev        # then drive the page — the UI has no automated test yet (B2)
+npm run dev        # then drive the page yourself for anything the smoke test cannot see
 ```
 
 Node tests are necessary and not sufficient: a rule can read correctly and still render wrong.
-This round's UI verification was done in headless Chrome over CDP (see the worklog); B2 makes
-that repeatable.
+That is what `test/` is for — `browser.mjs` starts `vite preview` on an OS-assigned port, launches
+the system Chrome headless with a throwaway profile and talks CDP over node's built-in WebSocket,
+so there is no new dependency and no jsdom pretending to have layout. `ui-smoke.test.mjs` holds
+the assertions.
+
+**What the smoke test still cannot see**, and therefore must be driven by hand: autoplay timing
+and the 45 s hint timer (both wall-clock), the code challenge (a Worker with its own timing), the
+adaptive-difficulty offer, hover-peek (CDP `Input.dispatchMouseEvent` moves a real pointer, but
+the peek is a hover state React owns — the current tests fire synthetic events instead), and
+anything about colour or spacing. A screenshot diff would cover the last one; it is not built.

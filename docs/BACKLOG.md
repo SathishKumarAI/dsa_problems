@@ -11,7 +11,7 @@ a port; the original implementation is the reference, not the spec — the React
 | # | Item | Why | Size | Ref |
 |---|---|---|---|---|
 | B1 | ☐ **Unify the flagship walkthroughs** — the practice-set pages for Pair With Target Sum and Single Number render their Walkthrough tab from the journey engine (`api.run` on the sample) instead of the hand-written `walkthrough` frames. | Two sources of truth for the same problem drift; the journey is the richer one. | S | PRD open question 1 |
-| B2 | ☐ **UI smoke test in CI** — a `node --test` that boots the app in jsdom (or a Playwright run) and checks: every route renders, zero console errors, quiz → reveal writes `unlocked=2`. | Every UI branch this session was verified by hand over CDP; that does not scale past two journeys. | M | legacy #21 |
+| B2 | ☑ **UI smoke test** — `npm run test:ui`: `vite preview` + the system Chrome over CDP, no new dependencies. 18 checks: every route renders with a clean console, the earn loop writes the ledger, deep links (honoured, followed in-app, ignored when locked), corner-case loading, `f` / `?`, settings persistence, 390 px. Shipped 2026-09-05 (`test/ui-smoke`); it caught a real deep-link bug on its first run. Not yet in CI (no CI exists). | Every UI branch was verified by hand over CDP; that does not scale. | M | legacy #21 |
 | B3 | ☑ **Settings dialog** — speed, motion dial, code tab, reading column, reset prefs, copy/import progress JSON, erase progress. Shipped 2026-09-04 (`feat/shell-panels-help`). Still open: theme toggle (with B14), reduce-motion override. | The motion dial had no UI; export/import is the cross-device story until there is a backend. | M | legacy #5, #22, #45 |
 | B4 | ☑ **Collapsible rails** — sidebar and reading column each close from a button at their foot into a thin rail that keeps the button; both states persist. Shipped 2026-09-04 (`feat/journey-focus-rails`). The `f` / `Esc` cycling half moved to B26. | The stage is the product; a learner mid-act should be able to remove everything else without losing play/speed. | S | legacy #41 |
 | B5 | ☑ **`?` shortcuts dialog** from `lib/shortcuts.ts` (by scope). Shipped 2026-09-04. | The visualizer page listed keys as text; the journey page listed none. | S | legacy #13, #42 |
@@ -46,6 +46,14 @@ a port; the original implementation is the reference, not the spec — the React
 | B24 | ☐ **Sync backend** — smallest possible store keyed by a login-less token, syncing the same JSON as B3's export. Only after export/import friction is proven. | Real backend only when the need is real. | L | legacy #23 |
 | B26 | ☑ **Focus key** — `f` closes both rails / reopens both (`Esc` is left to dialogs). Shipped 2026-09-04 with hover-peek on closed rails. | Mouse-free focus for a keyboard-driven page. | S | legacy #41 |
 | B25 | ☐ **Retire `legacy/visualizer/`** once B3–B5, B9–B11, B13, B15–B17, B20 have shipped or been explicitly dropped. | It is reference material, not product; delete it when nothing left in it is un-ported. | S | — |
+
+## Bugs found by the gates
+
+| # | Bug | Found by | State |
+|---|---|---|---|
+| G1 | A deep link pasted while the same journey was already open changed the hash but not the act — `?act=` was read only in a `useState` initializer, and nothing remounts on a hash change. | B2's deep-link test | ☑ fixed 2026-09-05 (render-time adjust in `use-journey.ts`, guarded by `unlocked`; regression test added) |
+| G2 | `target = -s[k]` produced `-0` on the all-zeros preset, so `[0, -0, 0]` was not equal to `[0, 0, 0]`. | three-sum correctness test | ☑ fixed 2026-09-04 |
+| G3 | Two rows holding the same amount drew twice in the hash view (React duplicate key). | browser run | ☑ fixed 2026-09-04 |
 
 ## Animations and front-end proposals — for review (2026-09-04)
 

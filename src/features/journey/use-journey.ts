@@ -108,6 +108,21 @@ export function useJourney(journey: AnyJourney) {
     linkedIndex > -1 && linkedIndex < unlocked ? linked! : journey.acts[0].key
   )
   const [linkedStep] = useState(() => Number(route.query.get("step")) || 0)
+  // A deep link pasted while this journey is already open changes only the
+  // hash, so nothing remounts. Follow it here (render-time adjust, not an
+  // effect) — but only into an act the learner has earned, and never over
+  // the ?act= this hook writes back itself.
+  const [prevLinked, setPrevLinked] = useState(linked)
+  if (linked !== prevLinked) {
+    setPrevLinked(linked)
+    if (
+      linked &&
+      linkedIndex > -1 &&
+      linkedIndex < unlocked &&
+      linked !== actKey
+    )
+      setActKey(linked)
+  }
   const actIndex = journey.acts.findIndex((a) => a.key === actKey)
   const act = journey.acts[actIndex]
   const [frames, setFrames] = useState<BaseFrame[]>([])
