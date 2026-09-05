@@ -17,7 +17,8 @@ engine/     journeys, algorithms, hashmap, chips, types — DOM-free, node-testa
    │  imports
 data/       the practice-set content (problems, patterns, sql, flashcards)
 lib/        store.ts (localStorage) · route.ts (hash router) · dialogs.ts (which dialog is
-            open) · shortcuts.ts (the key map) · utils · difficulty
+            open) · shortcuts.ts (the key map) · disclosure.ts (may this name be
+            shown yet?) · progress.ts (solved + acts earned) · utils · difficulty
 ```
 
 `JourneyPage` and `AlgorithmsPage` are `React.lazy` chunks (`App.tsx`), so a content page never
@@ -133,19 +134,28 @@ it. A new key means a new row there in the same commit.
 
 ## 4b. Every box on the journey page
 
+The section is **not** one scroll box. Only the middle scrolls, so the sentence explaining the step
+and the controls that drive it can never be pushed off (UX audit U1). Below `lg` nothing scrolls
+internally and the page flows normally.
+
 ```
 ┌ header: back · title · subtitle · XP · restart ────────────────────────────────┐
-│ ActStepper — one node per unlocked act, one "?" for the rest                    │
-├ stage — scrolls on its own ≥ lg ──────────────────┬ reading column / rail ─────┤
-│ act strip · warning/info banner · data bar        │ insight + idea             │
-│ Stage (panels.tsx): ChipRow → Panel               │ (act 1) how to read this   │
-│ narration (aria-live)                             │ (act 1) bring three inputs │
-│ EdgeCaseCard when frame.corner is set             │ tools ("built from")       │
-│ PredictCard · QuizCard · reveal · adaptive · Hints│ CodePanel (tabs, lit line) │
-│ Transport (timeline, ▶ ‹ › ↺, speed)              │ takeaways · StepsChart     │
-│ DataControls (preset, new, custom, params, apply) │ Legend · resources · ▣     │
+│ ActStepper — ribbon ≥ xl; one row + bottom sheet below                          │
+├ stage (a column, ≥ lg) ───────────────────────────┬ reading column / rail ─────┤
+│ act strip                              ← fixed    │ insight + idea             │
+│ ┌ middle: overflow-y-auto ───────────────────────┐│ (act 1) how to read this   │
+│ │ warning/info banner · target line              ││ (act 1) bring three inputs │
+│ │ Stage (panels.tsx): ChipRow → Panel            ││ tools ("built from")       │
+│ │ EdgeCaseCard when frame.corner is set          ││ CodePanel (tabs, lit line) │
+│ └────────────────────────────────────────────────┘│ takeaways · StepsChart     │
+│ narration (aria-live)                  ← footer   │ Legend · resources         │
+│ PredictCard · QuizCard · reveal · adaptive · Hints│ ▣ toggle in its own lane   │
+│ Transport · DataControls                          │                            │
 └───────────────────────────────────────────────────┴────────────────────────────┘
 ```
+
+The visualizer page uses the same shape: viewport-high inset, a `flex-1` stage whose drawing fills
+the height, and a picker and right rail that scroll on their own (U9).
 
 | Box | Component | State it reads | Why it exists |
 |---|---|---|---|
@@ -262,6 +272,11 @@ everything *except* `prefs` (preferences are per device); the settings dialog is
 caller. One piece of state is deliberately not ours: the sidebar's open/closed flag lives in
 shadcn's `sidebar_state` cookie.
 
+`spoilers` (the learner opted out of catalogue masking) is the only other boolean. Anything that
+needs *several* keys at once — the pattern mask reads one per journey, the home page's resume card
+reads the same — subscribes with `useStoreVersion()` and then reads the plain getters, because a
+hook may not subscribe to keys in a loop.
+
 `prefs` (speed, code tab, motion, reading column) is read through `usePrefs`, which **merges the
 stored object over `DEFAULT_PREFS`** — a preference added after a user first saved must read as
 its default, not `undefined`. `exportProgress` / `importProgress` / `resetProgress` move
@@ -284,16 +299,19 @@ shadcn's `sidebar_state` cookie.
 3c. **A problem with a journey carries Python, Java and C++ on every approach** in the practice
    set. Tested (`data/problems.test.ts`).
 4. **Every UI preference goes through `lib/store.ts`.** No component reads `localStorage`.
-5. **Palette lives in `src/index.css` only.** Components use tokens (`chart-1`…`chart-5`, `yellow`, `teal`).
+5. **Palette, type scale and container widths live in `src/index.css` only**, and components reach
+   for the *role* — `text-body` for a sentence, `text-meta` for a label, never a raw `text-[13px]`.
+   The decisions are `docs/DESIGN.md`; a UI check fails if prose drops below 14 px or a line runs
+   past 80 characters.
 6. **New animation honours reduced motion.**
 7. **`legacy/visualizer/` is read-only reference.** Excluded from tsc, eslint, prettier.
 
 ## 10. Verification — what "done" means here
 
 ```
-npm run check      # tsc -b · eslint · node --test  (all must exit 0; 41 tests today)
-npm run test:ui    # vite build + preview + system Chrome over CDP  (18 checks, ~28 s)
-npm run build      # vite build — index ~400 kB + shared engine/data ~204 kB + lazy chunks
+npm run check      # tsc -b · eslint · node --test  (all must exit 0; 43 tests today)
+npm run test:ui    # vite build + preview + system Chrome over CDP  (31 checks, ~60 s)
+npm run build      # vite build — index ~420 kB + shared engine/data ~263 kB + lazy chunks
 npm run dev        # then drive the page yourself for anything the smoke test cannot see
 ```
 
@@ -303,8 +321,13 @@ the system Chrome headless with a throwaway profile and talks CDP over node's bu
 so there is no new dependency and no jsdom pretending to have layout. `ui-smoke.test.mjs` holds
 the assertions.
 
-**What the smoke test still cannot see**, and therefore must be driven by hand: autoplay timing
-and the 45 s hint timer (both wall-clock), the code challenge (a Worker with its own timing), the
-adaptive-difficulty offer, hover-peek (CDP `Input.dispatchMouseEvent` moves a real pointer, but
-the peek is a hover state React owns — the current tests fire synthetic events instead), and
-anything about colour or spacing. A screenshot diff would cover the last one; it is not built.
+The 31 browser checks cover: every route rendering with a clean console, the earn loop writing the
+ledger, deep links (honoured, followed in-app, ignored when locked), corner cases loading, the
+catalogue mask across its three states, the code challenge running a real solution, the rails and
+dialogs, the type scale and measure on four routes, the mobile layout, the visualizer filling its
+viewport, and the resume card appearing and disappearing.
+
+**What it still cannot see**, and therefore must be driven by hand: autoplay timing and the 45 s
+hint timer (both wall-clock), the adaptive-difficulty offer, hover-peek (the peek is a hover state
+React owns; the tests fire synthetic events), reduced motion, and anything about colour or spacing.
+A screenshot diff would cover the last one; it is not built.

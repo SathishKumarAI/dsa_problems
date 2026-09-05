@@ -189,15 +189,11 @@ Does the ladder belong on the **problem page** (one page per problem, scroll to 
 **fifth tab** beside Hints / Walkthrough / Approach & Solution? The page is already long; my
 inclination is to replace "Approach & Solution" with the ladder rather than add to it.
 
-## Open questions (discuss before wave 2)
+## Open questions
 
-1. **A "Python" sidebar section.** Requested; there is no Python-only content yet. Options: (a) the
-   language tab is a preference, not a section — keep DSA / SQL / Data science; (b) a *Python*
-   section holding language drills (comprehensions, generators, `collections`, `heapq`, `bisect`)
-   authored as flashcards + a step player. Leaning (a) now, (b) once the DSA wave 1 is done.
-2. **Journeys vs. practice-set pages.** When a journey exists, does the practice-set page still
-   need its own walkthrough? Proposal: no — B1 renders the engine's frames there, and the page
-   becomes the *reference card* (statement, corner cases, code in three languages).
-3. **Which corner cases are universal?** "smallest legal input", "promise broken" recur. Should
-   `edgeCases` allow a shared library with per-journey overrides? Not until three journeys repeat
-   the same prose verbatim.
+Moved to [`BACKLOG.md`](BACKLOG.md) §Open questions so there is one list, not three. The ones that
+touch this file are **Q1** (does the approach ladder replace the "Approach & Solution" tab),
+**Q2** (does Python get a sidebar section) and **Q3** (do corner cases become a shared library).
+
+One is answered: *does a journeyed problem still need its own walkthrough?* **No** — B1 shipped on
+2026-09-05, the page renders the engine's frames, and a test fails if a problem has both.

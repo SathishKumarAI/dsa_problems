@@ -4,6 +4,97 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+---
+
+# The arc, 2026-09-04 → 09-05
+
+Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
+the project started, what changed, why each change was made, and what it bought.
+
+## Where it started
+
+Two repositories that did not know about each other. `dsa_problems` was a Vite + React practice
+site: 31 problems across 10 patterns, each with hints, a hand-written walkthrough and worked
+Python. `dsa_visualizer` was 8 200 lines of vanilla JS that built two problems *deeply* — a story
+act, approaches unlocked one at a time, the learner's own code driving the animation — plus a
+sorting and graph visualizer. The deep idea lived in the repo with the worse shell; the better
+shell had no depth.
+
+## What was built, and the reasoning behind each move
+
+**1. One repo, and a port rather than an embed.** The visualizer's history was subtree-merged under
+`legacy/visualizer/` so nothing was lost, and its engine was rewritten as typed, DOM-free
+TypeScript. Embedding the old pages would have kept two shells, two theme systems and two progress
+stores forever. The port cost a day and bought a content schema whose invariants are *tests* and a
+view model any client can draw: `view(frame, data) → StageModel` instead of `render()` writing HTML
+strings.
+
+**2. An HTTP API in front of the same engine.** One pure `route(method, path, body)` mounted three
+ways — Vite middleware, `node:http`, in-process. This is not for a backend we do not have; it is a
+forcing function. An engine that must serialise its frames over the wire *cannot* reach for the DOM,
+so the tests and the server stay possible by construction.
+
+**3. Corner cases as content, not advice.** Waleed Khamies' *How to Solve Algorithm Problems* §3.1
+makes reading the problem an explicit step: restate it, formalise it as input → output, reread for
+hidden promises, and **bring three inputs** before any code. That became `Journey.edgeCases` —
+technique-neutral prose read on act 1 with a button that loads each case — plus frames tagged
+`corner:` so the same case is explained again *where it bites*. Taught twice, once to read and once
+to watch, with a test that every case is tagged on its own preset.
+
+**4. The shell got out of the way.** Independent scroll panels, rails that collapse to a strip and
+peek back on hover, `f` for focus, `?` for shortcuts, a settings dialog with export/import, a
+"how to use" dialog. The stage is the product; everything else earns its pixels or hides.
+
+**5. The catalogue learned to keep a secret.** "No unearned name" was tested inside a journey while
+the sidebar said **Two Pointers** in plain sight during the act that builds it. The fix follows an
+*active promise*: a pattern's name is hidden only while a journey that reveals it is started and
+unfinished — never started means nothing was promised, finished means you earned it — with a
+one-click permanent opt-out for someone drilling problems who does not want to play along.
+
+**6. Gates before features.** A browser smoke test (`npm run test:ui`) drives the built app over
+CDP with no new dependency: `vite preview` plus the system Chrome. It found a real bug on its first
+run. Every later change added its own check, and five bugs were caught by gates rather than by a
+user — including one that broke *every* `for..of` solution in the code challenge, in both journeys,
+since the day it shipped.
+
+**7. A measured UI/UX audit, then five batches of fixes.** Not opinions: contrast composited on a
+canvas (630 text nodes), focus walked with real Tab presses, type and spacing counted, line lengths
+computed. Verdict: the pixels were fine and the frame was not. Fourteen findings, all shipped.
+
+## What it bought, in numbers
+
+| | Start of 2026-09-04 | Now |
+|---|---|---|
+| Repositories | 2 | 1 |
+| Journeys built to completion | 2 (vanilla JS) | **3** (typed, tested) |
+| Node tests | 0 | **43** |
+| Browser checks | 0 | **31** |
+| Docs | 1 README | **13 files**, cross-linked, link-checked |
+| Bugs caught by gates | — | **5**, listed in `BACKLOG.md` |
+| Phone chrome before the stage | 378 px of 844 | **170 px** |
+| Longest line of prose | 110 characters | **68** |
+| Worst text contrast | 3.64 : 1 | **7.4 : 1** |
+| Bundle | 674 kB, one chunk | 420 kB index + 263 kB shared + 34 / 10 / 1 kB lazy |
+
+## The five ideas worth keeping
+
+1. **Depth before breadth.** Three problems built all the way down teach more than thirty with a
+   tab bar of approaches. The machinery — earned unlocks, predictions, corner cases, the learner's
+   own code as the animation — is what transfers; adding a fourth problem is now a content file.
+2. **An invariant without a test is a wish.** Every pedagogy rule is enforced: no unearned names,
+   every frame narrates, code tabs line up, every corner case is explained in play, a journeyed
+   problem may not carry a second walkthrough.
+3. **Measure, then argue.** Two of the audit's own first-pass measurements were wrong — `oklab()`
+   parsed as RGB, and `element.focus()` which does not set `:focus-visible`. Both would have led to
+   confident, false conclusions. If a check says everything is broken, suspect the check.
+4. **The obvious fix is sometimes the wrong one.** Pinning the narration with `position: sticky`
+   fixed its readability and hid the transport behind it. The right fix was structural.
+5. **Write the decision down where the next person will look.** `DESIGN.md` exists because "16 type
+   steps" is what happens without it, and it records the `ch`-is-not-a-character trap so nobody
+   pays for that twice.
+
+---
+
 ## 2026-09-05 — UX batch 5: the visualizer fills its screen, home knows you (U9, U13)
 
 Branch `feat/ux-batch-5`. The last two audit items.

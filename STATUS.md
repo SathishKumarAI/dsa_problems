@@ -1,50 +1,70 @@
 # STATUS — read this when you return
 
-Last session: 2026-09-05 (autonomous Claude session, working on `master` through PRs).
+Last session: 2026-09-05 (autonomous Claude session; everything below is merged into `master`).
 
 ## Where it stopped
 
-Everything is **merged into `master`** (PRs #1–#10). Master has three journeys (Two Sum, Single
-Number, Triplets Summing to Zero), the shell (collapsible rails with hover-peek, independent
-scroll panels, settings / shortcuts / help dialogs), corner cases as content, Python + Java + C++
-on the journeyed problems, code splitting, the full docs set, and a browser-driven UI smoke test.
+`master` holds the whole product. Twenty-two pull requests merged over two days, from the repo
+merge through to the last UI/UX fix. Nothing is in flight, no branch is open, both gates are green.
 
-`npm run check` → tsc 0 · eslint 0 · 41 node tests. `npm run test:ui` → 18 browser checks.
+| Gate | Command | State |
+|---|---|---|
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **43 tests** |
+| The interface, in a real browser | `npm run test:ui` | **31 checks**, ~60 s |
+
+On screen: three journeys built to completion (Two Sum, Single Number, Triplets Summing to Zero), a
+practice set of 31 problems, a sorting/search/graph visualizer, SQL drills and stats flashcards,
+inside a shell with collapsible rails, a settings dialog and a keyboard map.
+
+**Every original P0 and all fourteen UI/UX-audit items are closed.** How it got here, and the
+reasoning behind each decision, is the first section of [`docs/WORKLOG.md`](docs/WORKLOG.md).
 
 ## The next action
 
-1. **R2 then R1** — `constraints: string[]` on `Problem`, then the approach ladder
-   (`docs/PROBLEMS.md` §P1). The learner codes on LeetCode; this app explains. Decide the open
-   question there first: does the ladder replace the "Approach & Solution" tab or sit beside it?
-2. Then the next problem in the pipeline (#4 Pair Sum in Sorted Array).
-   **Every UX-audit item (U1–U14) and every original P0 is closed** as of 2026-09-05.
-2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
-   One problem per branch; the definition of done is in that file.
-3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)
-   and whether a journeyed problem still needs its own hand-written walkthrough (B1).
-4. Archive the old folder — your call, nothing was touched: `../dsa_visualizer` still has an
-   **uncommitted** `feat/disclosure-lint` branch. Its intent is backlog **B8**; commit or discard
-   it there, then move the folder to `~/coding/archive/` per the workspace rules.
+1. **R2 then R1** — `constraints: string[]` on `Problem`, then the approach ladder. The spec is
+   [`docs/PROBLEMS.md`](docs/PROBLEMS.md) §P1: statement → constraints → hints → approaches worst
+   to best, each rung carrying the weakness that forces the next, Python 3 always. The learner
+   writes code on LeetCode; this app explains. **Answer Q1 first.**
+2. **Problem #4** in the pipeline — Pair Sum in Sorted Array. One problem per branch; the
+   definition of done is in `PROBLEMS.md`.
+3. Then the P1 curriculum items: the roadmap page (B9), the progress dashboard (B10), the
+   two-pointers pattern page (B11).
+
+## Waiting on you
+
+Eight questions, each with options and a recommendation, in
+[`docs/BACKLOG.md`](docs/BACKLOG.md) §Open questions. Two block work:
+
+- **Q1** — does the approach ladder replace the "Approach & Solution" tab, or sit beside it?
+  (I would replace it.) This gates R1.
+- **Q7** — `../dsa_visualizer` still exists, untouched, with an uncommitted `feat/disclosure-lint`
+  branch. Its one idea shipped here as B8, so it is ready to archive. Yours to do.
 
 ## Environment traps
 
-- Windows, Git Bash. Node 24 (`node --test` with type stripping). `npm run check` is the gate;
-  `npm run test:ui` is the gate for anything on screen (needs a system Chrome; `CHROME_PATH`
-  overrides the search, and it skips loudly rather than passing quietly).
+- Windows, Git Bash. Node 24 runs `server/`, the engine and the tests unbundled (`.ts` extensions
+  on relative imports inside `engine/` and `api/`).
 - `npm run dev` mounts `/api` itself; `npm run api` is only for other clients.
-- **Never `--delete-branch` while another PR is stacked on that branch** — it closes the stacked
-  PR. Merge a stack from the tip, or retarget every base first. (This cost a recovery rebase on
-  2026-09-05; the worklog has the shape of it.)
+- `npm run test:ui` needs a system Chrome. `CHROME_PATH` overrides the search, and it **skips
+  loudly** rather than passing quietly when there is none.
+- **Never `--delete-branch` while another PR is stacked on that branch** — GitHub closes the
+  stacked PR. Merge a stack from the tip, or retarget every base first. This cost a recovery rebase
+  on 2026-09-05.
 - Windows: `child.kill()` leaves the node grandchild holding the port. Kill the tree.
-- A `location.reload()` inside a CDP `Runtime.evaluate` destroys the execution context, so the
-  call never resolves. Set storage on one page load, navigate on the next.
+- A `location.reload()` inside a CDP `Runtime.evaluate` destroys the execution context, so the call
+  never resolves. Set storage on one page load, navigate on the next.
+- `ch` is the width of the "0" glyph, not a character — roughly 1.3× the average. Cap prose in `em`.
+- `-x` on a zero is `-0` and fails `deepEqual`. Write `0 - x` when x can be zero.
 
 ## Known gaps (honest list)
 
-- Not covered by any test, so drive them by hand: autoplay timing, the 45 s hint timer, the Worker
-  code challenge (Set 2 at n = 400), the adaptive-difficulty offer, hover-peek, reduced motion,
-  and anything about colour or spacing.
-- Corner-case callouts for `tiny`, `negatives`, `zero` are covered by tests, not seen by eye.
-- The engine/data chunk (204 kB) still loads on content pages because the sidebar reads
-  `JOURNEYS` (noted on F1).
-- No CI. Both gates are run locally.
+- **No CI.** Both gates run locally (Q8).
+- Not covered by any test, so drive them by hand: autoplay timing, the 45 s hint timer, the
+  adaptive-difficulty offer, hover-peek, reduced motion, and anything about colour or spacing.
+- The engine + data chunk (263 kB) still loads on content pages because the sidebar reads
+  `JOURNEYS` for its rows. A slug/title/act-count registry would make it lazy (noted on F1).
+- Corner-case callouts for `tiny`, `negatives` and `zero` are covered by tests, not seen by eye.
+- SQL drills and stats flashcards have no visual identity yet and no in-page navigation; the plan
+  for that track is `PROBLEMS.md` S1–S4.
+- 28 of the 31 practice problems still carry Python only; Java and C++ arrive with each problem's
+  own PR.

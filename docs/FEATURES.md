@@ -186,7 +186,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 
 | Element | Behaviour | File | Status |
 |---|---|---|---|
-| Picker | Groups sorting / searching / graphs; `?algo=` mirrored in the URL. | `algorithms-page.tsx` | shipped (cdp) |
+| Picker | Groups sorting / searching / graphs; `?algo=` mirrored in the URL **and followed when the hash changes in-app** (U3). Scrolls on its own beside a viewport-high stage (U9). | `algorithms-page.tsx` | shipped (UI test: hash switch replaces bars with the graph) |
 | Bars | One column per value, value label when n ≤ 24, colour: comparing yellow, swap red, **write mauve with a 260 ms `scaleY` pulse** (a merge-sort store replaces a value in place, so FLIP has no motion to show), pivot/range peach, final green, discarded faded to 40 %, otherwise blue. The pulse is off when the motion preference is `off`, and `prefers-reduced-motion` zeroes it. Keys `v<value>#<occurrence>` so a swap FLIPs both columns. | `views.tsx` `BarsView` | shipped (cdp quick sort) |
 | Graph | SVG circle layout; edges grey, active edge yellow; nodes: current yellow, visited green, frontier peach; Dijkstra shows edge weights and `dist` above nodes (∞ until relaxed). | `views.tsx` `GraphView` | shipped (cdp BFS) |
 | Controls | size 4–60, shape select, target (search), nodes 4–14 (graph), new array/graph, compares · writes counter, transport + speed + keyboard. | `algorithms-page.tsx` | shipped |
