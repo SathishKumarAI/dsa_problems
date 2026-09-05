@@ -42,7 +42,7 @@ export function ActStepper(props: Props) {
         type="button"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        className="flex min-h-11 w-full items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left transition-colors hover:border-primary/50 active:border-primary active:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none xl:hidden"
+        className="flex min-h-11 w-full items-center gap-2 rounded-lg border bg-card px-3 py-2 text-left transition-colors hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none active:border-primary active:bg-primary/10 xl:hidden"
       >
         <span className="font-mono text-meta text-muted-foreground">
           act {String(index + 1).padStart(2, "0")} / {journey.acts.length}
@@ -117,7 +117,7 @@ function Ribbon({
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50 active:border-primary active:bg-primary/10",
                 a.key === revealed &&
-                  "animate-in duration-700 zoom-in-95 fade-in"
+                  "animate-in duration-(--duration-reveal) zoom-in-95 fade-in"
               )}
             >
               <span className="flex items-center gap-1.5 text-sm font-medium">

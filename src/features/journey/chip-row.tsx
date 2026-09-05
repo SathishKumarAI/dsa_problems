@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import type { ChipModel } from "@/engine"
 
 const ROLE = {
-  base: "relative flex h-14 min-w-14 items-center justify-center rounded-lg border px-2.5 font-mono text-xl font-medium tabular-nums transition-[background-color,border-color,color,opacity] duration-300",
+  base: "relative flex h-14 min-w-14 items-center justify-center rounded-lg border px-2.5 font-mono text-xl font-medium tabular-nums transition-[background-color,border-color,color,opacity] duration-(--duration-reveal)",
   neutral: "border-border bg-card text-foreground",
   anchor:
     "border-chart-4 bg-chart-4/15 text-chart-4 before:absolute before:-top-5 before:text-xs before:text-chart-4 before:content-['▲']",

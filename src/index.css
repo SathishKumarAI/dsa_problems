@@ -5,6 +5,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* One curve and one default duration for every transition on the site,
+   including the ones inside shadcn components — so a class only ever has to
+   name a duration when it differs (R6). */
+@theme {
+    --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    --default-transition-duration: 150ms;
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
@@ -26,6 +34,10 @@
     --text-title--line-height: 1.875rem;
     --text-display: 2rem;            /* 32 — the equation, the answer        */
     --text-display--line-height: 2.375rem;
+
+    /* Motion: 320 ms is the second duration, named only where something
+       appears, resizes or slides. The default above covers everything else. */
+    --duration-reveal: 320ms;
 
     /* three container widths, so a new page has an obvious one to pick */
     --container-reading: 48rem;      /* 768 — a single document              */

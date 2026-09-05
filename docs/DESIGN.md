@@ -82,10 +82,24 @@ icon (✓) or a fade. Check a change in greyscale before shipping it.
 
 ## Motion
 
-FLIP duration is `clamp(80, delay × 0.4, 280) × motion`, where motion is the stored preference
-(calm 0.6 · normal 1 · cinematic 1.8 · off 0). `prefers-reduced-motion` forces 0. A one-off
-animation (the merge-sort write pulse, 260 ms) stays inside that envelope and skips itself when the
-preference is `off`.
+**One curve, two durations.** `--default-transition-timing-function` is `cubic-bezier(0.2, 0, 0, 1)`
+and `--default-transition-duration` is 150 ms, both set in a plain `@theme` block, so every
+transition on the site — including the ones inside shadcn components — takes them without being
+asked. A class names a duration only when it differs.
+
+| Token | Value | For |
+|---|---|---|
+| default | 150 ms | hover, press, focus, any colour change |
+| `duration-(--duration-reveal)` | 320 ms | something appearing, resizing or sliding: the drawer, a chip changing role, a bar growing, a revealed act |
+
+A UI check fails the build if any element under `main` on the journey, the visualizer or home uses a
+third duration or a second curve.
+
+FLIP is the exception and keeps its own envelope: `clamp(80, delay × 0.4, 280) × motion`, where
+motion is the stored preference (calm 0.6 · normal 1 · cinematic 1.8 · off 0), because it has to
+track playback speed. `prefers-reduced-motion` forces 0. Two one-off accents — the merge-sort write
+pulse (260 ms) and the XOR survivor's beat (520 ms) — are deliberate and say so where they are
+defined.
 
 ## Targets
 

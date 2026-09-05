@@ -412,6 +412,41 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("every transition takes one curve and one of two durations (R6)", async () => {
+      const audit = `
+        const durs = {}, eases = {};
+        for (const el of document.querySelectorAll('main *')) {
+          const s = getComputedStyle(el);
+          if (s.transitionDuration === '0s') continue;
+          durs[s.transitionDuration] = (durs[s.transitionDuration] ?? 0) + 1;
+          eases[s.transitionTimingFunction] = (eases[s.transitionTimingFunction] ?? 0) + 1;
+        }
+        return { durs, eases };
+      `
+      for (const route of [
+        "#/journey/single-number?act=xor&step=3",
+        "#/algorithms?algo=quick",
+        "#/",
+      ]) {
+        await page.goto(`${server.base}/${route}`)
+        const out = await page.run(audit)
+        const durations = Object.keys(out.durs).sort()
+        const curves = Object.keys(out.eases)
+        assert.ok(durations.length > 0, `${route}: nothing transitions at all`)
+        assert.deepEqual(
+          durations.filter((d) => d !== "0.15s" && d !== "0.32s"),
+          [],
+          `${route}: a duration outside the two tokens — ${JSON.stringify(out.durs)}`
+        )
+        assert.deepEqual(
+          curves,
+          ["cubic-bezier(0.2, 0, 0, 1)"],
+          `${route}: more than one easing curve — ${JSON.stringify(out.eases)}`
+        )
+      }
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
