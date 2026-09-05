@@ -95,6 +95,45 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-05 — the reference card: constraints, then the ladder (R2, R1)
+
+The last two items in "requested, specced, not started", and the answer to the ask that started
+them: *"I want to see the solutions here — the brute force naive approach followed by others — and
+why we are moving forward to this new solution."*
+
+**R2, constraints** (#32). `Problem.constraints` is required, not optional, so the 31st problem
+cannot quietly skip it; all 31 are authored and render under the statement. `EdgeCase.constraint`
+cites the line a corner case comes from, on both surfaces that draw them. This is what turns "the
+answer can be 0" from a curiosity into a decision: `-3*10^4 <= nums[i] <= 3*10^4`, so 0 is in range,
+so stop writing `if result:`. Written in our own words from each problem's public definition, per
+the sourcing line in PROBLEMS.md — bounds are facts, a site's prose is not.
+
+**R1, the ladder** (#33, #34). Tabs cannot make an argument: a tab strip presents four approaches as
+four equals you pick between. The ladder presents them as one argument, worst to best, where each
+rung exists because the one below it ran out of road — and the *why now* line sits **between** the
+rungs, because it belongs to the step rather than to either end.
+
+One builder, two sources (the B1 rule): a journeyed problem draws its rungs from the acts, where
+`Act.insight` already is the why-now, and is capped by the ledger exactly as the embedded
+walkthrough is — a learner three acts in sees three rungs and a nudge back, not the XOR answer. The
+other 28 draw from `alternatives` plus the optimal, and #34 wrote the 44 why-now lines they were
+missing. `Problem.leetcode` gives all 31 a slug, and "Solve on LeetCode" is the primary action:
+still, deliberately, no editor.
+
+**Q1 answered by building it** (option a): the ladder replaced "Approach & Solution", so the page
+did not grow a fourth place to look for the same code.
+
+**What the gates caught, not me.** `sorted-pair-sum`'s brute force had a 39-character "idea" — "All
+pairs, no use of sortedness at all." — which the new rung test rejected as not a sentence or two.
+And the first why-now threshold (60 characters) rejected the journeys' own insights, which are
+deliberately short questions: "The map costs memory — what if the drawer organized itself?" The bar
+is presence, not length, so it is 25.
+
+Evidence: `npm run check` 43 → **46 tests**; `npm run test:ui` 37 → **39 checks**. In the browser:
+single-number shows four rungs ending on XOR for a fresh learner, two rungs and the nudge at
+`unlocked = 3`; the CTA resolves to `leetcode.com/problems/single-number/`; the page has no
+textarea.
+
 ## 2026-09-05 — the lesson screen, filed then built (R3–R8, Q9/Q10)
 
 A worked redesign of the Single Number lesson screen arrived as prose. Filing it first was the whole
