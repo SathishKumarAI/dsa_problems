@@ -1083,6 +1083,8 @@ export const threeSum: Journey<ThreeSumData> = {
       why: "n = 3 leaves exactly one set of rows. A loop bound written as n − 3 instead of n − 2, or an inner range that starts one too late, returns nothing here — and passes on bigger inputs.",
       think:
         "Bring the smallest legal input first and trace it by hand: every loop should run exactly once.",
+      constraint:
+        "3 <= nums.length <= 3000 — three elements is the smallest legal input",
       preset: "tiny",
     },
     {
@@ -1092,6 +1094,8 @@ export const threeSum: Journey<ThreeSumData> = {
       why: "Two rows hold −1; each pairs with 0 and 1. By rows that is two triples, by values it is one — and the answer is by value. Anything that enumerates rows must recognise a triple it has already produced.",
       think:
         "Ask: is the output compared by value or by position? Can one triple contain the same amount twice? (Yes: [−1, −1, 2].) Can the output contain the same triple twice? (No.) Those answers decide where the repeat check lives.",
+      constraint:
+        "the triples must be distinct as sets of values, not as sets of indices",
       preset: "classic",
     },
     {
@@ -1101,6 +1105,8 @@ export const threeSum: Journey<ThreeSumData> = {
       why: "Four rows, four sets of three rows, one triple by value. Also the case where all three amounts are equal — legal, and the easiest place for an off-by-one in 'skip equal neighbours' to skip too far.",
       think:
         "Put the repeated amount in every position of the triple: anchor, left, right. Then ask what 'skip equals' must not skip.",
+      constraint:
+        "-10^5 <= nums[i] <= 10^5 — zeros are legal, and [0, 0, 0] is a legal triple",
       preset: "zeros",
     },
     {
@@ -1110,6 +1116,8 @@ export const threeSum: Journey<ThreeSumData> = {
       why: "Nothing cancels, so the answer is an empty list. Correct code never crashes here and never invents a triple — and sorted input allows an early stop the moment the smallest remaining amount is positive.",
       think:
         "Write the fall-through (return the list, possibly empty) before the happy path; then ask whether the input's order lets you stop early.",
+      constraint:
+        "nothing promises a triple exists; an empty answer is a correct answer",
       preset: "positive",
     },
   ],

@@ -9,6 +9,12 @@ export const twoPointers: Problem[] = [
     brief: "Two values in a sorted array that add to a target — O(1) space.",
     statement:
       "Given an array sorted in non-decreasing order and a target, return the indices of two distinct elements that sum to target, using constant extra space. Assume exactly one answer exists.",
+    constraints: [
+      "2 <= numbers.length <= 3 * 10^4",
+      "-1000 <= numbers[i] <= 1000",
+      "numbers is sorted ascending",
+      "exactly one solution exists and an element may not be used twice; O(1) extra space is required",
+    ],
     examples: [
       {
         input: "nums = [1, 3, 6, 9], target = 12",
@@ -97,6 +103,12 @@ export const twoPointers: Problem[] = [
     brief: "Pick two lines that hold the most water between them.",
     statement:
       "Given an array heights where heights[i] is the height of a vertical line at position i, choose two lines so the area between them (width × shorter height) is maximised. Return that area.",
+    constraints: [
+      "2 <= height.length <= 10^5",
+      "0 <= height[i] <= 10^4",
+      "the container is capped by the shorter line and widened by the distance between them",
+      "the lines are vertical: nothing between them affects the area",
+    ],
     examples: [
       {
         input: "heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]",
@@ -188,6 +200,12 @@ export const twoPointers: Problem[] = [
     brief: "All unique triplets that sum to zero.",
     statement:
       "Given an integer array, return every unique triplet [a, b, c] with a + b + c = 0. The same triplet must not appear twice in the output.",
+    constraints: [
+      "3 <= nums.length <= 3000",
+      "-10^5 <= nums[i] <= 10^5",
+      "the triples must be distinct as sets of values, not as sets of indices",
+      "an element may not be reused within one triple",
+    ],
     examples: [
       {
         input: "nums = [-1, 0, 1, 2, -1, -4]",

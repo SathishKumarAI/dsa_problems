@@ -47,6 +47,10 @@ export interface Problem extends Code {
   difficulty: Difficulty
   brief: string // one-liner for list rows
   statement: string
+  // What the input promises: bounds, and the guarantees that turn a corner
+  // case from trivia into a decision (docs/PROBLEMS.md §P1). Written in our
+  // own words from the problem's public definition, never copied.
+  constraints: string[]
   examples: Example[]
   hints: string[] // progressive: nudge -> idea -> almost-there
   approach: string

@@ -1168,6 +1168,8 @@ export const twoSum: Journey<TwoSumData> = {
       why: "n = 2 means every loop runs once at most. Off-by-one mistakes — j starting at i instead of i + 1, a loop that stops one early — show up here before anywhere else.",
       think:
         "Bring an empty or tiny case first. Two Sum cannot be empty (n ≥ 2 is promised), so n = 2 is the boundary to trace by hand.",
+      constraint:
+        "2 <= nums.length <= 10^4 — two elements is the smallest legal input",
       preset: "tiny",
     },
     {
@@ -1177,6 +1179,8 @@ export const twoSum: Journey<TwoSumData> = {
       why: "3 + 3 hits the target, but a value may not pair with itself. Anything that remembers a value must check for the complement BEFORE recording the current one, or guard j ≠ i — swap that order and 3 matches itself at index 0.",
       think:
         "Ask two questions before coding: can both indices be the same? (no) Can two different indices hold the same value? (yes) Those two answers fix the order of your check and your store.",
+      constraint:
+        "an element may not be paired with itself, though equal values at different indices may pair",
       preset: "duplicates",
     },
     {
@@ -1186,6 +1190,8 @@ export const twoSum: Journey<TwoSumData> = {
       why: "The complement target − x can be negative or zero. Anything that uses a value as an array position, or assumes values are positive, breaks; comparisons and lookups do not care.",
       think:
         "Read the constraints line (−10⁹ ≤ nums[i] ≤ 10⁹) as part of the problem. Values are keys, never positions.",
+      constraint:
+        "-10^9 <= nums[i] <= 10^9 and -10^9 <= target <= 10^9 — negatives and a target of 0 are legal",
       preset: "negatives",
     },
     {
@@ -1195,6 +1201,8 @@ export const twoSum: Journey<TwoSumData> = {
       why: "The promise says exactly one answer exists, so correct code never reaches the end. Your loop still needs a defined ending, and the interviewer will ask what you return.",
       think:
         "Write the fall-through line (return [] or raise) before the happy path, so a broken promise fails loudly instead of returning garbage.",
+      constraint:
+        "exactly one valid pair exists — this is the promise the one-pass answer leans on",
       preset: "nosolution",
     },
   ],

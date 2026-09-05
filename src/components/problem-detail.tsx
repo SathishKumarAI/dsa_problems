@@ -148,6 +148,24 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
 
       <section className="flex flex-col gap-4">
         <p className="max-w-[35em] text-body">{problem.statement}</p>
+        {/* the promises the input makes — a corner case is trivia until a
+            constraint makes it a decision (R2) */}
+        <div className="flex flex-col gap-1.5" aria-label="constraints">
+          <div className="text-meta tracking-wide text-muted-foreground uppercase">
+            constraints
+          </div>
+          <ul className="flex flex-col gap-1">
+            {problem.constraints.map((c, i) => (
+              <li
+                key={i}
+                className="flex max-w-[35em] gap-2 text-ui text-muted-foreground"
+              >
+                <span className="text-chart-1">·</span>
+                <span className="font-mono">{c}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
         <div className="flex flex-col gap-2">
           {problem.examples.map((ex, i) => (
             <div

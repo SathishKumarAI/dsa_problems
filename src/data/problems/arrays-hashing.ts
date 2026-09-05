@@ -9,6 +9,12 @@ export const arraysHashing: Problem[] = [
     brief: "Find two indices whose values add up to a target.",
     statement:
       "Given an integer array nums and an integer target, return the indices of two distinct elements whose sum equals target. Assume exactly one such pair exists.",
+    constraints: [
+      "2 <= nums.length <= 10^4",
+      "-10^9 <= nums[i] <= 10^9",
+      "-10^9 <= target <= 10^9",
+      "exactly one valid pair exists, and an element may not be paired with itself",
+    ],
     examples: [
       {
         input: "nums = [3, 6, 1, 5], target = 8",
@@ -133,6 +139,12 @@ export const arraysHashing: Problem[] = [
     brief: "Return the k values that appear most often.",
     statement:
       "Given an integer array nums and an integer k, return the k elements that occur most frequently. Order among the answers does not matter.",
+    constraints: [
+      "1 <= nums.length <= 10^5",
+      "-10^4 <= nums[i] <= 10^4",
+      "1 <= k <= the number of distinct values in nums",
+      "the answer is unique — no tie spans the k-th place",
+    ],
     examples: [
       { input: "nums = [4, 4, 4, 6, 6, 2], k = 2", output: "[4, 6]" },
       { input: "nums = [9], k = 1", output: "[9]" },
@@ -212,6 +224,12 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     brief: "Length of the longest run of consecutive integers, unsorted input.",
     statement:
       "Given an unsorted integer array, return the length of the longest sequence of consecutive integers present in it (order in the array does not matter). Target O(n) — sorting is the fallback, not the answer.",
+    constraints: [
+      "0 <= nums.length <= 10^5",
+      "-10^9 <= nums[i] <= 10^9",
+      "duplicates are allowed and do not lengthen a run",
+      "the array is not sorted, and sorting it is what the O(n) answer avoids",
+    ],
     examples: [
       {
         input: "nums = [50, 3, 2, 100, 4, 1]",
@@ -301,6 +319,12 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
       "Every value appears twice except one — find it in O(n) time and O(1) space.",
     statement:
       "Given a non-empty integer array nums where every element appears exactly twice except for one element that appears once, return that single element. The follow-up asks for linear time and constant extra space.",
+    constraints: [
+      "1 <= nums.length <= 3 * 10^4",
+      "-3 * 10^4 <= nums[i] <= 3 * 10^4",
+      "nums.length is always odd",
+      "every value appears exactly twice except one, which appears once",
+    ],
     examples: [
       { input: "nums = [2, 2, 1]", output: "1" },
       { input: "nums = [4, 1, 2, 1, 2]", output: "4" },

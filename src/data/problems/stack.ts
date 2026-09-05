@@ -9,6 +9,11 @@ export const stack: Problem[] = [
     brief: "Is every bracket opened and closed in the right order?",
     statement:
       "Given a string of the characters ()[]{} only, decide whether it is well-formed: every opener has a matching closer of the same kind, closed in last-opened-first-closed order.",
+    constraints: [
+      "1 <= s.length <= 10^4",
+      "s holds only the six characters ()[]{}",
+      "every closer must match the most recent unclosed opener",
+    ],
     examples: [
       { input: 's = "([{}])"', output: "true" },
       { input: 's = "(]"', output: "false" },
@@ -75,6 +80,11 @@ export const stack: Problem[] = [
     brief: "For each day, how many days until a strictly warmer one?",
     statement:
       "Given daily temperatures, return an array where answer[i] is the number of days you wait after day i for a strictly warmer temperature, or 0 if it never comes.",
+    constraints: [
+      "1 <= temperatures.length <= 10^5",
+      "30 <= temperatures[i] <= 100",
+      "a day with no warmer day ahead answers 0",
+    ],
     examples: [
       {
         input: "temps = [73, 74, 75, 71, 69, 72, 76, 73]",
@@ -186,6 +196,11 @@ export const stack: Problem[] = [
     brief: "Biggest rectangle fitting under a histogram's bars.",
     statement:
       "Given bar heights of a histogram (all width 1), return the area of the largest axis-aligned rectangle that fits entirely under the bars.",
+    constraints: [
+      "1 <= heights.length <= 10^5",
+      "0 <= heights[i] <= 10^4",
+      "the rectangle must span consecutive bars and is capped by the shortest of them",
+    ],
     examples: [
       {
         input: "heights = [2, 1, 5, 6, 2, 3]",

@@ -9,6 +9,11 @@ export const dp: Problem[] = [
     brief: "Count paths up n steps taking 1 or 2 at a time.",
     statement:
       "You climb a staircase of n steps, moving up 1 or 2 steps at a time. Return how many distinct sequences of moves reach the top.",
+    constraints: [
+      "1 <= n <= 45",
+      "steps of 1 or 2 only",
+      "n = 45 is the largest answer that fits in a 32-bit signed integer",
+    ],
     examples: [
       { input: "n = 4", output: "5", note: "1111, 112, 121, 211, 22." },
     ],
@@ -92,6 +97,11 @@ def climb_ways(n: int) -> int:
     brief: "Max sum picking values with no two adjacent.",
     statement:
       "Given non-negative values in a row, choose a subset with no two adjacent elements so the sum is maximised. Return the sum.",
+    constraints: [
+      "1 <= nums.length <= 100",
+      "0 <= nums[i] <= 400",
+      "no two chosen indices may be adjacent",
+    ],
     examples: [
       { input: "nums = [2, 7, 9, 3, 1]", output: "12", note: "2 + 9 + 1." },
     ],
@@ -180,6 +190,12 @@ def max_take(nums: list[int]) -> int:
     brief: "Minimum coins summing to a target, or -1.",
     statement:
       "Given coin denominations (unlimited supply) and an amount, return the fewest coins that sum exactly to it, or -1 if impossible.",
+    constraints: [
+      "1 <= coins.length <= 12",
+      "1 <= coins[i] <= 2^31 - 1",
+      "0 <= amount <= 10^4",
+      "each coin may be used any number of times; return -1 when no combination reaches the amount",
+    ],
     examples: [
       { input: "coins = [1, 3, 4], amount = 6", output: "2", note: "3 + 3." },
       { input: "coins = [2], amount = 3", output: "-1" },

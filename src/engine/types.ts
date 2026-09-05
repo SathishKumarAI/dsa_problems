@@ -241,6 +241,9 @@ export interface EdgeCase {
   why: string // how it bites: what a naive solution gets wrong here
   think: string // the question to ask yourself before coding
   preset: string // the preset that loads this input
+  // The line in the problem's `constraints` this case comes from. A corner
+  // case is trivia until a constraint makes it a decision (R2).
+  constraint?: string
 }
 
 export interface Journey<D = { nums: number[] }> {

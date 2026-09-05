@@ -9,6 +9,12 @@ export const heaps: Problem[] = [
     brief: "Always know the kth largest as numbers keep arriving.",
     statement:
       "Design a class initialized with k and a list of numbers. Each call to add(x) inserts x and returns the kth largest value seen so far.",
+    constraints: [
+      "1 <= k <= 10^4",
+      "0 <= nums.length <= 10^4",
+      "-10^4 <= nums[i], val <= 10^4",
+      "at least k values exist when kth-largest is asked for",
+    ],
     examples: [
       {
         input:
@@ -100,6 +106,12 @@ class KthLargest:
     brief: "The k points nearest to (0, 0).",
     statement:
       "Given points on a plane and an integer k, return the k points closest to the origin by Euclidean distance. Any order.",
+    constraints: [
+      "1 <= k <= points.length <= 10^4",
+      "-10^4 <= x, y <= 10^4",
+      "distances may tie; any valid set of k is accepted",
+      "the squared distance avoids a square root and never overflows in these bounds",
+    ],
     examples: [
       {
         input: "points = [[1, 3], [-2, 2], [5, 8]], k = 2",
@@ -192,6 +204,12 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
     brief: "Minimum time to run tasks when repeats need n idle slots.",
     statement:
       "Given task labels and a cooldown n, identical tasks must be at least n time-units apart. Each task takes one unit; you may idle. Return the minimum total units to finish everything.",
+    constraints: [
+      "1 <= tasks.length <= 10^4",
+      "tasks[i] is an uppercase letter, so at most 26 distinct tasks",
+      "0 <= n <= 100",
+      "identical tasks must be separated by at least n intervals; idle intervals are allowed",
+    ],
     examples: [
       {
         input: "tasks = [A, A, A, B, B, B], n = 2",

@@ -9,6 +9,12 @@ export const slidingWindow: Problem[] = [
     brief: "Max profit from one buy and one later sell.",
     statement:
       "Given prices where prices[i] is a stock's price on day i, pick one day to buy and a later day to sell so profit is maximised. Return the profit, or 0 if no profitable trade exists.",
+    constraints: [
+      "1 <= prices.length <= 10^5",
+      "0 <= prices[i] <= 10^4",
+      "the sell day must come after the buy day",
+      "no profitable pair means a profit of 0, not a negative number",
+    ],
     examples: [
       {
         input: "prices = [7, 1, 5, 3, 6, 4]",
@@ -92,6 +98,11 @@ export const slidingWindow: Problem[] = [
     brief: "Longest run of characters with no duplicates.",
     statement:
       "Given a string s, return the length of the longest contiguous substring containing no repeated character.",
+    constraints: [
+      "0 <= s.length <= 5 * 10^4",
+      "s holds letters, digits, symbols and spaces",
+      "the answer is a contiguous substring, not a subsequence",
+    ],
     examples: [
       {
         input: 's = "abcabcbb"',
@@ -208,6 +219,12 @@ export const slidingWindow: Problem[] = [
     brief: "Shortest substring of s containing every character of t.",
     statement:
       "Given strings s and t, return the shortest contiguous substring of s that contains every character of t, counting multiplicity. Return an empty string if none exists.",
+    constraints: [
+      "1 <= s.length, t.length <= 10^5",
+      "s and t are upper and lower case English letters",
+      "duplicates in t must each be covered",
+      "return the empty string when no window covers t; the answer is unique",
+    ],
     examples: [
       { input: 's = "ADOBECODEBANC", t = "ABC"', output: '"BANC"' },
       {

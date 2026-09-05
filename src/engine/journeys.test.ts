@@ -114,6 +114,11 @@ for (const j of JOURNEYS) {
     for (const e of j.edgeCases) {
       for (const k of ["name", "example", "why", "think"] as const)
         assert.ok(e[k], `${e.key}.${k}`)
+      // a corner case is trivia until a constraint makes it a decision (R2)
+      assert.ok(
+        e.constraint,
+        `${e.key}: cite the constraint this case comes from`
+      )
       assert.ok(j.presets[e.preset], `${e.key} preset "${e.preset}" exists`)
       // the preset that loads it must make some act tag a frame with it
       const d = j.presets[e.preset].make()

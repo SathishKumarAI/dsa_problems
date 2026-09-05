@@ -1056,6 +1056,8 @@ export const singleNumber: Journey<SingleNumberData> = {
       why: "Every loop that compares neighbours or hunts for a partner runs zero or one times. Code that only returns from inside a loop returns nothing for n = 1.",
       think:
         "Bring the smallest legal input first. Whatever your code holds after the loop — an accumulator, a fallback line — must already be the answer.",
+      constraint:
+        "1 <= nums.length <= 3 * 10^4 — a single element is legal input",
       preset: "single",
     },
     {
@@ -1065,6 +1067,8 @@ export const singleNumber: Journey<SingleNumberData> = {
       why: "An approach that walks in order and waits for the odd one out to break the pattern runs off the end without returning. The answer needs a line AFTER the loop.",
       think:
         "Put the special element at every boundary — first, last, the largest value — and ask where your code returns from in each case.",
+      constraint:
+        "nums.length is always odd, so the loner can sit at either end",
       preset: "max",
     },
     {
@@ -1074,6 +1078,8 @@ export const singleNumber: Journey<SingleNumberData> = {
       why: "0 is a legal loner, and a lot of code treats 0 as 'nothing found' (`if result:`). Cancelling everything also leaves 0 behind, so the real answer 0 looks exactly like no answer.",
       think:
         "Test for presence, not truthiness: `is not None`, a found flag, or trust the promise. Bring a case where the answer is falsy.",
+      constraint:
+        "-3 * 10^4 <= nums[i] <= 3 * 10^4 — 0 is inside the range, so 0 is a legal answer",
       preset: "zero",
     },
     {
@@ -1083,6 +1089,8 @@ export const singleNumber: Journey<SingleNumberData> = {
       why: "With two loners the approaches disagree: one returns the first it meets, one returns a value that is in neither. The promise is what makes the fast trick legal, not decoration.",
       think:
         "Say the promise back to the interviewer before coding, and decide out loud what to return when it is violated.",
+      constraint:
+        "every value appears exactly twice except one — this is the promise, and it is the only one",
       preset: "twosingles",
     },
   ],
