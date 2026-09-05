@@ -1,5 +1,10 @@
 # UI/UX audit — 2026-09-05
 
+> **Status:** batch 1 (U10, U7, U5, U3) shipped the same day — `BACKLOG.md` holds the live state.
+> One correction to this document's own method: `ch` is the width of the "0" glyph, roughly 1.3× the
+> average character in a proportional face, so a `68ch` cap still rendered ~90 characters. The caps
+> ship in `em` (0.5 em per character), which is the metric these findings were measured with.
+
 Every screen of the app, measured rather than eyeballed. Numbers come from the built app
 (`vite preview`) driven over the DevTools protocol at 1440 × 1000, 1024 × 800 and 390 × 844, with
 a seeded ledger (three journeys finished, 140 XP) so nothing was hidden behind a lock.

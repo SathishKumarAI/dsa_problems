@@ -78,10 +78,17 @@ type Timeline =
 export function AlgorithmsPage() {
   const route = useRoute()
   const prefs = usePrefs()
-  const initial = route.query.get("algo")
+  const linked = route.query.get("algo")
   const [algoKey, setAlgoKey] = useState(
-    initial && ALGORITHMS[initial] ? initial : "bubble"
+    linked && ALGORITHMS[linked] ? linked : "bubble"
   )
+  // a link pasted while this page is already open changes only the hash, so
+  // nothing remounts — follow it here (render-time adjust, not an effect)
+  const [prevLinked, setPrevLinked] = useState(linked)
+  if (linked !== prevLinked) {
+    setPrevLinked(linked)
+    if (linked && ALGORITHMS[linked] && linked !== algoKey) setAlgoKey(linked)
+  }
   const algo = ALGORITHMS[algoKey]
   const [size, setSize] = useState(16)
   const [gen, setGen] = useState<Gen>("random")

@@ -334,6 +334,56 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // ---------- 3e. the UX-audit corrections ----------
+
+    test("the visualizer follows an `?algo=` link changed while the page is open (U3)", async () => {
+      await page.goto(`${server.base}/#/algorithms?algo=quick`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const shape = () => ({
+          bars: document.querySelectorAll('[data-k^=v]').length,
+          graph: document.querySelectorAll('main svg circle').length,
+        });
+        const before = shape();
+        location.hash = '#/algorithms?algo=dijkstra';
+        for (let i = 0; i < 20 && shape().bars > 0; i++) await wait(150);
+        return { before, after: shape() };
+      `)
+      assert.ok(out.before.bars > 0, "the sort view did not render to begin with")
+      assert.equal(out.after.bars, 0, "the hash changed but the bars stayed")
+      assert.ok(out.after.graph > 0, "the graph view never appeared")
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("journey progress reads the same on the sidebar and the home card (U5)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.goto(`${server.base}/#/`)
+      const out = await page.run(`
+        const has = (el, word) => el.innerText.toLowerCase().includes(word);
+        const row = [...document.querySelectorAll('[data-slot=sidebar-menu-item]')]
+          .find(li => has(li, 'two sum'));
+        const badgeEl = row?.querySelector('[data-slot=sidebar-menu-badge]');
+        const card = [...document.querySelectorAll('main a')].find(a => has(a, 'two sum'));
+        const line = (card?.innerText ?? '').split(String.fromCharCode(10)).find(t => t.includes('earned')) ?? '';
+        return { badge: badgeEl?.innerText.trim(), cardText: line.trim(), title: badgeEl?.getAttribute('title') };
+      `)
+      assert.equal(out.badge, "2/6", "sidebar should count acts earned, not acts unlocked")
+      assert.equal(out.cardText, "2/6 earned", "the home card should agree with the sidebar")
+      assert.match(out.title ?? "", /2 of 6 acts earned/)
+    })
+
+    test("prose stays inside a readable measure (U7)", async () => {
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const ch = await page.run(`
+        const p = [...document.querySelectorAll('main p')]
+          .filter(e => e.textContent.trim().length > 120)
+          .map(e => Math.round(e.getBoundingClientRect().width / (parseFloat(getComputedStyle(e).fontSize) * 0.5)));
+        return Math.max(...p);
+      `)
+      assert.ok(ch <= 80, `longest measure is ${ch}ch, want <= 80`)
+    })
+
     // ---------- 4. the shell ----------
 
     test("`f` closes both rails and reopens them; `?` opens the shortcuts dialog", async () => {
