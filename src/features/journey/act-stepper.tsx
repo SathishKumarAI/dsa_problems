@@ -28,7 +28,17 @@ interface Props {
 
 export function ActStepper(props: Props) {
   const [open, setOpen] = useState(false)
-  const { journey, unlocked, active, onSelect } = props
+  const { journey, unlocked, active, done, onSelect } = props
+  // The act that entered `done` since the last render, so its node can flash
+  // once (R8): an act used to just *be* green the next time you looked at the
+  // ribbon, with no moment of closure. A render-time adjust, not an effect.
+  const [seen, setSeen] = useState(done)
+  const [justDone, setJustDone] = useState<string | null>(null)
+  if (done !== seen) {
+    const fresh = [...done].find((k) => !seen.has(k))
+    setSeen(done)
+    if (fresh) setJustDone(fresh)
+  }
   const index = journey.acts.findIndex((a) => a.key === active)
   const act = journey.acts[index]
   const pick = (key: string) => {
@@ -62,13 +72,13 @@ export function ActStepper(props: Props) {
             <SheetTitle>{journey.title}</SheetTitle>
           </SheetHeader>
           <div className="px-4 pb-6">
-            <Ribbon {...props} onSelect={pick} stacked />
+            <Ribbon {...props} onSelect={pick} justDone={justDone} stacked />
           </div>
         </SheetContent>
       </Sheet>
 
       <div className="hidden xl:block">
-        <Ribbon {...props} />
+        <Ribbon {...props} justDone={justDone} />
       </div>
     </>
   )
@@ -81,8 +91,9 @@ function Ribbon({
   done,
   revealed,
   onSelect,
+  justDone = null,
   stacked = false,
-}: Props & { stacked?: boolean }) {
+}: Props & { justDone?: string | null; stacked?: boolean }) {
   const acts = journey.acts.slice(0, unlocked)
   const locked = unlocked < journey.acts.length
   return (
@@ -117,7 +128,8 @@ function Ribbon({
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50 active:border-primary active:bg-primary/10",
                 a.key === revealed &&
-                  "animate-in duration-(--duration-reveal) zoom-in-95 fade-in"
+                  "animate-in duration-(--duration-reveal) zoom-in-95 fade-in",
+                a.key === justDone && "animate-step-done"
               )}
             >
               <span className="flex items-center gap-1.5 text-sm font-medium">

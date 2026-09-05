@@ -447,6 +447,32 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("a step chip flashes the moment its act is done (R8)", async () => {
+      await page.goto(`${server.base}/#/journey/two-sum?act=story`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const node = () => document.querySelector('nav[aria-label="learning journey"] button');
+        const bg = () => getComputedStyle(node()).backgroundColor;
+        const t = document.querySelector('[aria-label=timeline]');
+        const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        // park one frame short, so the act finishes on a single step
+        set.call(t, String(Number(t.max) - 1));
+        t.dispatchEvent(new Event('input', { bubbles: true }));
+        await wait(500);
+        const resting = bg();
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        await wait(60);
+        const flashing = { bg: bg(), animation: getComputedStyle(node()).animationName };
+        await wait(600);
+        return { resting, flashing, settled: bg(), tick: node().innerText.slice(0, 1) };
+      `)
+      assert.equal(out.flashing.animation, "step-done", "no flash on completion")
+      assert.notEqual(out.flashing.bg, out.resting, "the flash changed nothing")
+      assert.equal(out.settled, out.resting, "the flash did not settle back")
+      assert.equal(out.tick, "✓", "the act was not marked done")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
