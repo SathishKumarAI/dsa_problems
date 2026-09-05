@@ -5,154 +5,180 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+/* One curve and one default duration for every transition on the site,
+   including the ones inside shadcn components — so a class only ever has to
+   name a duration when it differs (R6). */
+@theme {
+    --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    --default-transition-duration: 150ms;
+}
 
-    /* The type scale, six steps, named by ROLE — see docs/DESIGN.md. Reach for
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Geist Variable", sans-serif;
+
+  /* The type scale, six steps, named by ROLE — see docs/DESIGN.md. Reach for
        the role, not a size: `text-body` for anything a learner reads as a
        sentence, `text-meta` for a label or a count. The audit found 16
        size/weight pairs on one page and 12px as the most common size in a
        product about reading (U6). */
-    --text-meta: 0.75rem;            /* 12 — labels, counts, act keys        */
-    --text-meta--line-height: 1rem;
-    --text-ui: 0.875rem;             /* 14 — controls, table cells, chrome   */
-    --text-ui--line-height: 1.25rem;
-    --text-body: 1rem;               /* 16 — sentences a learner reads       */
-    --text-body--line-height: 1.625rem;
-    --text-narration: 1.1875rem;     /* 19 — the narration line              */
-    --text-narration--line-height: 1.875rem;
-    --text-title: 1.5rem;            /* 24 — page and act titles             */
-    --text-title--line-height: 1.875rem;
-    --text-display: 2rem;            /* 32 — the equation, the answer        */
-    --text-display--line-height: 2.375rem;
+  --text-meta: 0.75rem; /* 12 — labels, counts, act keys        */
+  --text-meta--line-height: 1rem;
+  --text-ui: 0.875rem; /* 14 — controls, table cells, chrome   */
+  --text-ui--line-height: 1.25rem;
+  --text-body: 1rem; /* 16 — sentences a learner reads       */
+  --text-body--line-height: 1.625rem;
+  --text-narration: 1.1875rem; /* 19 — the narration line              */
+  --text-narration--line-height: 1.875rem;
+  --text-title: 1.5rem; /* 24 — page and act titles             */
+  --text-title--line-height: 1.875rem;
+  --text-display: 2rem; /* 32 — the equation, the answer        */
+  --text-display--line-height: 2.375rem;
 
-    /* three container widths, so a new page has an obvious one to pick */
-    --container-reading: 48rem;      /* 768 — a single document              */
-    --container-page: 70rem;         /* 1120 — an index or an overview       */
-    --container-stage: 110rem;       /* 1760 — the journey, edge to edge     */
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-yellow: var(--yellow);
-    --color-teal: var(--teal);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  /* Motion, two durations and one curve — reach for the role, not a number.
+       Hover/press feedback is 150 ms; anything that reveals or resizes is
+       320 ms. FLIP keeps its own delay-scaled envelope (see docs/DESIGN.md);
+       the one-off pulses (write 260 ms, answer 520 ms) are deliberate accents
+       and say so where they are defined. */
+  --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+  --duration-hover: 150ms;
+  --duration-reveal: 320ms;
+
+  /* three container widths, so a new page has an obvious one to pick */
+  --container-reading: 48rem; /* 768 — a single document              */
+  --container-page: 70rem; /* 1120 — an index or an overview       */
+  --container-stage: 110rem; /* 1760 — the journey, edge to edge     */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-yellow: var(--yellow);
+  --color-teal: var(--teal);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --yellow: oklch(0.85 0.12 90);
-    --teal: oklch(0.7 0.1 190);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --yellow: oklch(0.85 0.12 90);
+  --teal: oklch(0.7 0.1 190);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 /* Catppuccin Mocha */
 .dark {
-    --background: #1e1e2e;
-    --foreground: #cdd6f4;
-    --card: #181825;
-    --card-foreground: #cdd6f4;
-    --popover: #181825;
-    --popover-foreground: #cdd6f4;
-    --primary: #cba6f7;
-    --primary-foreground: #11111b;
-    --secondary: #313244;
-    --secondary-foreground: #cdd6f4;
-    --muted: #313244;
-    --muted-foreground: #a6adc8;
-    --accent: #313244;
-    --accent-foreground: #cdd6f4;
-    --destructive: #f38ba8;
-    --border: #313244;
-    --input: #45475a;
-    --ring: #cba6f7;
-    --chart-1: #cba6f7;
-    --chart-2: #89b4fa;
-    --chart-3: #a6e3a1;
-    --chart-4: #fab387;
-    --chart-5: #f38ba8;
-    --yellow: #f9e2af;
-    --teal: #94e2d5;
-    --sidebar: #11111b;
-    --sidebar-foreground: #cdd6f4;
-    --sidebar-primary: #cba6f7;
-    --sidebar-primary-foreground: #11111b;
-    --sidebar-accent: #313244;
-    --sidebar-accent-foreground: #cdd6f4;
-    --sidebar-border: #313244;
-    --sidebar-ring: #cba6f7;
+  --background: #1e1e2e;
+  --foreground: #cdd6f4;
+  --card: #181825;
+  --card-foreground: #cdd6f4;
+  --popover: #181825;
+  --popover-foreground: #cdd6f4;
+  --primary: #cba6f7;
+  --primary-foreground: #11111b;
+  --secondary: #313244;
+  --secondary-foreground: #cdd6f4;
+  --muted: #313244;
+  --muted-foreground: #a6adc8;
+  --accent: #313244;
+  --accent-foreground: #cdd6f4;
+  --destructive: #f38ba8;
+  --border: #313244;
+  --input: #45475a;
+  --ring: #cba6f7;
+  --chart-1: #cba6f7;
+  --chart-2: #89b4fa;
+  --chart-3: #a6e3a1;
+  --chart-4: #fab387;
+  --chart-5: #f38ba8;
+  --yellow: #f9e2af;
+  --teal: #94e2d5;
+  --sidebar: #11111b;
+  --sidebar-foreground: #cdd6f4;
+  --sidebar-primary: #cba6f7;
+  --sidebar-primary-foreground: #11111b;
+  --sidebar-accent: #313244;
+  --sidebar-accent-foreground: #cdd6f4;
+  --sidebar-border: #313244;
+  --sidebar-ring: #cba6f7;
 }
 
 /* a merge-sort write: the value is replaced in place, so there is no motion
    for FLIP to show — the bar pulses instead. Reduced motion zeroes it below. */
 @keyframes write-pulse {
-  0%   { transform: scaleY(0.72); filter: brightness(1.5); }
-  60%  { transform: scaleY(1.06); filter: brightness(1.2); }
-  100% { transform: scaleY(1);    filter: brightness(1); }
+  0% {
+    transform: scaleY(0.72);
+    filter: brightness(1.5);
+  }
+  60% {
+    transform: scaleY(1.06);
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: scaleY(1);
+    filter: brightness(1);
+  }
 }
 
 @utility animate-write-pulse {
@@ -162,9 +188,18 @@
 /* the survivor: when a chip becomes the answer it beats once, so the eye lands
    on it after the pairs around it have faded (R5). Reduced motion zeroes it. */
 @keyframes answer-pulse {
-  0%   { transform: scale(1);    box-shadow: 0 0 0 0 var(--chart-3); }
-  45%  { transform: scale(1.08); box-shadow: 0 0 0 6px transparent; }
-  100% { transform: scale(1);    box-shadow: 0 0 0 0 transparent; }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 var(--chart-3);
+  }
+  45% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 transparent;
+  }
 }
 
 @utility animate-answer-pulse {
@@ -174,15 +209,17 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+  }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
     }

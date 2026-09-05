@@ -70,7 +70,7 @@ export function BarsView({
             )}
             <div
               className={cn(
-                "w-full origin-bottom rounded-t-[4px] transition-[background-color,opacity] duration-200",
+                "w-full origin-bottom rounded-t-[4px] transition-[background-color,opacity]",
                 state,
                 mark === "write" && motion !== "off" && "animate-write-pulse"
               )}
@@ -118,7 +118,7 @@ export function GraphView({ graph, frame, weighted }: GraphProps) {
               x2={b.x}
               y2={b.y}
               className={cn(
-                "transition-[stroke] duration-200",
+                "transition-[stroke]",
                 active ? "stroke-yellow" : "stroke-border"
               )}
               strokeWidth={active ? 1.2 : 0.6}
@@ -162,7 +162,7 @@ export function GraphView({ graph, frame, weighted }: GraphProps) {
               cy={n.y}
               r={4.2}
               className={cn(
-                "transition-[fill,stroke] duration-200",
+                "transition-[fill,stroke]",
                 fill,
                 stroke
               )}

@@ -57,7 +57,7 @@ export function StepsChart({
               >
                 <span
                   className={cn(
-                    "absolute inset-y-0 left-0 rounded-l-[2px] rounded-r-[4px] transition-[width] duration-500 ease-out",
+                    "absolute inset-y-0 left-0 rounded-l-[2px] rounded-r-[4px] transition-[width] duration-(--duration-reveal)",
                     isActive
                       ? "bg-chart-1"
                       : "bg-chart-1/30 group-hover:bg-chart-1/50"

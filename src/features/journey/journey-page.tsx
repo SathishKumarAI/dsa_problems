@@ -174,7 +174,10 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
       onNew={j.newFromPreset}
       text={j.data ? journey.describe(j.data) : ""}
       params={Object.fromEntries(
-        (journey.params ?? []).map((p) => [p.key, String(j.data?.[p.key] ?? "")])
+        (journey.params ?? []).map((p) => [
+          p.key,
+          String(j.data?.[p.key] ?? ""),
+        ])
       )}
       onApply={j.applyCustom}
     />
@@ -264,193 +267,194 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
       >
         {/* ---------- the stage, and the drawer it makes room for ---------- */}
         <div className="flex min-w-0 gap-4 lg:min-h-0">
-        <section
-          className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
-          aria-label="stage"
-        >
-          <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
-            <span className="font-mono text-ui text-muted-foreground">
-              act {String(j.actIndex + 1).padStart(2, "0")} · {act.name}
-            </span>
-            <span className="ml-auto font-mono text-xs text-muted-foreground">
-              {act.complexity}
-            </span>
-          </div>
+          <section
+            className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
+            aria-label="stage"
+          >
+            <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
+              <span className="font-mono text-ui text-muted-foreground">
+                act {String(j.actIndex + 1).padStart(2, "0")} · {act.name}
+              </span>
+              <span className="ml-auto font-mono text-xs text-muted-foreground">
+                {act.complexity}
+              </span>
+            </div>
 
-          {/* the middle scrolls; the narration and the controls below it do
+            {/* the middle scrolls; the narration and the controls below it do
               not, so the sentence explaining the step is always on screen
               (UX audit U1) */}
-          <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-            {(j.warning || j.info) && (
-              <p
-                className={cn(
-                  "border-b px-4 py-2 text-sm",
-                  j.warning
-                    ? "bg-chart-5/10 text-chart-5"
-                    : "bg-chart-2/10 text-chart-2"
+            <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+              {(j.warning || j.info) && (
+                <p
+                  className={cn(
+                    "border-b px-4 py-2 text-sm",
+                    j.warning
+                      ? "bg-chart-5/10 text-chart-5"
+                      : "bg-chart-2/10 text-chart-2"
+                  )}
+                  role={j.warning ? "alert" : "status"}
+                >
+                  {j.warning ? "⚠ " + j.warning : j.info}
+                </p>
+              )}
+
+              {j.data && "target" in j.data && (
+                <div className="px-4 pt-4 font-mono text-base text-muted-foreground">
+                  target ={" "}
+                  <b className="text-foreground">{String(j.data.target)}</b>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-5 px-3 py-8 md:px-6">
+                {model ? (
+                  <Stage
+                    model={model}
+                    stepDelay={j.delay}
+                    challenge={
+                      journey.challenge && j.data ? (
+                        <ChallengeEditor
+                          slug={journey.slug}
+                          challenge={journey.challenge}
+                          data={j.data as { nums: number[]; target?: number }}
+                          onPass={j.onChallengePass}
+                          onTrace={j.setTrace}
+                        />
+                      ) : null
+                    }
+                  />
+                ) : (
+                  <div className="py-8 text-center text-xs text-muted-foreground">
+                    loading…
+                  </div>
                 )}
-                role={j.warning ? "alert" : "status"}
-              >
-                {j.warning ? "⚠ " + j.warning : j.info}
-              </p>
-            )}
-
-            {j.data && "target" in j.data && (
-              <div className="px-4 pt-4 font-mono text-base text-muted-foreground">
-                target ={" "}
-                <b className="text-foreground">{String(j.data.target)}</b>
               </div>
-            )}
 
-            <div className="flex flex-col gap-5 px-3 py-8 md:px-6">
-              {model ? (
-                <Stage
-                  model={model}
-                  stepDelay={j.delay}
-                  challenge={
-                    journey.challenge && j.data ? (
-                      <ChallengeEditor
-                        slug={journey.slug}
-                        challenge={journey.challenge}
-                        data={j.data as { nums: number[]; target?: number }}
-                        onPass={j.onChallengePass}
-                        onTrace={j.setTrace}
-                      />
-                    ) : null
-                  }
-                />
-              ) : (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  loading…
+              {/* a corner case biting on this very frame */}
+              {edge && (
+                <div className="border-t px-4 py-3">
+                  <EdgeCaseCard edge={edge} />
                 </div>
               )}
             </div>
 
-            {/* a corner case biting on this very frame */}
-            {edge && (
-              <div className="border-t px-4 py-3">
-                <EdgeCaseCard edge={edge} />
-              </div>
-            )}
-          </div>
-
-          {/* Narration: the star of the page. It lives below the scrolling
+            {/* Narration: the star of the page. It lives below the scrolling
             middle, so no panel can push it out of view (UX audit U1). */}
-          <div className="border-t bg-background/40">
-            <p
-              className="mx-auto min-h-16 max-w-[35em] px-6 py-4 text-center text-body lg:text-narration"
-              aria-live="polite"
-            >
-              <span className="mr-1 text-primary">›</span>
-              {frame?.note ?? ""}
-            </p>
-          </div>
+            <div className="border-t bg-background/40">
+              <p
+                className="mx-auto min-h-16 max-w-[35em] px-6 py-4 text-center text-body lg:text-narration"
+                aria-live="polite"
+              >
+                <span className="mr-1 text-primary">›</span>
+                {frame?.note ?? ""}
+              </p>
+            </div>
 
-          {/* interruptions: predict / quiz / hints / reveal */}
-          {(j.predict || j.quiz || j.hints || j.nextButton || j.adaptive) && (
-            <div className="flex flex-col gap-3 border-t px-4 py-3">
-              {j.predict && (
-                <PredictCard
-                  key={frame?.note}
-                  predict={j.predict.predict}
-                  onDone={j.predict.resolve}
-                />
-              )}
-              {j.quiz && (
-                <QuizCard
-                  key={j.actKey}
-                  quiz={j.quiz.quiz}
-                  onWrong={j.quiz.onWrong}
-                  onPass={j.quiz.onPass}
-                />
-              )}
-              {j.nextButton && (
-                <div
-                  className={cn(
-                    "flex",
-                    j.nextButton.reveal &&
-                      "animate-in duration-500 fade-in slide-in-from-bottom-1"
-                  )}
-                >
-                  <Button
-                    onClick={j.nextButton.onClick}
+            {/* interruptions: predict / quiz / hints / reveal */}
+            {(j.predict || j.quiz || j.hints || j.nextButton || j.adaptive) && (
+              <div className="flex flex-col gap-3 border-t px-4 py-3">
+                {j.predict && (
+                  <PredictCard
+                    key={frame?.note}
+                    predict={j.predict.predict}
+                    onDone={j.predict.resolve}
+                  />
+                )}
+                {j.quiz && (
+                  <QuizCard
+                    key={j.actKey}
+                    quiz={j.quiz.quiz}
+                    onWrong={j.quiz.onWrong}
+                    onPass={j.quiz.onPass}
+                  />
+                )}
+                {j.nextButton && (
+                  <div
                     className={cn(
+                      "flex",
                       j.nextButton.reveal &&
-                        "bg-chart-3 text-[var(--primary-foreground)] hover:bg-chart-3/90"
+                        "animate-in duration-(--duration-reveal) fade-in slide-in-from-bottom-1"
                     )}
                   >
-                    {j.nextButton.label}
-                  </Button>
-                </div>
-              )}
-              {j.adaptive && (
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-4/40 bg-chart-4/5 p-3 text-sm">
-                  <FlameIcon className="size-4 text-chart-4" /> Flawless — no
-                  wrong answers, first-try green.
-                  <Button size="sm" variant="outline" onClick={j.adaptive.go}>
-                    {j.adaptive.label}
-                  </Button>
-                </div>
-              )}
-              {j.hints && !storyAct && (
-                <HintLadder
-                  hints={j.hints.hints}
-                  tier={j.hints.tier}
-                  onMore={j.hints.more}
-                />
-              )}
-            </div>
-          )}
+                    <Button
+                      onClick={j.nextButton.onClick}
+                      className={cn(
+                        j.nextButton.reveal &&
+                          "bg-chart-3 text-[var(--primary-foreground)] hover:bg-chart-3/90"
+                      )}
+                    >
+                      {j.nextButton.label}
+                    </Button>
+                  </div>
+                )}
+                {j.adaptive && (
+                  <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-4/40 bg-chart-4/5 p-3 text-sm">
+                    <FlameIcon className="size-4 text-chart-4" /> Flawless — no
+                    wrong answers, first-try green.
+                    <Button size="sm" variant="outline" onClick={j.adaptive.go}>
+                      {j.adaptive.label}
+                    </Button>
+                  </div>
+                )}
+                {j.hints && !storyAct && (
+                  <HintLadder
+                    hints={j.hints.hints}
+                    tier={j.hints.tier}
+                    onMore={j.hints.more}
+                  />
+                )}
+              </div>
+            )}
 
-          <div className="flex flex-col gap-3 border-t px-4 py-3">
-            <Transport
-              pos={j.player.pos}
-              last={j.player.last}
-              playing={j.player.playing}
-              onToggle={j.player.toggle}
-              onStep={() => {
-                j.player.pause()
-                j.player.step()
-              }}
-              onBack={() => j.seek(j.player.pos - 1)}
-              onReset={() => j.seek(0)}
-              onSeek={j.seek}
-              speed={j.speed}
-              onSpeed={j.setSpeed}
-            />
-            {/* below lg there is no room to push anything aside, so the
+            <div className="flex flex-col gap-3 border-t px-4 py-3">
+              <Transport
+                pos={j.player.pos}
+                last={j.player.last}
+                playing={j.player.playing}
+                onToggle={j.player.toggle}
+                onStep={() => {
+                  j.player.pause()
+                  j.player.step()
+                }}
+                onBack={() => j.seek(j.player.pos - 1)}
+                onReset={() => j.seek(0)}
+                onSeek={j.seek}
+                speed={j.speed}
+                onSpeed={j.setSpeed}
+              />
+              {/* below lg there is no room to push anything aside, so the
                 controls stay where they have always been */}
-            <div className="lg:hidden">{data}</div>
-          </div>
-        </section>
+              <div className="lg:hidden">{data}</div>
+            </div>
+          </section>
 
-        {/* The test-case drawer (R4). It is a column of the flex row, not an
+          {/* The test-case drawer (R4). It is a column of the flex row, not an
             overlay: opening it pushes the stage narrower instead of covering
             the thing you are about to change. `inert` while closed so its
             fields stay out of the tab order at width 0. */}
-        <aside
-          id="test-cases"
-          aria-label="test cases"
-          inert={!drawer}
-          // Esc closes it, but only from inside: the global Esc belongs to
-          // dialogs (B26), and a drawer is not a dialog (R7)
-          onKeyDown={(e) => {
-            if (e.key !== "Escape") return
-            e.stopPropagation()
-            setPref("drawer", false)
-            document.querySelector<HTMLElement>('[aria-controls="test-cases"]')
-              ?.focus()
-          }}
-          className={cn(
-            "hidden shrink-0 overflow-hidden transition-[width] duration-300 ease-out lg:block",
-            drawer ? "w-72" : "w-0"
-          )}
-        >
-          <div className="flex w-72 flex-col gap-3 rounded-xl border bg-card p-4">
-            <Label>test cases</Label>
-            {data}
-          </div>
-        </aside>
+          <aside
+            id="test-cases"
+            aria-label="test cases"
+            inert={!drawer}
+            // Esc closes it, but only from inside: the global Esc belongs to
+            // dialogs (B26), and a drawer is not a dialog (R7)
+            onKeyDown={(e) => {
+              if (e.key !== "Escape") return
+              e.stopPropagation()
+              setPref("drawer", false)
+              document
+                .querySelector<HTMLElement>('[aria-controls="test-cases"]')
+                ?.focus()
+            }}
+            className={cn(
+              "hidden shrink-0 overflow-hidden transition-[width] duration-(--duration-reveal) lg:block",
+              drawer ? "w-72" : "w-0"
+            )}
+          >
+            <div className="flex w-72 flex-col gap-3 rounded-xl border bg-card p-4">
+              <Label>test cases</Label>
+              {data}
+            </div>
+          </aside>
         </div>
 
         {/* ---------- the reading column (or its rail) ---------- */}

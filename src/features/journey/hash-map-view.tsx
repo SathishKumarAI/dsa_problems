@@ -156,7 +156,7 @@ export function HashMapView({ map }: { map: HashModel }) {
           >
             <span
               className={cn(
-                "absolute inset-y-0 left-0 rounded-full transition-[width]",
+                "absolute inset-y-0 left-0 rounded-full transition-[width] duration-(--duration-reveal)",
                 map.load > HASH_LOAD * 0.9 ? "bg-chart-4" : "bg-chart-2"
               )}
               style={{
