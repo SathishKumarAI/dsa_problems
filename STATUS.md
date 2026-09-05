@@ -32,13 +32,17 @@ reasoning behind each decision, is the first section of [`docs/WORKLOG.md`](docs
 
 ## Waiting on you
 
-Eight questions, each with options and a recommendation, in
-[`docs/BACKLOG.md`](docs/BACKLOG.md) §Open questions. Two block work:
+Ten questions, each with options and a recommendation, in
+[`docs/BACKLOG.md`](docs/BACKLOG.md) §Open questions. Three block work:
 
 - **Q1** — does the approach ladder replace the "Approach & Solution" tab, or sit beside it?
   (I would replace it.) This gates R1.
+- **Q9** — does Play move to the header, as the lesson-screen spec asks? (I would keep the footer
+  U1 built.) This gates R3 and R4.
 - **Q7** — `../dsa_visualizer` still exists, untouched, with an uncommitted `feat/disclosure-lint`
   branch. Its one idea shipped here as B8, so it is ready to archive. Yours to do.
+
+**Q10** does not block: the locked-step chips stay as they are until you pick an option.
 
 ## Environment traps
 
