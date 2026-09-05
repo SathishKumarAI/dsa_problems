@@ -65,6 +65,14 @@ test("problems: the approach ladder is well-formed, worst → best", () => {
     const { rungs } = ladderOf(p, journey, Number.MAX_SAFE_INTEGER)
     assert.ok(rungs.length >= 1, `${p.id}: no rungs`)
     assert.equal(rungs[0].whyNow, undefined, `${p.id}: the first rung has nothing before it`)
+    // the bar is presence, not length: an authored rung writes a sentence or
+    // two, while a journey act's `insight` is a deliberately short question
+    // ("The map costs memory — what if the drawer organized itself?")
+    for (const r of rungs.slice(1))
+      assert.ok(
+        (r.whyNow ?? "").length > 25,
+        `${p.id}/${r.name}: a rung needs the weakness in the one below it`
+      )
     for (const r of rungs) {
       assert.ok(r.name.trim(), `${p.id}: a rung with no name`)
       assert.ok(/O\(/.test(r.cost), `${p.id}/${r.name}: cost does not read as a complexity`)

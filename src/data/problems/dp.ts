@@ -23,6 +23,8 @@ export const dp: Problem[] = [
       "ways(n) = ways(n-1) + ways(n-2) — the two cases are disjoint and exhaustive.",
       "Only the last two values are ever needed: two variables, no array.",
     ],
+    whyNow:
+      "The cache holds n entries and a stack n deep for a recurrence that only ever looks back two steps. Two variables carry the same state.",
     approach:
       "The recurrence is Fibonacci: every route to step n arrives from n-1 (then +1) or from n-2 (then +2), and those sets never overlap. Naive recursion recomputes subproblems exponentially; iterating upward with two rolling variables computes each once. This is DP at its smallest: state = step index, transition = sum of the two predecessors.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -77,6 +79,8 @@ export const dp: Problem[] = [
       },
       {
         name: "Memoized recursion",
+        whyNow:
+          "The plain recursion recomputes the same step counts exponentially often. Caching each one makes every subproblem happen exactly once.",
         summary:
           "Same recursion, each subproblem cached and computed once. Top-down DP — the systematic step between naive recursion and the iterative table.",
         complexity: { time: "O(n)", space: "O(n)" },
@@ -112,6 +116,8 @@ def climb_ways(n: int) -> int:
       "best(i) = max(best(i-1), nums[i] + best(i-2)).",
       "Two rolling variables again — the array version is training wheels.",
     ],
+    whyNow:
+      "The table keeps n values, but each step reads only the two before it. Two variables are enough, and the space drops to constant.",
     approach:
       "State: best(i), the maximum sum using only the first i+1 elements. Transition: either element i is skipped (carry best(i-1)) or taken (nums[i] + best(i-2), since i-1 is then forbidden). Take the max. Roll two variables left to right; the final value is the answer.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -171,6 +177,8 @@ def max_take(nums: list[int]) -> int:
       },
       {
         name: "Full table",
+        whyNow:
+          "The memo already computes bottom-up, with a call stack in the way. Filling the array in order removes the recursion and makes the order of computation visible.",
         summary:
           "Explicit dp array before the two-variable compression. Easier to debug and to extend (e.g. recovering WHICH elements were taken).",
         complexity: { time: "O(n)", space: "O(n)" },
@@ -208,6 +216,8 @@ def max_take(nums: list[int]) -> int:
       "best(a) = 1 + min(best(a - c)) over usable coins c.",
       "Fill a table from 0 upward; unreachable amounts stay at infinity.",
     ],
+    whyNow:
+      "BFS is correct but carries a frontier and a visited set. The same shortest path written as a table over amounts is the standard bottom-up form, and it leaves the answer readable for every amount, not only the one asked for.",
     approach:
       "Bottom-up table over amounts 0..amount. best(0) = 0; every other entry is 1 + the minimum over best(amount - coin) for each coin that fits, or infinity if none is reachable. The table order guarantees subproblems are ready when needed. Greedy fails here precisely because local largest-coin choices don't compose into a global optimum — the counterexample in hint 1 is worth memorizing.",
     complexity: { time: "O(amount × coins)", space: "O(amount)" },
@@ -273,6 +283,8 @@ def max_take(nums: list[int]) -> int:
       },
       {
         name: "BFS over amounts",
+        whyNow:
+          "Greedy is not merely slow here, it is wrong: largest-coin-first spends three coins on amount 6 with coins [1, 3, 4] (4 + 1 + 1) when two suffice (3 + 3). Treating amounts as nodes explores by number of coins, so the first time 0 is reached is the true minimum.",
         summary:
           "Treat amounts as graph nodes, coins as edges; fewest coins = shortest path from amount to 0. Same complexity as the table, and a nice reveal that DP-minimization and BFS are cousins.",
         complexity: { time: "O(amount × coins)", space: "O(amount)" },

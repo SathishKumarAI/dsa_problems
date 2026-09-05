@@ -156,6 +156,8 @@ export const arraysHashing: Problem[] = [
       "Sorting the counts costs O(n log n). Can you avoid comparing counts to each other at all?",
       "Counts are bounded by n. Make an array of buckets where bucket[c] holds every value that occurs c times, then read buckets from the top.",
     ],
+    whyNow:
+      "The heap still pays a logarithm on every count. Counts are bounded by n, so they can be array indices: bucket the values by count and read the top k off the end, with no comparison sort anywhere.",
     approach:
       "Count occurrences with a hash map. Then bucket-sort by count: index c of a length n+1 array collects all values appearing exactly c times. Scanning buckets from n down to 1 and collecting values until you have k avoids any comparison sort, because a count can never exceed n.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -206,6 +208,8 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
       },
       {
         name: "Heap",
+        whyNow:
+          "Sorting puts every distinct value in order when only k of them are wanted. A heap of size k keeps just the frontrunners, so the cost follows k instead of the whole set of values.",
         summary:
           "Keep a min-heap of the k most frequent seen while iterating counts. Better than sorting when k ≪ distinct values; stdlib nlargest does exactly this.",
         complexity: { time: "O(n log k)", space: "O(n)" },
@@ -246,6 +250,8 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
       "If you start counting from the middle of a run you will re-count it many times. Which numbers are safe to start from?",
       "A number x starts a run only if x - 1 is absent from the set. Only start counting there.",
     ],
+    whyNow:
+      "Sorting spends n log n to learn something a set already knows - whether a number is present. Ask that question directly, start a walk only from a value with no left neighbour, and the whole thing is linear.",
     approach:
       "Load all values into a hash set. For each value x, if x - 1 is not in the set then x is the left end of a run — walk x+1, x+2, … while they exist and track the length. Every element is visited at most twice (once in the outer loop, once inside a walk), so the total work is linear despite the nested-looking loops.",
     complexity: { time: "O(n)", space: "O(n)" },

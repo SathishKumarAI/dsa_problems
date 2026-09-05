@@ -21,6 +21,8 @@ export const linkedList: Problem[] = [
       "At each node: remember where you were going, point backwards, step forward.",
       "prev starts as None — that None becomes the tail's new next, terminating the reversed list for free.",
     ],
+    whyNow:
+      "Recursion still holds a frame per node, so a long list overflows the stack. Three pointers in a loop do the same rewiring in constant space.",
     approach:
       "Walk the list with prev (starts None) and curr (starts head). Each step saves curr.next, rewires curr.next to prev, then shifts both pointers forward. When curr runs off the end, prev holds the new head. The initial None terminates the reversed list without special-casing.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -75,6 +77,8 @@ def reverse_list(head: Node | None) -> Node | None:
       },
       {
         name: "Recursive",
+        whyNow:
+          "Rebuilding the list allocates a second one and gives up the in-place requirement. Recursion rewires the nodes that are already there.",
         summary:
           "Reverse the tail, then hook the current node behind it. Elegant, but n stack frames — the iterative version is the one to ship.",
         complexity: { time: "O(n)", space: "O(n) stack" },
@@ -112,6 +116,8 @@ def reverse_list(head: Node | None) -> Node | None:
       "Two runners on a circular track: the faster one always laps the slower one.",
       "Advance slow by 1 and fast by 2. Cycle ⇔ they meet; no cycle ⇔ fast hits None.",
     ],
+    whyNow:
+      "The set is linear time but linear memory, on a problem whose whole point is constant space. Two pointers moving at different speeds must meet inside a cycle, and they remember nothing.",
     approach:
       "Floyd's tortoise and hare. Slow moves one node per step, fast moves two. If there is no cycle, fast reaches the end. If there is one, both eventually enter it, and the gap between them shrinks by exactly one node per step (fast gains 1 on slow inside the loop), so they must collide rather than skip past each other.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -182,6 +188,8 @@ def reverse_list(head: Node | None) -> Node | None:
       'A dummy head node kills every "is this the first node?" special case.',
       "When one list runs out, the other is already sorted — attach the whole remainder.",
     ],
+    whyNow:
+      "The recursion is that same merge with a stack frame per node. A dummy head and a tail pointer do it in a loop, in constant space.",
     approach:
       "Create a dummy node and a tail pointer at it. While both lists are non-empty, attach the smaller head to tail and advance that list. When one empties, attach the survivor's remainder in one assignment. Return dummy.next. The dummy means the first comparison needs no special handling.",
     complexity: { time: "O(n + m)", space: "O(1)" },
@@ -236,6 +244,8 @@ def reverse_list(head: Node | None) -> Node | None:
       },
       {
         name: "Recursive",
+        whyNow:
+          "Sorting the combined values throws away the fact that both inputs are already sorted. Merging compares the two heads and never looks back.",
         summary:
           "The smaller head owns the merge of everything else. Reads beautifully; n+m stack frames make it a demo, not a default.",
         complexity: { time: "O(n+m)", space: "O(n+m) stack" },

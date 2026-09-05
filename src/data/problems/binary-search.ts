@@ -25,6 +25,8 @@ export const binarySearch: Problem[] = [
       "Keep an inclusive [lo, hi] range; loop while lo <= hi.",
       "Off-by-one bugs live in the update: mid ± 1, never mid itself, or the loop can spin forever.",
     ],
+    whyNow:
+      "Recursion pays a stack frame per halving and buys nothing. The same loop written iteratively is constant space, and it is the version to write under pressure.",
     approach:
       "Maintain an inclusive search range [lo, hi] that must contain the target if it exists. Probe the midpoint: equal means done; smaller means the answer lives strictly right of mid; larger means strictly left. Each probe halves the range, giving the logarithmic bound.",
     complexity: { time: "O(log n)", space: "O(1)" },
@@ -87,6 +89,8 @@ export const binarySearch: Problem[] = [
       },
       {
         name: "Recursive",
+        whyNow:
+          "Checking every element ignores the only thing the input promises: order. Halving the range uses it, and the halving reads most naturally as a recursion.",
         summary:
           "Same halving, expressed recursively. Cleaner to some eyes, costs stack frames; iterative is the production default.",
         complexity: { time: "O(log n)", space: "O(log n) stack" },
@@ -133,6 +137,8 @@ export const binarySearch: Problem[] = [
       "Compare nums[mid] with nums[hi]: which side of the break are you on?",
       "nums[mid] > nums[hi] → break (and minimum) is right of mid. Otherwise mid could itself be the minimum — keep it in range.",
     ],
+    whyNow:
+      "Naming the seam is not the same as finding it quickly. Comparing the middle against the right end says which half the seam is in, so the search halves at every step.",
     approach:
       "Binary search on the break point. If nums[mid] > nums[hi], the middle sits in the first (larger) run, so the minimum lies strictly right: lo = mid + 1. Otherwise mid is in the second run — the minimum is mid or left of it: hi = mid. Loop until the range closes; comparing against nums[hi] rather than nums[lo] avoids ambiguity when the rotation is zero.",
     complexity: { time: "O(log n)", space: "O(1)" },
@@ -213,6 +219,8 @@ export const binarySearch: Problem[] = [
       },
       {
         name: "Find the drop",
+        whyNow:
+          "min() reads everything and learns nothing about the array. Looking for the one place where the order breaks names the structure - the seam - even though it still walks the whole thing.",
         summary:
           "Scan for the single place where nums[i] > nums[i+1] — the rotation seam. Linear again, but names the structure the binary search exploits.",
         complexity: { time: "O(n)", space: "O(1)" },
@@ -245,6 +253,8 @@ export const binarySearch: Problem[] = [
       "Monotonic yes/no over a numeric range = binary search over that range.",
       'Range is [1, max(piles)]. Find the leftmost "yes".',
     ],
+    whyNow:
+      "Trying speeds one at a time walks a range as wide as the largest pile. Feasibility only ever flips from no to yes once, so the answer can be binary-searched over the speed rather than over positions.",
     approach:
       "Instead of searching positions, search candidate speeds. hours(k) = Σ ceil(pile/k) is non-increasing in k, so feasibility flips from no to yes exactly once. Binary search the boundary: if hours(mid) ≤ h, mid is feasible — try slower (hi = mid); otherwise lo = mid + 1. This 'search the answer space' framing generalizes to shipping capacities, split arrays, and similar minimization problems.",
     complexity: { time: "O(n log max(piles))", space: "O(1)" },

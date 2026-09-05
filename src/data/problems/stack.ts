@@ -25,6 +25,8 @@ export const stack: Problem[] = [
       "Push openers. On a closer, the top of the stack must be its partner.",
       "Two failure modes: mismatch mid-string, and a non-empty stack at the end.",
     ],
+    whyNow:
+      "Deleting matched pairs rescans the whole string after every deletion. A stack remembers what is still open as you go, so one pass decides it.",
     approach:
       "Scan once. Push each opening bracket. For each closing bracket, the stack must be non-empty and its top must be the corresponding opener — otherwise the string is invalid. After the scan the stack must be empty, or some opener was never closed.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -98,6 +100,8 @@ export const stack: Problem[] = [
       "Keep waiting days on a stack. A new temperature resolves every colder day on top of it.",
       "The stack stays in decreasing temperature order — that invariant is the whole trick (monotonic stack).",
     ],
+    whyNow:
+      "Those hops still depend on the shape of the data. A stack of days still waiting for something warmer gives every day exactly one push and one pop, whatever the input looks like.",
     approach:
       "Hold a stack of indices whose warmer day hasn't arrived, always in decreasing temperature order. Each new day pops every index with a colder temperature — the gap in indices is that day's answer — then pushes itself. Every index is pushed and popped at most once, so the pass is linear.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -172,6 +176,8 @@ export const stack: Problem[] = [
       },
       {
         name: "Backward scan",
+        whyNow:
+          "Scanning forward from every day re-walks the same runs of cold days. Going right to left lets each day hop over stretches that already have answers.",
         summary:
           "Iterate right-to-left; from day i, hop through already-computed answers to skip runs of colder days. Same worst case on paper, but each hop jumps a whole resolved block — a nice trick when a stack feels heavyweight.",
         complexity: { time: "O(n) amortized", space: "O(1) extra" },
@@ -216,6 +222,8 @@ export const stack: Problem[] = [
       "A monotonic increasing stack finds both boundaries: a bar is finalized the moment a shorter one arrives.",
       "Append a sentinel height 0 so every bar gets flushed at the end.",
     ],
+    whyNow:
+      "Divide and conquer degrades to quadratic when the minimum keeps landing at an end. A stack of non-decreasing heights closes each bar's rectangle exactly when the first shorter bar arrives - linear whatever the shape.",
     approach:
       "Sweep with a stack of indices whose heights are non-decreasing. When the incoming bar is shorter than the stack top, the top bar's rectangle is now bounded: its right edge is the current index, its left edge is the element below it on the stack. Pop, compute area, repeat; then push the current bar. A trailing zero-height sentinel drains the stack. Each bar is pushed and popped exactly once.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -290,6 +298,8 @@ export const stack: Problem[] = [
       },
       {
         name: "Divide & conquer",
+        whyNow:
+          "Expanding from every bar re-measures the same neighbours. Splitting at the shortest bar settles three cases at once, so the work follows the recursion instead of the pairs.",
         summary:
           "Best rectangle is either fully left of the minimum bar, fully right of it, or spans it at the minimum's height. Recurse both halves. O(n log n) typical, O(n²) if the array is sorted — the stack solution dominates it.",
         complexity: { time: "O(n log n) avg", space: "O(log n)" },
