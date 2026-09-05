@@ -5,12 +5,6 @@
 // state; the journey hook owns when they appear.
 
 import { useState } from "react"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { EdgeCase, Predict, Quiz } from "@/engine"
@@ -208,9 +202,10 @@ export function EdgeCaseCard({ edge }: { edge: EdgeCase }) {
   )
 }
 
-// The story act's "bring your inputs" card (Khamies §3.1.4: an empty-case,
-// a medium-case and a corner-case input before any code). One button per
-// corner case loads its preset so the learner can watch it bite.
+// The "bring your inputs" list (Khamies §3.1.4: an empty-case, a medium-case
+// and a corner-case input before any code). One button per corner case loads
+// its preset so the learner can watch it bite. Chrome-free — ProblemPanel
+// supplies the card and the heading it opens under (R3).
 export function EdgeCaseList({
   edges,
   current,
@@ -221,10 +216,7 @@ export function EdgeCaseList({
   onLoad: (preset: string) => void
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-teal/30 bg-card p-4">
-      <div className="text-meta tracking-wide text-teal uppercase">
-        bring three inputs before any code
-      </div>
+    <div className="flex flex-col gap-3">
       <p className="text-muted-foreground">
         A plain input shows the flow. The smallest legal input and the corner
         cases below show where a first draft breaks. Load one, then step through
@@ -265,31 +257,6 @@ export function EdgeCaseList({
           </li>
         ))}
       </ul>
-    </div>
-  )
-}
-
-// The story act's hints, visible up front (they are about READING the
-// problem — reread, formalize, bring inputs — not about solving it), one
-// click each so the learner still chooses to look.
-export function HintList({ hints }: { hints: string[] }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-xl border bg-card p-4">
-      <div className="text-meta tracking-wide text-muted-foreground uppercase">
-        how to read this problem
-      </div>
-      <Accordion multiple={false} className="w-full">
-        {hints.map((h, i) => (
-          <AccordionItem key={i} value={`hint-${i}`}>
-            <AccordionTrigger className="font-mono text-sm">
-              {["reread", "formalize", "bring inputs"][i] ?? `hint ${i + 1}`}
-            </AccordionTrigger>
-            <AccordionContent className="text-body text-muted-foreground">
-              {h}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
     </div>
   )
 }

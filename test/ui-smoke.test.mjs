@@ -208,6 +208,45 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("the problem is one click away from a later act (R3)", async () => {
+      // act 05 is deep in the journey: before R3 the statement and the corner
+      // cases were on act 1 only, so reading them cost the step you were on
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.goto(`${server.base}/#/journey/two-sum?act=hash`)
+      await page.waitFor(
+        `/act 05/i.test(document.querySelector('[aria-label=stage]')?.innerText ?? '')`
+      )
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const aside = document.querySelector('[aria-label="approach"]');
+        const trigger = () => [...aside.querySelectorAll('[data-slot=accordion-trigger]')]
+          .find(b => /the problem/i.test(b.innerText));
+        const closed = aside.innerText;
+        trigger().click();
+        await wait(400);
+        const opened = aside.innerText;
+        const cases = () => aside.querySelector('[aria-label="corner cases"]');
+        const casesClosed = !cases();
+        [...aside.querySelectorAll('[data-slot=accordion-trigger]')]
+          .find(b => /bring three inputs/i.test(b.innerText))?.click();
+        await wait(400);
+        return {
+          hasTrigger: !!trigger(),
+          grew: opened.length > closed.length,
+          statement: /nums/i.test(opened),
+          casesClosed,
+          casesOpen: !!cases(),
+        };
+      `)
+      assert.ok(out.hasTrigger, "no 'the problem' section on act 05")
+      assert.ok(out.grew, "opening the section revealed nothing")
+      assert.ok(out.statement, "the statement did not appear")
+      assert.ok(out.casesClosed, "corner cases should start closed past act 1")
+      assert.ok(out.casesOpen, "corner cases did not open")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
