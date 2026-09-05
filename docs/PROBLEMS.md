@@ -60,8 +60,8 @@ today (the journey acts carry all four when the journey ships).
 | 1 | Two Sum (`pair-sum` → journey `two-sum`) | arrays & hashing | easy | brute · sort + two pointers · two-pass hash · one-pass hash | py · java · cpp | chips, sorted, sum, hash | Khamies §3.2.1 | ✓ |
 | 2 | Single Number (`single-number`) | arrays & hashing | easy | brute · hash counts · sort & scan · XOR | py · java · cpp | chips, hash, sorted, bits | Xu ch. bit manipulation | ✓ |
 | 3 | Triplets Summing to Zero (`three-sum-zero` → journey `three-sum`) | two pointers | medium | brute O(n³) · anchor + hash · anchor + two pointers (skip duplicates) | py · java · cpp | chips, sorted, **terms** (new: k-term equation + found list) | Khamies §3.2.2 | ✓ |
-| 4 | Pair Sum in Sorted Array (`sorted-pair-sum`) | two pointers | easy | brute · hash · two pointers (sorted input, no sort) | py | chips, sum | Khamies §5.1 | ▶ |
-| 5 | Widest Container (`container-water`) | two pointers | medium | brute · two pointers moving the shorter wall | py | **bars** (port `BarsView` into a panel kind, with a shaded area) | Xu two pointers | ☐ |
+| 4 | Pair Sum in Sorted Array (`sorted-pair-sum` → journey `sorted-pair-sum`) | two pointers | easy | brute · hash · two pointers (sorted input, no sort) | py · java · cpp | chips, sum, hash | Khamies §5.1 | ✓ |
+| 5 | Widest Container (`container-water`) | two pointers | medium | brute · two pointers moving the shorter wall | py | **bars** (port `BarsView` into a panel kind, with a shaded area) | Xu two pointers | ▶ |
 | 6 | Single Buy/Sell Profit (`best-trade`) | sliding window | easy | brute · running minimum | py | bars + a running-min line | Xu sliding windows | ☐ |
 | 7 | Longest Substring Without Repeats (`longest-unique-substring`) | sliding window | medium | brute · window + set · last-seen jump | py | **window** (span over chips) + hash | Xu sliding windows | ☐ |
 | 8 | Smallest Covering Window (`min-cover-substring`) | sliding window | hard | brute · window + need counts | py | window + hash (`fmt: times`) | Xu sliding windows | ☐ |
