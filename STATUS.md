@@ -13,11 +13,11 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. UX-audit **batch 5**: U9 (the visualizer ends at ~600 px of a 1000 px viewport) and U13 (home
-   looks identical whether you have finished nothing or everything).
-2. Then **P1** in `docs/PROBLEMS.md`: the reference-card rebuild (constraints, hints, approaches
-   worst→best in three languages). The learner codes on LeetCode; this app explains.
-   Batches 1–4 shipped 2026-09-05; `docs/DESIGN.md` holds the tokens.
+1. **R2 then R1** — `constraints: string[]` on `Problem`, then the approach ladder
+   (`docs/PROBLEMS.md` §P1). The learner codes on LeetCode; this app explains. Decide the open
+   question there first: does the ladder replace the "Approach & Solution" tab or sit beside it?
+2. Then the next problem in the pipeline (#4 Pair Sum in Sorted Array).
+   **Every UX-audit item (U1–U14) and every original P0 is closed** as of 2026-09-05.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

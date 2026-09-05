@@ -30,7 +30,7 @@ export function BarsView({
   return (
     <div
       ref={ref}
-      className="flex h-56 items-stretch justify-center gap-[3px]"
+      className="flex h-full min-h-[14rem] items-stretch justify-center gap-[3px]"
       aria-label="array as bars"
     >
       {frame.arr.map((v, i) => {

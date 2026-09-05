@@ -1,6 +1,7 @@
 # UI/UX audit — 2026-09-05
 
-> **Status:** batch 1 (U10, U7, U5, U3) shipped the same day — `BACKLOG.md` holds the live state.
+> **Status: all fourteen findings shipped 2026-09-05**, in the five batches this document proposed.
+> `BACKLOG.md` holds the live state, and `DESIGN.md` now holds the system U12 asked for.
 > One correction to this document's own method: `ch` is the width of the "0" glyph, roughly 1.3× the
 > average character in a proportional face, so a `68ch` cap still rendered ~90 characters. The caps
 > ship in `em` (0.5 em per character), which is the metric these findings were measured with.

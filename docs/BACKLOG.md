@@ -83,8 +83,8 @@ Measured, not eyeballed — method, evidence and the reasoning behind each fix a
 | U2 | ☑ Fixed 2026-09-05 — header **378 → 170 px**, stage top **463 → 271 px**: the stepper is one row below `xl` opening the ribbon in a bottom sheet, the subtitle hides below `md`, and "restart journey" becomes its icon below `sm`. | | M | — |
 | U14 | ☑ Fixed 2026-09-05 — `act 05 / 07 · One-Pass Hash ▾` opens the full ribbon (stacked, with ↓ connectors) in a sheet; a lock icon shows when acts remain. | | S | — |
 | U11 | ☑ Fixed 2026-09-05 — below `lg` the transport, the act pill, the preset select, the custom input and **apply** are all ≥ 44 px, and the timeline track is 12 px. A mouse keeps the compact row. | | S | — |
-| U9 | ☐ The visualizer ends at ~600 px of a 1000 px viewport; bars get 224 px. | viewport-height inset, `flex-1` stage, picker as a segmented row | M | P2 |
-| U13 | ☐ Home looks identical whether you have finished nothing or everything. | a "continue" card deep-linking to `?act=` | S | P2 |
+| U9 | ☑ Fixed 2026-09-05 — the visualizer is a panel layout like the journey: bars **224 → 614 px**, dead space under the stage **~400 → 16 px**; the picker and the right rail scroll on their own. | | M | — |
+| U13 | ☑ Fixed 2026-09-05 — a **pick up where you left off** card above the journey grid: the furthest started-but-unfinished journey, the act it opens next, and `n of m acts earned`. Absent for a fresh learner and after everything is finished. | | S | — |
 
 ## Animations and front-end proposals — for review (2026-09-04)
 

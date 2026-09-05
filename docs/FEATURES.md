@@ -36,6 +36,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Feature | Behaviour | File | Status |
 |---|---|---|---|
 | Method statement | One paragraph: feel the weakness, earn the insight, then the name. | `home-view.tsx` | shipped |
+| Resume card | Above the journey grid when a journey is started and unfinished: "pick up where you left off", the journey, `next: <act> · <cost>` and `n of m acts earned`, deep-linking to `#/journey/<slug>?act=<key>`. Picks the furthest-along journey. Absent for a fresh learner and once everything is complete. | `home-view.tsx` `ResumeCard` | shipped (UI test: absent → present → absent across the three states) |
 | Streak + XP | `streakOf(activity-days)` counts consecutive days ending today or yesterday; XP from the store. | `home-view.tsx`, `lib/store.ts` | shipped (visual; streak logic not unit-tested — B18) |
 | Journey cards | Title, subtitle, `earned/(acts−1)` (story act doesn't count), progress bar. "complete" when all acts earned. Click → journey. | `home-view.tsx` | shipped (visual) |
 | Visualizer card | Dashed card linking to `#/algorithms`. | `home-view.tsx` | shipped |
