@@ -13,9 +13,10 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. UX-audit **batch 3**: the type scale and the written system (U6 + U12) as one pass — it touches
-   every component, so run `npm run test:ui` and look at the screens afterwards.
-2. Then mobile (U2, U14, U11), then U9 and U13. Batches 1 and 2 shipped 2026-09-05.
+1. UX-audit **batch 4**: mobile as a designed layout — U2 (378 px of chrome before the stage),
+   U14 (the stepper wraps to four rows), U11 (28 px touch targets).
+2. Then U9 (the visualizer's vertical space) and U13 (a home page that knows you).
+   Batches 1–3 shipped 2026-09-05; `docs/DESIGN.md` now holds the tokens.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)

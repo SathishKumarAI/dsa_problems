@@ -43,7 +43,7 @@ import type { JourneyController } from "./use-journey"
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-xs tracking-wide text-muted-foreground uppercase">
+    <div className="text-meta tracking-wide text-muted-foreground uppercase">
       {children}
     </div>
   )
@@ -168,7 +168,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const storyAct = j.actIndex === 0
 
   return (
-    <div className="mx-auto flex w-full max-w-[110rem] flex-col gap-4 lg:h-full">
+    <div className="mx-auto flex w-full max-w-stage flex-col gap-4 lg:h-full">
       {/* header */}
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -206,7 +206,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           </Button>
         </div>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+          <h1 className="font-heading text-title font-semibold tracking-tight">
             {journey.title}
           </h1>
           {journey.leetcode && (
@@ -214,7 +214,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               LeetCode {journey.leetcode}
             </span>
           )}
-          <p className="text-sm text-muted-foreground">{journey.subtitle}</p>
+          <p className="text-ui text-muted-foreground">{journey.subtitle}</p>
         </div>
         <ActStepper
           journey={journey}
@@ -240,7 +240,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
-            <span className="font-mono text-sm text-muted-foreground">
+            <span className="font-mono text-ui text-muted-foreground">
               act {String(j.actIndex + 1).padStart(2, "0")} · {act.name}
             </span>
             <span className="ml-auto font-mono text-xs text-muted-foreground">
@@ -309,7 +309,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             middle, so no panel can push it out of view (UX audit U1). */}
           <div className="border-t bg-background/40">
             <p
-              className="mx-auto min-h-16 max-w-[35em] px-6 py-4 text-center text-base leading-relaxed lg:text-lg"
+              className="mx-auto min-h-16 max-w-[35em] px-6 py-4 text-center text-body lg:text-narration"
               aria-live="polite"
             >
               <span className="mr-1 text-primary">›</span>
@@ -416,7 +416,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           >
             {peek && (
               <div
-                className="absolute top-0 right-0 z-20 hidden max-h-full w-[26rem] flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 text-[15px] leading-relaxed shadow-2xl lg:flex"
+                className="absolute top-0 right-0 z-20 hidden max-h-full w-[26rem] flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 text-body shadow-2xl lg:flex"
                 data-testid="reading-peek"
               >
                 <ReadingBody j={j} journey={journey} />
@@ -426,7 +426,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           </aside>
         ) : (
           <aside
-            className="flex flex-col gap-4 text-[15px] leading-relaxed lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+            className="flex flex-col gap-4 text-body lg:min-h-0 lg:overflow-y-auto lg:pr-1"
             aria-label="approach"
           >
             <ReadingBody j={j} journey={journey} />

@@ -4,6 +4,32 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — UX batch 3: a type scale, and a system written down (U6, U12)
+
+Branch `feat/type-scale`.
+
+**The scale.** Six steps named by role, defined in `@theme` so the line height travels with the
+size: `text-meta` 12/16, `text-ui` 14/20, **`text-body` 16/26**, **`text-narration` 19/30**,
+`text-title` 24/30, `text-display` 32/38. Plus three container widths (`max-w-reading` 768,
+`max-w-page` 1120, `max-w-stage` 1760) so a new page has an obvious one to pick.
+
+Then the migration: every sentence a learner reads moved to `text-body` — the reading column, quiz
+and predict questions, corner cases, hints, dialog prose, problem statements, recap notes — and
+every hand-written `text-[11px]` / `text-[15px]` label became `text-meta` or `text-ui`. The
+narration is `text-body` on a phone and `text-narration` from `lg` up.
+
+**The system.** `docs/DESIGN.md`: the scale, the 4 px spacing grid (with the one exception spelled
+out), the four token radii, the three widths, the colour roles with their semantic meanings, the
+motion envelope, and the 44 px touch target. It also records the `ch` trap from batch 1, because
+that is exactly the kind of thing a system file exists to stop happening twice.
+
+**The guard.** A new UI check walks four routes and fails if any non-mono element with more than 55
+characters of its own text is set below 14 px, or if any paragraph exceeds 80 characters of measure.
+It caught the visualizer's intro line at **162 characters** on the first run.
+
+Evidence: `npm run check` 43/43. `npm run test:ui` **28/28** (was 27). Measured on the journey page
+afterwards: narration 19 px, longest measure 41 characters, and no sentence under 14 px anywhere.
+
 ## 2026-09-05 — UX batch 2: the stage keeps its footer (U1, U8, U4)
 
 Branch `fix/ux-batch-2`.

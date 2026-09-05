@@ -16,6 +16,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | The API contract | `docs/API.md` |
 | Where the last session stopped | `STATUS.md` |
 | Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (items U1–U14 in the backlog) |
+| Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
 | What shipped when | `docs/WORKLOG.md` |
 | Why an item exists | `docs/RESEARCH.md`, `docs/PRD.md` |
 
@@ -40,6 +41,9 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   timing, the Worker challenge, hover and anything about colour or spacing.
 - Engine stays DOM-free and JSON-safe; `.ts` extensions on relative imports in `engine/`/`api/`.
 - Every localStorage key goes through `src/lib/store.ts`; palette only in `src/index.css`.
+- **Reach for the role, not the size**: `text-body` for a sentence, `text-meta` for a label, never a
+  raw `text-[13px]`. Prose is capped at `35em` — `ch` is the "0" glyph, not a character, so `68ch`
+  renders ~90. The six steps and the rest of the system are in `docs/DESIGN.md`.
 - `legacy/visualizer/` is read-only reference (excluded from tsc/eslint/prettier). Port from it;
   never import from it. Delete it when B25 says so.
 

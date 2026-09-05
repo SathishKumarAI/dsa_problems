@@ -38,7 +38,7 @@ export function FlashcardsView() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
       <header className="flex flex-col gap-2">
         <div className="font-mono text-sm text-primary">
           P(A|B) = P(B|A)·P(A)/P(B)

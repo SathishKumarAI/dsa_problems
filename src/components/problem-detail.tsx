@@ -58,9 +58,7 @@ function SolutionBlock({
         <span>time {time}</span>
         <span>space {space}</span>
       </div>
-      <p className="max-w-[35em] text-sm leading-relaxed text-muted-foreground">
-        {summary}
-      </p>
+      <p className="max-w-[35em] text-body text-muted-foreground">{summary}</p>
       {langs.length > 1 && (
         <div className="flex gap-0.5" role="tablist" aria-label="language">
           {langs.map((l) => (
@@ -91,7 +89,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
   const journey = journeyForProblem(problem.id)
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
       <div>
         <Button
           variant="ghost"
@@ -106,7 +104,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
 
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-heading text-2xl font-semibold">
+          <h1 className="font-heading text-title font-semibold">
             {problem.title}
           </h1>
           <Badge
@@ -139,8 +137,8 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         >
           <RouteIcon className="size-5 shrink-0 text-chart-1" />
           <span className="flex flex-col">
-            <b className="text-sm">Start the learning journey ▸</b>
-            <span className="text-xs text-muted-foreground">
+            <b className="text-body">Start the learning journey ▸</b>
+            <span className="text-ui text-muted-foreground">
               {journey.acts.length} acts: the need, every approach earned by the
               last one's weakness, your own code animated, then the reveal.
             </span>
@@ -149,9 +147,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
       )}
 
       <section className="flex flex-col gap-4">
-        <p className="max-w-[35em] text-sm leading-relaxed">
-          {problem.statement}
-        </p>
+        <p className="max-w-[35em] text-body">{problem.statement}</p>
         <div className="flex flex-col gap-2">
           {problem.examples.map((ex, i) => (
             <div
@@ -192,7 +188,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
                 <AccordionTrigger className="font-mono text-sm">
                   hint {i + 1} of {problem.hints.length}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground">
+                <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
                   {hint}
                 </AccordionContent>
               </AccordionItem>

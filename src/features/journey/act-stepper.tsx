@@ -67,7 +67,7 @@ export function ActStepper({
                 </span>
                 {a.name}
               </span>
-              <span className="font-mono text-[11px] text-muted-foreground">
+              <span className="font-mono text-meta text-muted-foreground">
                 {a.short}
               </span>
             </button>
@@ -86,7 +86,7 @@ export function ActStepper({
             <span className="flex items-center gap-1.5 text-sm font-medium">
               <LockIcon className="size-3" />?
             </span>
-            <span className="font-mono text-[11px]">
+            <span className="font-mono text-meta">
               {journey.acts.length - unlocked} more · locked
             </span>
           </div>

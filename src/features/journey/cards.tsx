@@ -40,7 +40,7 @@ function Choices({
             disabled={locked}
             onClick={() => onPick(i)}
             className={cn(
-              "rounded-md border px-3 py-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+              "rounded-md border px-3 py-2 text-left text-body transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               right
                 ? "border-chart-3 bg-chart-3/15 text-chart-3"
                 : wrong
@@ -90,10 +90,10 @@ export function QuizCard({
       className="flex flex-col gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-4"
       aria-live="polite"
     >
-      <div className="text-[11px] tracking-wide text-chart-1 uppercase">
+      <div className="text-meta tracking-wide text-chart-1 uppercase">
         check yourself ({qi + 1}/{quiz.length})
       </div>
-      <p className="text-sm font-medium">{q.q}</p>
+      <p className="text-body font-medium">{q.q}</p>
       <Choices
         choices={q.choices}
         answer={q.answer}
@@ -101,7 +101,9 @@ export function QuizCard({
         locked={picked === q.answer}
         picked={picked}
       />
-      {feedback && <p className="text-sm text-muted-foreground">{feedback}</p>}
+      {feedback && (
+        <p className="text-body text-muted-foreground">{feedback}</p>
+      )}
     </div>
   )
 }
@@ -125,10 +127,10 @@ export function PredictCard({
       className="flex flex-col gap-3 rounded-lg border border-chart-2/40 bg-chart-2/5 p-4"
       aria-live="polite"
     >
-      <div className="text-[11px] tracking-wide text-chart-2 uppercase">
+      <div className="text-meta tracking-wide text-chart-2 uppercase">
         you drive — predict the next move
       </div>
-      <p className="text-sm font-medium">{predict.q}</p>
+      <p className="text-body font-medium">{predict.q}</p>
       <Choices
         choices={predict.choices}
         answer={predict.answer}
@@ -137,7 +139,7 @@ export function PredictCard({
         picked={picked}
       />
       {picked !== null && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           {picked === predict.answer
             ? "exactly — watch:"
             : "not quite — watch what actually happens:"}
@@ -159,11 +161,11 @@ export function HintLadder({
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border bg-background/40 p-4">
-      <div className="text-[11px] tracking-wide text-muted-foreground uppercase">
+      <div className="text-meta tracking-wide text-muted-foreground uppercase">
         stuck? earn it with a smaller push
       </div>
       {hints.slice(0, tier).map((h, i) => (
-        <p key={i} className="text-sm text-muted-foreground">
+        <p key={i} className="text-body text-muted-foreground">
           <span className="mr-2 font-mono text-xs text-chart-1">
             {["nudge", "concept", "the line"][i] ?? `hint ${i + 1}`}
           </span>
@@ -197,9 +199,9 @@ export function EdgeCaseCard({ edge }: { edge: EdgeCase }) {
           {edge.example}
         </span>
       </div>
-      <p className="text-[15px] leading-relaxed">{edge.why}</p>
-      <p className="text-[15px] leading-relaxed text-muted-foreground">
-        <span className="mr-2 font-mono text-xs text-teal">think</span>
+      <p className="text-body">{edge.why}</p>
+      <p className="text-body text-muted-foreground">
+        <span className="mr-2 font-mono text-meta text-teal">think</span>
         {edge.think}
       </p>
     </div>
@@ -220,7 +222,7 @@ export function EdgeCaseList({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-teal/30 bg-card p-4">
-      <div className="text-xs tracking-wide text-teal uppercase">
+      <div className="text-meta tracking-wide text-teal uppercase">
         bring three inputs before any code
       </div>
       <p className="text-muted-foreground">
@@ -273,7 +275,7 @@ export function EdgeCaseList({
 export function HintList({ hints }: { hints: string[] }) {
   return (
     <div className="flex flex-col gap-1 rounded-xl border bg-card p-4">
-      <div className="text-xs tracking-wide text-muted-foreground uppercase">
+      <div className="text-meta tracking-wide text-muted-foreground uppercase">
         how to read this problem
       </div>
       <Accordion multiple={false} className="w-full">
@@ -282,7 +284,7 @@ export function HintList({ hints }: { hints: string[] }) {
             <AccordionTrigger className="font-mono text-sm">
               {["reread", "formalize", "bring inputs"][i] ?? `hint ${i + 1}`}
             </AccordionTrigger>
-            <AccordionContent className="text-[15px] leading-relaxed text-muted-foreground">
+            <AccordionContent className="text-body text-muted-foreground">
               {h}
             </AccordionContent>
           </AccordionItem>

@@ -73,7 +73,10 @@ export function ChipRow({
 }) {
   return (
     <div
-      className={cn("flex flex-wrap items-end justify-center gap-2.5", className)}
+      className={cn(
+        "flex flex-wrap items-end justify-center gap-2.5",
+        className
+      )}
       aria-label="array"
     >
       {chips.map((c, i) => (
