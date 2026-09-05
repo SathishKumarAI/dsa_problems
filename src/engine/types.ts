@@ -255,6 +255,10 @@ export interface Journey<D = { nums: number[] }> {
   describe: (d: D) => string
   parse: (text: string, params: Record<string, string>) => D | null
   challenge?: Challenge
+  // Pattern ids (data/patterns.ts) whose NAME this journey withholds until its
+  // recap. While the journey is started and unfinished, the catalogue masks
+  // them — see src/lib/disclosure.ts. Ids are checked by data/problems.test.ts.
+  reveals?: string[]
   sample: D
   edgeCases: EdgeCase[] // every one must be tagged by some frame on its preset (journeys.test.ts)
 }

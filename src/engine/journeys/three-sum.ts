@@ -1073,6 +1073,7 @@ export const threeSum: Journey<ThreeSumData> = {
       .filter((v) => Number.isInteger(v) && v >= -99 && v <= 99)
     return nums.length >= 3 && nums.length <= 14 ? { nums } : null
   },
+  reveals: ["two-pointers"],
   sample: { nums: [-1, 0, 1, 2, -1, -4] },
   edgeCases: [
     {

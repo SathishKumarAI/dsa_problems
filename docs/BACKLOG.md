@@ -17,7 +17,7 @@ a port; the original implementation is the reference, not the spec — the React
 | B5 | ☑ **`?` shortcuts dialog** from `lib/shortcuts.ts` (by scope). Shipped 2026-09-04. | The visualizer page listed keys as text; the journey page listed none. | S | legacy #13, #42 |
 | B6 | ☐ **Single Number code challenge** — `singleNumber(nums)` with cases (n = 1, loner largest, duplicates), reference = XOR, review items (no map, one loop, `^`). Challenge harness already supports `target`-less functions. | Two Sum has the "prove it" act; Single Number ends on XOR without asking the learner to write it. | S | — |
 | B7 | ☐ **Merge-sort write pulse + discard fade** in `BarsView` — `set` steps scale-pulse, `discard` fades instead of greying. | The bars FLIP on swaps; merge sort's writes still teleport. | S | legacy #44 |
-| B8 | ☐ **Disclosure lint for the shell** — the sidebar/home may not name a pattern a locked act teaches ("Two Pointers" appears as a pattern name while Two Sum act 3 is locked). Decide: mask the pattern row until earned, or accept that the practice set is a separate surface. | The one rule the pedagogy rests on has a known leak in the new shell; the legacy repo's uncommitted `feat/disclosure-lint` branch solved the same leak with `catalogDisplay()`. | S | legacy #52 |
+| B8 | ☑ **Catalogue masking** — a pattern name is hidden only while a journey that reveals it is *started and unfinished* (`Journey.reveals` → `lib/disclosure.ts`); sidebar rows, the home grid, the pattern page heading and the where-you-are line all obey it, and one click ("show names anyway", stored in `spoilers`) turns it off for good. Shipped 2026-09-05 (`feat/disclosure-mask`). | The one rule the pedagogy rests on had a known leak in the shell. | S | legacy #52 |
 
 ## P1 — the curriculum around the journeys
 
@@ -51,6 +51,7 @@ a port; the original implementation is the reference, not the spec — the React
 
 | # | Bug | Found by | State |
 |---|---|---|---|
+| G4 | The sidebar footer's where-you-are line named the masked pattern (`DSA · pattern · Two Pointers`) while the mask hid it everywhere else. | B8's masking test | ☑ fixed in the same PR |
 | G1 | A deep link pasted while the same journey was already open changed the hash but not the act — `?act=` was read only in a `useState` initializer, and nothing remounts on a hash change. | B2's deep-link test | ☑ fixed 2026-09-05 (render-time adjust in `use-journey.ts`, guarded by `unlocked`; regression test added) |
 | G2 | `target = -s[k]` produced `-0` on the all-zeros preset, so `[0, -0, 0]` was not equal to `[0, 0, 0]`. | three-sum correctness test | ☑ fixed 2026-09-04 |
 | G3 | Two rows holding the same amount drew twice in the hash view (React duplicate key). | browser run | ☑ fixed 2026-09-04 |

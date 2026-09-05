@@ -17,9 +17,16 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import type { Pattern } from "@/data"
 import { problemsByPattern } from "@/data"
 import { difficultyClass } from "@/lib/difficulty"
+import {
+  MASKED_GLYPH,
+  MASKED_NAME,
+  showSpoilers,
+  usePatternMask,
+} from "@/lib/disclosure"
 import { toggleSolved, useSolved } from "@/lib/progress"
 
 interface Props {
@@ -30,6 +37,8 @@ interface Props {
 export function ProblemList({ pattern, onOpen }: Props) {
   const [query, setQuery] = useState("")
   const solved = useSolved()
+  const mask = usePatternMask()
+  const hidden = mask.hidden.has(pattern.id)
   const problems = problemsByPattern(pattern.id).filter((p) =>
     p.title.toLowerCase().includes(query.toLowerCase())
   )
@@ -37,9 +46,26 @@ export function ProblemList({ pattern, onOpen }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <div className="font-mono text-sm text-primary">{pattern.glyph}</div>
-        <h1 className="font-heading text-2xl font-semibold">{pattern.name}</h1>
-        <p className="text-sm text-muted-foreground">{pattern.blurb}</p>
+        <div className="font-mono text-sm text-primary">
+          {hidden ? MASKED_GLYPH : pattern.glyph}
+        </div>
+        <h1 className="font-heading text-2xl font-semibold">
+          {hidden ? MASKED_NAME : pattern.name}
+        </h1>
+        {hidden ? (
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-3 text-sm">
+            <span className="text-muted-foreground">
+              You are midway through <b>{mask.by.get(pattern.id)}</b>, which
+              builds this idea before naming it. The problems are all here — the
+              name arrives at the reveal.
+            </span>
+            <Button size="sm" variant="outline" onClick={showSpoilers}>
+              show names anyway
+            </Button>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">{pattern.blurb}</p>
+        )}
       </header>
 
       <div className="relative">

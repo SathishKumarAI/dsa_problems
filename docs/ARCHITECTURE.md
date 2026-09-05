@@ -126,6 +126,7 @@ never claims a miss on a key it is visibly holding.
 | Hover-peek | `components/ui/sidebar.tsx` (`data-peek`) | A closed rail opens **over** the content while hovered; the layout gap follows the real state, so nothing shifts. Mouse only — the buttons are the touch path. |
 | Dialogs | `components/app-dialogs.tsx`, state in `lib/dialogs.ts` | help ("how to use"), shortcuts (rendered from `lib/shortcuts.ts`), settings (speed, motion, code tab, reading column, copy / import / erase progress). |
 | App-wide keys | `components/global-keys.tsx` | `?` opens shortcuts, `f` closes both rails or reopens both. Page-local keys stay with their page. |
+| Catalogue mask | `lib/disclosure.ts` | `usePatternMask()` → `{hidden, by, off}`. It reads one key per journey, which is more than a hook may subscribe to in a loop, so it re-renders on `useStoreVersion()` (a single counter bumped by every store write) and then reads the plain getters. |
 
 `lib/shortcuts.ts` is the single key map: the dialog renders it and the handlers must agree with
 it. A new key means a new row there in the same commit.
@@ -271,7 +272,11 @@ shadcn's `sidebar_state` cookie.
 
 1. **Engine stays DOM-free and JSON-safe.** Tests and the server depend on it.
 2. **No unearned names.** Tested on content — act prose, frames, preset banners and `edgeCases`
-   prose. The shell has a known leak (B8).
+   prose — and enforced in the shell by `lib/disclosure.ts`: a pattern's name is masked while a
+   journey that `reveals` it is started and unfinished. One module answers "may they see this
+   name yet?"; four call sites ask it (sidebar rows, where-you-are line, home grid, pattern page).
+   The learner can opt out permanently (`spoilers`), because a senior drilling problems should not
+   have to play along.
 3. **Every frame has a `note`; code tabs match pseudocode line-for-line.** Tested.
 3b. **Every corner case is explained in play.** Each `edgeCases` entry must be tagged by some act
    on its own preset, and no frame may tag a key that does not exist. Tested.

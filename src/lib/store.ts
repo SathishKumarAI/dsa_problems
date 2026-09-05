@@ -10,12 +10,23 @@
 //   activity-days     string[]   ISO days with any activity (streak source)
 //   scorecard:<slug>  object[]   last 50 challenge runs
 //   prefs             object     speed, code tab, motion, reading column open
+//   spoilers          boolean    learner opted out of pattern-name masking
 
 import { useSyncExternalStore } from "react"
 
 const PREFIX = "dsa:"
 const listeners = new Map<string, Set<() => void>>()
 const cache = new Map<string, unknown>()
+
+// A single version counter for readers that depend on *several* keys at once
+// (the pattern mask reads one per journey). Subscribing to each key would
+// mean a hook per journey inside a loop, which the rules of hooks forbid.
+let version = 0
+const anyListeners = new Set<() => void>()
+const bump = () => {
+  version++
+  anyListeners.forEach((l) => l())
+}
 
 function read<T>(key: string, fallback: T): T {
   if (cache.has(key)) return cache.get(key) as T
@@ -42,6 +53,7 @@ export function setStored<T>(key: string, value: T) {
     // storage full or unavailable — the in-memory cache still drives the UI
   }
   listeners.get(key)?.forEach((l) => l())
+  bump()
 }
 
 export function updateStored<T>(key: string, fallback: T, fn: (v: T) => T) {
@@ -56,6 +68,19 @@ export function removeStored(key: string) {
     // ignore
   }
   listeners.get(key)?.forEach((l) => l())
+  bump()
+}
+
+/** re-render on any write to the store; pair it with the plain getters */
+export function useStoreVersion(): number {
+  return useSyncExternalStore(
+    (l) => {
+      anyListeners.add(l)
+      return () => anyListeners.delete(l)
+    },
+    () => version,
+    () => 0
+  )
 }
 
 // ---------- whole-store moves (settings dialog) ----------
@@ -121,6 +146,7 @@ export const K = {
   days: "activity-days",
   scorecard: (slug: string) => `scorecard:${slug}`,
   prefs: "prefs",
+  spoilers: "spoilers",
 } as const
 
 export interface Prefs {

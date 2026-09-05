@@ -204,6 +204,65 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // ---------- 3b. the catalogue keeps the secret ----------
+
+    test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
+      const read = `
+        return {
+          sidebar: document.querySelector('[data-slot=sidebar]')?.innerText ?? '',
+          heading: document.querySelector('h1')?.innerText ?? '',
+        };
+      `
+      // not started: nothing was promised, so the catalogue reads normally
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const fresh = await page.run(read)
+      assert.match(fresh.sidebar, /two pointers/i)
+      assert.match(fresh.heading, /two pointers/i)
+
+      // started and unfinished: the name is withheld everywhere
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const mid = await page.run(read)
+      assert.doesNotMatch(mid.sidebar, /two pointers/i, "the sidebar leaked the name")
+      assert.doesNotMatch(mid.heading, /two pointers/i, "the pattern page leaked the name")
+      assert.match(mid.heading, /· · ·/)
+
+      // finished: earned, so it is shown again
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const done = await page.run(read)
+      assert.match(done.sidebar, /two pointers/i)
+      assert.match(done.heading, /two pointers/i)
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("\"show names anyway\" turns masking off for good", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const btn = [...document.querySelectorAll('button')]
+          .find(b => /show names anyway/i.test(b.innerText));
+        btn?.click();
+        await wait(500);
+        return {
+          found: !!btn,
+          heading: document.querySelector('h1')?.innerText ?? '',
+          stored: localStorage.getItem('dsa:spoilers'),
+        };
+      `)
+      assert.ok(out.found, "the opt-out button was not offered")
+      assert.match(out.heading, /two pointers/i)
+      assert.equal(out.stored, "true")
+      // and it survives a reload
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const after = await page.eval("document.querySelector('h1').innerText")
+      assert.match(after, /two pointers/i)
+    })
+
     // ---------- 4. the shell ----------
 
     test("`f` closes both rails and reopens them; `?` opens the shortcuts dialog", async () => {

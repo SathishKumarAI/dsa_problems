@@ -16,6 +16,7 @@ import {
   SlidersHorizontalIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +34,8 @@ import {
 import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
 import { JOURNEYS } from "@/engine"
 import { openDialog } from "@/lib/dialogs"
+import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
+import type { Mask } from "@/lib/disclosure"
 import { useSolved } from "@/lib/progress"
 import { href, useRoute } from "@/lib/route"
 import { K, useStored } from "@/lib/store"
@@ -75,8 +78,10 @@ function JourneyItem({
   )
 }
 
-// where you are, in words — the footer's "navigation details"
-function whereAmI(parts: string[]): string {
+// where you are, in words — the footer's "navigation details". It names a
+// pattern, so it obeys the mask too: this line leaked "Two Pointers" while
+// Two Sum was still building it, and the UI test caught it.
+function whereAmI(parts: string[], mask: Mask): string {
   const [root, a, b] = parts
   if (root === "journey") {
     const j = JOURNEYS.find((x) => x.slug === a)
@@ -85,9 +90,14 @@ function whereAmI(parts: string[]): string {
   if (root === "algorithms") return "DSA · algorithm visualizer"
   if (root === "p") {
     const pattern = PATTERNS.find((p) => p.id === a)
+    const name = pattern
+      ? mask.hidden.has(pattern.id)
+        ? MASKED_NAME
+        : pattern.name
+      : a
     const problem = b && PROBLEMS.find((p) => p.id === b)
-    if (problem) return `DSA · ${pattern?.name ?? a} · ${problem.title}`
-    return `DSA · pattern · ${pattern?.name ?? a}`
+    if (problem) return `DSA · ${name} · ${problem.title}`
+    return `DSA · pattern · ${name}`
   }
   if (root === "sql") return "SQL · drills"
   if (root === "flashcards") return "Data science · stats flashcards"
@@ -122,6 +132,7 @@ function FooterButton({
 
 export function AppSidebar({ view }: { view: string }) {
   const solved = useSolved()
+  const mask = usePatternMask()
   const { state, toggleSidebar } = useSidebar()
   const collapsed = state === "collapsed"
   const route = useRoute()
@@ -190,21 +201,36 @@ export function AppSidebar({ view }: { view: string }) {
               {PATTERNS.map((p) => {
                 const problems = problemsByPattern(p.id)
                 const done = problems.filter((pr) => solved.has(pr.id)).length
+                // a pattern a journey is midway through teaching keeps its
+                // name until the reveal — the row stays clickable
+                const hidden = mask.hidden.has(p.id)
+                const label = hidden ? MASKED_NAME : p.name
                 return (
                   <SidebarMenuItem key={p.id}>
                     <SidebarMenuButton
                       render={<a href={href(`/p/${p.id}`)} />}
                       isActive={view === p.id}
-                      tooltip={`${p.name} · ${done}/${problems.length}`}
+                      tooltip={
+                        hidden
+                          ? `name revealed at the end of ${mask.by.get(p.id)}`
+                          : `${p.name} · ${done}/${problems.length}`
+                      }
                       className="pr-10"
                     >
                       <LayersIcon className={RAIL_ICON} />
                       <span
                         className={`w-16 shrink-0 font-mono text-xs text-muted-foreground ${WIDE}`}
                       >
-                        {p.glyph}
+                        {hidden ? MASKED_GLYPH : p.glyph}
                       </span>
-                      <span className="truncate">{p.name}</span>
+                      <span
+                        className={cn(
+                          "truncate",
+                          hidden && "text-muted-foreground italic"
+                        )}
+                      >
+                        {label}
+                      </span>
                     </SidebarMenuButton>
                     <SidebarMenuBadge className="font-mono">
                       {done}/{problems.length}
@@ -266,7 +292,7 @@ export function AppSidebar({ view }: { view: string }) {
           aria-live="polite"
           data-testid="where"
         >
-          {whereAmI(route.parts)}
+          {whereAmI(route.parts, mask)}
         </div>
         <SidebarMenu>
           <FooterButton
