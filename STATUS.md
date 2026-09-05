@@ -13,9 +13,9 @@ on the journeyed problems, code splitting, the full docs set, and a browser-driv
 
 ## The next action
 
-1. UX-audit **batch 2**: U1 (sticky narration), U8 (the toggle overlaps text), U4 (settings uses
-   native controls). Batch 1 shipped 2026-09-05.
-2. Then the type scale and the written system (U6 + U12) as one pass, then mobile (U2, U14, U11).
+1. UX-audit **batch 3**: the type scale and the written system (U6 + U12) as one pass — it touches
+   every component, so run `npm run test:ui` and look at the screens afterwards.
+2. Then mobile (U2, U14, U11), then U9 and U13. Batches 1 and 2 shipped 2026-09-05.
 2. Then the next problem in `docs/PROBLEMS.md` — #4 Pair Sum in Sorted Array is marked next.
    One problem per branch; the definition of done is in that file.
 3. Decide the two open questions: a **Python** sidebar section (no Python-only content exists yet)
