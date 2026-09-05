@@ -7,16 +7,17 @@ Last session: 2026-09-04 (autonomous Claude session, branch `feat/merge-visualiz
 Six stacked branches, all pushed to `github.com/SathishKumarAI/dsa_problems` (private), none
 merged: `feat/merge-visualizer` (PR #1 → master), `feat/journey-focus-rails` (PR #2),
 `feat/journey-edge-cases` (PR #3), `feat/shell-panels-help` (PR #4), `docs/problem-pipeline`
-(PR #5), `perf/code-splitting` (PR #6), `feat/practice-code-tabs` (PR #7). Merge bottom-up, squash each; GitHub retargets the next
+(PR #5), `perf/code-splitting` (PR #6), `feat/practice-code-tabs` (PR #7), `feat/journey-three-sum`
+(PR #8). Merge bottom-up, squash each; GitHub retargets the next
 PR's base when its parent merges.
 
 ## The next action
 
 1. Review: `npm run check`, `npm run dev` → `#/journey/two-sum` (story act: hints + corner cases;
    click a rail toggle at the foot of either side).
-2. Squash-merge PR #1, then #2 … #7 in order; delete the branches.
+2. Squash-merge PR #1, then #2 … #8 in order; delete the branches.
 3. Read `docs/PROBLEMS.md` and the F-items in `docs/BACKLOG.md`; decide the Python-section
-   question. Then problem #3 (Triplets Summing to Zero) as the third journey.
+   question. Then problem #4 (Pair Sum in Sorted Array) — `docs/PROBLEMS.md` says ▶.
 3. Archive the old folder — your call, nothing was touched: `../dsa_visualizer` still has an
    **uncommitted** `feat/disclosure-lint` branch. Its intent is captured as backlog **B8**; commit
    or discard it there, then move the folder to `~/coding/archive/` per the workspace rules.

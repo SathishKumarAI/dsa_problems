@@ -4,6 +4,38 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-04 (later) — third journey: Triplets Summing to Zero
+
+Branch `feat/journey-three-sum`, stacked on `feat/practice-code-tabs`. `docs/PROBLEMS.md` #3.
+
+**What.** `src/engine/journeys/three-sum.ts` (LeetCode 15, Khamies §3.2.2): story (an auditor's
+ledger — amounts that cancel in threes, reported by value, each once) → Brute Force (three loops +
+a set of sorted triples; the predict fires the first time a repeat tries to enter) → Anchor + Hash
+(sort, skip equal anchors, per-anchor pair search with a set — the reduction to Two Sum) → Anchor +
+Two Pointers (order skips repeats and drives the squeeze; early stop when the anchor is positive) →
+The Reveal (reduction / KSum, links to Two Sum and the two-pointers pattern). Four corner cases
+(`tiny`, `dupes`, `zeros`, `none`), six presets (default = LeetCode's classic with the repeated −1),
+quizzes and hints on every act, code in pseudo / Python / Java / C++ line-for-line. New panel kind
+**`terms`** (k-term equation vs target, or `need` for an unknown term; the distinct answers found so
+far with the newest ringed and a dropped repeat struck through; optional hash map) — added to
+`types.ts`, `panels.tsx`, `AUTHORING.md`.
+
+**What the gate caught before it shipped.** The new correctness test (three approaches agree on six
+inputs) failed on `[0, 0, 0, 0]` for the hash act: `target = -s[k]` produced `-0`, so the triple
+`[0, -0, 0]` was not equal to `[0, 0, 0]`. Fixed with `0 - s[k]`. The browser then showed React's
+duplicate-key error in the hash view when two rows held the same amount; the per-anchor `seen` now
+has set semantics (the second copy adds nothing).
+
+**Evidence.** `npm run check`: tsc 0, eslint 0, `node --test` 41/41 (34 → 41: schema, tabs, drain,
+edge cases, presets, disclosure, correctness for the new journey). CDP: story act renders 3 hint
+triggers and 4 corner cards, note "−1 + −1 + 2 = 0 — one triple. There are 2 distinct triples…";
+brute act on the classic → the "drop it" predict appears, answered → callout `dupes`, found list
+`[-1, 0, 1]`, `[-1, -1, 2]` + the repeat struck through; hash act `step=7` → "need 2 — not seen",
+hash map drawn, 0 errors after the fix; two-pointer `step=12` → 1 anchor (▲), 2 rings, 1 dimmed
+finished anchor, equation "−1 + −1 + 2 = 0"; recap → 3 rows, links `#/journey/two-sum`,
+`#/p/two-pointers`, chart 21 / 17 / 20 steps on the classic. Sidebar lists the journey with `1/5`.
+Not eyeballed: `zeros` and `tiny` callouts in the two-pointer act (test-covered), `big` preset.
+
 ## 2026-09-04 (later) — three-language code on the practice set (F2)
 
 Branch `feat/practice-code-tabs`, stacked on `perf/code-splitting`.

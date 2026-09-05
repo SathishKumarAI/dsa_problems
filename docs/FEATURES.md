@@ -175,6 +175,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 |---|---|---|---|---|
 | Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 8 + 4 corner cases (tiny, duplicates, negatives, nosolution) | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
 | Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 7 + 4 corner cases (single, last, zero, broken) | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
+| Triplets Summing to Zero (LeetCode 15) | The Problem · Brute Force · Anchor + Hash · Anchor + Two Pointers · The Reveal | 6 + 4 corner cases (tiny, dupes, zeros, none) | — (output is a list of triples; harness compares pairs) | shipped (test: 3 approaches agree on 6 inputs incl. all-zeros and no-answer; the test caught a real dedup bug in the hash act before it shipped) |
 
 ## 5. Algorithm visualizer
 
