@@ -4,6 +4,49 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — the stack lands on master, and the UI gets a gate (B2)
+
+### The merge, and how it went wrong
+
+Merging nine stacked PRs bottom-up with `--squash --delete-branch` broke the stack: deleting a base
+branch closes the PR stacked on it. #2, #4, #6 and #8 were closed with conflicts; #3, #5, #7 and #9
+merged into their **base branch**, not `master`. Only #1 reached `master`.
+
+Nothing was lost — the whole chain survived on `feat/journey-three-sum`. Recovery was a rebase of
+the eight commits onto `master` (`git rebase --onto master 02807f9`), verified content-identical
+to the reviewed tip (`git diff` between pre- and post-rebase tips: empty), then one merge commit
+via PR #10 so the eight stayed separate.
+
+**The rule that follows:** never `--delete-branch` while another PR is stacked on it. Merge a stack
+from the tip, or retarget every base first.
+
+### B2 — the UI smoke test
+
+`npm run test:ui`: `vite preview` on an OS-assigned port + the system Chrome headless, driven over
+CDP with node's built-in WebSocket. No new dependency, no jsdom. 18 checks in ~28 s:
+
+| Group | Checks |
+|---|---|
+| Routes | home · pattern list · problem page · visualizer · SQL · flashcards · one per journey (derived from `JOURNEYS`, so a new journey is covered automatically) · unknown route falls back home — each asserting real text **and** an empty console |
+| The earn loop | fresh ledger → step the story act → answer the quiz → reveal → `unlocked=2`, `quizzes=["story"]`, `xp=15`, act switched to `brute` |
+| Deep links | honoured on load · followed on an in-app hash change · **ignored when the act is locked** (the disclosure rule, now enforced in a browser) |
+| Corner cases | the story act lists ≥ 3, and "load this input" changes the preset |
+| Shell | `f` closes both rails and reopens them · `?` opens the shortcuts dialog · a settings change survives a reload |
+| Phone | 390 px: `scrollWidth == clientWidth` |
+
+**It found a bug on its first run (G1).** A deep link pasted while the same journey was already
+open changed the hash and nothing else: `?act=` was read only in a `useState` initializer, and a
+hash change remounts nothing. Fixed with a render-time adjust in `use-journey.ts`, guarded by
+`unlocked` so a link into a locked act is still ignored, plus regression tests for both halves.
+
+Two things the driver had to get right, both recorded in `browser.mjs`: `child.kill()` on Windows
+leaves the node grandchild holding the port (kill the tree), and a `location.reload()` *inside* a
+CDP evaluate destroys the execution context so the call never resolves (clear storage on one load,
+navigate on the next).
+
+**Not covered, said out loud** (in `ARCHITECTURE.md` §10): autoplay timing, the 45 s hint timer,
+the Worker code challenge, the adaptive offer, hover-peek, and anything about colour or spacing.
+
 ## 2026-09-04 (later) — docs refresh: the maps catch up with the code
 
 Branch `docs/refresh-after-shell-work`. Docs only.

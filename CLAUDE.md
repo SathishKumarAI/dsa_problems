@@ -34,8 +34,9 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 - Branch per change (`type/scope-slug`), conventional commits, check the backlog item off and
   add a `FEATURES.md` row **in the same commit**.
-- `npm run check` (tsc, eslint, node tests) must exit 0. Then verify in a browser — node tests
-  are necessary, not sufficient. Until B2 ships there is no UI test; drive the page.
+- `npm run check` (tsc, eslint, node tests) must exit 0, and `npm run test:ui` (real Chrome, 18
+  checks) for anything on screen. Both are necessary, neither is sufficient: drive the page for
+  timing, the Worker challenge, hover and anything about colour or spacing.
 - Engine stays DOM-free and JSON-safe; `.ts` extensions on relative imports in `engine/`/`api/`.
 - Every localStorage key goes through `src/lib/store.ts`; palette only in `src/index.css`.
 - `legacy/visualizer/` is read-only reference (excluded from tsc/eslint/prettier). Port from it;

@@ -14,6 +14,7 @@ Node 24 (runs the API and the tests without a build step).
 npm i
 npm run dev        # UI + API on one port   → http://localhost:5173/#/journey/two-sum
 npm run check      # tsc -b · eslint · node --test   (must exit 0 before a commit)
+npm run test:ui    # + a real browser: routes, the earn loop, rails, deep links (needs Chrome)
 npm run build      # production build (static; the API runs in-process)
 npm run api        # standalone API on :8787 — see docs/API.md
 ```
@@ -35,6 +36,8 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | The hash-map bucket arithmetic | `src/engine/hashmap.ts` |
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
+| Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
+| UI smoke test (routes, earn loop, rails, deep links) | `test/ui-smoke.test.mjs` · driver: `test/browser.mjs` |
 | **HTTP API** — every endpoint | `src/api/routes.ts` (contract: `docs/API.md`) |
 | API transport (HTTP vs in-process) | `src/api/client.ts` |
 | Standalone API server / Vite `/api` middleware | `server/index.ts` / `server/vite-api.ts` |

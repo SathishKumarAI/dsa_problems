@@ -23,8 +23,9 @@ A problem is done when every box is ticked **and the evidence is in the PR**:
 - [ ] **Recap** table with a *built from* column; links to the pattern page and the next journey.
 - [ ] Practice-set `Problem` entry aligned: same id, hints that do not spoil act 0, `alternatives`
       = the journey's approaches (B1 renders the walkthrough from the engine).
-- [ ] `npm run check` 0, browser-verified deep links for every act, `FEATURES.md` §4.8 row,
-      `WORKLOG.md` entry.
+- [ ] `npm run check` 0, `npm run test:ui` 0 (add the journey's slug to the route list — it is
+      derived from `JOURNEYS`, so this is automatic), browser-verified deep links for every act,
+      `FEATURES.md` §4.8 row, `WORKLOG.md` entry.
 
 ## Sources on disk (`../python-data-structures/docs/pdf/`)
 
