@@ -247,6 +247,46 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("the test-case drawer pushes the stage instead of covering it (R4)", async () => {
+      await page.goto(`${server.base}/#/journey/two-sum?act=story`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const stage = () => document.querySelector('[aria-label=stage]').getBoundingClientRect();
+        const flask = () => document.querySelector('[aria-label="test cases"][aria-controls]');
+        const drawer = () => document.getElementById('test-cases');
+        const before = stage().width;
+        const closedWidth = drawer().getBoundingClientRect().width;
+        flask().click();
+        await wait(600);
+        const after = stage().width;
+        const box = drawer().getBoundingClientRect();
+        const preset = drawer().querySelector('[aria-label="input preset"]');
+        return {
+          before, after,
+          closedWidth,
+          drawerWidth: box.width,
+          overlaps: box.left < stage().right - 1,
+          hasPreset: !!preset,
+          inert: drawer().hasAttribute('inert'),
+        };
+      `)
+      assert.equal(out.closedWidth, 0, "a closed drawer should take no width")
+      assert.ok(
+        out.after < out.before - 100,
+        `the stage did not give way: ${out.before} → ${out.after}`
+      )
+      assert.ok(out.drawerWidth > 200, "the drawer did not open")
+      assert.equal(out.overlaps, false, "the drawer covered the stage")
+      assert.ok(out.hasPreset, "no preset select inside the drawer")
+      assert.equal(out.inert, false, "an open drawer must not be inert")
+      assert.deepEqual(page.errors(), [])
+      // the pref persists; later checks measure the stage, so put it back
+      await page.run(`
+        document.querySelector('[aria-label="test cases"][aria-controls]').click();
+        return 1;
+      `)
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
@@ -579,11 +619,12 @@ describe(
         const wait = ms => new Promise(r => setTimeout(r, ms));
         const w = s => document.querySelector(s)?.getBoundingClientRect().width ?? 0;
         const key = k => window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
-        const open = { side: w('[data-slot=sidebar-container]'), read: w('aside') };
+        const read = 'aside[aria-label^=approach]';
+        const open = { side: w('[data-slot=sidebar-container]'), read: w(read) };
         key('f'); await wait(600);
-        const shut = { side: w('[data-slot=sidebar-container]'), read: w('aside') };
+        const shut = { side: w('[data-slot=sidebar-container]'), read: w(read) };
         key('f'); await wait(600);
-        const back = { side: w('[data-slot=sidebar-container]'), read: w('aside') };
+        const back = { side: w('[data-slot=sidebar-container]'), read: w(read) };
         key('?'); await wait(500);
         const dialog = document.querySelector('[role=dialog]')?.innerText ?? '';
         return { open, shut, back, dialog: dialog.slice(0, 40) };

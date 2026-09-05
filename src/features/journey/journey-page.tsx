@@ -1,7 +1,8 @@
 // One journey on screen. Owns layout only — the stage (data, narration,
-// approach panel, timeline, controls) on the left, the reading column
-// (insight, tools, code, takeaways, chart, legend, resources) on the right,
-// the act stepper on top. On lg the header stays put and the two columns
+// approach panel, timeline, transport) on the left, the test-case drawer
+// beside it (R4: a column that pushes, not an overlay), the reading column
+// (the problem panel, insight, tools, code, takeaways, chart, legend,
+// resources) on the right, the act stepper on top. On lg the header stays put and the two columns
 // scroll independently (App gives the inset the viewport height). The
 // reading column collapses to an icon rail (toggle at its foot, pref
 // `reading`) that peeks open on hover.
@@ -11,6 +12,7 @@ import {
   ArrowLeftIcon,
   ExternalLinkIcon,
   FlameIcon,
+  FlaskConicalIcon,
   PanelRightCloseIcon,
   PanelRightOpenIcon,
   RotateCcwIcon,
@@ -157,12 +159,26 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const problem = PROBLEMS.find((p) => p.id === journey.problemId)
   const pattern = problem && PATTERNS.find((p) => p.id === problem.pattern)
   const { act, model, frame } = j
-  const reading = usePrefs().reading
+  const { reading, drawer } = usePrefs()
   const edge = frame?.corner
     ? journey.edgeCases.find((e) => e.key === frame.corner)
     : undefined
   const [peek, setPeek] = useState(false)
   const storyAct = j.actIndex === 0
+  // one element, two homes: the drawer above lg, the stage footer below it
+  const data = (
+    <DataControls
+      journey={journey}
+      presetKey={j.presetKey}
+      onPreset={j.applyPreset}
+      onNew={j.newFromPreset}
+      text={j.data ? journey.describe(j.data) : ""}
+      params={Object.fromEntries(
+        (journey.params ?? []).map((p) => [p.key, String(j.data?.[p.key] ?? "")])
+      )}
+      onApply={j.applyCustom}
+    />
+  )
 
   return (
     <div className="mx-auto flex w-full max-w-stage flex-col gap-4 lg:h-full">
@@ -191,6 +207,18 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           >
             <StarIcon className="size-3 text-chart-4" /> {j.xp} XP
           </span>
+          <Button
+            size="icon-sm"
+            variant={drawer ? "secondary" : "ghost"}
+            className="hidden size-8 text-muted-foreground lg:inline-flex"
+            onClick={() => setPref("drawer", !drawer)}
+            aria-expanded={drawer}
+            aria-controls="test-cases"
+            title={drawer ? "hide test cases" : "change the input"}
+            aria-label="test cases"
+          >
+            <FlaskConicalIcon />
+          </Button>
           <Button
             size="sm"
             variant="ghost"
@@ -234,9 +262,10 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             : "lg:grid-cols-[minmax(0,1fr)_2.75rem]"
         )}
       >
-        {/* ---------- the stage ---------- */}
+        {/* ---------- the stage, and the drawer it makes room for ---------- */}
+        <div className="flex min-w-0 gap-4 lg:min-h-0">
         <section
-          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
+          className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
@@ -389,22 +418,31 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               speed={j.speed}
               onSpeed={j.setSpeed}
             />
-            <DataControls
-              journey={journey}
-              presetKey={j.presetKey}
-              onPreset={j.applyPreset}
-              onNew={j.newFromPreset}
-              text={j.data ? journey.describe(j.data) : ""}
-              params={Object.fromEntries(
-                (journey.params ?? []).map((p) => [
-                  p.key,
-                  String(j.data?.[p.key] ?? ""),
-                ])
-              )}
-              onApply={j.applyCustom}
-            />
+            {/* below lg there is no room to push anything aside, so the
+                controls stay where they have always been */}
+            <div className="lg:hidden">{data}</div>
           </div>
         </section>
+
+        {/* The test-case drawer (R4). It is a column of the flex row, not an
+            overlay: opening it pushes the stage narrower instead of covering
+            the thing you are about to change. `inert` while closed so its
+            fields stay out of the tab order at width 0. */}
+        <aside
+          id="test-cases"
+          aria-label="test cases"
+          inert={!drawer}
+          className={cn(
+            "hidden shrink-0 overflow-hidden transition-[width] duration-300 ease-out lg:block",
+            drawer ? "w-72" : "w-0"
+          )}
+        >
+          <div className="flex w-72 flex-col gap-3 rounded-xl border bg-card p-4">
+            <Label>test cases</Label>
+            {data}
+          </div>
+        </aside>
+        </div>
 
         {/* ---------- the reading column (or its rail) ---------- */}
         {!reading ? (
