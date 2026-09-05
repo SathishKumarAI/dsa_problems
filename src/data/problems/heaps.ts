@@ -6,6 +6,7 @@ export const heaps: Problem[] = [
     title: "Kth Largest in a Stream",
     pattern: "heaps",
     difficulty: "easy",
+    leetcode: "kth-largest-element-in-a-stream",
     brief: "Always know the kth largest as numbers keep arriving.",
     statement:
       "Design a class initialized with k and a list of numbers. Each call to add(x) inserts x and returns the kth largest value seen so far.",
@@ -103,6 +104,7 @@ class KthLargest:
     title: "K Closest Points to Origin",
     pattern: "heaps",
     difficulty: "medium",
+    leetcode: "k-closest-points-to-origin",
     brief: "The k points nearest to (0, 0).",
     statement:
       "Given points on a plane and an integer k, return the k points closest to the origin by Euclidean distance. Any order.",
@@ -201,6 +203,7 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
     title: "Task Scheduling With Cooldown",
     pattern: "heaps",
     difficulty: "medium",
+    leetcode: "task-scheduler",
     brief: "Minimum time to run tasks when repeats need n idle slots.",
     statement:
       "Given task labels and a cooldown n, identical tasks must be at least n time-units apart. Each task takes one unit; you may idle. Return the minimum total units to finish everything.",

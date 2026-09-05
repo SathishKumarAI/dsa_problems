@@ -6,6 +6,7 @@ export const linkedList: Problem[] = [
     title: "Reverse a Linked List",
     pattern: "linked-list",
     difficulty: "easy",
+    leetcode: "reverse-linked-list",
     brief: "Flip all next-pointers in place.",
     statement:
       "Given the head of a singly linked list, reverse it in place and return the new head.",
@@ -92,6 +93,7 @@ def reverse_list(head: Node | None) -> Node | None:
     title: "Detect a Cycle",
     pattern: "linked-list",
     difficulty: "easy",
+    leetcode: "linked-list-cycle",
     brief: "Does the list loop back on itself?",
     statement:
       "Given the head of a linked list, return true if following next-pointers ever revisits a node (a cycle), false if the walk reaches the end.",
@@ -162,6 +164,7 @@ def reverse_list(head: Node | None) -> Node | None:
     title: "Merge Two Sorted Lists",
     pattern: "linked-list",
     difficulty: "easy",
+    leetcode: "merge-two-sorted-lists",
     brief: "Splice two sorted lists into one sorted list.",
     statement:
       "Given the heads of two sorted linked lists, merge them into one sorted list by splicing existing nodes (no new value nodes) and return its head.",

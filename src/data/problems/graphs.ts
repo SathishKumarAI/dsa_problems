@@ -6,6 +6,7 @@ export const graphs: Problem[] = [
     title: "Count the Islands",
     pattern: "graphs",
     difficulty: "medium",
+    leetcode: "number-of-islands",
     brief: "Connected groups of land cells in a grid.",
     statement:
       "Given a grid of '1' (land) and '0' (water), count the islands — groups of land cells connected horizontally or vertically.",
@@ -130,6 +131,7 @@ def count_islands(grid: list[list[int]]) -> int:
     title: "Course Ordering (Topological Sort)",
     pattern: "graphs",
     difficulty: "medium",
+    leetcode: "course-schedule-ii",
     brief: "Order tasks so every prerequisite comes first.",
     statement:
       'Given numCourses and prerequisite pairs [a, b] meaning "b before a", return any valid order to take all courses, or [] if impossible (a cycle exists).',
@@ -227,6 +229,7 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
     title: "Rotting Spread (Multi-source BFS)",
     pattern: "graphs",
     difficulty: "medium",
+    leetcode: "rotting-oranges",
     brief: "Minutes for rot to spread to every fresh cell.",
     statement:
       "In a grid, 0 = empty, 1 = fresh, 2 = rotten. Every minute, fresh cells adjacent to a rotten cell rot. Return the minutes until nothing fresh remains, or -1 if some cell can never rot.",

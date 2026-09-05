@@ -6,6 +6,7 @@ export const twoPointers: Problem[] = [
     title: "Pair Sum in Sorted Array",
     pattern: "two-pointers",
     difficulty: "easy",
+    leetcode: "two-sum-ii-input-array-is-sorted",
     brief: "Two values in a sorted array that add to a target — O(1) space.",
     statement:
       "Given an array sorted in non-decreasing order and a target, return the indices of two distinct elements that sum to target, using constant extra space. Assume exactly one answer exists.",
@@ -71,7 +72,8 @@ export const twoPointers: Problem[] = [
     alternatives: [
       {
         name: "Brute force",
-        summary: "All pairs, no use of sortedness at all.",
+        summary:
+          "Try every pair and stop at the one that hits the target. It ignores the one thing this input gives you for free — the order — and it is the baseline the two-pointer answer is measured against.",
         complexity: { time: "O(n²)", space: "O(1)" },
         python: `def sorted_pair_sum(nums: list[int], target: int) -> list[int]:
     for i in range(len(nums)):
@@ -100,6 +102,7 @@ export const twoPointers: Problem[] = [
     title: "Widest Container",
     pattern: "two-pointers",
     difficulty: "medium",
+    leetcode: "container-with-most-water",
     brief: "Pick two lines that hold the most water between them.",
     statement:
       "Given an array heights where heights[i] is the height of a vertical line at position i, choose two lines so the area between them (width × shorter height) is maximised. Return that area.",
@@ -197,6 +200,7 @@ export const twoPointers: Problem[] = [
     title: "Triplets Summing to Zero",
     pattern: "two-pointers",
     difficulty: "medium",
+    leetcode: "3sum",
     brief: "All unique triplets that sum to zero.",
     statement:
       "Given an integer array, return every unique triplet [a, b, c] with a + b + c = 0. The same triplet must not appear twice in the output.",
