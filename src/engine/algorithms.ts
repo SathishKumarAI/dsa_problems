@@ -692,7 +692,9 @@ export function makeGraph(n = 9): Graph {
 
 export interface ArrayFrame {
   arr: number[]
-  marks: Record<number, "compare" | "swap" | "pivot">
+  // "write" is a merge-sort style store into a slot: nothing moves past
+  // anything, so FLIP has nothing to animate and the bar would teleport
+  marks: Record<number, "compare" | "swap" | "pivot" | "write">
   sorted: number[]
   discard: number[]
   line: number
@@ -735,7 +737,7 @@ export function buildArrayFrames(
     const marks: ArrayFrame["marks"] = {}
     if (s.type === "compare" || s.type === "swap" || s.type === "pivot")
       for (const i of s.indices) marks[i] = s.type
-    if (s.type === "set") for (const i of s.indices) marks[i] = "swap"
+    if (s.type === "set") for (const i of s.indices) marks[i] = "write"
     frames.push({
       arr: a.slice(),
       marks,

@@ -4,6 +4,23 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — B7: merge sort stops teleporting
+
+Branch `feat/bars-write-pulse`.
+
+A swap moves two bars past each other and FLIP shows the motion. A merge-sort **write** replaces a
+value in a slot: nothing moves, so FLIP had nothing to animate and the bar blinked to a new height.
+The frame builder was also collapsing `set` into the `swap` mark, so the two were indistinguishable.
+
+`ArrayFrame.marks` gains `"write"`; the builder maps `set` to it; `BarsView` paints it mauve and
+runs a `scaleY(0.72 → 1.06 → 1)` pulse for 260 ms from `origin-bottom`, skipped when the motion
+preference is `off` and zeroed by `prefers-reduced-motion`. Discarded bars fade to 40 % instead of
+greying, so "eliminated" reads as absence rather than as another colour. The legend gained the row.
+
+Evidence: `npm run check` 42/42. Browser, `#/algorithms?algo=merge` stepped 40 times: 16 frames
+carried a pulsing bar, computed `animation-name: write-pulse`, `animation-duration: 0.26s`, and the
+stats line read `16 compares · 16 writes`.
+
 ## 2026-09-05 — B6: Single Number gets its "prove it" act, and the reveal it never had
 
 Branch `feat/single-number-challenge`.

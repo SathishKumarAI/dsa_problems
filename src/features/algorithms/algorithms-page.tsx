@@ -324,7 +324,11 @@ export function AlgorithmsPage() {
               </span>
               <span>
                 <i className="mr-2 inline-block size-2.5 rounded-sm bg-chart-5" />
-                swap / write
+                swap
+              </span>
+              <span>
+                <i className="mr-2 inline-block size-2.5 rounded-sm bg-chart-1" />
+                write (merge sort stores in place — the bar pulses)
               </span>
               <span>
                 <i className="mr-2 inline-block size-2.5 rounded-sm bg-chart-4" />
@@ -335,8 +339,8 @@ export function AlgorithmsPage() {
                 in final place
               </span>
               <span>
-                <i className="mr-2 inline-block size-2.5 rounded-sm bg-muted" />
-                discarded
+                <i className="mr-2 inline-block size-2.5 rounded-sm bg-muted/60 opacity-40" />
+                discarded (faded, not greyed)
               </span>
             </div>
           </div>
