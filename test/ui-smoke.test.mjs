@@ -363,6 +363,55 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("XOR fades each pair as it annihilates, leaving the loner lit (R5)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:single-number', '7'); return 1`
+      )
+      await page.goto(`${server.base}/#/journey/single-number?act=xor&step=0`)
+      await page.waitFor(
+        `/act 05/i.test(document.querySelector('[aria-label=stage]')?.innerText ?? '')`
+      )
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const t = document.querySelector('[aria-label=timeline]');
+        const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        const seek = async k => {
+          set.call(t, String(k));
+          t.dispatchEvent(new Event('input', { bubbles: true }));
+          await wait(600);
+        };
+        // value + whether the chip is faded, in array order
+        const row = () => [...document.querySelectorAll('[aria-label=array] [data-k]')]
+          .map(c => ({
+            v: c.innerText.split(String.fromCharCode(10))[0],
+            dim: getComputedStyle(c.querySelector('div')).opacity !== '1',
+            answer: c.querySelector('div').className.includes('chart-3'),
+          }));
+        const frames = [];
+        for (let k = 0; k <= Number(t.max); k++) { await seek(k); frames.push(row()); }
+        const last = frames[frames.length - 1];
+        // every value that appears twice must be faded by the end, and the one
+        // that appears once must not be
+        const counts = {};
+        for (const c of last) counts[c.v] = (counts[c.v] ?? 0) + 1;
+        return {
+          pairsFaded: last.filter(c => counts[c.v] === 2).every(c => c.dim),
+          lonerLit: last.filter(c => counts[c.v] === 1).every(c => !c.dim && c.answer),
+          // a pair must not fade before its second member is reached
+          fadedEarly: frames.some(f =>
+            f.some((c, i) => c.dim && f.filter(o => o.v === c.v).length === 2 &&
+              f.findLastIndex(o => o.v === c.v) > i && !f[f.findLastIndex(o => o.v === c.v)].dim)),
+          steps: frames.length,
+        };
+      `)
+      assert.ok(out.steps > 5, "the XOR act did not load its frames")
+      assert.ok(out.pairsFaded, "a pair was still lit after it annihilated")
+      assert.ok(out.lonerLit, "the loner should stay lit and become the answer")
+      assert.equal(out.fadedEarly, false, "a pair faded before its twin arrived")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {

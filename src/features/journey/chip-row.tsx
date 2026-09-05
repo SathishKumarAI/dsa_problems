@@ -4,6 +4,7 @@
 //   marker = role     ▲ above = anchor (held / left pointer) · ring = focus (current / right pointer)
 //   icon   = outcome  ✓ above = part of the answer
 //   fade   = eliminated
+//   beat   = the chip just became the answer (one 520 ms pulse, not a state)
 // Change the grammar here and in <Legend/> together.
 
 import { cn } from "@/lib/utils"
@@ -17,7 +18,7 @@ const ROLE = {
   focus:
     "border-foreground bg-[var(--yellow)]/20 text-foreground ring-2 ring-foreground/80 ring-offset-2 ring-offset-background",
   answer:
-    "border-chart-3 bg-chart-3/20 text-chart-3 before:absolute before:-top-5 before:text-xs before:text-chart-3 before:content-['✓']",
+    "border-chart-3 bg-chart-3/20 text-chart-3 animate-answer-pulse before:absolute before:-top-5 before:text-xs before:text-chart-3 before:content-['✓']",
   dim: "opacity-25",
 }
 

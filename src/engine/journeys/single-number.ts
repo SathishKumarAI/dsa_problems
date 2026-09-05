@@ -689,9 +689,19 @@ const xor: Act<SingleNumberData, F> = {
     const answer = done
       ? range(d.nums.length).filter((k) => d.nums[k] === f.answer)
       : []
+    // Dim by PAIR, not by progress: a value whose twin has already gone past
+    // has annihilated, so both chips fade together and what is left standing
+    // is exactly what the accumulator still holds. Feed it a broken promise
+    // (two singles) and two chips stay lit — which is the lie, made visible.
+    const seen = new Map<number, number[]>()
+    for (let k = 0; k < Math.min(i + 1, d.nums.length); k++)
+      seen.set(d.nums[k], [...(seen.get(d.nums[k]) ?? []), k])
+    const cancelled = [...seen.values()]
+      .filter((ks) => ks.length % 2 === 0)
+      .flat()
     const dim = done
       ? range(d.nums.length).filter((k) => !answer.includes(k))
-      : range(Math.min(i, d.nums.length))
+      : cancelled
     const rows: BitRowModel[] = []
     if (f.x !== null && f.x !== undefined) rows.push(bitRow("x", f.x))
     rows.push(bitRow("acc", f.acc ?? 0, f.x ?? 0))

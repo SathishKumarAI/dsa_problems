@@ -159,6 +159,18 @@
   animation: write-pulse 260ms ease-out;
 }
 
+/* the survivor: when a chip becomes the answer it beats once, so the eye lands
+   on it after the pairs around it have faded (R5). Reduced motion zeroes it. */
+@keyframes answer-pulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 var(--chart-3); }
+  45%  { transform: scale(1.08); box-shadow: 0 0 0 6px transparent; }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0 transparent; }
+}
+
+@utility animate-answer-pulse {
+  animation: answer-pulse 520ms ease-out;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
