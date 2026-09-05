@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { EdgeCase, Predict, Quiz } from "@/engine"
 
+// A vertical radiogroup: ↑/↓ move, enter or space picks (R7). The arrow keys
+// are stopped here so they do not also step the player — the journey's own
+// keymap ignores inputs and selects, but not buttons. Roving tabindex, so the
+// group is one tab stop rather than four.
 function Choices({
   choices,
   answer,
@@ -22,8 +26,25 @@ function Choices({
   locked: boolean
   picked: number | null
 }) {
+  const [cursor, setCursor] = useState(0)
+  const move = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0
+    if (!step || locked) return
+    e.preventDefault()
+    e.stopPropagation()
+    const next = (cursor + step + choices.length) % choices.length
+    setCursor(next)
+    const radios =
+      e.currentTarget.querySelectorAll<HTMLButtonElement>("[role=radio]")
+    radios[next]?.focus()
+  }
   return (
-    <div className="flex flex-col gap-1.5">
+    <div
+      role="radiogroup"
+      aria-label="answers"
+      onKeyDown={move}
+      className="flex flex-col gap-1.5"
+    >
       {choices.map((c, i) => {
         const right = locked && i === answer
         const wrong = picked === i && i !== answer
@@ -31,15 +52,21 @@ function Choices({
           <button
             key={i}
             type="button"
+            role="radio"
+            aria-checked={picked === i}
+            tabIndex={i === cursor ? 0 : -1}
             disabled={locked}
-            onClick={() => onPick(i)}
+            onClick={() => {
+              setCursor(i)
+              onPick(i)
+            }}
             className={cn(
               "rounded-md border px-3 py-2 text-left text-body transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               right
                 ? "border-chart-3 bg-chart-3/15 text-chart-3"
                 : wrong
                   ? "border-chart-5 bg-chart-5/10 text-chart-5"
-                  : "border-border bg-background/40 hover:border-primary/60 disabled:opacity-60"
+                  : "border-border bg-background/40 hover:border-primary/60 active:border-primary active:bg-primary/10 disabled:opacity-60"
             )}
           >
             {c}

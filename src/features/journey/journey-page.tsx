@@ -432,6 +432,15 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           id="test-cases"
           aria-label="test cases"
           inert={!drawer}
+          // Esc closes it, but only from inside: the global Esc belongs to
+          // dialogs (B26), and a drawer is not a dialog (R7)
+          onKeyDown={(e) => {
+            if (e.key !== "Escape") return
+            e.stopPropagation()
+            setPref("drawer", false)
+            document.querySelector<HTMLElement>('[aria-controls="test-cases"]')
+              ?.focus()
+          }}
           className={cn(
             "hidden shrink-0 overflow-hidden transition-[width] duration-300 ease-out lg:block",
             drawer ? "w-72" : "w-0"
