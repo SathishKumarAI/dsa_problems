@@ -148,6 +148,11 @@ bring inputs** — write them about reading the problem, not solving it.
 
 ## The challenge (optional)
 
+`answers: "value"` judges the returned value (`singleNumber` returns the loner); the default
+judges two indices (`twoSum`). `expected` follows: a number for `"value"`, an index pair
+otherwise. The Worker counts array touches for the learner and the reference, so `reference`
+should be the shape you want them to reach.
+
 ```ts
 challenge: {
   fname, signature: "function twoSum(nums, target) {", starter,

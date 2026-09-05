@@ -143,7 +143,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Custom input | Comma/space-separated integers (−999…999 Two Sum, 0–127 Single Number); `target` box for Two Sum; Enter or **apply** parses via the API; failure shows "couldn't read that input" and keeps the old data. New preset data overwrites the draft. | same, `api.parse` | shipped (test: parse 400) |
 | Keyboard | `space` play/pause, `→` step, `←` back, `r` restart — ignored inside inputs/textarea/select. | `use-journey.ts` | shipped (code) |
 
-### 4.6 Code challenge (Two Sum act 6 "Code It")
+### 4.6 Code challenge (Two Sum act 6, Single Number act 6)
 
 | Element | Behaviour | File | Status |
 |---|---|---|---|
@@ -175,7 +175,7 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Journey | Acts | Presets | Challenge | Status |
 |---|---|---|---|---|
 | Two Sum (LeetCode 1) | The Problem · Brute Force · Two Pointers · Two-Pass Hash · One-Pass Hash · Code It · The Reveal | 8 + 4 corner cases (tiny, duplicates, negatives, nosolution) | 6 cases + n = 400 + 5 review items | shipped (test: 4 approaches agree on 5 inputs + 1 broken promise) |
-| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR | 7 + 4 corner cases (single, last, zero, broken) | — (B6) | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles) |
+| Single Number (LeetCode 136) | The Problem · Brute Force · Hash Map · Sort & Scan · XOR · Code It · The Reveal | 7 + 4 corner cases (single, last, zero, broken) | 6 cases (n = 1, answer 0, loner last, negatives) + n = 2001 + 5 review items | shipped (test: 4 approaches agree on 5 inputs; XOR lies on two singles; UI test runs the XOR reference through the harness) |
 | Triplets Summing to Zero (LeetCode 15) | The Problem · Brute Force · Anchor + Hash · Anchor + Two Pointers · The Reveal | 6 + 4 corner cases (tiny, dupes, zeros, none) | — (output is a list of triples; harness compares pairs) | shipped (test: 3 approaches agree on 6 inputs incl. all-zeros and no-answer; the test caught a real dedup bug in the hash act before it shipped) |
 
 ## 5. Algorithm visualizer

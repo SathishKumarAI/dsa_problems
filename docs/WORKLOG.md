@@ -4,6 +4,33 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — B6: Single Number gets its "prove it" act, and the reveal it never had
+
+Branch `feat/single-number-challenge`.
+
+**What.** `SINGLE_NUMBER_CHALLENGE`: six cases chosen to break a first draft — `[7]` (n = 1),
+`[0, 4, 4]` (the answer is 0, which a truthiness test calls "nothing found"), `[1, 1, 2, 2, 9]`
+(loner last), `[-3, 5, 5]` (negatives) — an XOR reference, four review items (one loop, constant
+space, no truthiness test on the result, say the property out loud) and a 2 001-element second
+set. The journey also gained the **recap** act it never had, so it ends on a named reveal like the
+other two: memory (map) vs order (sort) vs a property of the values (XOR), and where that instinct
+goes next (missing number, two loners).
+
+**The harness had to learn a second answer shape.** It compared "two indices" and nothing else;
+Single Number returns one value. `Challenge.answers?: "pair" | "value"` now selects the comparison,
+`ChallengeCase.expected` widened to `number[] | number`, and the results list prints the expected
+value accordingly.
+
+**And it had a real bug (G5).** Running the XOR reference in the browser failed *all six* cases
+with `Cannot convert a Symbol value to a string`. The counting and tracing proxies test the
+property key with a regex, and `for (const x of nums)` reads `Symbol.iterator`. It has been there
+since the challenge shipped and it hit Two Sum too — any `for..of` solution. `isIndex()` now guards
+both traps, and the UI test writes a `for..of` solution on purpose so it cannot come back.
+
+**Evidence.** `npm run check` 42/42. `npm run test:ui` **21/21** (was 20; two runs, both green
+after replacing a fixed sleep with polling in the deep-link tests — that sleep flaked once).
+Browser: the reference solution goes 6/6 green with `+25 XP` and the act gate opens.
+
 ## 2026-09-05 — B8: the catalogue keeps the journey's secret
 
 Branch `feat/disclosure-mask`.
