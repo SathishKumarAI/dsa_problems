@@ -95,6 +95,68 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-05 — the lesson screen, filed then built (R3–R8, Q9/Q10)
+
+A worked redesign of the Single Number lesson screen arrived as prose. Filing it first was the whole
+trick: mapped region by region against what already ships, most of it turned out to be **placement**,
+not features — sidebar badges, breadcrumb, XP, restart, step chips, hints, edge cases, the quiz,
+`DataControls`, the transport and the visual system were all built. Building it as written would
+have rebuilt them. The spec, the mapping table and where each of its nine suggestions went are in
+[`superpowers/specs/2026-09-04-lesson-screen-redesign.md`](superpowers/specs/2026-09-04-lesson-screen-redesign.md);
+the shippable remainder became R3–R8, and the two asks that contradicted decisions already made
+became Q9 and Q10 rather than commits.
+
+Q9 and Q10 were unanswered, so the backlog's own rule applied — the recommendation is what a session
+does absent an answer. The transport stayed the footer U1 built, and the locked node stayed a "?".
+
+**R3, the problem follows the learner** (#25). `HintList` and `EdgeCaseList` rendered only while
+`actIndex === 0`; from act 3 the statement was off screen. One accordion in the reading column now
+carries the problem (statement, examples, the input on screen right now), how to read it, and the
+corner cases, on every act. The defaults are act-shaped rather than fixed: pref `problemSections` is
+`null` until touched, so the story act opens the problem and the cases — that act's teaching — and
+act 2 onward opens nothing. `HintList` is gone; an accordion inside an accordion had no reason to
+exist once the panel owned the heading.
+
+**R4, the test case leaves the critical path** (#26). A flask in the header opens an 18 rem column
+*between* the stage and the reading column. It pushes; it does not cover — covering the data you are
+about to edit is the failure mode a drawer exists to avoid. `inert` while closed. Below `lg` there
+is no width to give up, so the same element renders in the stage footer: one element, two homes.
+Input validation needed nothing; bad input already refused and said so.
+
+**R7, keyboard and touch** (#27). The quiz is a radiogroup — one tab stop, ↑/↓, enter — with the
+arrows stopped inside it, because the journey keymap ignores inputs and selects but not buttons, so
+answering with the keyboard also stepped the player behind the card. `Esc` inside the drawer closes
+it and returns focus to the flask. Touch parity turned out to be two elements, not a sweep: the
+shadcn Button and the sidebar rows already had `active:` states.
+
+**R5, XOR pairs annihilate** (#28). The idea text said "each pair annihilates"; the chips dimmed by
+*progress*, so the row read "visited". Dimming is now computed by pair: twins fade together on the
+frame the second one is consumed, what stays lit is exactly what the accumulator holds, and the
+broken promise leaves two chips lit — the lie, made visible. No new frames, so the code tabs, notes,
+chart and content test were untouched. The survivor beats once when it turns green.
+
+**R6, one motion system** (#29). Four durations and two curves were live at once. A plain `@theme`
+block sets `--default-transition-timing-function` and `--default-transition-duration`, so every
+transition — shadcn's included — takes one curve and 150 ms without being asked, and a class names a
+duration only when it differs (320 ms, six places). Measured before and after in the browser rather
+than assumed.
+
+**R8, step completion** (#30). The node of the act that just entered `done` flashes the done colour
+flat for 320 ms and settles; the ✓ stays the lasting mark. "Just entered" is a render-time diff of
+the previous `done` set, not an effect.
+
+**Verified in a real browser throughout.** The chrome-devtools MCP profile was held by another
+session and the claude-in-chrome extension was not connected, so the documented fallback — a private
+headless Chrome over CDP — did the driving: frame-by-frame chip states for R5, colour samples every
+50 ms for R8, computed transition durations for R6, focus and widths for R4 and R7.
+
+**One self-inflicted mistake, recorded.** `npm run format` is scoped to `.ts/.tsx`; running prettier
+on `index.css` reflowed the type-scale block and lost its aligned comments. Restored in the same PR.
+
+Evidence: `npm run check` 43/43 on every branch. `npm run test:ui` **31 → 37 checks**, one new check
+per item: the panel on act 05, the drawer's push, the quiz keyboard and `Esc`, every XOR frame, the
+motion audit on three routes, and the completion flash.
+
 ## 2026-09-05 — UX batch 5: the visualizer fills its screen, home knows you (U9, U13)
 
 Branch `feat/ux-batch-5`. The last two audit items.
