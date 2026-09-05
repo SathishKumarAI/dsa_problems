@@ -88,6 +88,7 @@ Rules the test cannot check — review by hand:
 | `hash` | the hash map iceberg | same |
 | `sorted` | a second chip row (with `subs` = original indices) + optional sum | `chipRow(values, { subs })` |
 | `bits` | bit rows with flipped bits ringed | `{ tag, value, flip, bits }` |
+| `terms` | `a + b + c = sum` vs target (or `need` for an unknown last term), the distinct answers found so far (newest ringed, a dropped repeat struck through), optional hash map | `{ terms, target, need?, hit?, dup?, found, map? }` |
 | `recap` | table + note + links | — |
 | `challenge` | the editor (the page injects it) | — |
 

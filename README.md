@@ -4,7 +4,7 @@ One app: a pattern-organised interview practice set (10 patterns × 3 problems, 
 flashcards) plus **learning journeys** — problems built all the way down, Brilliant/Khan style:
 the need first, approaches unlocked one at a time by the previous one's weakness, predictions
 mid-playback, quiz gates, your own code driving the animation, and the pattern named only at the
-reveal. Two journeys today: **Two Sum** and **Single Number**. Plus a sorting / search / graph
+reveal. Three journeys today: **Two Sum**, **Single Number** and **Triplets Summing to Zero**. Plus a sorting / search / graph
 visualizer whose bars morph instead of teleporting.
 
 Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha, forced dark.

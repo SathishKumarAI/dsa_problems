@@ -101,6 +101,18 @@ export type PanelModel =
   | { kind: "sorted"; label: string; chips: ChipModel[]; eq?: SumModel }
   | { kind: "bits"; rows: BitRowModel[] }
   | {
+      // k-term equation against a target + the distinct answers so far:
+      // terms [a, b, c] → "a + b + c = sum"; with `need`, "a + b + ? — need n"
+      kind: "terms"
+      terms: number[]
+      target: number
+      need?: number
+      hit?: boolean
+      dup?: boolean // the newest hit was a repeat and was dropped
+      found: number[][]
+      map?: HashModel
+    }
+  | {
       kind: "recap"
       caption: string
       rows: RecapRow[]

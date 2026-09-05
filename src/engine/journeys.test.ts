@@ -8,6 +8,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { JOURNEYS, drain } from "./index.ts"
 import { classifySingle, singleNumber } from "./journeys/single-number.ts"
+import { allTriplets, threeSum } from "./journeys/three-sum.ts"
 import { classifyTwoSum, twoSum } from "./journeys/two-sum.ts"
 import type { AnyJourney, BaseFrame, Frame } from "./types.ts"
 
@@ -221,6 +222,44 @@ test("two-sum: every approach returns the promised pair, including the traps", (
       undefined,
       key
     )
+  }
+})
+
+test("three-sum: every approach returns the same distinct triples, including the traps", () => {
+  const cases = [
+    {
+      nums: [-1, 0, 1, 2, -1, -4],
+      want: [
+        [-1, -1, 2],
+        [-1, 0, 1],
+      ],
+    },
+    { nums: [0, 0, 0, 0], want: [[0, 0, 0]] },
+    { nums: [1, 2, 3, 4], want: [] },
+    { nums: [-1, 0, 1], want: [[-1, 0, 1]] },
+    {
+      nums: [3, -2, -1, 0, 2, -3, 1, 1],
+      want: allTriplets([3, -2, -1, 0, 2, -3, 1, 1]),
+    },
+    {
+      nums: [-2, 0, 1, 1, 2],
+      want: [
+        [-2, 0, 2],
+        [-2, 1, 1],
+      ],
+    },
+  ]
+  const norm = (t: number[][]) =>
+    t
+      .map((x) => [...x].sort((a, b) => a - b))
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
+  for (const c of cases) {
+    assert.deepEqual(allTriplets(c.nums), norm(c.want))
+    for (const key of ["brute", "hash", "twoptr"]) {
+      const act = threeSum.acts.find((a) => a.key === key)!
+      const got = lastAnswer<number[][]>(drain(act.run(c, {})))
+      assert.deepEqual(norm(got ?? []), norm(c.want), `${key} on [${c.nums}]`)
+    }
   }
 })
 

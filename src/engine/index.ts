@@ -2,12 +2,14 @@
 // Adding a journey = one file in ./journeys + one line here.
 
 import { singleNumber } from "./journeys/single-number.ts"
+import { threeSum } from "./journeys/three-sum.ts"
 import { twoSum } from "./journeys/two-sum.ts"
 import type { AnyJourney } from "./types.ts"
 
 export const JOURNEYS: AnyJourney[] = [
   twoSum as unknown as AnyJourney,
   singleNumber as unknown as AnyJourney,
+  threeSum as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

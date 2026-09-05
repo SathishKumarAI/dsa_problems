@@ -43,6 +43,8 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## Traps
 
+- `-x` on a zero is `-0` and fails `deepEqual`; write `0 - x` when a value can be zero (three-sum hash act).
+
 - **React Compiler lint rules** (`react-hooks` v7): no sync `setState` in effects, no ref reads in
   render, no mutating frames. Use render-time adjusts (`if (x !== prev) { setPrev(x); … }`) or
   derive. `use-player.ts` and `controls.tsx` show the pattern.

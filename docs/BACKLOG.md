@@ -70,6 +70,7 @@ asking. The problem pipeline itself lives in `PROBLEMS.md` and is not repeated h
 ## Shipped this round (2026-09-04)
 
 - ☑ B4 collapsible rails + a bigger type scale on the journey page (stage 717 → 1280 px at 1440 wide).
+- ☑ Third journey: Triplets Summing to Zero (`docs/PROBLEMS.md` #3) with the new `terms` panel kind.
 - ☑ F2 three-language code on the practice set (type, tabs, test; 9 approaches × Java + C++).
 - ☑ F1 / B22 code splitting: 673.77 kB single chunk → 400 kB index (127 kB gzip) + 204 kB shared engine/data (67 kB gzip) + lazy journey 44 kB, FLIP 21 kB, visualizer 9 kB.
 - ☑ Shell: independent scroll panels on the journey page, hover-peek on closed rails, `f` focus key, settings dialog (B3), `?` shortcuts dialog (B5), help dialog, sidebar regrouped DSA / DSA · patterns / SQL / Data science with a where-you-are footer line.
