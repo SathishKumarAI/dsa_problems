@@ -88,9 +88,9 @@ export default function App() {
   const { parts } = useRoute()
   const view = parts[0] === "p" ? parts[1] : (parts[0] ?? "home")
   const wide = parts[0] === "journey" || parts[0] === "algorithms"
-  // the journey page is a set of panels that scroll on their own (≥ lg):
-  // the inset is viewport-high and the page divides the height itself
-  const panels = parts[0] === "journey"
+  // the journey and the visualizer are panel layouts (≥ lg): the inset is
+  // viewport-high and the page divides that height between its own panels
+  const panels = parts[0] === "journey" || parts[0] === "algorithms"
   return (
     <TooltipProvider>
       <SidebarProvider>

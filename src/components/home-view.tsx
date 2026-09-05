@@ -1,6 +1,11 @@
 // Landing page: the method in one line, the two journeys (the deep builds)
 // with earned-act progress, the streak, then the pattern grid.
-import { FlameIcon, RouteIcon, SlidersHorizontalIcon } from "lucide-react"
+import {
+  FlameIcon,
+  PlayIcon,
+  RouteIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react"
 import {
   Card,
   CardContent,
@@ -12,9 +17,9 @@ import { Progress } from "@/components/ui/progress"
 import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
 import { JOURNEYS } from "@/engine"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
-import { useEarned, useSolved } from "@/lib/progress"
+import { earnedOf, useEarned, useSolved } from "@/lib/progress"
 import { href } from "@/lib/route"
-import { K, streakOf, useStored } from "@/lib/store"
+import { K, getStored, streakOf, useStored, useStoreVersion } from "@/lib/store"
 
 function JourneyCard({
   slug,
@@ -46,6 +51,47 @@ function JourneyCard({
           className="h-full rounded-full bg-chart-1 transition-[width]"
           style={{ width: `${earned.pct}%` }}
         />
+      </div>
+    </a>
+  )
+}
+
+// The one journey worth resuming: started, unfinished, and the furthest along.
+// Without this the page looks identical whether you have finished nothing or
+// everything, and the streak has nothing to be about (UX audit U13).
+function ResumeCard() {
+  // one key per journey is more than a hook may subscribe to in a loop, so
+  // re-render on any store write and then read the plain getters
+  useStoreVersion()
+  const ledger = JOURNEYS.map((j) => ({
+    journey: j,
+    earned: earnedOf(getStored<number>(K.unlocked(j.slug), 1), j.acts.length),
+  }))
+  const next = ledger
+    .filter((r) => r.earned.earned > 0 && !r.earned.done)
+    .sort((a, b) => b.earned.earned - a.earned.earned)[0]
+  if (!next) return null
+  const { journey, earned } = next
+  const act = journey.acts[Math.min(earned.earned, journey.acts.length - 1)]
+  return (
+    <a
+      href={href(`/journey/${journey.slug}?act=${act.key}`)}
+      className="flex flex-col gap-2 rounded-xl border border-chart-1/40 bg-chart-1/5 p-4 transition-colors hover:border-chart-1"
+    >
+      <div className="flex items-center gap-2">
+        <PlayIcon className="size-4 text-chart-1" />
+        <span className="text-meta tracking-wide text-chart-1 uppercase">
+          pick up where you left off
+        </span>
+        <span className="ml-auto font-mono text-meta text-muted-foreground">
+          {earned.long}
+        </span>
+      </div>
+      <div className="flex flex-wrap items-baseline gap-x-3">
+        <b className="text-body">{journey.title}</b>
+        <span className="text-ui text-muted-foreground">
+          next: {act.name} · {act.short}
+        </span>
       </div>
     </a>
   )
@@ -84,6 +130,8 @@ export function HomeView({
           <span className="font-mono">★ {xp} XP</span>
         </div>
       </header>
+
+      <ResumeCard />
 
       <section className="flex flex-col gap-3">
         <div className="text-meta tracking-wide text-muted-foreground uppercase">

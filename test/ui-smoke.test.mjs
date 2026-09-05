@@ -364,7 +364,8 @@ describe(
         const row = [...document.querySelectorAll('[data-slot=sidebar-menu-item]')]
           .find(li => has(li, 'two sum'));
         const badgeEl = row?.querySelector('[data-slot=sidebar-menu-badge]');
-        const card = [...document.querySelectorAll('main a')].find(a => has(a, 'two sum'));
+        const card = [...document.querySelectorAll('main a')]
+          .find(a => has(a, 'two sum') && a.innerText.includes('earned') && !has(a, 'pick up'));
         const line = (card?.innerText ?? '').split(String.fromCharCode(10)).find(t => t.includes('earned')) ?? '';
         return { badge: badgeEl?.innerText.trim(), cardText: line.trim(), title: badgeEl?.getAttribute('title') };
       `)
@@ -485,6 +486,50 @@ describe(
       )
       assert.ok(out.sheetActs >= 7, "the sheet did not list the acts")
       assert.equal(out.scrollW, 390)
+    })
+
+    test("the visualizer fills the viewport it is given (U9)", async () => {
+      await page.goto(`${server.base}/#/algorithms?algo=quick`)
+      const out = await page.run(`
+        const bars = document.querySelector('[aria-label="array as bars"]');
+        const stage = document.querySelector('[aria-label=stage]');
+        return {
+          barsH: Math.round(bars.getBoundingClientRect().height),
+          stageBottom: Math.round(stage.getBoundingClientRect().bottom),
+          viewport: innerHeight,
+          pageScroll: document.documentElement.scrollHeight,
+        };
+      `)
+      assert.ok(out.barsH >= 300, `the bars are only ${out.barsH}px tall`)
+      assert.ok(
+        out.viewport - out.stageBottom < 120,
+        `${out.viewport - out.stageBottom}px of dead space under the stage`
+      )
+    })
+
+    test("home offers to resume a started journey, and only then (U13)", async () => {
+      const read = `
+        const card = [...document.querySelectorAll('main a')]
+          .find(a => a.innerText.toLowerCase().includes('pick up where you left off'));
+        return { has: !!card, href: card?.getAttribute('href') ?? '', text: (card?.innerText ?? '').split(String.fromCharCode(10)).join(' ') };
+      `
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/`)
+      const fresh = await page.run(read)
+      assert.equal(fresh.has, false, "a fresh learner was offered a resume card")
+
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.goto(`${server.base}/#/`)
+      const mid = await page.run(read)
+      assert.ok(mid.has, "a started journey was not offered")
+      assert.match(mid.href, /#\/journey\/two-sum\?act=/)
+      assert.match(mid.text, /2 of 6 acts earned/)
+
+      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.goto(`${server.base}/#/`)
+      const done = await page.run(read)
+      assert.equal(done.has, false, "a finished journey was still offered")
     })
 
     // ---------- 4. the shell ----------

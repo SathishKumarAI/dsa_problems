@@ -4,6 +4,33 @@ Newest first. One dated entry per working session: what shipped, with commits/PR
 evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is preserved verbatim in
 [`../legacy/visualizer/docs/WORKLOG.md`](../legacy/visualizer/docs/WORKLOG.md).
 
+## 2026-09-05 — UX batch 5: the visualizer fills its screen, home knows you (U9, U13)
+
+Branch `feat/ux-batch-5`. The last two audit items.
+
+**U9** — the visualizer drew its bars in a fixed 224 px band and then left roughly 400 px of empty
+page under the card. It is a panel layout like the journey now: the inset is viewport-high, the
+stage takes `flex-1`, the bars fill their container with a 14 rem floor, and the picker and the
+right rail scroll on their own. Bars **224 → 614 px**; dead space under the stage **~400 → 16 px**.
+
+**U13** — home rendered identically whether you had never opened a journey or finished all three.
+A **pick up where you left off** card now sits above the grid when a journey is started and
+unfinished: the furthest-along one, the act it opens next, and `n of m acts earned`, deep-linking
+straight to `?act=`. It disappears for a fresh learner and once everything is complete, so the
+streak finally has something to be about.
+
+**Two test bugs, and only test bugs.** The U5 check started matching the new resume card (it also
+says "Two Sum") — scoped it to the card carrying `earned`. And the U13 probe's whitespace regex lost
+an escape and reached the page as `/s+/g`, which quietly deleted every letter "s": the failure read
+`2 of 6 act  earned` and `Two Pointer  · O(n log n)`. An assertion that looks like an app bug can be
+the harness eating your text.
+
+Evidence: `npm run check` 43/43. `npm run test:ui` **31/31** (was 29). Browser: bars 614 px with
+16 px of slack under the stage; the resume card reads "2 of 6 acts earned · Two Sum · next: Two
+Pointers · O(n log n)" and links to `#/journey/two-sum?act=twoptr`.
+
+**All fourteen audit items are now closed.**
+
 ## 2026-09-05 — UX batch 4: mobile as a designed layout (U2, U14, U11)
 
 Branch `feat/mobile-layout`.

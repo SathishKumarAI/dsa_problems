@@ -157,7 +157,7 @@ export function AlgorithmsPage() {
   }, [player])
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-stage flex-col gap-4 lg:h-full">
       <header className="flex flex-col gap-1">
         <h1 className="font-heading text-title font-semibold tracking-tight">
           Algorithm visualizer
@@ -168,9 +168,12 @@ export function AlgorithmsPage() {
         </p>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-[12rem_minmax(0,1fr)_20rem]">
+      <div className="grid gap-5 lg:min-h-0 lg:flex-1 lg:grid-cols-[12rem_minmax(0,1fr)_20rem]">
         {/* picker */}
-        <nav className="flex flex-col gap-4" aria-label="algorithms">
+        <nav
+          className="flex flex-col gap-4 lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+          aria-label="algorithms"
+        >
           {GROUPS.map((g) => (
             <div key={g.label} className="flex flex-col gap-1">
               <div className="text-meta tracking-wide text-muted-foreground uppercase">
@@ -197,7 +200,7 @@ export function AlgorithmsPage() {
 
         {/* stage */}
         <section
-          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg"
+          className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
@@ -206,7 +209,9 @@ export function AlgorithmsPage() {
               {algo.complexity}
             </span>
           </div>
-          <div className="px-4 py-5">
+          {/* the drawing takes the height the page has, instead of a fixed
+              224 px band with dead space under it (UX audit U9) */}
+          <div className="flex min-h-[22rem] flex-col justify-center px-4 py-5 lg:min-h-0 lg:flex-1">
             {timeline.kind === "graph" && frame ? (
               <GraphView
                 graph={timeline.graph}
@@ -222,7 +227,7 @@ export function AlgorithmsPage() {
             )}
           </div>
           <p
-            className="min-h-12 border-t bg-background/40 px-5 py-3 text-center text-sm"
+            className="min-h-12 border-t bg-background/40 px-5 py-3 text-center text-ui"
             aria-live="polite"
           >
             <span className="mr-1 text-primary">›</span>
@@ -315,7 +320,7 @@ export function AlgorithmsPage() {
           </div>
         </section>
 
-        <aside className="flex flex-col gap-4">
+        <aside className="flex flex-col gap-4 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
           <CodePanel
             code={{ pseudo: algo.pseudocode }}
             line={frame?.line ?? -1}
