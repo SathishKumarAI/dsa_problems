@@ -168,49 +168,24 @@ export const twoPointers: Problem[] = [
         else:
             j -= 1
     return best`,
-    walkthrough: [
-      {
-        cells: {
-          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
-          labels: { 0: "i", 8: "j" },
-        },
-        caption: "Max width first. Area = 8 × min(1, 7) = 8.",
-      },
-      {
-        cells: {
-          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
-          marks: { 0: "compare", 8: "compare" },
-          labels: { 0: "i", 8: "j" },
-        },
-        caption:
-          "Left line (1) is shorter — it caps every wider pairing. Move i.",
-      },
-      {
-        cells: {
-          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
-          marks: { 0: "done", 1: "focus", 8: "focus" },
-          labels: { 1: "i", 8: "j" },
-        },
-        caption: "8 and 7, width 7: area = 7 × 7 = 49. New best.",
-      },
-      {
-        cells: {
-          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
-          marks: { 1: "compare", 8: "compare" },
-          labels: { 1: "i", 8: "j" },
-        },
-        caption:
-          "Right (7) is shorter now — move j inward. Later pairs never beat 49.",
-      },
-      {
-        cells: {
-          values: [1, 8, 6, 2, 5, 4, 8, 3, 7],
-          marks: { 1: "done", 8: "done" },
-        },
-        caption:
-          "Answer 49. Every discarded pair was provably ≤ a measured one.",
-      },
-    ],
+    java: `public int maxArea(int[] h) {
+    int i = 0, j = h.length - 1, best = 0;
+    while (i < j) {
+        best = Math.max(best, (j - i) * Math.min(h[i], h[j]));
+        if (h[i] < h[j]) i++;
+        else j--;
+    }
+    return best;
+}`,
+    cpp: `int maxArea(const vector<int>& h) {
+    int i = 0, j = (int)h.size() - 1, best = 0;
+    while (i < j) {
+        best = max(best, (j - i) * min(h[i], h[j]));
+        if (h[i] < h[j]) i++;
+        else j--;
+    }
+    return best;
+}`,
     alternatives: [
       {
         name: "Brute force",
@@ -223,6 +198,20 @@ export const twoPointers: Problem[] = [
         for j in range(i + 1, len(heights)):
             best = max(best, (j - i) * min(heights[i], heights[j]))
     return best`,
+        java: `public int maxArea(int[] h) {
+    int best = 0;
+    for (int i = 0; i < h.length; i++)
+        for (int j = i + 1; j < h.length; j++)
+            best = Math.max(best, (j - i) * Math.min(h[i], h[j]));
+    return best;
+}`,
+        cpp: `int maxArea(const vector<int>& h) {
+    int best = 0;
+    for (int i = 0; i < (int)h.size(); i++)
+        for (int j = i + 1; j < (int)h.size(); j++)
+            best = max(best, (j - i) * min(h[i], h[j]));
+    return best;
+}`,
       },
     ],
   },

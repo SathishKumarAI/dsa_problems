@@ -220,6 +220,86 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
   )
 }
 
+// Heights as columns. The water is drawn INSIDE each column of the span
+// rather than as one absolutely positioned rectangle, so it needs no
+// measuring and cannot drift from the bars it belongs to: a translucent
+// block from the floor up to the shorter wall, with the bar itself painted
+// over it. A wall taller than the water therefore sticks out of it, which is
+// the physical fact the problem turns on.
+function Bars({ p }: { p: Extract<PanelModel, { kind: "bars" }> }) {
+  const max = Math.max(...p.bars.map((b) => b.value), 1)
+  const pct = (v: number) => `${(v / max) * 88}%`
+  const showValues = p.bars.length <= 24
+  return (
+    <div className="flex flex-col gap-3">
+      <div
+        className="flex h-56 items-stretch justify-center gap-[3px]"
+        aria-label="heights as bars"
+      >
+        {p.bars.map((b, i) => {
+          const wet =
+            p.water !== undefined && i >= p.water.from && i <= p.water.to
+          const r = b.roles
+          const fill = r.includes("answer")
+            ? "bg-chart-3"
+            : r.includes("anchor")
+              ? "bg-chart-4"
+              : r.includes("focus")
+                ? "bg-[var(--yellow)]"
+                : r.includes("dim")
+                  ? "bg-muted/60 opacity-40"
+                  : "bg-chart-2/70"
+          return (
+            <div
+              key={b.key}
+              data-k={b.key}
+              className="relative flex min-w-1 flex-1 flex-col items-center justify-end gap-1"
+              style={{ maxWidth: 40 }}
+            >
+              {wet && (
+                <div
+                  className="absolute inset-x-0 bottom-0 rounded-t-[2px] bg-chart-2/25"
+                  style={{ height: pct(p.water!.height) }}
+                  aria-hidden
+                />
+              )}
+              {showValues && (
+                <span
+                  className={cn(
+                    "z-10 font-mono text-[10px] tabular-nums",
+                    r.length ? "text-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {b.value}
+                </span>
+              )}
+              <div
+                className={cn(
+                  "z-10 w-full origin-bottom rounded-t-[4px]",
+                  fill
+                )}
+                style={{ height: pct(b.value), minHeight: 3 }}
+              />
+            </div>
+          )
+        })}
+      </div>
+      {p.water && (
+        <div className="text-center font-mono text-lg tabular-nums">
+          <span className={p.water.best ? "text-chart-3" : "text-foreground"}>
+            {p.water.label}
+          </span>
+        </div>
+      )}
+      {p.best && (
+        <div className="text-center font-mono text-meta text-muted-foreground">
+          {p.best}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Panel({
   panel,
   challenge,
@@ -268,6 +348,8 @@ export function Panel({
           ))}
         </div>
       )
+    case "bars":
+      return <Bars p={panel} />
     case "terms":
       return <Terms p={panel} />
     case "recap":
@@ -296,14 +378,24 @@ export function Stage({
     <>
       <div
         ref={arrayRef}
-        className="flex min-h-24 items-end justify-center px-2"
+        // the row reserves chip height only when there are chips: a bars panel
+        // owns the whole stage, and an empty 6rem band above it reads as a bug
+        className={cn(
+          "flex items-end justify-center px-2",
+          model.chips && "min-h-24"
+        )}
       >
         {model.chips ? (
           <ChipRow chips={model.chips} />
         ) : (
-          <div className="text-sm text-muted-foreground">
-            the stage is empty on purpose — the need comes first
-          </div>
+          // no chips has two meanings: the story act deliberately withholding
+          // the data ("the need comes first"), and a panel that IS the whole
+          // stage (bars). Only the first one wants a placeholder.
+          model.panel.kind === "story" && (
+            <div className="text-sm text-muted-foreground">
+              the stage is empty on purpose — the need comes first
+            </div>
+          )
         )}
       </div>
       <div

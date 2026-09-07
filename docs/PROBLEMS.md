@@ -61,8 +61,8 @@ today (the journey acts carry all four when the journey ships).
 | 2 | Single Number (`single-number`) | arrays & hashing | easy | brute · hash counts · sort & scan · XOR | py · java · cpp | chips, hash, sorted, bits | Xu ch. bit manipulation | ✓ |
 | 3 | Triplets Summing to Zero (`three-sum-zero` → journey `three-sum`) | two pointers | medium | brute O(n³) · anchor + hash · anchor + two pointers (skip duplicates) | py · java · cpp | chips, sorted, **terms** (new: k-term equation + found list) | Khamies §3.2.2 | ✓ |
 | 4 | Pair Sum in Sorted Array (`sorted-pair-sum` → journey `sorted-pair-sum`) | two pointers | easy | brute · hash · two pointers (sorted input, no sort) | py · java · cpp | chips, sum, hash | Khamies §5.1 | ✓ |
-| 5 | Widest Container (`container-water`) | two pointers | medium | brute · two pointers moving the shorter wall | py | **bars** (port `BarsView` into a panel kind, with a shaded area) | Xu two pointers | ▶ |
-| 6 | Single Buy/Sell Profit (`best-trade`) | sliding window | easy | brute · running minimum | py | bars + a running-min line | Xu sliding windows | ☐ |
+| 5 | Widest Container (`container-water` → journey `container-water`) | two pointers | medium | brute · two pointers moving the shorter wall | py · java · cpp | **bars** (new kind: columns + water filled to the shorter wall) | Xu two pointers | ✓ |
+| 6 | Single Buy/Sell Profit (`best-trade`) | sliding window | easy | brute · running minimum | py | bars (exists now) + a running-min line | Xu sliding windows | ▶ |
 | 7 | Longest Substring Without Repeats (`longest-unique-substring`) | sliding window | medium | brute · window + set · last-seen jump | py | **window** (span over chips) + hash | Xu sliding windows | ☐ |
 | 8 | Smallest Covering Window (`min-cover-substring`) | sliding window | hard | brute · window + need counts | py | window + hash (`fmt: times`) | Xu sliding windows | ☐ |
 | 9 | Longest Consecutive Sequence (`longest-consecutive-run`) | arrays & hashing | medium | sort · hash set, start only at run heads | py | sorted, hash | Xu hash maps & sets | ☐ |
