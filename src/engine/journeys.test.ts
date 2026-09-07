@@ -13,6 +13,7 @@ import {
   classifySortedPair,
   sortedPairSum,
 } from "./journeys/sorted-pair-sum.ts"
+import { bestContainer, containerWater } from "./journeys/container-water.ts"
 import { classifyTwoSum, twoSum } from "./journeys/two-sum.ts"
 import type { AnyJourney, BaseFrame, Frame } from "./types.ts"
 
@@ -230,6 +231,48 @@ test("two-sum: every approach returns the promised pair, including the traps", (
       lastAnswer(drain(act.run({ nums: [1, 2, 5, 11], target: 99 }, {}))),
       undefined,
       key
+    )
+  }
+})
+
+test("container-water: both approaches agree with the exhaustive best area", () => {
+  const rows = [
+    [1, 8, 6, 2, 5, 4, 8, 3, 7],
+    [1, 1],
+    [4, 4, 4, 4, 4, 4],
+    [0, 2, 0],
+    [1, 2, 4, 3],
+    [2, 3, 4, 5, 18, 17, 6],
+    [6, 5, 4, 3, 2, 1],
+    [1, 2, 3, 4, 5, 6],
+    [0, 0, 0],
+  ]
+  // the last frame that carries `best` is the approach's answer; the area is
+  // the number the problem asks for, so it is what gets compared
+  const answerOf = (key: string, nums: number[]) => {
+    const frames = drain(
+      containerWater.acts.find((a) => a.key === key)!.run({ nums }, {})
+    ) as Frame<{ best?: number }>[]
+    return frames.findLast((f) => f.best !== undefined)?.best
+  }
+  for (const nums of rows) {
+    const want = bestContainer(nums).best
+    for (const key of ["brute", "squeeze"])
+      assert.equal(answerOf(key, nums), want, `${key} on [${nums}]`)
+  }
+  // the greedy discard is the act's whole argument, so it is checked against
+  // brute force on random rows rather than trusted
+  let seed = 7
+  const rand = (n: number) => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return seed % n
+  }
+  for (let t = 0; t < 200; t++) {
+    const nums = Array.from({ length: 2 + rand(9) }, () => rand(30))
+    assert.equal(
+      answerOf("squeeze", nums),
+      bestContainer(nums).best,
+      `squeeze disagreed with brute force on [${nums}]`
     )
   }
 })

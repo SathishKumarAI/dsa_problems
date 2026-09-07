@@ -1,6 +1,7 @@
 // Journey registry. Owns the list of journeys and lookups by slug/problem id.
 // Adding a journey = one file in ./journeys + one line here.
 
+import { containerWater } from "./journeys/container-water.ts"
 import { singleNumber } from "./journeys/single-number.ts"
 import { sortedPairSum } from "./journeys/sorted-pair-sum.ts"
 import { threeSum } from "./journeys/three-sum.ts"
@@ -12,6 +13,7 @@ export const JOURNEYS: AnyJourney[] = [
   singleNumber as unknown as AnyJourney,
   threeSum as unknown as AnyJourney,
   sortedPairSum as unknown as AnyJourney,
+  containerWater as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

@@ -36,6 +36,24 @@ export interface ChipModel {
   roles: ChipRole[]
 }
 
+// One column of a bar chart. Same role vocabulary as a chip, so the grammar a
+// learner reads on the array row is the grammar they read on the bars.
+export interface BarModel {
+  key: string // stable identity across frames, as with ChipModel
+  value: number
+  roles: ChipRole[]
+}
+
+// The water held between two bars: the span is inclusive, and `height` is the
+// level it fills to — the shorter of the two walls, which is what caps the area.
+export interface WaterModel {
+  from: number
+  to: number
+  height: number
+  label: string // "width 7 x height 7 = 49"
+  best: boolean // this is the largest area measured so far
+}
+
 export interface HashEntry {
   key: number
   value: number
@@ -100,6 +118,14 @@ export type PanelModel =
   | { kind: "hash"; map: HashModel }
   | { kind: "sorted"; label: string; chips: ChipModel[]; eq?: SumModel }
   | { kind: "bits"; rows: BitRowModel[] }
+  | {
+      // heights as columns, with the water between two of them drawn to the
+      // height of the shorter wall (the container problems)
+      kind: "bars"
+      bars: BarModel[]
+      water?: WaterModel
+      best?: string // the best area found so far, as a line under the chart
+    }
   | {
       // k-term equation against a target + the distinct answers so far:
       // terms [a, b, c] → "a + b + c = sum"; with `need`, "a + b + ? — need n"

@@ -545,6 +545,72 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("the bars panel draws water between the two walls, capped by the shorter (#5)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:container-water', '5'); return 1`
+      )
+      await page.goto(`${server.base}/#/journey/container-water?act=squeeze`)
+      await page.waitFor(
+        `/act 03/i.test(document.querySelector('[aria-label=stage]')?.innerText ?? '')`
+      )
+      // the textbook row, so the numbers below are fixed rather than random
+      await page.run(`
+        const sel = document.querySelector('[aria-label="input preset"]');
+        const set = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+        set.call(sel, 'classic');
+        sel.dispatchEvent(new Event('change', { bubbles: true }));
+        return 1;
+      `)
+      await page.waitFor(
+        `document.querySelectorAll('[aria-label="heights as bars"] > div').length === 9`
+      )
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        // scrub rather than step: a predict card interrupts the walk, and
+        // scrubbing is the documented way past it
+        const t = document.querySelector('[aria-label=timeline]');
+        const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        const seek = async k => {
+          set.call(t, String(k));
+          t.dispatchEvent(new Event('input', { bubbles: true }));
+          await wait(500);
+        };
+        const cols = () => [...document.querySelectorAll('[aria-label="heights as bars"] > div')];
+        const wet = () => cols().filter(c => c.querySelector('[aria-hidden]')).length;
+        const stage = () => document.querySelector('[aria-label=stage]').innerText;
+        const area = () => (stage().match(/width \\d+ . height \\d+ = \\d+/) ?? [])[0] ?? null;
+        const seen = [];
+        for (let k = 0; k <= 5; k++) { await seek(k); seen.push({ k, wet: wet(), area: area() }); }
+        return {
+          columns: cols().length,
+          seen,
+          best: (stage().match(/best so far \\d+/) ?? [])[0] ?? null,
+        };
+      `)
+      assert.equal(out.columns, 9, "the textbook row has nine posts")
+      const [dry, opening] = out.seen
+      assert.equal(dry.wet, 0, "the synthetic first frame holds no water yet")
+      assert.equal(
+        opening.wet,
+        9,
+        "the opening container spans the whole row, so every column holds water"
+      )
+      // [1, 8, 6, 2, 5, 4, 8, 3, 7]: the ends are 8 apart and capped at 1
+      assert.equal(opening.area, "width 8 × height 1 = 8")
+      // once the post of height 1 is retired the water narrows, and the pair
+      // it settles on is 8 and 7 — the answer the problem statement quotes
+      const narrowed = out.seen.find((f) => f.wet > 0 && f.wet < 9)
+      assert.ok(
+        narrowed,
+        `retiring a post must narrow the water: ${JSON.stringify(out.seen)}`
+      )
+      assert.equal(narrowed.wet, 8)
+      assert.equal(narrowed.area, "width 7 × height 7 = 49")
+      assert.ok(out.best, "the best-so-far line disappeared")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // ---------- 3b. the catalogue keeps the secret ----------
 
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {

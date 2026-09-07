@@ -95,6 +95,52 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-07 — problem #5: Widest Container, and the first new panel kind since `terms`
+
+Pipeline row 5, the fifth journey, and the row that said a new render kind was allowed. Branch
+`feat/journey-container-water`.
+
+**Why this problem earns its place next to two other two-pointer journeys.** On a sorted row the
+pointers move because the values are ordered — the comparison tells you which side is hopeless. Here
+nothing is sorted, and the move is justified by a proof about *width*: the shorter wall has just been
+paired with the furthest partner it will ever have, so every container it could still be part of is
+narrower and still capped at its own height. Same shape on screen, different reason underneath, and
+the recap says so out loud. The reason is what transfers; the shape is just what it looks like.
+
+**The `bars` kind.** One column per height, keyed by value+occurrence exactly as the visualizer keys
+its bars, so FLIP morphs a column instead of blinking it. The water between the two walls is drawn
+*inside* each column of the span — a translucent block from the floor up to the shorter wall — rather
+than as one absolutely positioned rectangle. That needs no measuring, cannot drift from the bars it
+belongs to, and produces the physical fact the problem turns on for free: a post taller than the
+water sticks out of it.
+
+Two small fixes fell out of drawing a panel that owns the whole stage:
+
+- the chip row reserved `min-h-24` whether or not there were chips, leaving a 6 rem empty band above
+  every bars frame
+- `chips: null` printed "the stage is empty on purpose — the need comes first", which is the story
+  act's line about withholding data, not a caption for a panel-only act. It is now drawn only under
+  the `story` panel kind.
+
+**The greedy discard is checked, not trusted.** The correctness test compares both approaches against
+an exhaustive search on nine fixed rows *and 200 random ones*. A discard argument that is wrong on
+one row in a hundred is exactly the kind of thing prose cannot catch.
+
+**Two things the browser caught that the node tests could not:**
+
+- the challenge act rendered `panel: { kind: "bars" }`, so the editor — which arrives through the
+  `challenge` panel kind — never appeared at all. The act now draws the row as chips and gives the
+  panel slot to the editor, as every other challenge act does.
+- the UI check first stepped through frames with the Step button and stalled: a predict card
+  interrupts the walk and blocks stepping until it is answered. Scrubbing is the documented way past
+  a prediction, so the check scrubs.
+
+Evidence: `npm run check` 53 → **60 tests**; `npm run test:ui` 40 → **42 checks**. Browser: all five
+acts deep-link with a clean console (5, 37, 18, 1, 1 frames on a nine-post row); on the textbook row
+the opening container reads `width 8 × height 1 = 8` across all nine columns and narrows to
+`width 7 × height 7 = 49` — the 49 the problem statement quotes; the reference solution passes all
+six cases plus the n = 400 set.
+
 ## 2026-09-05 — problem #4: Pair Sum in Sorted Array, and the promise as the lesson
 
 Pipeline row 4, the fourth journey. Branch `feat/journey-sorted-pair-sum`.

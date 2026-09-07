@@ -89,6 +89,7 @@ Rules the test cannot check — review by hand:
 | `hash` | the hash map iceberg | same |
 | `sorted` | a second chip row (with `subs` = original indices) + optional sum | `chipRow(values, { subs })` |
 | `bits` | bit rows with flipped bits ringed | `{ tag, value, flip, bits }` |
+| `bars` | heights as columns, with the water between two of them filled to the shorter wall — a bar taller than the water sticks out of it. Roles are the chip roles, so the grammar is the same one the array row uses. `best` prints a line under the chart. Set `chips: null`: the bars ARE the stage | `{ bars: [{ key, value, roles }], water?: { from, to, height, label, best }, best? }` |
 | `terms` | `a + b + c = sum` vs target (or `need` for an unknown last term), the distinct answers found so far (newest ringed, a dropped repeat struck through), optional hash map | `{ terms, target, need?, hit?, dup?, found, map? }` |
 | `recap` | table + note + links | — |
 | `challenge` | the editor (the page injects it) | — |
@@ -97,7 +98,9 @@ Chips: `chipRow(values, { anchor, focus, dim, answer, subs })` → roles: anchor
 pointer (▲), focus = current / right pointer (ring), answer (✓), dim = eliminated.
 
 **Need a new kind?** Add a member to `PanelModel` in `src/engine/types.ts`, a case in
-`src/features/journey/panels.tsx`, and a row above. Known gaps: linked list, tree.
+`src/features/journey/panels.tsx`, and a row above. Known gaps: linked list, tree, stack, grid.
+A kind that owns the whole stage returns `chips: null`; the empty-stage placeholder is drawn
+only under the `story` kind, so a panel-only act shows no stray "the need comes first" line.
 
 ## Presets
 
