@@ -7,9 +7,9 @@ can be enforced.
 ## The shape of a journey
 
 One file, `src/engine/journeys/<slug>.ts`, exporting a `Journey<D>`; one line in
-`src/engine/index.ts`; one `Problem` in `src/data/problems/<pattern>.ts` with the same id as
-`problemId` (so the practice-set page gets the CTA). Nothing else — no HTML, no route, no
-sidebar entry: the registry drives all of it.
+`src/engine/index.ts`; one `Problem` in its own `src/data/problems/<pattern>/<id>.ts`, imported
+by that directory's `index.ts`, with the same id as `problemId` (so the practice-set page gets
+the CTA). Nothing else — no HTML, no route, no sidebar entry: the registry drives all of it.
 
 ```ts
 export const twoSum: Journey<TwoSumData> = {
@@ -180,7 +180,8 @@ extremes, n = 1). The act with `gate: "pass"` finishes on green tests, not on it
 > frame has a `note`. Python/Java/C++ match the pseudocode line-for-line. Include ≥ 1
 > contract-breaking preset and a `classify` that says what each approach does with it. Predict
 > once at each learning moment. Hints nudge → concept → line. Register it in
-> `src/engine/index.ts`, add the `Problem` to `src/data/problems/`, add correctness cases to
+> `src/engine/index.ts`, add the `Problem` as `src/data/problems/<pattern>/<id>.ts` and
+> import it in that directory's `index.ts`, add correctness cases to
 > `journeys.test.ts`, run `npm run check`, then open `#/journey/<slug>` and play every act to the
 > reveal. Report the test output and what you saw.
 

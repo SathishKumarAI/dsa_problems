@@ -1,0 +1,149 @@
+import type { Problem } from "../../types.ts"
+
+export const problem: Problem = {
+  id: "task-cooldown",
+  title: "Task Scheduling With Cooldown",
+  pattern: "heaps",
+  difficulty: "medium",
+  leetcode: "task-scheduler",
+  brief: "Minimum time to run tasks when repeats need n idle slots.",
+  statement:
+    "Given task labels and a cooldown n, identical tasks must be at least n time-units apart. Each task takes one unit; you may idle. Return the minimum total units to finish everything.",
+  constraints: [
+    "1 <= tasks.length <= 10^4",
+    "tasks[i] is an uppercase letter, so at most 26 distinct tasks",
+    "0 <= n <= 100",
+    "identical tasks must be separated by at least n intervals; idle intervals are allowed",
+  ],
+  examples: [
+    {
+      input: "tasks = [A, A, A, B, B, B], n = 2",
+      output: "8",
+      note: "A B _ A B _ A B",
+    },
+  ],
+  hints: [
+    "Greedy: always run the task with the most remaining copies (breaking it up matters most).",
+    "A max-heap of remaining counts gives you that task; a queue holds cooling tasks with their release times.",
+    "Time advances by 1 per unit; a task leaving the heap re-enters via the cooldown queue.",
+  ],
+  whyNow:
+    "The formula gives the length in one line but never says what actually runs when, and it has to special-case the tasks tied for most frequent. Simulating with a max-heap produces the schedule itself, which is what the follow-up asks for.",
+  approach:
+    "Max-heap of remaining counts (negated for Python). Each tick: pop the most frequent available task, run it, and if copies remain, park it in a queue stamped with when its cooldown ends. Move queue heads back into the heap as their timestamps expire. When both structures are empty, the clock is the answer. Running the most frequent task first is safe because it is the one that forces idles if postponed.",
+  complexity: { time: "O(total ticks × log 26)", space: "O(26)" },
+  python: `import heapq
+from collections import Counter, deque
+
+def least_interval(tasks: list[str], n: int) -> int:
+    heap = [-c for c in Counter(tasks).values()]
+    heapq.heapify(heap)
+    cooling: deque[tuple[int, int]] = deque()  # (ready_time, -count)
+    time = 0
+    while heap or cooling:
+        time += 1
+        if cooling and cooling[0][0] == time:
+            heapq.heappush(heap, cooling.popleft()[1])
+        if heap:
+            count = heapq.heappop(heap) + 1  # ran one copy
+            if count:
+                cooling.append((time + n + 1, count))
+    return time`,
+  java: `public int leastInterval(String[] tasks, int n) {
+    Map<String,Integer> freq = new HashMap<>();
+    for (String t: tasks) freq.put(t, freq.getOrDefault(t,0)+1);
+    PriorityQueue<Integer> heap = new PriorityQueue<>();
+    for (int c: freq.values()) heap.add(-c);
+    ArrayDeque<int[]> cooling = new ArrayDeque<>();
+    int time=0;
+    while (!heap.isEmpty() || !cooling.isEmpty()){
+        time++;
+        if (!cooling.isEmpty() && cooling.peek()[0]==time){
+            heap.add(cooling.poll()[1]);
+        }
+        if (!heap.isEmpty()){
+            int count = heap.poll()+1;
+            if (count!=0) cooling.offer(new int[]{time+n+1, count});
+        }
+    }
+    return time;
+}
+`,
+  cpp: `int leastInterval(const vector<string>& tasks, int n) {
+    unordered_map<string,int> freq;
+    for (auto &t: tasks) freq[t]++;
+    priority_queue<int> heap;
+    for (auto &p: freq) heap.push(p.second);
+    deque<pair<int,int>> cooling;
+    int time=0;
+    while (!heap.empty() || !cooling.empty()){
+        time++;
+        if (!cooling.empty() && cooling.front().first==time){
+            heap.push(cooling.front().second);
+            cooling.pop_front();
+        }
+        if (!heap.empty()){
+            int count = heap.top(); heap.pop();
+            count--;
+            if (count>0) cooling.emplace_back(time+n+1, count);
+        }
+    }
+    return time;
+}
+`,
+  walkthrough: [
+    {
+      text: "tasks: A×3 B×3   n = 2\nheap: [A:3, B:3]   cooling: []",
+      caption: "Counts in a max-heap; cooldown queue empty.",
+    },
+    {
+      text: "t=1  run A (2 left) → cooling until t=4\nt=2  run B (2 left) → cooling until t=5\nt=3  nothing ready → idle",
+      caption: "Most-frequent-first; both cooling, clock still ticks.",
+    },
+    {
+      text: "t=4  A ready → run A (1 left) → cool to t=7\nt=5  B ready → run B (1 left) → cool to t=8\nt=6  idle",
+      caption: "Same shape repeats: A B idle.",
+    },
+    {
+      text: "t=7  run A (0 left)\nt=8  run B (0 left)\n\nA B _ A B _ A B   →  8 units",
+      caption: "Heap and queue empty at t=8 — answer 8.",
+    },
+  ],
+  alternatives: [
+    {
+      name: "Math formula",
+      summary:
+        "Only the most frequent task shapes the schedule: (maxCount − 1) blocks of size n+1, plus one slot per task tied at maxCount. Take max with len(tasks) for the no-idle case. O(1) after counting — but the heap simulation generalizes when the formula's assumptions break.",
+      complexity: { time: "O(n)", space: "O(26)" },
+      python: `from collections import Counter
+
+def least_interval(tasks: list[str], n: int) -> int:
+    counts = Counter(tasks)
+    peak = max(counts.values())
+    ties = sum(1 for c in counts.values() if c == peak)
+    return max(len(tasks), (peak - 1) * (n + 1) + ties)`,
+      java: `public int leastInterval(String[] tasks, int n) {
+    Map<String, Integer> counts = new HashMap<>();
+    for (String t : tasks) {
+        counts.put(t, counts.getOrDefault(t, 0) + 1);
+    }
+    int peak = 0;
+    for (int c : counts.values()) if (c > peak) peak = c;
+    int ties = 0;
+    for (int c : counts.values()) if (c == peak) ties++;
+    return Math.max(tasks.length, (peak - 1) * (n + 1) + ties);
+}
+`,
+      cpp: `int leastInterval(const vector<string>& tasks, int n) {
+    unordered_map<string,int> counts;
+    for (const string& t : tasks) counts[t]++;
+    int peak = 0;
+    for (auto &p: counts) if (p.second > peak) peak = p.second;
+    int ties = 0;
+    for (auto &p: counts) if (p.second == peak) ties++;
+    return max((int)tasks.size(), (peak - 1) * (n + 1) + ties);
+}
+`,
+    },
+  ],
+}

@@ -1,0 +1,158 @@
+import type { Problem } from "../../types.ts"
+
+export const problem: Problem = {
+  id: "kth-largest-stream",
+  title: "Kth Largest in a Stream",
+  pattern: "heaps",
+  difficulty: "easy",
+  leetcode: "kth-largest-element-in-a-stream",
+  brief: "Always know the kth largest as numbers keep arriving.",
+  statement:
+    "Design a class initialized with k and a list of numbers. Each call to add(x) inserts x and returns the kth largest value seen so far.",
+  constraints: [
+    "1 <= k <= 10^4",
+    "0 <= nums.length <= 10^4",
+    "-10^4 <= nums[i], val <= 10^4",
+    "at least k values exist when kth-largest is asked for",
+  ],
+  examples: [
+    {
+      input: "k = 3, start = [4, 5, 8, 2]; add(3) → 4; add(5) → 5; add(10) → 5",
+      output: "see calls",
+      note: "After add(10) the three largest are 10, 8, 5.",
+    },
+  ],
+  hints: [
+    "You never care about anything smaller than the current kth largest.",
+    "Keep only the k largest values. Which structure evicts its smallest in O(log k)?",
+    "A min-heap of size k: its root IS the kth largest.",
+  ],
+  whyNow:
+    "Shifting is still linear per add, and nothing here needs the full order - only the kth value. A min-heap of size k keeps that value at the root and costs a logarithm per add.",
+  approach:
+    "Maintain a min-heap holding exactly the k largest values seen. On add, push the new value; if the heap grows past k, pop the minimum (which by definition is no longer in the top k). The root is then the kth largest at all times. Keeping the heap small (k, not n) is the entire point.",
+  complexity: { time: "O(log k) per add", space: "O(k)" },
+  python: `import heapq
+
+class KthLargest:
+    def __init__(self, k: int, nums: list[int]):
+        self.k = k
+        self.heap = nums
+        heapq.heapify(self.heap)
+        while len(self.heap) > k:
+            heapq.heappop(self.heap)
+
+    def add(self, x: int) -> int:
+        heapq.heappush(self.heap, x)
+        if len(self.heap) > self.k:
+            heapq.heappop(self.heap)
+        return self.heap[0]`,
+  java: `public class KthLargest {
+    private int k;
+    private java.util.PriorityQueue<Integer> heap;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        this.heap = new java.util.PriorityQueue<>();
+        for (int num : nums) heap.add(num);
+        while (heap.size() > k) heap.poll();
+    }
+
+    public int add(int x) {
+        heap.offer(x);
+        if (heap.size() > k) heap.poll();
+        return heap.peek();
+    }
+}
+`,
+  cpp: `class KthLargest {
+public:
+    int k;
+    std::priority_queue<int, std::vector<int>, std::greater<int>> heap;
+
+    KthLargest(int k, const std::vector<int>& nums): k(k), heap(std::greater<int>()) {
+        for (int num : nums) heap.push(num);
+        while ((int)heap.size() > k) heap.pop();
+    }
+
+    int add(int x) {
+        heap.push(x);
+        if ((int)heap.size() > k) heap.pop();
+        return heap.top();
+    }
+};`,
+  walkthrough: [
+    {
+      text: "k = 3, start = [4, 5, 8, 2]\n\nheapify → pop smallest until size 3\nmin-heap: [4, 5, 8]   root = 4",
+      caption: "Keep only the 3 largest. Root = 3rd largest = 4.",
+    },
+    {
+      text: "add(3):  push → [3, 4, 5, 8]\n         size 4 > 3 → pop 3\n\nmin-heap: [4, 5, 8]   root = 4",
+      caption: "3 can't be in the top three — evicted immediately.",
+    },
+    {
+      text: "add(5):  push → [4, 5, 5, 8]\n         pop 4\n\nmin-heap: [5, 5, 8]   root = 5",
+      caption: "New 5 pushes old 4 out of the top three.",
+    },
+    {
+      text: "add(10): push → [5, 5, 8, 10]\n         pop 5\n\nmin-heap: [5, 8, 10]  root = 5",
+      caption: "Top three are 10, 8, 5 — root answers in O(1).",
+    },
+  ],
+  alternatives: [
+    {
+      name: "Sort per add",
+      summary:
+        "Keep a list, re-sort on every add, index the kth from the end. Each add costs n log n — painful for a hot path the heap serves in log k.",
+      complexity: { time: "O(n log n) per add", space: "O(n)" },
+      python: `class KthLargest:
+    def __init__(self, k: int, nums: list[int]):
+        self.k = k
+        self.nums = list(nums)
+
+    def add(self, x: int) -> int:
+        self.nums.append(x)
+        self.nums.sort()
+        return self.nums[-self.k]`,
+      java: `public int kthLargest(int k, List<Integer> nums, int x) {
+    nums.add(x);
+    Collections.sort(nums);
+    return nums.get(nums.size() - k);
+}`,
+      cpp: `int kthLargest(vector<int>& nums, int k, int x) {
+    nums.push_back(x);
+    sort(nums.begin(), nums.end());
+    return nums[nums.size() - k];
+}`,
+    },
+    {
+      name: "Sorted insert (bisect)",
+      whyNow:
+        "Re-sorting on every add redoes work that was already in order. Inserting into a sorted list keeps the order for the price of shifting elements.",
+      summary:
+        "Keep the list sorted and insert with bisect. Insertion is O(n) due to shifting, but far better constants than re-sorting; still loses to the heap asymptotically.",
+      complexity: { time: "O(n) per add", space: "O(n)" },
+      python: `import bisect
+
+class KthLargest:
+    def __init__(self, k: int, nums: list[int]):
+        self.k = k
+        self.nums = sorted(nums)
+
+    def add(self, x: int) -> int:
+        bisect.insort(self.nums, x)
+        return self.nums[-self.k]`,
+      java: `public int add(List<Integer> nums, int k, int x) {
+    int idx = Collections.binarySearch(nums, x);
+    if (idx < 0) idx = -idx - 1;
+    nums.add(idx, x);
+    return nums.get(nums.size() - k);
+}`,
+      cpp: `int add(vector<int>& nums, int k, int x) {
+    auto it = lower_bound(nums.begin(), nums.end(), x);
+    nums.insert(it, x);
+    return nums[nums.size() - k];
+}`,
+    },
+  ],
+}
