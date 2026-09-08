@@ -6,6 +6,7 @@ import { problem as singleNumber } from "./single-number.ts"
 import { problem as containsDuplicate } from "./contains-duplicate.ts"
 import { problem as validAnagram } from "./valid-anagram.ts"
 import { problem as productExceptSelf } from "./product-except-self.ts"
+import { problem as groupAnagrams } from "./group-anagrams.ts"
 
 export const arraysHashing: Problem[] = [
   pairSum,
@@ -15,4 +16,5 @@ export const arraysHashing: Problem[] = [
   containsDuplicate,
   validAnagram,
   productExceptSelf,
+  groupAnagrams,
 ]

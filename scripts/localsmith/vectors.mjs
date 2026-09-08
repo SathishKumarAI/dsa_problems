@@ -203,6 +203,146 @@ export const VECTORS = {
       [[5, 4, 3, 2, 1]],
     ],
   },
+  "group-anagrams": {
+    params: ["string[]"],
+    ret: "string[][]",
+    exercises:
+      "two words that share letters in DIFFERENT numbers, which a careless key would merge — ['aab','abb']; and the empty string, which is a group of its own",
+    cases: [
+      [["eat", "tea", "tan", "ate", "nat", "bat"]],
+      [[""]],
+      [["aab", "abb", "bab"]],
+      [["a"]],
+      [["abc", "cba", "bac", "xyz"]],
+    ],
+  },
+  "sort-colors": {
+    params: ["int[]"],
+    ret: "int[]",
+    exercises:
+      "a 2 swapped down from the back that must NOT be skipped over — [2,0,2,1,1,0] puts a 0 where mid stands; and arrays already sorted or fully reversed",
+    cases: [
+      [[2, 0, 2, 1, 1, 0]],
+      [[2, 0, 1]],
+      [[0]],
+      [[2, 2, 2]],
+      [[2, 1, 0]],
+      [[0, 1, 2]],
+    ],
+  },
+  "permutation-in-string": {
+    params: ["string", "string"],
+    ret: "bool",
+    exercises:
+      "the same letters present but never adjacent — 'eidboaoo' is false where 'eidbaooo' is true; and a pattern longer than the text",
+    cases: [
+      // a needed letter repeated in the text, where the agreement count must
+      // fall as well as rise
+      ["ab", "aaab"],
+      // the window leaving a letter behind must undo its own agreement
+      ["ab", "bidboaoo"],
+      ["ab", "eidbaooo"],
+      ["ab", "eidboaoo"],
+      ["abc", "ab"],
+      ["a", "a"],
+      ["aab", "aaab"],
+    ],
+  },
+  "window-maximum": {
+    params: ["int[]", "int"],
+    ret: "int[]",
+    exercises:
+      "a maximum FALLING OUT of the window, so the deque must evict from the front — [1,3,-1,-3,5,3,6,7] with k=3; plus k=1 and k=n at the extremes",
+    cases: [
+      [[1, 3, -1, -3, 5, 3, 6, 7], 3],
+      [[4, 2, 1], 3],
+      [[1, 2, 3], 1],
+      [[9, 8, 7, 6], 2],
+      [[1, 1, 1, 1], 2],
+    ],
+  },
+  "generate-parens": {
+    params: ["int"],
+    ret: "string[]",
+    exercises:
+      "n large enough that the pruning matters and both nesting shapes appear — n=3 has five answers including '((()))' and '()()()'",
+    cases: [[1], [2], [3], [4]],
+  },
+  "rotated-search": {
+    params: ["int[]", "int"],
+    ret: "int",
+    exercises:
+      "a target in the half that is NOT sorted, which is the branch a naive binary search gets wrong — 0 in [4,5,6,7,0,1,2]; plus an un-rotated array and an absent target",
+    cases: [
+      // two elements where nums[lo] == nums[mid]: the left half is sorted
+      // trivially, and a strict `<` there loses the answer
+      [[2, 1], 1],
+      // target sitting exactly ON the right end of the sorted half
+      [[5, 6, 1, 2, 3, 4], 4],
+      [[4, 5, 6, 7, 0, 1, 2], 0],
+      [[4, 5, 6, 7, 0, 1, 2], 3],
+      [[1], 1],
+      [[1, 2, 3, 4], 4],
+      [[5, 1, 2, 3, 4], 5],
+    ],
+  },
+  "kth-largest-element": {
+    params: ["int[]", "int"],
+    ret: "int",
+    exercises:
+      "a duplicate occupying a rank of its own — [3,3,1] with k=2 answers 3, not 1; and k at both ends of the range",
+    cases: [
+      [[3, 2, 1, 5, 6, 4], 2],
+      [[3, 3, 1], 2],
+      [[1], 1],
+      [[7, 6, 5, 4, 3, 2, 1], 7],
+      [[-1, -2, -3], 1],
+    ],
+  },
+  "word-search": {
+    params: ["string[]", "string"],
+    ret: "bool",
+    exercises:
+      "a path that must BACK OUT of a dead end and reuse a cell it already released — ['abce','sfcs','adee'] with 'abcced'; and a word needing a cell twice, which must fail",
+    cases: [
+      // the only route to the final e goes UP from the bottom row, so a lost
+      // upward move — or one that forgets to advance the character — fails it
+      [["axe", "bcd"], "abcde"],
+      [["abce", "sfcs", "adee"], "abcced"],
+      [["abce", "sfcs", "adee"], "abcb"],
+      [["a"], "a"],
+      [["ab", "cd"], "abdc"],
+      [["aaa", "aaa", "aaa"], "aaaaaaaaa"],
+    ],
+  },
+  "max-subarray": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "an all-negative array, where an empty run is not allowed and the answer is the least bad element — [-3,-1,-2] answers -1, not 0",
+    cases: [
+      [[-2, 1, -3, 4, -1, 2, 1, -5, 4]],
+      [[-3, -1, -2]],
+      [[5]],
+      [[1, 2, 3, 4]],
+      [[-1, 4, -2, 4, -8]],
+    ],
+  },
+  "longest-common-subsequence": {
+    params: ["string", "string"],
+    ret: "int",
+    exercises:
+      "a match that must SKIP characters in both strings — 'abcde' and 'ace' answer 3; and two strings sharing nothing, which answer 0",
+    cases: [
+      // a shared letter that must NOT be counted twice across the diagonal
+      ["aecde", "ae"],
+      ["abcde", "ace"],
+      ["abc", "def"],
+      ["a", "a"],
+      ["abcba", "abcbcba"],
+      ["ab", "ba"],
+    ],
+  },
   "pair-sum": {
     params: ["int[]", "int"],
     ret: "int[]",
