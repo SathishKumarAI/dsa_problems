@@ -37,6 +37,28 @@ def reverse_list(head: Node | None) -> Node | None:
         curr.next = prev
         prev, curr = curr, nxt
     return prev`,
+    java: `public Node reverseList(Node head) {
+    Node prev = null;
+    Node curr = head;
+    while (curr != null) {
+        Node nxt = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nxt;
+    }
+    return prev;
+}`,
+    cpp: `Node* reverseList(Node* head) {
+    Node* prev = nullptr;
+    Node* curr = head;
+    while (curr) {
+        Node* nxt = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = nxt;
+    }
+    return prev;
+}`,
     walkthrough: [
       {
         text: "prev   curr\n ∅      1 → 2 → 3 → ∅",
@@ -74,6 +96,30 @@ def reverse_list(head: Node | None) -> Node | None:
     for v in vals:
         new_head = Node(v, new_head)
     return new_head`,
+        java: `public Node reverseList(Node head) {
+    ArrayList<Integer> vals = new ArrayList<>();
+    while (head != null) {
+        vals.add(head.val);
+        head = head.next;
+    }
+    Node newHead = null;
+    for (int v : vals) {
+        newHead = new Node(v, newHead);
+    }
+    return newHead;
+}`,
+        cpp: `Node* reverseList(Node* head) {
+    vector<int> vals;
+    while (head != nullptr) {
+        vals.push_back(head->val);
+        head = head->next;
+    }
+    Node* new_head = nullptr;
+    for (int v : vals) {
+        new_head = new Node(v, new_head);
+    }
+    return new_head;
+}`,
       },
       {
         name: "Recursive",
@@ -89,6 +135,22 @@ def reverse_list(head: Node | None) -> Node | None:
     head.next.next = head
     head.next = None
     return new_head`,
+        java: `public Node reverseList(Node head) {
+    if (head == null || head.next == null)
+        return head;
+    Node newHead = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return newHead;
+}`,
+        cpp: `Node* reverseList(Node* head) {
+    if (!head || !head->next)
+        return head;
+    Node* newHead = reverseList(head->next);
+    head->next->next = head;
+    head->next = nullptr;
+    return newHead;
+}`,
       },
     ],
   },
@@ -129,6 +191,26 @@ def reverse_list(head: Node | None) -> Node | None:
         if slow is fast:
             return True
     return False`,
+    java: `public boolean hasCycle(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+        if (slow == fast) return true;
+    }
+    return false;
+}`,
+    cpp: `bool hasCycle(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) return true;
+    }
+    return false;
+}`,
     walkthrough: [
       {
         text: "1 → 2 → 3 → 4\n    ↑       │\n    └───────┘\n\nslow = 1, fast = 1",
@@ -162,6 +244,23 @@ def reverse_list(head: Node | None) -> Node | None:
         seen.add(id(head))
         head = head.next
     return False`,
+        java: `public boolean hasCycle(ListNode head) {
+    Set<ListNode> seen = new HashSet<>();
+    while (head != null) {
+        if (!seen.add(head)) return true;
+        head = head.next;
+    }
+    return false;
+}`,
+        cpp: `bool hasCycle(const ListNode* head) {
+    unordered_set<const ListNode*> seen;
+    const ListNode* curr = head;
+    while (curr != nullptr) {
+        if (!seen.insert(curr).second) return true;
+        curr = curr->next;
+    }
+    return false;
+}`,
       },
     ],
   },
@@ -203,6 +302,30 @@ def reverse_list(head: Node | None) -> Node | None:
         tail = tail.next
     tail.next = a or b
     return dummy.next`,
+    java: `public ListNode mergeSorted(ListNode a, ListNode b) {
+    ListNode dummy = new ListNode(0);
+    ListNode tail = dummy;
+    while (a != null && b != null) {
+        if (a.val <= b.val) { tail.next = a; a = a.next; }
+        else { tail.next = b; b = b.next; }
+        tail = tail.next;
+    }
+    tail.next = (a != null) ? a : b;
+    return dummy.next;
+}
+`,
+    cpp: `ListNode* mergeSorted(ListNode* a, ListNode* b) {
+    ListNode* dummy = new ListNode(0);
+    ListNode* tail = dummy;
+    while (a && b) {
+        if (a->val <= b->val) { tail->next = a; a = a->next; }
+        else { tail->next = b; b = b->next; }
+        tail = tail->next;
+    }
+    tail->next = a ? a : b;
+    return dummy->next;
+}
+`,
     walkthrough: [
       {
         text: "a: 1 → 3 → 5\nb: 2 → 4\n\nout: [dummy] →",
@@ -241,6 +364,36 @@ def reverse_list(head: Node | None) -> Node | None:
     for v in sorted(vals, reverse=True):
         head = Node(v, head)
     return head`,
+        java: `public Node mergeSorted(Node a, Node b){
+    java.util.List<Integer> vals = new java.util.ArrayList<>();
+    for (Node head : new Node[]{a,b}){
+        while (head != null){
+            vals.add(head.val);
+            head = head.next;
+        }
+    }
+    java.util.Collections.sort(vals, java.util.Comparator.reverseOrder());
+    Node head = null;
+    for (int v : vals){
+        head = new Node(v, head);
+    }
+    return head;
+}`,
+        cpp: `Node* mergeSorted(const Node* a, const Node* b){
+    std::vector<int> vals;
+    for (const Node* head : {a,b}){
+        while (head){
+            vals.push_back(head->val);
+            head = head->next;
+        }
+    }
+    std::sort(vals.rbegin(), vals.rend());
+    Node* head = nullptr;
+    for (int v : vals){
+        head = new Node(v, head);
+    }
+    return head;
+}`,
       },
       {
         name: "Recursive",
@@ -257,6 +410,16 @@ def reverse_list(head: Node | None) -> Node | None:
         return a
     b.next = merge_sorted(a, b.next)
     return b`,
+        java: `public ListNode mergeSorted(ListNode a, ListNode b) {
+    if (a == null || b == null) return a != null ? a : b;
+    if (a.val <= b.val) { a.next = mergeSorted(a.next, b); return a; }
+    else { b.next = mergeSorted(a, b.next); return b; }
+}`,
+        cpp: `ListNode* mergeSorted(ListNode* a, ListNode* b) {
+    if (!a || !b) return a ? a : b;
+    if (a->val <= b->val) { a->next = mergeSorted(a->next, b); return a; }
+    else { b->next = mergeSorted(a, b->next); return b; }
+}`,
       },
     ],
   },

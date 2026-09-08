@@ -40,6 +40,39 @@ export const stack: Problem[] = [
         else:
             st.append(ch)
     return not st`,
+    java: `public boolean isBalanced(String s) {
+    Map<Character, Character> partner = new HashMap<>();
+    partner.put(')', '(');
+    partner.put(']', '[');
+    partner.put('}', '{');
+    List<Character> st = new ArrayList<>();
+    for (int i = 0; i < s.length(); i++) {
+        char ch = s.charAt(i);
+        if (partner.containsKey(ch)) {
+            if (st.isEmpty() || st.remove(st.size()-1) != partner.get(ch))
+                return false;
+        } else {
+            st.add(ch);
+        }
+    }
+    return st.isEmpty();
+}
+`,
+    cpp: `bool isBalanced(const string& s) {
+    unordered_map<char, char> partner{{')','('},{']','['},{'}','{'}};
+    vector<char> st;
+    for (char ch : s) {
+        auto it = partner.find(ch);
+        if (it != partner.end()) {
+            if (st.empty() || st.back() != it->second) return false;
+            st.pop_back();
+        } else {
+            st.push_back(ch);
+        }
+    }
+    return st.empty();
+}
+`,
     walkthrough: [
       {
         text: "s = ( [ { } ] )\n\nstack: []",
@@ -72,6 +105,26 @@ export const stack: Problem[] = [
         prev = s
         s = s.replace("()", "").replace("[]", "").replace("{}", "")
     return s == ""`,
+        java: `public boolean isBalanced(String s) {
+    String prev;
+    do {
+        prev = s;
+        s = s.replace("()", "").replace("[]", "").replace("{}", "");
+    } while (!prev.equals(s));
+    return s.isEmpty();
+}`,
+        cpp: `bool isBalanced(const string& input) {
+    string s = input;
+    string prev;
+    do {
+        prev = s;
+        size_t pos;
+        while ((pos = s.find("()")) != string::npos) s.erase(pos, 2);
+        while ((pos = s.find("[]")) != string::npos) s.erase(pos, 2);
+        while ((pos = s.find("{}")) != string::npos) s.erase(pos, 2);
+    } while (prev != s);
+    return s.empty();
+}`,
       },
     ],
   },
@@ -114,6 +167,35 @@ export const stack: Problem[] = [
             answer[j] = i - j
         waiting.append(i)
     return answer`,
+    java: `public int[] dailyWarmer(int[] temps) {
+    int n = temps.length;
+    int[] answer = new int[n];
+    int[] stack = new int[n];
+    int sp = 0;
+    for (int i = 0; i < n; i++) {
+        while (sp > 0 && temps[stack[sp - 1]] < temps[i]) {
+            int j = stack[--sp];
+            answer[j] = i - j;
+        }
+        stack[sp++] = i;
+    }
+    return answer;
+}
+`,
+    cpp: `vector<int> dailyWarmer(const vector<int>& temps) {
+    int n = (int)temps.size();
+    vector<int> answer(n);
+    vector<int> stack; stack.reserve(n);
+    for (int i = 0; i < n; i++) {
+        while (!stack.empty() && temps[stack.back()] < temps[i]) {
+            int j = stack.back(); stack.pop_back();
+            answer[j] = i - j;
+        }
+        stack.push_back(i);
+    }
+    return answer;
+}
+`,
     walkthrough: [
       {
         cells: { values: [73, 74, 75, 71, 69, 72, 76, 73] },
@@ -173,6 +255,34 @@ export const stack: Problem[] = [
                 answer[i] = j - i
                 break
     return answer`,
+        java: `public int[] dailyWarmer(int[] temps) {
+    int n = temps.length;
+    int[] answer = new int[n];
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (temps[j] > temps[i]) {
+                answer[i] = j - i;
+                break;
+            }
+        }
+    }
+    return answer;
+}
+`,
+        cpp: `vector<int> dailyWarmer(const vector<int>& temps) {
+    int n = (int)temps.size();
+    vector<int> answer(n, 0);
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (temps[j] > temps[i]) {
+                answer[i] = j - i;
+                break;
+            }
+        }
+    }
+    return answer;
+}
+`,
       },
       {
         name: "Backward scan",
@@ -193,6 +303,40 @@ export const stack: Problem[] = [
                 j += answer[j]
         answer[i] = j - i if j < n else 0
     return answer`,
+        java: `public int[] dailyWarmer(int[] temps) {
+    int n = temps.length;
+    int[] answer = new int[n];
+    for (int i = n - 2; i >= 0; i--) {
+        int j = i + 1;
+        while (j < n && temps[j] <= temps[i]) {
+            if (answer[j] == 0) {
+                j = n;
+            } else {
+                j += answer[j];
+            }
+        }
+        answer[i] = (j < n) ? (j - i) : 0;
+    }
+    return answer;
+}
+`,
+        cpp: `vector<int> dailyWarmer(const vector<int>& temps) {
+    int n = (int)temps.size();
+    vector<int> answer(n, 0);
+    for (int i = n - 2; i >= 0; --i) {
+        int j = i + 1;
+        while (j < n && temps[j] <= temps[i]) {
+            if (answer[j] == 0) {
+                j = n;
+            } else {
+                j += answer[j];
+            }
+        }
+        answer[i] = (j < n) ? (j - i) : 0;
+    }
+    return answer;
+}
+`,
       },
     ],
   },
@@ -237,6 +381,38 @@ export const stack: Problem[] = [
             best = max(best, height * (i - left))
         st.append(i)
     return best`,
+    java: `public int largestRectangle(int[] heights) {
+    int best = 0;
+    int[] st = new int[heights.length + 1];
+    int top = 0;
+    for (int i = 0; i <= heights.length; i++) {
+        int h = (i == heights.length) ? 0 : heights[i];
+        while (top > 0 && heights[st[top - 1]] > h) {
+            int height = heights[st[--top]];
+            int left = (top > 0) ? st[top - 1] + 1 : 0;
+            best = Math.max(best, height * (i - left));
+        }
+        st[top++] = i;
+    }
+    return best;
+}
+`,
+    cpp: `int largestRectangle(const vector<int>& heights) {
+    int best = 0;
+    vector<int> st;
+    for (int i = 0; i <= (int)heights.size(); i++) {
+        int h = (i == (int)heights.size()) ? 0 : heights[i];
+        while (!st.empty() && heights[st.back()] > h) {
+            int height = heights[st.back()];
+            st.pop_back();
+            int left = !st.empty() ? st.back() + 1 : 0;
+            best = max(best, height * (i - left));
+        }
+        st.push_back(i);
+    }
+    return best;
+}
+`,
     walkthrough: [
       {
         cells: { values: [2, 1, 5, 6, 2, 3] },
@@ -295,6 +471,42 @@ export const stack: Problem[] = [
             right += 1
         best = max(best, h * (right - left + 1))
     return best`,
+        java: `public int largestRectangle(int[] heights) {
+    int best = 0;
+    int n = heights.length;
+    for (int i = 0; i < n; i++) {
+        int h = heights[i];
+        int left = i;
+        while (left > 0 && heights[left - 1] >= h) {
+            left--;
+        }
+        int right = i;
+        while (right < n - 1 && heights[right + 1] >= h) {
+            right++;
+        }
+        best = Math.max(best, h * (right - left + 1));
+    }
+    return best;
+}
+`,
+        cpp: `int largestRectangle(const vector<int>& heights) {
+    int best = 0;
+    int n = (int)heights.size();
+    for (int i = 0; i < n; i++) {
+        int h = heights[i];
+        int left = i;
+        while (left > 0 && heights[left - 1] >= h) {
+            left--;
+        }
+        int right = i;
+        while (right < n - 1 && heights[right + 1] >= h) {
+            right++;
+        }
+        best = max(best, h * (right - left + 1));
+    }
+    return best;
+}
+`,
       },
       {
         name: "Divide & conquer",
@@ -312,6 +524,33 @@ export const stack: Problem[] = [
         return max(spanning, solve(lo, m - 1), solve(m + 1, hi))
 
     return solve(0, len(heights) - 1)`,
+        java: `public int largestRectangle(int[] h) {
+    return solve(h, 0, h.length - 1);
+}
+
+static int solve(int[] h, int lo, int hi) {
+    if (lo > hi) return 0;
+    int m = lo;
+    for (int i = lo; i <= hi; i++) {
+        if (h[i] < h[m]) m = i;
+    }
+    int spanning = h[m] * (hi - lo + 1);
+    return Math.max(spanning, Math.max(solve(h, lo, m - 1), solve(h, m + 1, hi)));
+}
+`,
+        cpp: `static int solve(const vector<int>& h, int lo, int hi) {
+    if (lo > hi) return 0;
+    int m = lo;
+    for (int i = lo; i <= hi; ++i) {
+        if (h[i] < h[m]) m = i;
+    }
+    int spanning = h[m] * (hi - lo + 1);
+    return max(spanning, max(solve(h, lo, m - 1), solve(h, m + 1, hi)));
+}
+
+int largestRectangle(const vector<int>& h) {
+    return solve(h, 0, (int)h.size() - 1);
+}`,
       },
     ],
   },

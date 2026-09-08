@@ -33,6 +33,26 @@ export const dp: Problem[] = [
     for _ in range(n - 1):
         a, b = b, a + b
     return b`,
+    java: `public int climbWays(int n) {
+    int a = 1, b = 1;
+    for (int i = 0; i < n - 1; i++) {
+        int temp = b;
+        b = a + b;
+        a = temp;
+    }
+    return b;
+}
+`,
+    cpp: `int climbWays(int n) {
+    int a = 1, b = 1;
+    for (int i = 0; i < n - 1; ++i) {
+        int temp = b;
+        b = a + b;
+        a = temp;
+    }
+    return b;
+}
+`,
     walkthrough: [
       {
         cells: { values: [1, 1, "?", "?", "?"], labels: { 0: "w0", 1: "w1" } },
@@ -76,6 +96,14 @@ export const dp: Problem[] = [
     if n <= 1:
         return 1
     return climb_ways(n - 1) + climb_ways(n - 2)`,
+        java: `public int climbWays(int n) {
+    if (n <= 1) return 1;
+    return climbWays(n - 1) + climbWays(n - 2);
+}`,
+        cpp: `int climbWays(int n) {
+    if (n <= 1) return 1;
+    return climbWays(n - 1) + climbWays(n - 2);
+}`,
       },
       {
         name: "Memoized recursion",
@@ -91,6 +119,39 @@ def climb_ways(n: int) -> int:
     if n <= 1:
         return 1
     return climb_ways(n - 1) + climb_ways(n - 2)`,
+        java: `public int climbWays(int n) {
+    java.util.Map<Integer,Integer> cache = new java.util.HashMap<>();
+    return climbWaysRec(n, cache);
+}
+private static int climbWaysRec(int n, java.util.Map<Integer,Integer> cache) {
+    if (cache.containsKey(n)) return cache.get(n);
+    int result;
+    if (n <= 1) {
+        result = 1;
+    } else {
+        result = climbWaysRec(n - 1, cache) + climbWaysRec(n - 2, cache);
+    }
+    cache.put(n, result);
+    return result;
+}
+`,
+        cpp: `int climbWaysRec(int n, std::unordered_map<int,int>& memo) {
+    auto it = memo.find(n);
+    if (it != memo.end()) return it->second;
+    int result;
+    if (n <= 1) {
+        result = 1;
+    } else {
+        result = climbWaysRec(n - 1, memo) + climbWaysRec(n - 2, memo);
+    }
+    memo[n] = result;
+    return result;
+}
+
+int climbWays(int n) {
+    std::unordered_map<int,int> memo;
+    return climbWaysRec(n, memo);
+}`,
       },
     ],
   },
@@ -126,6 +187,26 @@ def climb_ways(n: int) -> int:
     for x in nums:
         skip, take = max(skip, take), skip + x
     return max(skip, take)`,
+    java: `public int maxTake(int[] nums) {
+    int skip = 0, take = 0;
+    for (int x : nums) {
+        int newSkip = Math.max(skip, take);
+        int newTake = skip + x;
+        skip = newSkip;
+        take = newTake;
+    }
+    return Math.max(skip, take);
+}`,
+    cpp: `int maxTake(const vector<int>& nums) {
+    int skip = 0, take = 0;
+    for (int x : nums) {
+        int newSkip = max(skip, take);
+        int newTake = skip + x;
+        skip = newSkip;
+        take = newTake;
+    }
+    return max(skip, take);
+}`,
     walkthrough: [
       {
         cells: { values: [2, 7, 9, 3, 1] },
@@ -174,6 +255,30 @@ def max_take(nums: list[int]) -> int:
         return max(best(i - 1), nums[i] + best(i - 2))
 
     return best(len(nums) - 1)`,
+        java: `public int maxTake(int[] nums) {
+    Integer[] memo = new Integer[nums.length];
+    return best(nums, nums.length - 1, memo);
+}
+private int best(int[] nums, int i, Integer[] memo) {
+    if (i < 0) return 0;
+    if (memo[i] != null) return memo[i];
+    int take = nums[i] + best(nums, i - 2, memo);
+    int skip = best(nums, i - 1, memo);
+    memo[i] = Math.max(take, skip);
+    return memo[i];
+}`,
+        cpp: `int maxTake(const vector<int>& nums) {
+    vector<int> memo(nums.size(), INT_MIN);
+    function<int(int)> best = [&](int i) -> int {
+        if (i < 0) return 0;
+        if (memo[i] != INT_MIN) return memo[i];
+        int take = nums[i] + best(i - 2);
+        int skip = best(i - 1);
+        memo[i] = max(take, skip);
+        return memo[i];
+    };
+    return best((int)nums.size() - 1);
+}`,
       },
       {
         name: "Full table",
@@ -189,6 +294,24 @@ def max_take(nums: list[int]) -> int:
     for i, x in enumerate(nums):
         dp[i + 2] = max(dp[i + 1], x + dp[i])
     return dp[-1]`,
+        java: `public int maxTake(int[] nums) {
+    if (nums.length == 0) return 0;
+    int[] dp = new int[nums.length + 2];
+    for (int i = 0; i < nums.length; i++) {
+        int x = nums[i];
+        dp[i + 2] = Math.max(dp[i + 1], x + dp[i]);
+    }
+    return dp[dp.length - 1];
+}`,
+        cpp: `int maxTake(const vector<int>& nums) {
+    if (nums.size() == 0) return 0;
+    vector<int> dp((int)nums.size() + 2, 0);
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int x = nums[i];
+        dp[i + 2] = max(dp[i + 1], x + dp[i]);
+    }
+    return dp.back();
+}`,
       },
     ],
   },
@@ -229,6 +352,33 @@ def max_take(nums: list[int]) -> int:
             if c <= a and best[a - c] + 1 < best[a]:
                 best[a] = best[a - c] + 1
     return -1 if best[amount] == INF else best[amount]`,
+    java: `public int minCoins(int[] coins, int amount) {
+    final int INF = Integer.MAX_VALUE/2;
+    int[] best = new int[amount + 1];
+    java.util.Arrays.fill(best, INF);
+    best[0] = 0;
+    for (int a = 1; a <= amount; a++) {
+        for (int c : coins) {
+            if (c <= a && best[a - c] + 1 < best[a]) {
+                best[a] = best[a - c] + 1;
+            }
+        }
+    }
+    return best[amount] == INF ? -1 : best[amount];
+}`,
+    cpp: `int minCoins(const vector<int>& coins, int amount) {
+    const int INF = INT_MAX/2;
+    vector<int> best(amount + 1, INF);
+    best[0] = 0;
+    for (int a = 1; a <= amount; a++) {
+        for (int c : coins) {
+            if (c <= a && best[a - c] + 1 < best[a]) {
+                best[a] = best[a - c] + 1;
+            }
+        }
+    }
+    return best[amount] == INF ? -1 : best[amount];
+}`,
     walkthrough: [
       {
         cells: {
@@ -280,6 +430,26 @@ def max_take(nums: list[int]) -> int:
         count += amount // c
         amount %= c
     return count if amount == 0 else -1`,
+        java: `public int minCoinsWrong(int[] coins, int amount) {
+    java.util.Arrays.sort(coins);
+    int count = 0;
+    for (int i = coins.length - 1; i >= 0; i--) {
+        int c = coins[i];
+        count += amount / c;
+        amount %= c;
+    }
+    return amount == 0 ? count : -1;
+}`,
+        cpp: `int minCoinsWrong(const std::vector<int>& coins, int amount) {
+    std::vector<int> sorted = coins;
+    std::sort(sorted.begin(), sorted.end(), std::greater<int>());
+    int count = 0;
+    for (int c : sorted) {
+        count += amount / c;
+        amount %= c;
+    }
+    return amount == 0 ? count : -1;
+}`,
       },
       {
         name: "BFS over amounts",
@@ -305,6 +475,50 @@ def min_coins(coins: list[int], amount: int) -> int:
                 seen.add(nxt)
                 queue.append((nxt, steps + 1))
     return -1`,
+        java: `public int minCoins(int[] coins, int amount) {
+    if (amount == 0) return 0;
+    Set<Integer> seen = new HashSet<>();
+    Queue<int[]> queue = new LinkedList<>();
+    seen.add(amount);
+    queue.offer(new int[]{amount, 0});
+    while (!queue.isEmpty()) {
+        int[] cur = queue.poll();
+        int remaining = cur[0];
+        int steps = cur[1];
+        for (int c : coins) {
+            int nxt = remaining - c;
+            if (nxt == 0) return steps + 1;
+            if (nxt > 0 && !seen.contains(nxt)) {
+                seen.add(nxt);
+                queue.offer(new int[]{nxt, steps + 1});
+            }
+        }
+    }
+    return -1;
+}
+`,
+        cpp: `int minCoins(const vector<int>& coins, int amount) {
+    if (amount == 0) return 0;
+    unordered_set<int> seen;
+    queue<pair<int,int>> q;
+    seen.insert(amount);
+    q.push({amount, 0});
+    while (!q.empty()) {
+        auto cur = q.front(); q.pop();
+        int remaining = cur.first;
+        int steps = cur.second;
+        for (int c : coins) {
+            int nxt = remaining - c;
+            if (nxt == 0) return steps + 1;
+            if (nxt > 0 && seen.find(nxt) == seen.end()) {
+                seen.insert(nxt);
+                q.push({nxt, steps + 1});
+            }
+        }
+    }
+    return -1;
+}
+`,
       },
     ],
   },

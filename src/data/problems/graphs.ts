@@ -45,6 +45,62 @@ export const graphs: Problem[] = [
                 count += 1
                 sink(r, c)
     return count`,
+    java: `public int countIslands(int[][] grid) {
+    int rows = grid.length;
+    int cols = grid[0].length;
+    int count = 0;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == 1) {
+                count++;
+                int[][] stack = new int[rows * cols][2];
+                int sz = 0;
+                stack[sz++] = new int[]{r, c};
+                while (sz > 0) {
+                    int[] cell = stack[--sz];
+                    int cr = cell[0], cc = cell[1];
+                    if (cr < 0 || cr >= rows || cc < 0 || cc >= cols || grid[cr][cc] == 0)
+                        continue;
+                    grid[cr][cc] = 0;
+                    stack[sz++] = new int[]{cr + 1, cc};
+                    stack[sz++] = new int[]{cr - 1, cc};
+                    stack[sz++] = new int[]{cr, cc + 1};
+                    stack[sz++] = new int[]{cr, cc - 1};
+                }
+            }
+        }
+    }
+    return count;
+}
+`,
+    cpp: `int countIslands(const vector<vector<int>>& grid) {
+    vector<vector<int>> g = grid;
+    int rows = (int)g.size();
+    int cols = (int)g[0].size();
+    int count = 0;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (g[r][c] == 1) {
+                count++;
+                vector<pair<int,int>> st;
+                st.push_back({r, c});
+                while (!st.empty()) {
+                    auto [cr, cc] = st.back();
+                    st.pop_back();
+                    if (cr < 0 || cr >= rows || cc < 0 || cc >= cols || g[cr][cc] == 0)
+                        continue;
+                    g[cr][cc] = 0;
+                    st.push_back({cr + 1, cc});
+                    st.push_back({cr - 1, cc});
+                    st.push_back({cr, cc + 1});
+                    st.push_back({cr, cc - 1});
+                }
+            }
+        }
+    }
+    return count;
+}
+`,
     walkthrough: [
       {
         text: "1 1 0\n0 1 0\n0 0 1\n\ncount = 0",
@@ -96,6 +152,63 @@ def count_islands(grid: list[list[int]]) -> int:
                         grid[ny][nx] = 0
                         queue.append((ny, nx))
     return count`,
+        java: `public int countIslands(int[][] grid) {
+    int rows = grid.length;
+    int cols = grid[0].length;
+    int count = 0;
+    java.util.ArrayDeque<int[]> queue = new java.util.ArrayDeque<>();
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] != 1) continue;
+            count++;
+            grid[r][c] = 0;
+            queue.add(new int[]{r, c});
+            while (!queue.isEmpty()) {
+                int[] pos = queue.poll();
+                int y = pos[0];
+                int x = pos[1];
+                for (int[] dir : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    int ny = y + dir[0];
+                    int nx = x + dir[1];
+                    if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && grid[ny][nx] == 1) {
+                        grid[ny][nx] = 0;
+                        queue.add(new int[]{ny, nx});
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+`,
+        cpp: `int countIslands(vector<vector<int>>& grid) {
+    int rows = (int)grid.size();
+    int cols = (int)grid[0].size();
+    int count = 0;
+    std::deque<std::pair<int,int>> queue;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] != 1) continue;
+            count++;
+            grid[r][c] = 0;
+            queue.push_back({r, c});
+            while (!queue.empty()) {
+                auto [y, x] = queue.front();
+                queue.pop_front();
+                for (auto [dy, dx] : std::vector<std::pair<int,int>>{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    int ny = y + dy;
+                    int nx = x + dx;
+                    if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && grid[ny][nx] == 1) {
+                        grid[ny][nx] = 0;
+                        queue.push_back({ny, nx});
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+`,
       },
       {
         name: "Union-Find",
@@ -127,6 +240,72 @@ def count_islands(grid: list[list[int]]) -> int:
                 union(r * cols + c, r * cols + c + 1)
     return len({find(r * cols + c)
                  for r in range(rows) for c in range(cols) if grid[r][c] == 1})`,
+        java: `public int countIslands(int[][] grid) {
+    int rows = grid.length;
+    int cols = grid[0].length;
+    int[] parent = new int[rows * cols];
+    for (int i = 0; i < parent.length; i++) parent[i] = i;
+
+    java.util.function.IntUnaryOperator find = new java.util.function.IntUnaryOperator() {
+        public int applyAsInt(int a) {
+            while (parent[a] != a) {
+                parent[a] = parent[parent[a]];
+                a = parent[a];
+            }
+            return a;
+        }
+    };
+
+    java.util.function.BiConsumer<Integer, Integer> union = new java.util.function.BiConsumer<Integer, Integer>() {
+        public void accept(Integer a, Integer b) {
+            parent[find.applyAsInt(a)] = find.applyAsInt(b);
+        }
+    };
+
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] != 1) continue;
+            if (r + 1 < rows && grid[r + 1][c] == 1) union.accept(r * cols + c, (r + 1) * cols + c);
+            if (c + 1 < cols && grid[r][c + 1] == 1) union.accept(r * cols + c, r * cols + c + 1);
+        }
+    }
+
+    java.util.HashSet<Integer> roots = new java.util.HashSet<>();
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == 1) roots.add(find.applyAsInt(r * cols + c));
+        }
+    }
+    return roots.size();
+}
+`,
+        cpp: `int countIslands(const vector<vector<int>>& grid) {
+    int rows = (int)grid.size(), cols = (int)grid[0].size();
+    vector<int> parent(rows * cols);
+    for (int i = 0; i < (int)parent.size(); i++) parent[i] = i;
+
+    function<int(int)> find = [&](int a) {
+        while (parent[a] != a) {
+            parent[a] = parent[parent[a]];
+            a = parent[a];
+        }
+        return a;
+    };
+    auto join = [&](int a, int b) { parent[find(a)] = find(b); };
+
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] != 1) continue;
+            if (r + 1 < rows && grid[r + 1][c] == 1) join(r * cols + c, (r + 1) * cols + c);
+            if (c + 1 < cols && grid[r][c + 1] == 1) join(r * cols + c, r * cols + c + 1);
+        }
+
+    int islands = 0;
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            if (grid[r][c] == 1 && find(r * cols + c) == r * cols + c) islands++;
+    return islands;
+}`,
       },
     ],
   },
@@ -180,6 +359,55 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
             if indeg[nxt] == 0:
                 queue.append(nxt)
     return order if len(order) == num else []`,
+    java: `public int[] courseOrder(int num, int[][] prereqs) {
+    List<Integer>[] after = new ArrayList[num];
+    for (int i = 0; i < num; i++) after[i] = new ArrayList<>();
+    int[] indeg = new int[num];
+    for (int[] p : prereqs) {
+        int a = p[0], b = p[1];
+        after[b].add(a);
+        indeg[a]++;
+    }
+    Deque<Integer> queue = new ArrayDeque<>();
+    for (int i = 0; i < num; i++) if (indeg[i] == 0) queue.add(i);
+    List<Integer> orderList = new ArrayList<>();
+    while (!queue.isEmpty()) {
+        int c = queue.poll();
+        orderList.add(c);
+        for (int nxt : after[c]) {
+            indeg[nxt]--;
+            if (indeg[nxt] == 0) queue.add(nxt);
+        }
+    }
+    if (orderList.size() != num) return new int[0];
+    int[] res = new int[num];
+    for (int i = 0; i < num; i++) res[i] = orderList.get(i);
+    return res;
+}
+`,
+    cpp: `vector<int> courseOrder(int num, const vector<vector<int>>& prereqs) {
+    vector<vector<int>> after(num);
+    vector<int> indeg(num, 0);
+    for (const auto& p : prereqs) {
+        int a = p[0], b = p[1];
+        after[b].push_back(a);
+        indeg[a]++;
+    }
+    deque<int> queue;
+    for (int i = 0; i < num; i++) if (indeg[i] == 0) queue.push_back(i);
+    vector<int> order;
+    while (!queue.empty()) {
+        int c = queue.front(); queue.pop_front();
+        order.push_back(c);
+        for (int nxt : after[c]) {
+            indeg[nxt]--;
+            if (indeg[nxt] == 0) queue.push_back(nxt);
+        }
+    }
+    if (order.size() != num) return {};
+    return order;
+}
+`,
     walkthrough: [
       {
         text: "0 → 1 → 3\n └→ 2 ─┘\n\nin-degree: 0:0  1:1  2:1  3:2",

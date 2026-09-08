@@ -113,8 +113,15 @@ today (the journey acts carry all four when the journey ships).
 Shipped 2026-09-04 (`feat/practice-code-tabs`): `Code {python, java?, cpp?}` on `Problem` and
 `Solution`; language strip on the problem page (`SolutionBlock`), pref-shared with the journey's
 `codeTab`; `data/problems.test.ts` requires Java + C++ on every approach once the problem has a
-journey. Backfilled: Two Sum, Single Number, Triplets Summing to Zero (9 approaches). The rest
-land with their problem's PR, in pipeline order.
+journey. Backfilled: Two Sum, Single Number, Triplets Summing to Zero (9 approaches), then Pair Sum in
+Sorted Array and Widest Container with their journeys.
+
+**Completed 2026-09-07**: the remaining 63 blocks were drafted by a local model
+(`scripts/localsmith/`) and every one of the practice set's **154** Java and C++ blocks now
+compiles — `npm run verify:code`. Three blocks the compiler rejected were rewritten by hand, and
+one that compiled but had drifted (a "sorted insert" rung that re-sorted on every add, turning
+O(n) into O(n log n)) was caught by the readability gate rather than the compiler. Executing the
+blocks against test vectors is B27.
 
 ## P1 — the reference card (requested 2026-09-05)
 
