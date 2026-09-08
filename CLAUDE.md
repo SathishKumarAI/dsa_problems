@@ -37,9 +37,10 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 - Branch per change (`type/scope-slug`), conventional commits, check the backlog item off and
   add a `FEATURES.md` row **in the same commit**.
-- `npm run check` (tsc, eslint, node tests) must exit 0, and `npm run test:ui` (real Chrome, 18
-  checks) for anything on screen. Both are necessary, neither is sufficient: drive the page for
-  timing, the Worker challenge, hover and anything about colour or spacing.
+- `npm run check` (tsc, eslint, node tests) must exit 0, and `npm run test:ui` (real Chrome) for
+  anything on screen. Touching a Java or C++ block also owes `npm run verify:code` (it compiles)
+  and `npm run verify:run` (it agrees with the Python). All four are necessary, none is
+  sufficient: drive the page for timing, the Worker challenge, hover and anything about colour.
 - Engine stays DOM-free and JSON-safe; `.ts` extensions on relative imports in `engine/`/`api/`.
 - Every localStorage key goes through `src/lib/store.ts`; palette only in `src/index.css`.
 - **Reach for the role, not the size**: `text-body` for a sentence, `text-meta` for a label, never a
@@ -55,7 +56,11 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 - **React Compiler lint rules** (`react-hooks` v7): no sync `setState` in effects, no ref reads in
   render, no mutating frames. Use render-time adjusts (`if (x !== prev) { setPrev(x); … }`) or
   derive. `use-player.ts` and `controls.tsx` show the pattern.
-- `git add` warns LF→CRLF on Windows — harmless.
+- `git add` warns LF→CRLF on Windows — harmless. But a JS template literal normalises CRLF to LF
+  in its VALUE, so a string imported from `src/data/**` is never found verbatim in the file on
+  disk; normalise before matching.
+- Windows refuses to launch a freshly compiled `.exe` about 5 % of the time (`spawnSync …
+  UNKNOWN`). Not a code problem — `verify:run` counts those apart from real disagreements.
 - The chrome-devtools MCP profile can be held by another session; a private headless Chrome on
   `--remote-debugging-port=9333` driven over CDP works (see `docs/WORKLOG.md` 2026-09-04).
 - `innerText` reflects `text-transform: uppercase` — match case-insensitively in browser checks.

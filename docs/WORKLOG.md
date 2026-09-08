@@ -95,6 +95,62 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-08 — the local-model workbench, and two gates that run the code
+
+Three PRs (#38, #39, #40). The theme: the practice set gained Java and C++ everywhere, and the repo
+gained the means to check code rather than trust it.
+
+**Why a local model at all.** The ask was to cut the cost of generating repetitive content. The
+honest split is by *checkability*: translating Python that is already in the repo into Java and C++
+is a fixed shape with a fixed algorithm, and almost everything that matters about it can be checked
+by machine. The judgement tiers — which weakness earns which act, what a corner case may say before
+a technique is earned — cannot, and stayed here.
+
+**#38 — `scripts/localsmith/` and 63 generated blocks.** `gpt-oss-20b` in LM Studio produced them in
+361 seconds for 42k local tokens. Five gates run before anything is written, and the one that earns
+its keep is **"no step lost"**: a translation may ADD loops, because Python hides them inside
+`Counter()`, comprehensions and `set()`, but it may never DROP one — that is exactly how a
+deliberately naive rung would quietly become a faster algorithm than the act is teaching. The first
+version of that gate demanded equal loop counts and rejected everything; the rule had to be
+directional, not symmetric.
+
+**The toolchain stopped being aspirational.** `mise use -g java@temurin-21` and
+`scoop install main/gcc`, both user-space, no admin. `npm run verify:code` compiles all 154 blocks,
+finding them through PATH, mise, or the scoop shim, and skipping loudly when they are absent — the
+way `test:ui` does without Chrome. It found a defect in code that had already shipped: `pair-sum`'s
+**hand-written** C++ calls `iota` and needs `<numeric>`.
+
+**#39 — compiling is not correctness.** `npm run verify:run` executes every block and compares it to
+the repo's own Python, which is the oracle because it is human-written, reviewed and already on the
+page as the reference. `vectors.mjs` carries inputs ONLY; hand-writing expected values is how a test
+ends up asserting the bug. 480 comparisons found three bugs that had compiled perfectly:
+
+- `top-k-frequent/Heap` [cpp] ranked its heap by **value** (`a.first`) instead of by **count**
+  (`a.second`), so it evicted the wrong entries — python `[1,2]`, cpp `[3,1]`
+- `k-closest-points/optimal` [cpp] inverted a heap: Python's `heapq` is a MIN-heap, so `heap[0]` is
+  the farthest point being kept, while a C++ `priority_queue` is a MAX-heap — so `top()` was the
+  NEAREST point and every eviction discarded the wrong one
+- `island-count/optimal` [java] sized its flood-fill stack `rows*cols` while pushing four neighbours
+  per pop, so a 1×1 grid overflowed on the first expansion
+
+None of those were reachable by shape checks or by cross-model agreement. That is the whole argument
+for B27 in one paragraph.
+
+**#40 — the visualization cookbook** ([`VISUALIZING.md`](VISUALIZING.md)), requested during the
+session: how the frame-is-data model works, four Python renderers over the same frames (rich,
+matplotlib, manim, this repo), and how to visualise a language model using what already exists —
+`tiktoken` for the token strip, BertViz or CircuitsVis for attention, TransformerLens or nnsight for
+internals, Netron for architecture. Sampling is the one part written from scratch, because nothing
+good covers it.
+
+**Honest limits, all filed rather than glossed:** seven problems (linked lists, trees, a stateful
+class) are named in `NOT_YET_RUNNABLE` and the runner reports what it is not covering (B30); Windows
+intermittently refuses to launch a freshly built `.exe`, so those are counted separately from
+disagreements rather than inflating them (B31).
+
+Evidence: `npm run check` 53 → **61 tests**; `npm run verify:code` **154 blocks, 0 failed**;
+`npm run verify:run` **480 comparisons, 0 disagreed**; `npm run test:ui` unchanged at 42.
+
 ## 2026-09-07 — problem #5: Widest Container, and the first new panel kind since `terms`
 
 Pipeline row 5, the fifth journey, and the row that said a new render kind was allowed. Branch
