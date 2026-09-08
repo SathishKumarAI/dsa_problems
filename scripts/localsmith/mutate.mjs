@@ -115,6 +115,12 @@ export const KNOWN_EQUIVALENT = {
     "the inner loop would start at j == i, and matrix[i][i] is 1 by the stated constraint — so it unions i with itself, which find() rejects as already the same group",
   "network-delay/< becomes <=":
     "relaxing on an EQUAL distance stores the value already stored and re-pushes a duplicate the heap later skips; the settled distances are unchanged",
+  "majority-element/== becomes !=":
+    "the guard only decides WHEN to adopt a new candidate; a guaranteed majority survives every pairing, so it is still standing whichever moment the adoption happens",
+  "majority-element/+= becomes -=":
+    "unproven: flipping the increment inverts the counter's sign throughout, and the candidate adopted at each zero crossing came out the same on every input tried — no argument is offered",
+  "min-subarray-sum/< becomes <=":
+    "the width comparison only chooses between windows of EQUAL width, which record the same number",
   "k-closest-points/> becomes >=":
     "unproven: on a distance tie the heap keeps one of two equally-close points and both are valid answers, so a separating case may not exist — searched, not proved",
 }

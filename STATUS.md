@@ -13,15 +13,15 @@ through to the differential runner. Nothing is in flight, no branch is open, eve
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **67 tests** |
 | The interface, in a real browser | `npm run test:ui` | **42 checks**, ~100 s |
 | Every Java and C++ block compiles | `npm run verify:code` | **310 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **1166 comparisons**, 0 disagreed, ~4m |
-| …on cases strong enough to notice | `npm run verify:vectors` | **299 mutants, 90% caught**, 0 unexplained |
+| …and agrees with the Python | `npm run verify:run` | **1388 comparisons**, 0 disagreed, ~5m |
+| …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 unexplained |
 
 The last two need a toolchain: `mise use -g java@temurin-21` and `scoop install main/gcc`, both
 user-space. They skip **loudly** when it is missing rather than passing quietly.
 
 On screen: five journeys built to completion (Two Sum, Single Number, Triplets Summing to Zero,
-Pair Sum in Sorted Array, Widest Container), a practice set of 62 problems carrying Python, Java and
-C++ on every approach, a sorting/search/graph visualizer, SQL drills and stats flashcards,
+Pair Sum in Sorted Array, Widest Container), a practice set of **87 problems** (Python on every approach; Java and C++ on the 62 that
+predate batch 4), a sorting/search/graph visualizer, SQL drills and stats flashcards,
 inside a shell with collapsible rails, a settings dialog and a keyboard map.
 
 **Every original P0, all fourteen UI/UX-audit items, the lesson-screen batch (R3–R8) and the
@@ -47,10 +47,11 @@ makes the rest cheap is:
    (`perf/run-one-binary-per-block`): 508 builds became 120, 7m17s became 1m38s, same 508
    comparisons. The launch flake it was chasing had measured 66, 28 and 0 refusals on three
    consecutive runs of the old code — that spread was the argument.
-3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. Batches 1 and 2
-   landed 2026-09-08 (31 → 42 → 52 → 62); **batch 4 is the next action**, and 19 problems remain
-   to reach 81. From batch 4 the ask is PYTHON ONLY — Java and C++ are optional until a problem
-   has a journey, and can be backfilled by `scripts/localsmith` later. Write all three languages inline — `docs/MODELS.md` records why the local model is
+3. ~~**B33 — fifty more problems.**~~ Done 2026-09-08: **31 → 87 across four batches**. Batch 4
+   was generated from a compact spec table rather than written file by file, and is Python-only
+   (Java and C++ are optional until a problem has a journey; `scripts/localsmith` can backfill).
+   **The next action is UI, not content** — B37–B40 are the list, the no-journey problem page,
+   the `text` walkthrough frames and the unused difficulty field. Write all three languages inline — `docs/MODELS.md` records why the local model is
    for backfill only, with the numbers. Run `verify:vectors` BEFORE opening the PR: on batch 2 it
    found 19 holes in my own first-draft vectors. The gates make this
    verifiable in a way it was not before: `check` for the content rules, `verify:code` for the
@@ -115,4 +116,12 @@ Say the word and any of the three is a small branch to reverse.
 - SQL drills and stats flashcards have no visual identity yet and no in-page navigation; the plan
   for that track is `PROBLEMS.md` S1–S4.
 - No Java or C++ block is checked for STYLE by any gate, only for compiling and agreeing with the
-  Python. Batch 1 used two review agents for that pass; it is not automated.
+  Python. Batch 1 used two review agents for that pass; it is not automated (B36).
+- **25 problems from batch 4 carry Python only.** That is deliberate — Java and C++ are required
+  only once a problem has a journey — but it means `verify:run` compares nothing for them. Their
+  Python is still gated by `verify:vectors`, and every answer was read by hand.
+- The 13 problems whose input is a linked list or a tree have no vectors at all (B30), so neither
+  the runner nor the mutation gate sees them. They were checked by reading only.
+- **The UI has not been looked at since the set tripled.** Pattern pages built for three problems
+  now hold up to twelve; 82 of 87 problems have no journey, which is now the common case rather
+  than the exception. B37–B40.

@@ -7,6 +7,8 @@ import { problem as trapRainWater } from "./trap-rain-water.ts"
 import { problem as sortColors } from "./sort-colors.ts"
 import { problem as moveZeroes } from "./move-zeroes.ts"
 import { problem as sortedSquares } from "./sorted-squares.ts"
+import { problem as removeDuplicatesSorted } from "./remove-duplicates-sorted.ts"
+import { problem as isSubsequence } from "./is-subsequence.ts"
 
 export const twoPointers: Problem[] = [
   sortedPairSum,
@@ -17,4 +19,6 @@ export const twoPointers: Problem[] = [
   sortColors,
   moveZeroes,
   sortedSquares,
+  removeDuplicatesSorted,
+  isSubsequence,
 ]

@@ -5,6 +5,9 @@ import { problem as kokoBananas } from "./koko-bananas.ts"
 import { problem as search2dMatrix } from "./search-2d-matrix.ts"
 import { problem as rotatedSearch } from "./rotated-search.ts"
 import { problem as firstLastPosition } from "./first-last-position.ts"
+import { problem as searchInsertPosition } from "./search-insert-position.ts"
+import { problem as findPeakElement } from "./find-peak-element.ts"
+import { problem as singleInSorted } from "./single-in-sorted.ts"
 
 export const binarySearch: Problem[] = [
   classicBinarySearch,
@@ -13,4 +16,7 @@ export const binarySearch: Problem[] = [
   search2dMatrix,
   rotatedSearch,
   firstLastPosition,
+  searchInsertPosition,
+  findPeakElement,
+  singleInSorted,
 ]

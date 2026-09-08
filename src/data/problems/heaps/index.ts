@@ -4,6 +4,8 @@ import { problem as kClosestPoints } from "./k-closest-points.ts"
 import { problem as taskCooldown } from "./task-cooldown.ts"
 import { problem as lastStoneWeight } from "./last-stone-weight.ts"
 import { problem as kthLargestElement } from "./kth-largest-element.ts"
+import { problem as sortByFrequency } from "./sort-by-frequency.ts"
+import { problem as kthSmallestMatrix } from "./kth-smallest-matrix.ts"
 
 export const heaps: Problem[] = [
   kthLargestStream,
@@ -11,4 +13,6 @@ export const heaps: Problem[] = [
   taskCooldown,
   lastStoneWeight,
   kthLargestElement,
+  sortByFrequency,
+  kthSmallestMatrix,
 ]
