@@ -12,6 +12,7 @@ import { execFileSync } from "node:child_process"
 import test from "node:test"
 import assert from "node:assert/strict"
 import { caseLines, cppDriver, javaDriver, pythonDriver } from "./run.mjs"
+import { NOT_YET_RUNNABLE, VECTORS } from "./vectors.mjs"
 
 test("a driver that dies mid-run keeps the lines it printed and blames the rest", () => {
   const { lines, err } = caseLines(
@@ -79,4 +80,24 @@ test("every driver emits one guarded print per case", () => {
 test("a value carrying a newline cannot shift the cases after it", () => {
   const py = pythonDriver("def f(s):\n    return s\n", "f", CASES)
   assert.ok(py.includes(String.raw`.replace("\n", "\\n")`), py)
+})
+
+// B35. Mutation testing (mutate.mjs) proves the cases can tell a change in the
+// REFERENCE. It cannot reach a slip that only exists in the translation — the
+// rotting-fruit BFS read a live queue size, which Python cannot express. The
+// only defence against that class is a case chosen on purpose, so every vector
+// set has to say which of its cases makes the characteristic step happen.
+test("every vector set names the step its cases force", () => {
+  for (const [id, spec] of Object.entries(VECTORS)) {
+    assert.ok(
+      typeof spec.exercises === "string" && spec.exercises.length > 30,
+      `${id}: needs an \`exercises\` line naming the characteristic step and the case that forces it`
+    )
+    assert.ok(spec.cases.length >= 3, `${id}: three cases is the floor`)
+  }
+})
+
+test("nothing is both runnable and excused", () => {
+  for (const id of Object.keys(NOT_YET_RUNNABLE))
+    assert.ok(!VECTORS[id], `${id} is in NOT_YET_RUNNABLE and yet has vectors`)
 })

@@ -19,6 +19,40 @@ below.
 | **Claude Opus 5** (main session) | Anthropic API | Authoring new problems (statement, constraints, hints, the approach ladder, the Python oracle), all judgement calls, all tool and gate work | Nothing — which is why the Python it writes is read against known answers by hand |
 | **Claude Opus 5** (review subagents) | Anthropic API | Adversarial re-review of generated blocks for faithfulness, compilation and house style | Nothing — its findings are re-confirmed by the repo's own gates before being acted on |
 
+## The decision, 2026-09-08: Claude authors, the local model backfills
+
+Measured in one session, on one task, both ways — batch 1 of B33:
+
+| | Claude, writing inline | Local model |
+|---|---|---|
+| Blocks landed | **42** (9 problems) | ~10 (5 problems) |
+| Failed to compile | 0 | 1 (self-referencing lambda, 2 `javac` errors) |
+| Semantically wrong | 0 | 1 — in **both** languages (the rotting-fruit BFS) |
+| Never produced at all | 0 | 1 (truncates at the token limit, 3 tries) |
+| Escalated to a human | 0 | 3 (held by the cross-model check) |
+| Rework | none | roughly 4 of 10 landed clean |
+
+**Why it loses at authoring, precisely.** The local model spends **1650 input tokens against 558
+output** — 3 : 1 — and that input is the house style plus two worked examples, re-sent every call,
+*because it has no context*. Claude writing a problem's Java has just written its Python and is
+already holding the algorithm. **The local model pays a context tax that has already been paid.**
+Its own tokens are free; what is not free is the orchestration, diagnosis and repair around it.
+
+**The sharpest number.** 187 027 tokens of review-agent time found one bug. One extra test vector
+found the same bug, costs nothing, and keeps finding it on every future block. Buy gates, not
+reviewers — that is what B35 is.
+
+So:
+
+| Work | Who | Why |
+|---|---|---|
+| A **new** problem — Python, prose, ladder, **and** its Java and C++ | Claude, inline | 42 blocks, zero rework. The languages are nearly free while the algorithm is already in context |
+| **Backfill** — translating problems that already exist and are not otherwise being edited | Local model, batched, in the background | The context tax amortises: the alternative is loading dozens of problems into context to do nothing but translate |
+| Reviewing generated blocks | The gates, not an agent | Run the agents against the **vectors** once, not against every block every batch |
+
+This replaces "use the local model wherever it is checkable". It is still checkable — it is just not
+cheaper, at this scale, when the author is already in the file.
+
 ## The tier boundary — the rule that decides who writes what
 
 > **A local model gets the work where a machine can prove it wrong. Everything else is judgement.**

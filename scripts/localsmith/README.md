@@ -30,6 +30,23 @@ Defaults: LM Studio on `:1234` with `openai/gpt-oss-20b` as the author, Ollama o
 `:11434` with `qwen2.5-coder:14b` as the second opinion. `--no-second` skips the
 second opinion when you only want speed.
 
+## When to reach for this at all (decided 2026-09-08)
+
+**Backfill only.** Use it to translate problems that already exist and that you are not otherwise
+editing — its original job, and the one where it pays.
+
+**Do not use it while authoring a new problem.** Measured over batch 1 of B33, in one session:
+Claude wrote 42 Java/C++ blocks inline with zero rework, while ~10 blocks from this pipeline cost
+one that would not compile, one that was semantically wrong in both languages, one it could never
+finish, and three escalations. Writing a problem's Java straight after its Python is nearly free —
+the algorithm is already in context. This pipeline re-sends the house style every call (1650 input
+tokens against 558 output) precisely because it has none. The numbers and the reasoning are in
+[`docs/MODELS.md`](../../docs/MODELS.md).
+
+The corollary, learned the same day: **cross-model agreement is a smell, not a verdict.** Both
+models agreed on a broken BFS. `verify:code`, `verify:run` and `verify:vectors` are the authority;
+`--accept-disagreed` on `apply.mjs` exists to say so out loud.
+
 ## Why this task and not the interesting one
 
 The journeys are the product, and their content is a series of judgement calls: which

@@ -42,6 +42,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Which model is trusted with what, and the measured token cost | `docs/MODELS.md` |
 | Compile every Java/C++ block (`npm run verify:code`) | `scripts/localsmith/verify.mjs` |
 | Run them against the Python oracle (`npm run verify:run`) | `scripts/localsmith/run.mjs` · inputs: `vectors.mjs` · its own checks: `run.test.mjs` |
+| Check the VECTORS are strong enough (`npm run verify:vectors`) | `scripts/localsmith/mutate.mjs` · `--suggest` finds a missing case |
 | UI smoke test (routes, earn loop, rails, deep links) | `test/ui-smoke.test.mjs` · driver: `test/browser.mjs` |
 | **HTTP API** — every endpoint | `src/api/routes.ts` (contract: `docs/API.md`) |
 | API transport (HTTP vs in-process) | `src/api/client.ts` |

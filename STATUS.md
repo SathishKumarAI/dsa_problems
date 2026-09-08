@@ -10,10 +10,11 @@ through to the differential runner. Nothing is in flight, no branch is open, eve
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **65 tests** |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **67 tests** |
 | The interface, in a real browser | `npm run test:ui` | **42 checks**, ~100 s |
 | Every Java and C++ block compiles | `npm run verify:code` | **154 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **508 comparisons**, 0 disagreed, ~1m40s |
+| …and agrees with the Python | `npm run verify:run` | **855 comparisons**, 0 disagreed, ~2m |
+| …on cases strong enough to notice | `npm run verify:vectors` | **174 mutants, 91% caught**, 0 unexplained |
 
 The last two need a toolchain: `mise use -g java@temurin-21` and `scoop install main/gcc`, both
 user-space. They skip **loudly** when it is missing rather than passing quietly.
@@ -37,12 +38,18 @@ makes the rest cheap is:
 1. ~~**B34 — one problem per file.**~~ Done 2026-09-08 (`refactor/data-one-problem-per-file`):
    one problem is one `src/data/problems/<pattern>/<id>.ts`, the directory `index.ts` a barrel.
    `src/data/problems/README.md` is its change → file map.
+2b. ~~**B35 — vectors that provably exercise the shape.**~~ Done 2026-09-08
+   (`test/vectors-exercise-shape`): `npm run verify:vectors` mutates the reference and requires a
+   case to notice. It found 15 missing cases. It would NOT have caught the rotting-fruit bug that
+   prompted it — that is stated in the file, and the `exercises:` line on every vector set is the
+   half that covers it.
 2. ~~**B31 — one binary per block, not per case.**~~ Done 2026-09-08
    (`perf/run-one-binary-per-block`): 508 builds became 120, 7m17s became 1m38s, same 508
    comparisons. The launch flake it was chasing had measured 66, 28 and 0 refusals on three
    consecutive runs of the old code — that spread was the argument.
-3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. **This is the next
-   action.** The gates make this
+3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. Batch 1 landed
+   2026-09-08 (31 → 42); **batch 2 is the next action**. Write all three languages inline —
+   `docs/MODELS.md` records why the local model is for backfill only, with the numbers. The gates make this
    verifiable in a way it was not before: `check` for the content rules, `verify:code` for the
    translations, `verify:run` against the Python.
 4. **Problem #6** in the journey pipeline — Single Buy/Sell Profit, which can reuse the `bars` panel
