@@ -64,45 +64,6 @@ export const problem: Problem = {
     }
     return best[amount] == INF ? -1 : best[amount];
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [0, "∞", "∞", "∞", "∞", "∞", "∞"],
-        labels: { 0: "a=0", 6: "a=6" },
-      },
-      caption: "Table over amounts 0–6. Coins: 1, 3, 4. best(0) = 0.",
-    },
-    {
-      cells: {
-        values: [0, 1, 2, "?", "?", "?", "?"],
-        marks: { 1: "done", 2: "done" },
-      },
-      caption: "a=1: coin 1 → 1. a=2: 1+1 → 2.",
-    },
-    {
-      cells: { values: [0, 1, 2, 1, "?", "?", "?"], marks: { 3: "focus" } },
-      caption: "a=3: min(best(2)+1 = 3, best(0)+1 = 1) — single coin 3 wins.",
-    },
-    {
-      cells: {
-        values: [0, 1, 2, 1, 1, 2, "?"],
-        marks: { 4: "done", 5: "done" },
-      },
-      caption: "a=4: coin 4 alone → 1. a=5: 4+1 → 2.",
-    },
-    {
-      cells: {
-        values: [0, 1, 2, 1, 1, 2, 2],
-        marks: { 3: "compare", 6: "focus" },
-      },
-      caption:
-        "a=6: min via coin 1 → 3, coin 3 → best(3)+1 = 2, coin 4 → best(2)+1 = 3. Answer 2 (3+3).",
-    },
-    {
-      cells: { values: [0, 1, 2, 1, 1, 2, 2], marks: { 6: "done" } },
-      caption: "Greedy would have said 3 coins (4+1+1). The table says 2.",
-    },
-  ],
   alternatives: [
     {
       name: "Greedy (broken)",

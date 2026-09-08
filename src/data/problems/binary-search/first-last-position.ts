@@ -93,59 +93,6 @@ public int[] searchRange(int[] nums, int target) {
 vector<int> searchRange(const vector<int>& nums, int target) {
     return {bound(nums, target, true), bound(nums, target, false)};
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [5, 7, 7, 8, 8, 10],
-        labels: { 0: "lo", 5: "hi" },
-      },
-      caption:
-        "Looking for both ends of the run of 8s. First pass: biased LEFT.",
-    },
-    {
-      cells: {
-        values: [5, 7, 7, 8, 8, 10],
-        marks: { 2: "focus" },
-        labels: { 2: "mid" },
-      },
-      caption: "mid = 7, smaller than 8 → discard the left half.",
-    },
-    {
-      cells: {
-        values: [5, 7, 7, 8, 8, 10],
-        marks: { 0: "done", 1: "done", 2: "done", 4: "focus" },
-        labels: { 4: "mid" },
-      },
-      caption:
-        "mid = 8 — a hit. Record index 4, then keep going LEFT to look for an earlier one.",
-    },
-    {
-      cells: {
-        values: [5, 7, 7, 8, 8, 10],
-        marks: { 3: "focus" },
-        labels: { 3: "mid" },
-      },
-      caption:
-        "mid = 8 again → record index 3. Still going left; the range then empties.",
-    },
-    {
-      cells: {
-        values: [5, 7, 7, 8, 8, 10],
-        marks: { 3: "done" },
-        labels: { 3: "first" },
-      },
-      caption: "Last thing recorded is 3 — the first occurrence.",
-    },
-    {
-      cells: {
-        values: [5, 7, 7, 8, 8, 10],
-        marks: { 3: "done", 4: "done" },
-        labels: { 3: "first", 4: "last" },
-      },
-      caption:
-        "The second pass is identical but continues RIGHT after a hit, landing on 4. Answer [3, 4].",
-    },
-  ],
   alternatives: [
     {
       name: "Scan both ends",

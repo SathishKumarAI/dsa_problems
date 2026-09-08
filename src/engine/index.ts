@@ -10,6 +10,16 @@ import { bestTrade } from "../data/journeys/best-trade.ts"
 import { classicBinarySearch } from "../data/journeys/classic-binary-search.ts"
 import { containsDuplicate } from "../data/journeys/contains-duplicate.ts"
 import { dailyWarmer } from "../data/journeys/daily-warmer.ts"
+import { coinChangeMin } from "../data/journeys/coin-change-min.ts"
+import { kthLargestElement } from "../data/journeys/kth-largest-element.ts"
+import { largestRectangle } from "../data/journeys/largest-rectangle.ts"
+import { trapRainWater } from "../data/journeys/trap-rain-water.ts"
+import { windowMaximum } from "../data/journeys/window-maximum.ts"
+import { longestIncreasingRun } from "../data/journeys/longest-increasing-run.ts"
+import { rotatedMinimum } from "../data/journeys/rotated-minimum.ts"
+import { firstLastPosition } from "../data/journeys/first-last-position.ts"
+import { longestConsecutiveRun } from "../data/journeys/longest-consecutive-run.ts"
+import { subarraySumK } from "../data/journeys/subarray-sum-k.ts"
 import { houseRobber } from "../data/journeys/house-robber.ts"
 import { longestUniqueSubstring } from "../data/journeys/longest-unique-substring.ts"
 import { sortedSquares } from "../data/journeys/sorted-squares.ts"
@@ -34,6 +44,16 @@ export const JOURNEYS: AnyJourney[] = [
   productExceptSelf as unknown as AnyJourney,
   sortedSquares as unknown as AnyJourney,
   moveZeroes as unknown as AnyJourney,
+  subarraySumK as unknown as AnyJourney,
+  longestConsecutiveRun as unknown as AnyJourney,
+  firstLastPosition as unknown as AnyJourney,
+  rotatedMinimum as unknown as AnyJourney,
+  coinChangeMin as unknown as AnyJourney,
+  longestIncreasingRun as unknown as AnyJourney,
+  trapRainWater as unknown as AnyJourney,
+  largestRectangle as unknown as AnyJourney,
+  kthLargestElement as unknown as AnyJourney,
+  windowMaximum as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

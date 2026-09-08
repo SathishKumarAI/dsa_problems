@@ -59,48 +59,6 @@ def find_kth_largest(nums: list[int], k: int) -> int:
     }
     return heap.top();
 }`,
-  walkthrough: [
-    {
-      cells: { values: [3, 2, 1, 5, 6, 4] },
-      caption:
-        "k = 2. The heap will hold the two largest seen so far, smallest of them on top.",
-    },
-    {
-      cells: { values: [3, 2, 1, 5, 6, 4], marks: { 0: "focus", 1: "focus" } },
-      caption:
-        "3 then 2 → heap {2, 3}, top is 2. That is the 2nd largest so far.",
-    },
-    {
-      cells: {
-        values: [3, 2, 1, 5, 6, 4],
-        marks: { 0: "window", 1: "window", 2: "compare" },
-      },
-      caption:
-        "1 arrives, pushes to size 3, and is immediately popped as the smallest — it was never a candidate.",
-    },
-    {
-      cells: {
-        values: [3, 2, 1, 5, 6, 4],
-        marks: { 0: "window", 3: "focus", 1: "compare" },
-      },
-      caption: "5 arrives and evicts 2 → heap {3, 5}, top is 3.",
-    },
-    {
-      cells: {
-        values: [3, 2, 1, 5, 6, 4],
-        marks: { 3: "window", 4: "focus", 0: "compare" },
-      },
-      caption: "6 arrives and evicts 3 → heap {5, 6}, top is 5.",
-    },
-    {
-      cells: {
-        values: [3, 2, 1, 5, 6, 4],
-        marks: { 3: "done", 4: "done", 5: "compare" },
-      },
-      caption:
-        "4 is smaller than the top, so it is pushed and popped straight back. Answer 5 — the heap never held more than 2.",
-    },
-  ],
   alternatives: [
     {
       name: "Sort and index",

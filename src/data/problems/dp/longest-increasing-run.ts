@@ -78,64 +78,6 @@ def length_of_lis(nums: list[int]) -> int:
     return sz;
 }
 `,
-  walkthrough: [
-    {
-      cells: { values: [10, 9, 2, 5, 3, 7, 101, 18] },
-      caption:
-        "tails[k] will hold the smallest value a run of length k+1 can end with. It starts empty.",
-    },
-    {
-      cells: { values: [10, 9, 2, 5, 3, 7, 101, 18], marks: { 0: "focus" } },
-      caption: "10 beats every tail (there are none) → tails = [10].",
-    },
-    {
-      cells: {
-        values: [10, 9, 2, 5, 3, 7, 101, 18],
-        marks: { 0: "compare", 1: "focus" },
-      },
-      caption:
-        "9 replaces 10: a run of length 1 can now end lower, which can only help. tails = [9].",
-    },
-    {
-      cells: {
-        values: [10, 9, 2, 5, 3, 7, 101, 18],
-        marks: { 2: "focus" },
-      },
-      caption: "2 replaces 9 for the same reason. tails = [2].",
-    },
-    {
-      cells: {
-        values: [10, 9, 2, 5, 3, 7, 101, 18],
-        marks: { 2: "window", 3: "focus" },
-      },
-      caption:
-        "5 beats every tail → append. tails = [2, 5], so a run of length 2 exists.",
-    },
-    {
-      cells: {
-        values: [10, 9, 2, 5, 3, 7, 101, 18],
-        marks: { 2: "window", 3: "compare", 4: "focus" },
-      },
-      caption:
-        "3 replaces the 5. tails = [2, 3] — still length 2, but cheaper to extend.",
-    },
-    {
-      cells: {
-        values: [10, 9, 2, 5, 3, 7, 101, 18],
-        marks: { 2: "window", 4: "window", 5: "window", 6: "focus" },
-      },
-      caption:
-        "7 then 101 both append. tails = [2, 3, 7, 101], length 4 — and 18 later replaces 101 without changing the count.",
-    },
-    {
-      cells: {
-        values: [10, 9, 2, 5, 3, 7, 101, 18],
-        marks: { 2: "done", 4: "done", 5: "done", 6: "done" },
-      },
-      caption:
-        "Answer 4. tails is a ledger of what is achievable, not the subsequence itself — but its length is right.",
-    },
-  ],
   alternatives: [
     {
       name: "Every subsequence",
