@@ -64,58 +64,6 @@ export const problem: Problem = {
     for (int i = write; i < (int)nums.size(); i++) nums[i] = 0;
     return nums;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [0, 1, 0, 3, 12],
-        labels: { 0: "write·read" },
-      },
-      caption: "Both indices start at the front. Nothing has been placed yet.",
-    },
-    {
-      cells: {
-        values: [0, 1, 0, 3, 12],
-        marks: { 0: "compare" },
-        labels: { 0: "write", 1: "read" },
-      },
-      caption:
-        "A 0 is skipped: the reader moves, the writer does not. The gap between them is now one.",
-    },
-    {
-      cells: {
-        values: [1, 1, 0, 3, 12],
-        marks: { 0: "done" },
-        labels: { 1: "write", 2: "read" },
-      },
-      caption: "1 is written at the writer's slot, and both advance.",
-    },
-    {
-      cells: {
-        values: [1, 3, 0, 3, 12],
-        marks: { 0: "done", 1: "done" },
-        labels: { 2: "write", 4: "read" },
-      },
-      caption:
-        "Another 0 skipped, then 3 written. The gap is two — exactly the zeroes seen so far.",
-    },
-    {
-      cells: {
-        values: [1, 3, 12, 3, 12],
-        marks: { 0: "done", 1: "done", 2: "done" },
-        labels: { 3: "write" },
-      },
-      caption:
-        "12 written. The reader is finished; the writer marks where the tail begins.",
-    },
-    {
-      cells: {
-        values: [1, 3, 12, 0, 0],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 4: "done" },
-      },
-      caption:
-        "Fill from the writer to the end with zeroes. Order preserved — no value ever jumped over another.",
-    },
-  ],
   alternatives: [
     {
       name: "Filter into a copy",

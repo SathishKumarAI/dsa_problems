@@ -52,38 +52,6 @@ export const problem: Problem = {
     }
     return max(skip, take);
 }`,
-  walkthrough: [
-    {
-      cells: { values: [2, 7, 9, 3, 1] },
-      caption: "Pick non-adjacent values, maximise the sum.",
-    },
-    {
-      cells: { values: [2, 7, 9, 3, 1], marks: { 0: "focus" } },
-      caption: "i=0: best = 2 (take it; nothing to conflict).",
-    },
-    {
-      cells: { values: [2, 7, 9, 3, 1], marks: { 1: "focus" } },
-      caption: "i=1: max(skip → 2, take → 7) = 7.",
-    },
-    {
-      cells: { values: [2, 7, 9, 3, 1], marks: { 0: "done", 2: "focus" } },
-      caption: "i=2: max(7, 9 + 2) = 11 — take 9 with the earlier 2.",
-    },
-    {
-      cells: {
-        values: [2, 7, 9, 3, 1],
-        marks: { 0: "done", 2: "done", 3: "compare" },
-      },
-      caption: "i=3: max(11, 3 + 7) = 11 — skipping 3 wins.",
-    },
-    {
-      cells: {
-        values: [2, 7, 9, 3, 1],
-        marks: { 0: "done", 2: "done", 4: "focus" },
-      },
-      caption: "i=4: max(11, 1 + 11) = 12. Answer: 2 + 9 + 1.",
-    },
-  ],
   alternatives: [
     {
       name: "Recursion + memo",

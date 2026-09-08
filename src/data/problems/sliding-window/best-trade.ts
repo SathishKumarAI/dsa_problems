@@ -63,39 +63,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [7, 1, 5, 3, 6, 4] },
-      caption:
-        "Track two numbers while scanning: lowest so far, best profit so far.",
-    },
-    {
-      cells: { values: [7, 1, 5, 3, 6, 4], marks: { 0: "focus" } },
-      caption: "Day 0: lowest = 7, best = 0.",
-    },
-    {
-      cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "focus" } },
-      caption: "Day 1: price 1 < 7 → new lowest. Selling today would lose.",
-    },
-    {
-      cells: {
-        values: [7, 1, 5, 3, 6, 4],
-        marks: { 1: "window", 2: "focus" },
-      },
-      caption: "Day 2: 5 − 1 = 4 → best = 4.",
-    },
-    {
-      cells: {
-        values: [7, 1, 5, 3, 6, 4],
-        marks: { 1: "window", 4: "focus" },
-      },
-      caption: "Day 4: 6 − 1 = 5 → best = 5. Day 3 (profit 2) didn't beat it.",
-    },
-    {
-      cells: { values: [7, 1, 5, 3, 6, 4], marks: { 1: "done", 4: "done" } },
-      caption: "Answer 5: buy at 1, sell at 6. One pass, two variables.",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force",

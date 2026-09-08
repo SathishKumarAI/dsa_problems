@@ -68,49 +68,6 @@ export const problem: Problem = {
     return answer;
 }
 `,
-  walkthrough: [
-    {
-      cells: { values: [73, 74, 75, 71, 69, 72, 76, 73] },
-      caption: "For each day: how long until strictly warmer?",
-    },
-    {
-      cells: {
-        values: [73, 74, 75, 71, 69, 72, 76, 73],
-        marks: { 0: "window", 1: "focus" },
-      },
-      caption: "74 arrives: 73 on the stack is colder → pop it, answer[0] = 1.",
-    },
-    {
-      cells: {
-        values: [73, 74, 75, 71, 69, 72, 76, 73],
-        marks: { 2: "window", 3: "window", 4: "window" },
-      },
-      caption:
-        "After 75: stack [75]. Then 71, 69 stack up — decreasing order held.",
-    },
-    {
-      cells: {
-        values: [73, 74, 75, 71, 69, 72, 76, 73],
-        marks: { 3: "compare", 4: "compare", 5: "focus" },
-      },
-      caption:
-        "72 arrives: pops 69 (answer[4]=1) and 71 (answer[3]=2). Stack: [75, 72].",
-    },
-    {
-      cells: {
-        values: [73, 74, 75, 71, 69, 72, 76, 73],
-        marks: { 2: "compare", 5: "compare", 6: "focus" },
-      },
-      caption: "76 pops 72 (answer[5]=1) and 75 (answer[2]=4). Stack: [76].",
-    },
-    {
-      cells: {
-        values: [73, 74, 75, 71, 69, 72, 76, 73],
-        marks: { 6: "done", 7: "done" },
-      },
-      caption: "76 and final 73 never resolve → 0. Answers: [1,1,4,2,1,1,0,0].",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force",
