@@ -19,7 +19,7 @@ The last two need a toolchain: `mise use -g java@temurin-21` and `scoop install 
 user-space. They skip **loudly** when it is missing rather than passing quietly.
 
 On screen: five journeys built to completion (Two Sum, Single Number, Triplets Summing to Zero,
-Pair Sum in Sorted Array, Widest Container), a practice set of 31 problems carrying Python, Java and
+Pair Sum in Sorted Array, Widest Container), a practice set of 42 problems carrying Python, Java and
 C++ on every approach, a sorting/search/graph visualizer, SQL drills and stats flashcards,
 inside a shell with collapsible rails, a settings dialog and a keyboard map.
 
@@ -104,5 +104,5 @@ Say the word and any of the three is a small branch to reverse.
   usable, and `f` closes both rails, but it is the tightest the stage ever gets.
 - SQL drills and stats flashcards have no visual identity yet and no in-page navigation; the plan
   for that track is `PROBLEMS.md` S1–S4.
-- 28 of the 31 practice problems still carry Python only; Java and C++ arrive with each problem's
-  own PR.
+- No Java or C++ block is checked for STYLE by any gate, only for compiling and agreeing with the
+  Python. Batch 1 used two review agents for that pass; it is not automated.

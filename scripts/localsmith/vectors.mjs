@@ -13,6 +13,157 @@
 
 /** @type {Record<string, {params: string[], ret: string, unordered?: boolean, cases: unknown[][]}>} */
 export const VECTORS = {
+  "contains-duplicate": {
+    params: ["int[]"],
+    ret: "bool",
+    cases: [[[1, 2, 3, 1]], [[1, 2, 3, 4]], [[1]], [[1, 1]], [[-1, 0, -1, 5]]],
+  },
+  "valid-anagram": {
+    params: ["string", "string"],
+    ret: "bool",
+    cases: [
+      ["anagram", "nagaram"],
+      ["rat", "car"],
+      ["a", "a"],
+      ["ab", "abc"],
+      ["aab", "abb"],
+    ],
+  },
+  "product-except-self": {
+    params: ["int[]"],
+    ret: "int[]",
+    cases: [
+      [[1, 2, 3, 4]],
+      [[-1, 1, 0, -3, 3]],
+      [[2, 3]],
+      [[0, 0, 4]],
+      [[-2, -3, -4]],
+    ],
+  },
+  "valid-palindrome": {
+    params: ["string"],
+    ret: "bool",
+    cases: [
+      ["A man, a plan, a canal: Panama"],
+      ["race a car"],
+      [" "],
+      ["ab, BA"],
+      ["0P"],
+    ],
+  },
+  "trap-rain-water": {
+    params: ["int[]"],
+    ret: "int",
+    cases: [
+      [[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]],
+      [[4, 2, 0, 3, 2, 5]],
+      [[3]],
+      [[1, 2, 3, 4]],
+      [[5, 4, 1, 2]],
+    ],
+  },
+  "char-replacement": {
+    params: ["string", "int"],
+    ret: "int",
+    cases: [
+      ["AABABBA", 1],
+      ["ABBB", 2],
+      ["A", 0],
+      ["ABAB", 0],
+      ["AAAA", 2],
+    ],
+  },
+  "rpn-eval": {
+    params: ["string[]"],
+    ret: "int",
+    cases: [
+      [["2", "1", "+", "3", "*"]],
+      [["4", "13", "5", "/", "+"]],
+      [["7"]],
+      [["-7", "2", "/"]],
+      [["10", "6", "9", "3", "+", "-11", "*", "/", "*", "17", "+", "5", "+"]],
+    ],
+  },
+  "search-2d-matrix": {
+    params: ["int[][]", "int"],
+    ret: "bool",
+    cases: [
+      [
+        [
+          [1, 3, 5, 7],
+          [10, 11, 16, 20],
+          [23, 30, 34, 60],
+        ],
+        3,
+      ],
+      [
+        [
+          [1, 3, 5, 7],
+          [10, 11, 16, 20],
+          [23, 30, 34, 60],
+        ],
+        13,
+      ],
+      [[[1]], 1],
+      [[[1]], 2],
+      [
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        4,
+      ],
+    ],
+  },
+  "last-stone-weight": {
+    params: ["int[]"],
+    ret: "int",
+    cases: [[[2, 7, 4, 1, 8, 1]], [[1]], [[3, 3]], [[10, 4, 2, 10]], [[1, 3]]],
+  },
+  "max-island-area": {
+    params: ["int[][]"],
+    ret: "int",
+    cases: [
+      [
+        [
+          [1, 1, 0],
+          [1, 0, 0],
+          [0, 0, 1],
+        ],
+      ],
+      [
+        [
+          [0, 0],
+          [0, 0],
+        ],
+      ],
+      [[[1]]],
+      [
+        [
+          [1, 0, 1],
+          [0, 1, 0],
+          [1, 0, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1],
+          [1, 1],
+        ],
+      ],
+    ],
+  },
+  "longest-increasing-run": {
+    params: ["int[]"],
+    ret: "int",
+    cases: [
+      [[10, 9, 2, 5, 3, 7, 101, 18]],
+      [[7, 7, 7]],
+      [[4]],
+      [[1, 2, 3, 4, 5]],
+      [[5, 4, 3, 2, 1]],
+    ],
+  },
   "pair-sum": {
     params: ["int[]", "int"],
     ret: "int[]",
@@ -69,7 +220,12 @@ export const VECTORS = {
     params: ["int[]"],
     ret: "int[][]",
     unordered: true,
-    cases: [[[-1, 0, 1, 2, -1, -4]], [[0, 0, 0, 0]], [[1, 2, 3]], [[-2, 0, 1, 1, 2]]],
+    cases: [
+      [[-1, 0, 1, 2, -1, -4]],
+      [[0, 0, 0, 0]],
+      [[1, 2, 3]],
+      [[-2, 0, 1, 1, 2]],
+    ],
   },
   "best-trade": {
     params: ["int[]"],
@@ -99,12 +255,23 @@ export const VECTORS = {
   "daily-warmer": {
     params: ["int[]"],
     ret: "int[]",
-    cases: [[[73, 74, 75, 71, 69, 72, 76, 73]], [[30, 40, 50, 60]], [[30]], [[50, 40, 30]]],
+    cases: [
+      [[73, 74, 75, 71, 69, 72, 76, 73]],
+      [[30, 40, 50, 60]],
+      [[30]],
+      [[50, 40, 30]],
+    ],
   },
   "largest-rectangle": {
     params: ["int[]"],
     ret: "int",
-    cases: [[[2, 1, 5, 6, 2, 3]], [[2, 4]], [[0]], [[5, 5, 5]], [[6, 5, 4, 3, 2, 1]]],
+    cases: [
+      [[2, 1, 5, 6, 2, 3]],
+      [[2, 4]],
+      [[0]],
+      [[5, 5, 5]],
+      [[6, 5, 4, 3, 2, 1]],
+    ],
   },
   "classic-binary-search": {
     params: ["int[]", "int"],
@@ -119,7 +286,13 @@ export const VECTORS = {
   "rotated-minimum": {
     params: ["int[]"],
     ret: "int",
-    cases: [[[3, 4, 5, 1, 2]], [[4, 5, 6, 7, 0, 1, 2]], [[11, 13, 15, 17]], [[2, 1]], [[1]]],
+    cases: [
+      [[3, 4, 5, 1, 2]],
+      [[4, 5, 6, 7, 0, 1, 2]],
+      [[11, 13, 15, 17]],
+      [[2, 1]],
+      [[1]],
+    ],
   },
   "koko-bananas": {
     params: ["int[]", "int"],
@@ -205,6 +378,23 @@ export const VECTORS = {
     params: ["int[][]"],
     ret: "int",
     cases: [
+      // a WIDENING frontier: one rotten centre infects four neighbours at once.
+      // Every other case here is chain-shaped, where a level loop that re-reads
+      // the queue size still happens to terminate correctly.
+      [
+        [
+          [1, 1, 1],
+          [1, 2, 1],
+          [1, 1, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1, 1, 1],
+          [1, 1, 2, 1, 1],
+          [1, 1, 1, 1, 1],
+        ],
+      ],
       [
         [
           [2, 1, 1],

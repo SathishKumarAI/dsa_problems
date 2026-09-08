@@ -44,7 +44,9 @@ function resolve(cmd, probe) {
     /* not on PATH */
   }
   try {
-    const p = execSync(`mise which ${cmd}`, { stdio: ["ignore", "pipe", "ignore"] })
+    const p = execSync(`mise which ${cmd}`, {
+      stdio: ["ignore", "pipe", "ignore"],
+    })
       .toString()
       .trim()
     if (p) {
@@ -143,6 +145,7 @@ ${body
 }
 `,
   cpp: (body) => `#include <algorithm>
+#include <cctype>
 #include <climits>
 #include <cmath>
 #include <deque>
@@ -205,7 +208,10 @@ function main() {
     return
   }
   for (const l of ["java", "cpp"])
-    if (!tools[l]) console.error(`  (no ${l === "java" ? "javac" : "g++"} — ${l} blocks skipped)`)
+    if (!tools[l])
+      console.error(
+        `  (no ${l === "java" ? "javac" : "g++"} — ${l} blocks skipped)`
+      )
 
   const targets = arg("--id")
     ? PROBLEMS.filter((p) => p.id === arg("--id"))
@@ -219,7 +225,13 @@ function main() {
       for (const lang of langs) {
         const body = r.code[lang]
         if (!body) continue
-        const err = compile(dir, lang, tools[lang], p.id.replace(/-/g, "_"), body)
+        const err = compile(
+          dir,
+          lang,
+          tools[lang],
+          p.id.replace(/-/g, "_"),
+          body
+        )
         compiled++
         if (err) failures.push(`${p.id}/${r.key} [${lang}] ${err}`)
       }

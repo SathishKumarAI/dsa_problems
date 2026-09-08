@@ -43,6 +43,24 @@ export const problem: Problem = {
                valid(node.right, node.val, high)
 
     return valid(root, float("-inf"), float("inf"))`,
+  java: `public boolean isValidBST(TreeNode root) {
+    return valid(root, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+}
+
+private boolean valid(TreeNode node, double low, double high) {
+    if (node == null) return true;
+    if (!(low < node.val && node.val < high)) return false;
+    return valid(node.left, low, node.val) && valid(node.right, node.val, high);
+}`,
+  cpp: `static bool valid(const TreeNode* node, double low, double high) {
+    if (node == nullptr) return true;
+    if (!(low < node->val && node->val < high)) return false;
+    return valid(node->left, low, node->val) && valid(node->right, node->val, high);
+}
+
+bool isValidBST(const TreeNode* root) {
+    return valid(root, -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+}`,
   walkthrough: [
     {
       text: "        5 (-∞, +∞)\n       / \\\n      1   8\n         / \\\n        6   4",
