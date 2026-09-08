@@ -14,6 +14,7 @@ into the file that owns the nearest question, never into a new file.
 | Which problem is next, what is done for a problem, which book informs it? | [`PROBLEMS.md`](PROBLEMS.md) | problems-todo.md, curriculum.md, leetcode.md | P0 |
 | What is each box on screen, who owns it, how does data flow? | [`ARCHITECTURE.md`](ARCHITECTURE.md) | design.md, internals.md, overview.md | P0 |
 | What does the HTTP API accept and return? | [`API.md`](API.md) | endpoints.md, openapi.md, server.md | P0 |
+| How are the visualisations built, and how do I do this in Python (or for an LLM)? | [`VISUALIZING.md`](VISUALIZING.md) | viz.md, animation.md, tokens.md | P1 |
 | How do I add a journey / act / render kind without regressing the pedagogy? | [`AUTHORING.md`](AUTHORING.md) | contributing.md, content-guide.md | P0 |
 | What shipped, when, in which PR? | [`WORKLOG.md`](WORKLOG.md) | changelog.md, history.md, log.md | P1 |
 | Why does each backlog item exist — which platform taught us what? | [`RESEARCH.md`](RESEARCH.md) | references.md, inspiration.md | P2 |
