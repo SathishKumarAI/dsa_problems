@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# localsmith: generated drafts awaiting review, never committed
+scripts/localsmith/out/

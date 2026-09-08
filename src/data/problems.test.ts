@@ -118,6 +118,51 @@ test("problems: a journeyed problem has no hand-written walkthrough (one source 
       assert.ok(p.walkthrough?.length, `${p.id} has no walkthrough at all`)
 })
 
+// Java and C++ are optional until a problem has a journey, but the moment a
+// block exists it is held to the same bar as a hand-written one — it must open
+// with a function signature, balance its braces, and carry no imports, no
+// main() and no explanatory prose. This is what makes a generated translation
+// safe to accept: nothing about it is taken on trust.
+test("problems: any Java or C++ block present is well-formed", () => {
+  const balanced = (src: string) => {
+    let d = 0
+    for (const c of src) {
+      if (c === "{") d++
+      if (c === "}") d--
+      if (d < 0) return false
+    }
+    return d === 0
+  }
+  for (const p of PROBLEMS) {
+    const rungs = [
+      { where: p.id, code: p },
+      ...(p.alternatives ?? []).map((a) => ({
+        where: `${p.id}/${a.name}`,
+        code: a,
+      })),
+    ]
+    for (const { where, code } of rungs)
+      for (const lang of ["java", "cpp"] as const) {
+        const src = code[lang]
+        if (!src) continue
+        checkCode(where, code, [lang])
+        assert.ok(balanced(src), `${where}: ${lang} braces do not balance`)
+        assert.ok(
+          !/\bimport\b|#include|using namespace|static void main/.test(src),
+          `${where}: ${lang} carries imports or a main()`
+        )
+        assert.ok(
+          !/```/.test(src),
+          `${where}: ${lang} contains a markdown fence`
+        )
+        assert.ok(
+          src.split("\n").length >= 3,
+          `${where}: ${lang} is too short to be a function`
+        )
+      }
+  }
+})
+
 test("problems: journeyed problems carry Java and C++ for every approach", () => {
   const journeyed = new Set(JOURNEYS.map((j) => j.problemId))
   assert.ok(journeyed.size >= 2)

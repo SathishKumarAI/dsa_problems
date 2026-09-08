@@ -41,6 +41,26 @@ export const binarySearch: Problem[] = [
         else:
             hi = mid - 1
     return -1`,
+    java: `public int binarySearch(int[] nums, int target) {
+    int lo = 0, hi = nums.length - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return -1;
+}`,
+    cpp: `int binarySearch(const vector<int>& nums, int target) {
+    int lo = 0, hi = (int)nums.size() - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return -1;
+}`,
     walkthrough: [
       {
         cells: { values: [-3, 0, 4, 9, 12], labels: { 0: "lo", 4: "hi" } },
@@ -86,6 +106,20 @@ export const binarySearch: Problem[] = [
         if x == target:
             return i
     return -1`,
+        java: `public int binarySearch(int[] nums, int target) {
+    for (int i = 0; i < nums.length; i++) {
+        if (nums[i] == target) return i;
+    }
+    return -1;
+}
+`,
+        cpp: `int binarySearch(const vector<int>& nums, int target) {
+    for (int i = 0; i < (int)nums.size(); i++) {
+        if (nums[i] == target) return i;
+    }
+    return -1;
+}
+`,
       },
       {
         name: "Recursive",
@@ -106,6 +140,27 @@ export const binarySearch: Problem[] = [
         return go(lo, mid - 1)
 
     return go(0, len(nums) - 1)`,
+        java: `public int binarySearch(int[] nums, int target) {
+    return binarySearch(nums, target, 0, nums.length - 1);
+}
+private int binarySearch(int[] nums, int target, int lo, int hi) {
+    if (lo > hi) return -1;
+    int mid = (lo + hi) / 2;
+    if (nums[mid] == target) return mid;
+    if (nums[mid] < target) return binarySearch(nums, target, mid + 1, hi);
+    return binarySearch(nums, target, lo, mid - 1);
+}`,
+        cpp: `int binarySearchHelper(const vector<int>& nums, int target, int lo, int hi) {
+    if (lo > hi) return -1;
+    int mid = (lo + hi) / 2;
+    if (nums[mid] == target) return mid;
+    if (nums[mid] < target) return binarySearchHelper(nums, target, mid + 1, hi);
+    return binarySearchHelper(nums, target, lo, mid - 1);
+}
+
+int binarySearch(const vector<int>& nums, int target) {
+    return binarySearchHelper(nums, target, 0, (int)nums.size() - 1);
+}`,
       },
     ],
   },
@@ -151,6 +206,32 @@ export const binarySearch: Problem[] = [
         else:
             hi = mid
     return nums[lo]`,
+    java: `public int rotatedMin(int[] nums) {
+    int lo = 0;
+    int hi = nums.length - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] > nums[hi]) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    return nums[lo];
+}`,
+    cpp: `int rotatedMin(const vector<int>& nums) {
+    int lo = 0;
+    int hi = (int)nums.size() - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] > nums[hi]) {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    return nums[lo];
+}`,
     walkthrough: [
       {
         cells: { values: [4, 5, 6, 1, 2, 3], labels: { 0: "lo", 5: "hi" } },
@@ -216,6 +297,20 @@ export const binarySearch: Problem[] = [
         complexity: { time: "O(n)", space: "O(1)" },
         python: `def rotated_min(nums: list[int]) -> int:
     return min(nums)`,
+        java: `public int rotatedMin(int[] nums) {
+    int min = nums[0];
+    for (int i = 1; i < nums.length; i++) {
+        if (nums[i] < min) min = nums[i];
+    }
+    return min;
+}`,
+        cpp: `int rotatedMin(const vector<int>& nums) {
+    int minVal = nums[0];
+    for (int i = 1; i < (int)nums.size(); i++) {
+        if (nums[i] < minVal) minVal = nums[i];
+    }
+    return minVal;
+}`,
       },
       {
         name: "Find the drop",
@@ -229,6 +324,18 @@ export const binarySearch: Problem[] = [
         if nums[i] > nums[i + 1]:
             return nums[i + 1]
     return nums[0]  # not rotated`,
+        java: `public int rotatedMin(int[] nums) {
+    for (int i = 0; i < nums.length - 1; i++) {
+        if (nums[i] > nums[i + 1]) return nums[i + 1];
+    }
+    return nums[0];
+}`,
+        cpp: `int rotatedMin(const vector<int>& nums) {
+    for (int i = 0; i < (int)nums.size() - 1; i++) {
+        if (nums[i] > nums[i + 1]) return nums[i + 1];
+    }
+    return nums[0];
+}`,
       },
     ],
   },
@@ -272,6 +379,34 @@ def min_eating_speed(piles: list[int], h: int) -> int:
         else:
             lo = mid + 1
     return lo`,
+    java: `public int minEatingSpeed(int[] piles, int h) {
+    int lo = 1;
+    int hi = 0;
+    for (int p : piles) if (p > hi) hi = p;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        long total = 0;
+        for (int p : piles) total += (p + mid - 1) / mid;
+        if (total <= h) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
+`,
+    cpp: `int minEatingSpeed(const vector<int>& piles, int h) {
+    int lo = 1;
+    int hi = 0;
+    for (int p : piles) if (p > hi) hi = p;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        long long total = 0;
+        for (int p : piles) total += (p + mid - 1) / mid;
+        if (total <= h) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}
+`,
     walkthrough: [
       {
         text: "piles = [3, 6, 7, 11]   h = 8\nspeed k range: 1 .. 11\n\nfeasible(k) is monotonic:\nno no no YES YES YES ...\n         ^ find this boundary",
@@ -307,6 +442,30 @@ def min_eating_speed(piles: list[int], h: int) -> int:
     while sum(math.ceil(p / k) for p in piles) > h:
         k += 1
     return k`,
+        java: `public int minEatingSpeed(int[] piles, int h) {
+    int k = 1;
+    while (true) {
+        int total = 0;
+        for (int p : piles) {
+            total += (p + k - 1) / k;
+        }
+        if (total <= h) break;
+        k++;
+    }
+    return k;
+}`,
+        cpp: `int minEatingSpeed(const vector<int>& piles, int h) {
+    int k = 1;
+    while (true) {
+        long long total = 0;
+        for (int p : piles) {
+            total += (p + k - 1) / k;
+        }
+        if (total <= h) break;
+        ++k;
+    }
+    return k;
+}`,
       },
     ],
   },

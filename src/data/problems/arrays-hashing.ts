@@ -175,6 +175,49 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
             if len(out) == k:
                 return out
     return out`,
+    java: `public int[] topKFrequent(int[] nums, int k) {
+    java.util.Map<Integer,Integer> counts = new java.util.HashMap<>();
+    for (int num : nums) {
+        counts.put(num, counts.getOrDefault(num, 0)+1);
+    }
+    java.util.List<java.util.List<Integer>> buckets = new java.util.ArrayList<>(nums.length+1);
+    for (int i=0;i<=nums.length;i++) buckets.add(new java.util.ArrayList<>());
+    for (java.util.Map.Entry<Integer,Integer> e : counts.entrySet()) {
+        int value=e.getKey(), c=e.getValue();
+        buckets.get(c).add(value);
+    }
+    java.util.List<Integer> out = new java.util.ArrayList<>();
+    for (int c=nums.length;c>=1;c--) {
+        for (int val : buckets.get(c)) {
+            out.add(val);
+            if (out.size()==k) break;
+        }
+        if (out.size()==k) break;
+    }
+    int[] res = new int[out.size()];
+    for (int i=0;i<out.size();i++) res[i]=out.get(i);
+    return res;
+}
+`,
+    cpp: `vector<int> topKFrequent(const vector<int>& nums, int k) {
+    unordered_map<int,int> counts;
+    for (int num : nums) counts[num]++;
+    vector<vector<int>> buckets(nums.size()+1);
+    for (auto &p: counts) {
+        int value=p.first, c=p.second;
+        buckets[c].push_back(value);
+    }
+    vector<int> out;
+    for (int c=nums.size();c>=1;c--) {
+        for (int val : buckets[c]) {
+            out.push_back(val);
+            if ((int)out.size()==k) break;
+        }
+        if ((int)out.size()==k) break;
+    }
+    return out;
+}
+`,
     walkthrough: [
       {
         text: "nums = [4, 4, 4, 6, 6, 2]   k = 2\n\ncounts: {4: 3, 6: 2, 2: 1}",
@@ -205,6 +248,40 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
 def top_k_frequent(nums: list[int], k: int) -> list[int]:
     counts = Counter(nums)
     return sorted(counts, key=counts.get, reverse=True)[:k]`,
+        java: `public int[] topKFrequent(int[] nums, int k) {
+    java.util.HashMap<Integer,Integer> counts = new java.util.HashMap<>();
+    for (int num : nums) {
+        counts.put(num, counts.getOrDefault(num, 0) + 1);
+    }
+    java.util.List<Integer> keys = new java.util.ArrayList<>(counts.keySet());
+    java.util.Collections.sort(keys, new java.util.Comparator<Integer>() {
+        public int compare(Integer a, Integer b) {
+            return counts.get(b).compareTo(counts.get(a));
+        }
+    });
+    int size = Math.min(k, keys.size());
+    int[] result = new int[size];
+    for (int i = 0; i < size; i++) {
+        result[i] = keys.get(i);
+    }
+    return result;
+}
+`,
+        cpp: `vector<int> topKFrequent(const vector<int>& nums, int k) {
+    unordered_map<int,int> counts;
+    for (int num : nums) {
+        counts[num]++;
+    }
+    vector<int> keys;
+    keys.reserve(counts.size());
+    for (auto &p : counts) keys.push_back(p.first);
+    sort(keys.begin(), keys.end(), [&](int a, int b){return counts[a]>counts[b];});
+    int size = min(k, (int)keys.size());
+    vector<int> result(size);
+    for (int i = 0; i < size; i++) result[i] = keys[i];
+    return result;
+}
+`,
       },
       {
         name: "Heap",
@@ -219,6 +296,31 @@ from collections import Counter
 def top_k_frequent(nums: list[int], k: int) -> list[int]:
     counts = Counter(nums)
     return heapq.nlargest(k, counts, key=counts.get)`,
+        java: `public int[] topKFrequent(int[] nums, int k) {
+    Map<Integer,Integer> counts = new HashMap<>();
+    for (int num: nums) counts.put(num, counts.getOrDefault(num,0)+1);
+    PriorityQueue<Map.Entry<Integer,Integer>> pq = new PriorityQueue<>(k, (a,b)->a.getValue()-b.getValue());
+    for (Map.Entry<Integer,Integer> e: counts.entrySet()){
+        if (pq.size()<k) pq.offer(e);
+        else if (e.getValue()>pq.peek().getValue()){ pq.poll(); pq.offer(e);}    }
+    int[] res = new int[k];
+    int idx=k-1;
+    while (!pq.isEmpty()) {res[idx--]=pq.poll().getKey();}
+    return res;
+}`,
+        cpp: `vector<int> topKFrequent(const vector<int>& nums, int k) {
+    unordered_map<int,int> counts;
+    for (int num: nums) counts[num]++;
+    auto cmp = [](const pair<int,int>& a,const pair<int,int>& b){return a.first>b.first;};
+    priority_queue<pair<int,int>,vector<pair<int,int>>,decltype(cmp)> pq(cmp);
+    for (auto &p: counts){
+        if ((int)pq.size()<k) pq.push(p);
+        else if (p.second>pq.top().second){ pq.pop(); pq.push(p);}    }
+    vector<int> res(k);
+    int idx=k-1;
+    while (!pq.empty()){res[idx--]=pq.top().first; pq.pop();}
+    return res;
+}`,
       },
     ],
   },
@@ -266,6 +368,30 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
             length += 1
         best = max(best, length)
     return best`,
+    java: `public int longestConsecutive(int[] nums) {
+    java.util.Set<Integer> values = new java.util.HashSet<>();
+    for (int num : nums) values.add(num);
+    int best = 0;
+    for (int x : values) {
+        if (values.contains(x - 1)) continue;
+        int length = 1;
+        while (values.contains(x + length)) length++;
+        best = Math.max(best, length);
+    }
+    return best;
+}`,
+    cpp: `int longestConsecutive(const vector<int>& nums) {
+    unordered_set<int> values;
+    for (int num : nums) values.insert(num);
+    int best = 0;
+    for (int x : values) {
+        if (values.find(x - 1) != values.end()) continue;
+        int length = 1;
+        while (values.find(x + length) != values.end()) length++;
+        best = max(best, length);
+    }
+    return best;
+}`,
     walkthrough: [
       {
         cells: { values: [50, 3, 2, 100, 4, 1] },
@@ -316,6 +442,39 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
         run = run + 1 if cur == prev + 1 else 1
         best = max(best, run)
     return best`,
+        java: `public int longestConsecutive(int[] nums) {
+    if (nums.length == 0) return 0;
+    Set<Integer> set = new HashSet<>();
+    for (int n : nums) set.add(n);
+    Integer[] arr = set.toArray(new Integer[0]);
+    Arrays.sort(arr);
+    int best = 1, run = 1;
+    for (int i = 0; i < arr.length - 1; i++) {
+        int prev = arr[i];
+        int cur = arr[i + 1];
+        if (cur == prev + 1) run++;
+        else run = 1;
+        best = Math.max(best, run);
+    }
+    return best;
+}
+`,
+        cpp: `int longestConsecutive(const vector<int>& nums) {
+    if (nums.empty()) return 0;
+    unordered_set<int> s(nums.begin(), nums.end());
+    vector<int> v(s.begin(), s.end());
+    sort(v.begin(), v.end());
+    int best = 1, run = 1;
+    for (int i = 0; i + 1 < (int)v.size(); ++i) {
+        int prev = v[i];
+        int cur = v[i + 1];
+        if (cur == prev + 1) run++;
+        else run = 1;
+        best = max(best, run);
+    }
+    return best;
+}
+`,
       },
     ],
   },

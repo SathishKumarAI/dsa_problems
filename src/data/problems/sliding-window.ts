@@ -45,6 +45,25 @@ export const slidingWindow: Problem[] = [
         lowest = min(lowest, p)
         best = max(best, p - lowest)
     return best`,
+    java: `public int maxProfit(int[] prices) {
+    int lowest = Integer.MAX_VALUE;
+    int best = 0;
+    for (int p : prices) {
+        lowest = Math.min(lowest, p);
+        best = Math.max(best, p - lowest);
+    }
+    return best;
+}`,
+    cpp: `int maxProfit(const vector<int>& prices) {
+    int lowest = INT_MAX;
+    int best = 0;
+    for (int p : prices) {
+        if (p < lowest) lowest = p;
+        int profit = p - lowest;
+        if (profit > best) best = profit;
+    }
+    return best;
+}`,
     walkthrough: [
       {
         cells: { values: [7, 1, 5, 3, 6, 4] },
@@ -90,6 +109,24 @@ export const slidingWindow: Problem[] = [
         for j in range(i + 1, len(prices)):
             best = max(best, prices[j] - prices[i])
     return best`,
+        java: `public int maxProfit(int[] prices) {
+    int best = 0;
+    for (int i = 0; i < prices.length; i++) {
+        for (int j = i + 1; j < prices.length; j++) {
+            best = Math.max(best, prices[j] - prices[i]);
+        }
+    }
+    return best;
+}`,
+        cpp: `int maxProfit(const vector<int>& prices) {
+    int best = 0;
+    for (int i = 0; i < (int)prices.size(); i++) {
+        for (int j = i + 1; j < (int)prices.size(); j++) {
+            best = max(best, prices[j] - prices[i]);
+        }
+    }
+    return best;
+}`,
       },
     ],
   },
@@ -136,6 +173,36 @@ export const slidingWindow: Problem[] = [
         inside.add(ch)
         best = max(best, right - left + 1)
     return best`,
+    java: `public int longestUnique(String s) {
+    java.util.HashSet<Character> inside = new java.util.HashSet<>();
+    int left = 0;
+    int best = 0;
+    for (int right = 0; right < s.length(); right++) {
+        char ch = s.charAt(right);
+        while (inside.contains(ch)) {
+            inside.remove(s.charAt(left));
+            left++;
+        }
+        inside.add(ch);
+        best = Math.max(best, right - left + 1);
+    }
+    return best;
+}`,
+    cpp: `int longestUnique(const std::string& s) {
+    std::unordered_set<char> inside;
+    int left = 0;
+    int best = 0;
+    for (int right = 0; right < (int)s.size(); right++) {
+        char ch = s[right];
+        while (inside.find(ch) != inside.end()) {
+            inside.erase(s[left]);
+            left++;
+        }
+        inside.insert(ch);
+        best = std::max(best, right - left + 1);
+    }
+    return best;
+}`,
     walkthrough: [
       {
         cells: {
@@ -199,6 +266,30 @@ export const slidingWindow: Problem[] = [
             if len(set(window)) == len(window):
                 best = max(best, len(window))
     return best`,
+        java: `public int longestUnique(String s) {
+    int best = 0;
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = i; j < s.length(); j++) {
+            String window = s.substring(i, j + 1);
+            java.util.Set<Character> set = new java.util.HashSet<>();
+            for (char c : window.toCharArray()) set.add(c);
+            if (set.size() == window.length()) best = Math.max(best, window.length());
+        }
+    }
+    return best;
+}`,
+        cpp: `int longestUnique(const std::string& s) {
+    int best = 0;
+    for (int i = 0; i < (int)s.size(); i++) {
+        for (int j = i; j < (int)s.size(); j++) {
+            std::string window = s.substr(i, j - i + 1);
+            std::unordered_set<char> set;
+            for (char c : window) set.insert(c);
+            if ((int)set.size() == (int)window.length()) best = std::max(best, (int)window.length());
+        }
+    }
+    return best;
+}`,
       },
       {
         name: "Last-seen jump",
@@ -216,6 +307,35 @@ export const slidingWindow: Problem[] = [
         last[ch] = right
         best = max(best, right - left + 1)
     return best`,
+        java: `public int longestUnique(String s) {
+    Map<Character, Integer> last = new HashMap<>();
+    int left = 0, best = 0;
+    for (int right = 0; right < s.length(); right++) {
+        char ch = s.charAt(right);
+        if (last.containsKey(ch) && last.get(ch) >= left) {
+            left = last.get(ch) + 1;
+        }
+        last.put(ch, right);
+        best = Math.max(best, right - left + 1);
+    }
+    return best;
+}
+`,
+        cpp: `int longestUnique(const string& s) {
+    unordered_map<char, int> last;
+    int left = 0, best = 0;
+    for (int right = 0; right < (int)s.size(); right++) {
+        char ch = s[right];
+        auto it = last.find(ch);
+        if (it != last.end() && it->second >= left) {
+            left = it->second + 1;
+        }
+        last[ch] = right;
+        best = max(best, right - left + 1);
+    }
+    return best;
+}
+`,
       },
     ],
   },
@@ -274,6 +394,48 @@ def min_window(s: str, t: str) -> str:
             left += 1
     length, i, j = best
     return "" if length == float("inf") else s[i : j + 1]`,
+    java: `public String minWindow(String s, String t) {
+    if (t == null || t.length() == 0 || t.length() > s.length()) return "";
+    int[] need = new int[256];
+    for (int i = 0; i < t.length(); i++) need[t.charAt(i)]++;
+    int missing = t.length();
+    int bestLen = Integer.MAX_VALUE, bestStart = 0, bestEnd = 0;
+    int left = 0;
+    for (int right = 0; right < s.length(); right++) {
+        char ch = s.charAt(right);
+        if (need[ch] > 0) missing--;
+        need[ch]--;
+        while (missing == 0) {
+            if (right - left + 1 < bestLen) { bestLen = right - left + 1; bestStart = left; bestEnd = right; }
+            char leftCh = s.charAt(left);
+            need[leftCh]++;
+            if (need[leftCh] > 0) missing++;
+            left++;
+        }
+    }
+    return bestLen == Integer.MAX_VALUE ? "" : s.substring(bestStart, bestEnd + 1);
+}`,
+    cpp: `string minWindow(const string& s, const string& t){
+    if(t.empty() || t.size()>s.size()) return "";
+    vector<int> need(256,0);
+    for(char c: t) need[(unsigned char)c]++;
+    int missing = t.size();
+    int bestLen = INT_MAX, bestStart=0, bestEnd=0;
+    int left=0;
+    for(int right=0;right<(int)s.size();right++){
+        char ch=s[right];
+        if(need[(unsigned char)ch]>0) missing--;
+        need[(unsigned char)ch]--;
+        while(missing==0){
+            if(right-left+1<bestLen){ bestLen=right-left+1; bestStart=left; bestEnd=right; }
+            char leftCh=s[left];
+            need[(unsigned char)leftCh]++;
+            if(need[(unsigned char)leftCh]>0) missing++;
+            left++;
+        }
+    }
+    return bestLen==INT_MAX? "": s.substr(bestStart, bestEnd-bestStart+1);
+}`,
     walkthrough: [
       {
         text: "s = ADOBECODEBANC   t = ABC\n\nneed: {A:1, B:1, C:1}   missing = 3",
@@ -316,6 +478,64 @@ def min_window(s: str, t: str) -> str:
                     best = s[i : j + 1]
                 break  # longer j only makes it fatter
     return best`,
+        java: `public String minWindow(String s, String t) {
+    java.util.HashMap<Character,Integer> need = new java.util.HashMap<>();
+    for (int i = 0; i < t.length(); i++) {
+        char c = t.charAt(i);
+        need.put(c, need.getOrDefault(c, 0) + 1);
+    }
+    String best = "";
+    for (int i = 0; i < s.length(); i++) {
+        for (int j = i; j < s.length(); j++) {
+            java.util.HashMap<Character,Integer> window = new java.util.HashMap<>();
+            for (int k = i; k <= j; k++) {
+                char c = s.charAt(k);
+                window.put(c, window.getOrDefault(c, 0) + 1);
+            }
+            boolean ok = true;
+            for (java.util.Map.Entry<Character,Integer> e : need.entrySet()) {
+                if (window.getOrDefault(e.getKey(), 0) < e.getValue()) { ok = false; break; }
+            }
+            if (ok) {
+                if (best.isEmpty() || j - i + 1 < best.length()) {
+                    best = s.substring(i, j + 1);
+                }
+                break;
+            }
+        }
+    }
+    return best;
+}
+`,
+        cpp: `string minWindow(const string& s, const string& t) {
+    unordered_map<char,int> need;
+    for (int i = 0; i < (int)t.size(); ++i) {
+        char c = t[i];
+        need[c]++;
+    }
+    string best = "";
+    for (int i = 0; i < (int)s.size(); ++i) {
+        for (int j = i; j < (int)s.size(); ++j) {
+            unordered_map<char,int> window;
+            for (int k = i; k <= j; ++k) {
+                char c = s[k];
+                window[c]++;
+            }
+            bool ok = true;
+            for (auto &p : need) {
+                if (window[p.first] < p.second) { ok = false; break; }
+            }
+            if (ok) {
+                if (best.empty() || j - i + 1 < (int)best.size()) {
+                    best = s.substr(i, j - i + 1);
+                }
+                break;
+            }
+        }
+    }
+    return best;
+}
+`,
       },
     ],
   },

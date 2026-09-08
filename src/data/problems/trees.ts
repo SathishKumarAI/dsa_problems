@@ -30,6 +30,14 @@ export const trees: Problem[] = [
     if root is None:
         return 0
     return 1 + max(max_depth(root.left), max_depth(root.right))`,
+    java: `public int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+    return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+}`,
+    cpp: `int maxDepth(const TreeNode* root) {
+    if (!root) return 0;
+    return 1 + std::max(maxDepth(root->left), maxDepth(root->right));
+}`,
     walkthrough: [
       {
         text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7",
@@ -70,6 +78,40 @@ def max_depth(root) -> int:
             if node.right:
                 queue.append(node.right)
     return depth`,
+        java: `public int maxDepth(TreeNode root) {
+    if (root == null) return 0;
+    int depth = 0;
+    Queue<TreeNode> queue = new ArrayDeque<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+        depth++;
+        int sz = queue.size();
+        for (int i = 0; i < sz; i++) {
+            TreeNode node = queue.poll();
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+    }
+    return depth;
+}
+`,
+        cpp: `int maxDepth(TreeNode* root) {
+    if (!root) return 0;
+    int depth = 0;
+    std::queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        depth++;
+        int sz = (int)q.size();
+        for (int i = 0; i < sz; i++) {
+            TreeNode* node = q.front(); q.pop();
+            if (node->left) q.push(node->left);
+            if (node->right) q.push(node->right);
+        }
+    }
+    return depth;
+}
+`,
       },
       {
         name: "Iterative DFS",
@@ -89,6 +131,35 @@ def max_depth(root) -> int:
         if node.right:
             stack.append((node.right, d + 1))
     return best`,
+        java: `public int maxDepth(TreeNode root) {
+    int best = 0;
+    java.util.Deque<java.util.AbstractMap.SimpleEntry<TreeNode,Integer>> stack = new java.util.ArrayDeque<>();
+    if (root != null) stack.push(new java.util.AbstractMap.SimpleEntry<>(root,1));
+    while (!stack.isEmpty()) {
+        java.util.AbstractMap.SimpleEntry<TreeNode,Integer> entry = stack.pop();
+        TreeNode node = entry.getKey();
+        int d = entry.getValue();
+        best = Math.max(best,d);
+        if (node.left != null) stack.push(new java.util.AbstractMap.SimpleEntry<>(node.left,d+1));
+        if (node.right != null) stack.push(new java.util.AbstractMap.SimpleEntry<>(node.right,d+1));
+    }
+    return best;
+}
+`,
+        cpp: `int maxDepth(const TreeNode* root) {
+    int best = 0;
+    std::vector<std::pair<const TreeNode*,int>> stack;
+    if (root) stack.push_back({root,1});
+    while (!stack.empty()) {
+        auto [node,d] = stack.back();
+        stack.pop_back();
+        best = std::max(best,d);
+        if (node->left) stack.push_back({node->left,d+1});
+        if (node->right) stack.push_back({node->right,d+1});
+    }
+    return best;
+}
+`,
       },
     ],
   },
@@ -177,6 +248,30 @@ def max_depth(root) -> int:
         return inorder(node.right)
 
     return inorder(root)`,
+        java: `public boolean isValidBST(TreeNode root) {
+    long[] prev = {Long.MIN_VALUE};
+    return inorder(root, prev);
+}
+
+private boolean inorder(TreeNode node, long[] prev) {
+    if (node == null) return true;
+    if (!inorder(node.left, prev)) return false;
+    if (node.val <= prev[0]) return false;
+    prev[0] = node.val;
+    return inorder(node.right, prev);
+}`,
+        cpp: `static bool inorder(const TreeNode* node, long long& prev) {
+    if (!node) return true;
+    if (!inorder(node->left, prev)) return false;
+    if (node->val <= prev) return false;
+    prev = node->val;
+    return inorder(node->right, prev);
+}
+
+bool isValidBST(const TreeNode* root) {
+    long long prev = LLONG_MIN;
+    return inorder(root, prev);
+}`,
       },
     ],
   },
@@ -228,6 +323,45 @@ def level_order(root) -> list[list[int]]:
                 queue.append(node.right)
         out.append(level)
     return out`,
+    java: `public List<List<Integer>> levelOrder(TreeNode root) {
+    if (root == null) return new ArrayList<>();
+    List<List<Integer>> out = new ArrayList<>();
+    Queue<TreeNode> queue = new LinkedList<>();
+    queue.add(root);
+    while (!queue.isEmpty()) {
+        int sz = queue.size();
+        List<Integer> level = new ArrayList<>();
+        for (int i = 0; i < sz; i++) {
+            TreeNode node = queue.poll();
+            level.add(node.val);
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+        }
+        out.add(level);
+    }
+    return out;
+}
+`,
+    cpp: `vector<vector<int>> levelOrder(TreeNode* root) {
+    if (!root) return {};
+    vector<vector<int>> out;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        int sz = (int)q.size();
+        vector<int> level;
+        for (int i = 0; i < sz; i++) {
+            TreeNode* node = q.front();
+            q.pop();
+            level.push_back(node->val);
+            if (node->left) q.push(node->left);
+            if (node->right) q.push(node->right);
+        }
+        out.push_back(level);
+    }
+    return out;
+}
+`,
     walkthrough: [
       {
         text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7\n\nqueue: [3]",
@@ -266,6 +400,32 @@ def level_order(root) -> list[list[int]]:
 
     walk(root, 0)
     return out`,
+        java: `public List<List<Integer>> levelOrder(TreeNode root) {
+    List<List<Integer>> out = new ArrayList<>();
+    walk(root, 0, out);
+    return out;
+}
+
+private void walk(TreeNode node, int depth, List<List<Integer>> out) {
+    if (node == null) return;
+    if (depth == out.size()) out.add(new ArrayList<>());
+    out.get(depth).add(node.val);
+    walk(node.left, depth + 1, out);
+    walk(node.right, depth + 1, out);
+}`,
+        cpp: `void walk(const TreeNode* node, int depth, vector<vector<int>>& out) {
+    if (!node) return;
+    if (depth == (int)out.size()) out.push_back(vector<int>());
+    out[depth].push_back(node->val);
+    walk(node->left, depth + 1, out);
+    walk(node->right, depth + 1, out);
+}
+
+vector<vector<int>> levelOrder(const TreeNode* root) {
+    vector<vector<int>> out;
+    walk(root, 0, out);
+    return out;
+}`,
       },
     ],
   },

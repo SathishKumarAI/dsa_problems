@@ -49,6 +49,40 @@ class KthLargest:
         if len(self.heap) > self.k:
             heapq.heappop(self.heap)
         return self.heap[0]`,
+    java: `public class KthLargest {
+    private int k;
+    private java.util.PriorityQueue<Integer> heap;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        this.heap = new java.util.PriorityQueue<>();
+        for (int num : nums) heap.add(num);
+        while (heap.size() > k) heap.poll();
+    }
+
+    public int add(int x) {
+        heap.offer(x);
+        if (heap.size() > k) heap.poll();
+        return heap.peek();
+    }
+}
+`,
+    cpp: `class KthLargest {
+public:
+    int k;
+    std::priority_queue<int, std::vector<int>, std::greater<int>> heap;
+
+    KthLargest(int k, const std::vector<int>& nums): k(k), heap(std::greater<int>()) {
+        for (int num : nums) heap.push(num);
+        while ((int)heap.size() > k) heap.pop();
+    }
+
+    int add(int x) {
+        heap.push(x);
+        if ((int)heap.size() > k) heap.pop();
+        return heap.top();
+    }
+};`,
     walkthrough: [
       {
         text: "k = 3, start = [4, 5, 8, 2]\n\nheapify → pop smallest until size 3\nmin-heap: [4, 5, 8]   root = 4",
@@ -82,6 +116,16 @@ class KthLargest:
         self.nums.append(x)
         self.nums.sort()
         return self.nums[-self.k]`,
+        java: `public int kthLargest(int k, List<Integer> nums, int x) {
+    nums.add(x);
+    Collections.sort(nums);
+    return nums.get(nums.size() - k);
+}`,
+        cpp: `int kthLargest(vector<int>& nums, int k, int x) {
+    nums.push_back(x);
+    sort(nums.begin(), nums.end());
+    return nums[nums.size() - k];
+}`,
       },
       {
         name: "Sorted insert (bisect)",
@@ -100,6 +144,17 @@ class KthLargest:
     def add(self, x: int) -> int:
         bisect.insort(self.nums, x)
         return self.nums[-self.k]`,
+        java: `public int add(List<Integer> nums, int k, int x) {
+    int idx = Collections.binarySearch(nums, x);
+    if (idx < 0) idx = -idx - 1;
+    nums.add(idx, x);
+    return nums.get(nums.size() - k);
+}`,
+        cpp: `int add(vector<int>& nums, int k, int x) {
+    auto it = lower_bound(nums.begin(), nums.end(), x);
+    nums.insert(it, x);
+    return nums[nums.size() - k];
+}`,
       },
     ],
   },
@@ -145,6 +200,45 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
         elif d > heap[0][0]:
             heapq.heappushpop(heap, (d, p))
     return [p for _, p in heap]`,
+    java: `public List<List<Integer>> kClosest(List<List<Integer>> points, int k) {
+    PriorityQueue<Object[]> heap = new PriorityQueue<>(new java.util.Comparator<Object[]>() {
+        public int compare(Object[] a, Object[] b) { return Integer.compare((Integer)a[0], (Integer)b[0]); }
+    });
+    for (List<Integer> p : points) {
+        int d = -(p.get(0)*p.get(0) + p.get(1)*p.get(1));
+        if (heap.size() < k) {
+            heap.offer(new Object[]{d, p});
+        } else if (d > ((Integer)heap.peek()[0])) {
+            heap.poll();
+            heap.offer(new Object[]{d, p});
+        }
+    }
+    List<List<Integer>> res = new ArrayList<>();
+    while (!heap.isEmpty()) {
+        res.add((List<Integer>)heap.poll()[1]);
+    }
+    return res;
+}
+`,
+    cpp: `vector<vector<int>> kClosest(const vector<vector<int>>& points, int k) {
+    priority_queue<pair<int, vector<int>>> heap;
+    for (const auto& p : points) {
+        int d = -(p[0]*p[0] + p[1]*p[1]);
+        if ((int)heap.size() < k) {
+            heap.emplace(d, p);
+        } else if (d > heap.top().first) {
+            heap.pop();
+            heap.emplace(d, p);
+        }
+    }
+    vector<vector<int>> res;
+    while (!heap.empty()) {
+        res.push_back(heap.top().second);
+        heap.pop();
+    }
+    return res;
+}
+`,
     walkthrough: [
       {
         text: "points: [1,3] [-2,2] [5,8]   k = 2\n\ndist²:  [1,3]→10  [-2,2]→8  [5,8]→89",
@@ -172,6 +266,26 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
         complexity: { time: "O(n log n)", space: "O(n)" },
         python: `def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
     return sorted(points, key=lambda p: p[0] ** 2 + p[1] ** 2)[:k]`,
+        java: `public List<List<Integer>> kClosest(List<List<Integer>> points, int k) {
+    List<List<Integer>> copy = new ArrayList<>(points);
+    Collections.sort(copy, new Comparator<List<Integer>>() {
+        public int compare(List<Integer> a, List<Integer> b) {
+            int da = a.get(0) * a.get(0) + a.get(1) * a.get(1);
+            int db = b.get(0) * b.get(0) + b.get(1) * b.get(1);
+            return Integer.compare(da, db);
+        }
+    });
+    return copy.subList(0, k);
+}
+`,
+        cpp: `vector<vector<int>> kClosest(const vector<vector<int>>& points, int k) {
+    vector<vector<int>> res = points;
+    sort(res.begin(), res.end(), [](const vector<int>& a, const vector<int>& b){
+        return a[0]*a[0] + a[1]*a[1] < b[0]*b[0] + b[1]*b[1];
+    });
+    return vector<vector<int>>(res.begin(), res.begin() + k);
+}
+`,
       },
       {
         name: "Quickselect",
@@ -203,6 +317,53 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
         else:
             break
     return points[:k]`,
+        java: `public int[][] kClosest(int[][] points, int k) {
+    int lo = 0, hi = points.length - 1;
+    while (lo < hi) {
+        int pivotIdx = lo + (int) (Math.random() * (hi - lo + 1));
+        int pivot = d(points[pivotIdx]);
+        int i = lo, j = hi;
+        while (i <= j) {
+            while (d(points[i]) < pivot) i++;
+            while (d(points[j]) > pivot) j--;
+            if (i <= j) {
+                int[] tmp = points[i];
+                points[i] = points[j];
+                points[j] = tmp;
+                i++;
+                j--;
+            }
+        }
+        if (k - 1 <= j) hi = j;
+        else if (k - 1 >= i) lo = i;
+        else break;
+    }
+    return Arrays.copyOfRange(points, 0, k);
+}
+
+private int d(int[] p) { return p[0] * p[0] + p[1] * p[1]; }`,
+        cpp: `int d(const vector<int>& p) { return p[0] * p[0] + p[1] * p[1]; }
+
+vector<vector<int>> kClosest(vector<vector<int>>& points, int k) {
+    int lo = 0, hi = (int)points.size() - 1;
+    while (lo < hi) {
+        int pivot = d(points[lo + rand() % (hi - lo + 1)]);
+        int i = lo, j = hi;
+        while (i <= j) {
+            while (d(points[i]) < pivot) i++;
+            while (d(points[j]) > pivot) j--;
+            if (i <= j) {
+                swap(points[i], points[j]);
+                i++;
+                j--;
+            }
+        }
+        if (k - 1 <= j) hi = j;
+        else if (k - 1 >= i) lo = i;
+        else break;
+    }
+    return vector<vector<int>>(points.begin(), points.begin() + k);
+}`,
       },
     ],
   },
@@ -255,6 +416,48 @@ def least_interval(tasks: list[str], n: int) -> int:
             if count:
                 cooling.append((time + n + 1, count))
     return time`,
+    java: `public int leastInterval(String[] tasks, int n) {
+    Map<String,Integer> freq = new HashMap<>();
+    for (String t: tasks) freq.put(t, freq.getOrDefault(t,0)+1);
+    PriorityQueue<Integer> heap = new PriorityQueue<>();
+    for (int c: freq.values()) heap.add(-c);
+    ArrayDeque<int[]> cooling = new ArrayDeque<>();
+    int time=0;
+    while (!heap.isEmpty() || !cooling.isEmpty()){
+        time++;
+        if (!cooling.isEmpty() && cooling.peek()[0]==time){
+            heap.add(cooling.poll()[1]);
+        }
+        if (!heap.isEmpty()){
+            int count = heap.poll()+1;
+            if (count!=0) cooling.offer(new int[]{time+n+1, count});
+        }
+    }
+    return time;
+}
+`,
+    cpp: `int leastInterval(const vector<string>& tasks, int n) {
+    unordered_map<string,int> freq;
+    for (auto &t: tasks) freq[t]++;
+    priority_queue<int> heap;
+    for (auto &p: freq) heap.push(p.second);
+    deque<pair<int,int>> cooling;
+    int time=0;
+    while (!heap.empty() || !cooling.empty()){
+        time++;
+        if (!cooling.empty() && cooling.front().first==time){
+            heap.push(cooling.front().second);
+            cooling.pop_front();
+        }
+        if (!heap.empty()){
+            int count = heap.top(); heap.pop();
+            count--;
+            if (count>0) cooling.emplace_back(time+n+1, count);
+        }
+    }
+    return time;
+}
+`,
     walkthrough: [
       {
         text: "tasks: A×3 B×3   n = 2\nheap: [A:3, B:3]   cooling: []",
@@ -286,6 +489,28 @@ def least_interval(tasks: list[str], n: int) -> int:
     peak = max(counts.values())
     ties = sum(1 for c in counts.values() if c == peak)
     return max(len(tasks), (peak - 1) * (n + 1) + ties)`,
+        java: `public int leastInterval(String[] tasks, int n) {
+    Map<String, Integer> counts = new HashMap<>();
+    for (String t : tasks) {
+        counts.put(t, counts.getOrDefault(t, 0) + 1);
+    }
+    int peak = 0;
+    for (int c : counts.values()) if (c > peak) peak = c;
+    int ties = 0;
+    for (int c : counts.values()) if (c == peak) ties++;
+    return Math.max(tasks.length, (peak - 1) * (n + 1) + ties);
+}
+`,
+        cpp: `int leastInterval(const vector<string>& tasks, int n) {
+    unordered_map<string,int> counts;
+    for (const string& t : tasks) counts[t]++;
+    int peak = 0;
+    for (auto &p: counts) if (p.second > peak) peak = p.second;
+    int ties = 0;
+    for (auto &p: counts) if (p.second == peak) ties++;
+    return max((int)tasks.size(), (peak - 1) * (n + 1) + ties);
+}
+`,
       },
     ],
   },
