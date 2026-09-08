@@ -4,6 +4,31 @@ This is the checklist and the copy-paste prompt for adding a journey. It encodes
 whole product rests on; the content test (`src/engine/journeys.test.ts`) enforces the ones that
 can be enforced.
 
+## Two ways to author, and how to choose
+
+| | Hand-written (`src/engine/journeys/<slug>.ts`) | Derived (`src/data/journeys/<id>.ts`) |
+|---|---|---|
+| Cost | ~900–1200 lines | ~320 lines + one row in `derived.test.ts` |
+| Stage | its own `PanelModel` variant and React view | the shared chip row + a state panel, nothing new |
+| Code tabs | pseudocode written to match all three languages | pseudocode IS the Python; Java/C++ only when the line counts already agree (B43) |
+| Challenge act | yes | not yet |
+| Use it for | the marquee problem of a pattern, anything that needs its own picture | everything else |
+
+A derived journey calls `deriveJourney(problem, spec)`. The builder reads the Problem for
+everything already written there — title, statement, hints, `whyNow`, the ladder and its code and
+complexities from `alternatives[]`, the constraint each corner case cites, the LeetCode link — and
+supplies the `{nums}` plumbing (`classify`, `describe`, `parse`, presets). You write only what a
+Problem cannot hold: act framing, quiz, corner cases, and one generator per rung.
+
+Two things to know before you start:
+
+- **The static `walkthrough` goes.** `problems.test.ts` forbids a problem from having both, and it
+  is right to: the presets need real execution, and hand-written frames cannot tag a corner case
+  on a preset they were not written for. Read the walkthrough, then write the generator from it,
+  then delete it.
+- **Every rule below still applies**, disclosure included — `journeys.test.ts` does not know or
+  care that a journey was derived.
+
 ## The shape of a journey
 
 One file, `src/engine/journeys/<slug>.ts`, exporting a `Journey<D>`; one line in
