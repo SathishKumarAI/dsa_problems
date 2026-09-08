@@ -91,6 +91,16 @@ export const KNOWN_EQUIVALENT = {
     "both sites are the dedup walks after a triple is recorded, and the enclosing `while i < j` re-checks the bound before anything is read",
   "three-sum-zero/+= becomes -=":
     "unproven: stepping i backwards after a triple appears to be undone by the dedup walk on the next line, and 240 perturbations of the existing cases found no difference — but no argument is offered",
+  "group-anagrams/+= becomes -=":
+    "negating every count is still a bijection of the letter multiset, so two words share a key exactly when they shared it before — the grouping cannot change",
+  "window-maximum/<= becomes <":
+    "keeping an equal value instead of evicting it leaves the FRONT of the deque holding the same value, and the older index expires no later than the newer one it would have replaced — the maxima are identical, only the deque contents differ",
+  "rotated-search/< becomes <=":
+    "both sites test the target against nums[mid], which line 6 has already returned on — equality never reaches these comparisons",
+  "rotated-search/- 1 dropped":
+    "narrowing to `hi = mid` instead of `mid - 1` leaves in range an element already known not to be the target, which costs one iteration and changes no answer",
+  "rotated-search/+ 1 dropped":
+    "unproven: `lo = mid` re-tests an element already known not to be the target, so the result is unchanged — but unlike the `hi` case it can fail to terminate when lo == hi, and no case in this set reaches that state through the right-sorted branch",
   "k-closest-points/> becomes >=":
     "unproven: on a distance tie the heap keeps one of two equally-close points and both are valid answers, so a separating case may not exist — searched, not proved",
 }
