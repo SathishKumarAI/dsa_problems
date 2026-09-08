@@ -8,7 +8,8 @@ import { route } from "./routes.ts"
 import type { ArrayFrame, GraphFrame } from "../engine/algorithms.ts"
 import type { BaseFrame, Trace, Verdict } from "../engine/types.ts"
 
-export type Data = { nums: number[]; [k: string]: unknown }
+// integers for an array journey, single characters for a string one
+export type Data = { nums: (number | string)[]; [k: string]: unknown }
 
 const BASE: string | null =
   import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "" : null)
