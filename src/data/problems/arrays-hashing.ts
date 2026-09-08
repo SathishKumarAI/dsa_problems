@@ -309,16 +309,19 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     return res;
 }`,
         cpp: `vector<int> topKFrequent(const vector<int>& nums, int k) {
-    unordered_map<int,int> counts;
-    for (int num: nums) counts[num]++;
-    auto cmp = [](const pair<int,int>& a,const pair<int,int>& b){return a.first>b.first;};
-    priority_queue<pair<int,int>,vector<pair<int,int>>,decltype(cmp)> pq(cmp);
-    for (auto &p: counts){
-        if ((int)pq.size()<k) pq.push(p);
-        else if (p.second>pq.top().second){ pq.pop(); pq.push(p);}    }
+    unordered_map<int, int> counts;
+    for (int num : nums) counts[num]++;
+    auto cmp = [](const pair<int, int>& a, const pair<int, int>& b) {
+        return a.second > b.second;
+    };
+    priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(cmp)> pq(cmp);
+    for (auto& p : counts) {
+        if ((int)pq.size() < k) pq.push(p);
+        else if (p.second > pq.top().second) { pq.pop(); pq.push(p); }
+    }
     vector<int> res(k);
-    int idx=k-1;
-    while (!pq.empty()){res[idx--]=pq.top().first; pq.pop();}
+    int idx = k - 1;
+    while (!pq.empty()) { res[idx--] = pq.top().first; pq.pop(); }
     return res;
 }`,
       },

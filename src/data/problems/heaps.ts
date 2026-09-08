@@ -221,9 +221,10 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
 }
 `,
     cpp: `vector<vector<int>> kClosest(const vector<vector<int>>& points, int k) {
-    priority_queue<pair<int, vector<int>>> heap;
+    priority_queue<pair<int, vector<int>>, vector<pair<int, vector<int>>>,
+                   greater<pair<int, vector<int>>>> heap;
     for (const auto& p : points) {
-        int d = -(p[0]*p[0] + p[1]*p[1]);
+        int d = -(p[0] * p[0] + p[1] * p[1]);
         if ((int)heap.size() < k) {
             heap.emplace(d, p);
         } else if (d > heap.top().first) {
@@ -237,8 +238,7 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
         heap.pop();
     }
     return res;
-}
-`,
+}`,
     walkthrough: [
       {
         text: "points: [1,3] [-2,2] [5,8]   k = 2\n\ndist²:  [1,3]→10  [-2,2]→8  [5,8]→89",

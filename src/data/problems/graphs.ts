@@ -59,20 +59,18 @@ export const graphs: Problem[] = [
                 while (sz > 0) {
                     int[] cell = stack[--sz];
                     int cr = cell[0], cc = cell[1];
-                    if (cr < 0 || cr >= rows || cc < 0 || cc >= cols || grid[cr][cc] == 0)
-                        continue;
+                    if (grid[cr][cc] == 0) continue;
                     grid[cr][cc] = 0;
-                    stack[sz++] = new int[]{cr + 1, cc};
-                    stack[sz++] = new int[]{cr - 1, cc};
-                    stack[sz++] = new int[]{cr, cc + 1};
-                    stack[sz++] = new int[]{cr, cc - 1};
+                    if (cr + 1 < rows) stack[sz++] = new int[]{cr + 1, cc};
+                    if (cr - 1 >= 0) stack[sz++] = new int[]{cr - 1, cc};
+                    if (cc + 1 < cols) stack[sz++] = new int[]{cr, cc + 1};
+                    if (cc - 1 >= 0) stack[sz++] = new int[]{cr, cc - 1};
                 }
             }
         }
     }
     return count;
-}
-`,
+}`,
     cpp: `int countIslands(const vector<vector<int>>& grid) {
     vector<vector<int>> g = grid;
     int rows = (int)g.size();
