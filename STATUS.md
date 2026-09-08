@@ -13,7 +13,7 @@ through to the differential runner. Nothing is in flight, no branch is open, eve
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **61 tests** |
 | The interface, in a real browser | `npm run test:ui` | **42 checks**, ~100 s |
 | Every Java and C++ block compiles | `npm run verify:code` | **154 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **480 comparisons**, 0 disagreed |
+| …and agrees with the Python | `npm run verify:run` | **442 comparisons**, 0 disagreed (66 launches refused by Windows — B31) |
 
 The last two need a toolchain: `mise use -g java@temurin-21` and `scoop install main/gcc`, both
 user-space. They skip **loudly** when it is missing rather than passing quietly.
@@ -34,11 +34,13 @@ How it got here, and the reasoning behind each decision, is the first section of
 The machinery for bulk content now exists (`scripts/localsmith/` + three gates), so the order that
 makes the rest cheap is:
 
-1. **B34 — one problem per file.** `src/data/problems/*.ts` are ~900 lines holding prose, four
-   languages and walkthrough frames in one literal. Split before adding to them, not after.
+1. ~~**B34 — one problem per file.**~~ Done 2026-09-08 (`refactor/data-one-problem-per-file`):
+   one problem is one `src/data/problems/<pattern>/<id>.ts`, the directory `index.ts` a barrel.
+   `src/data/problems/README.md` is its change → file map.
 2. **B31 — one binary per block, not per case.** The runner compiles and launches once per case;
-   Windows refused 28 of 508 launches. Emitting a driver that loops over every case removes the
-   flake and cuts compiles about fourfold.
+   Windows refused **66 of 508** launches on the 2026-09-08 run (28 the run before — it is noise,
+   and that spread is the argument). Emitting a driver that loops over every case removes the
+   flake and cuts compiles about fourfold. **This is the next action.**
 3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. The gates make this
    verifiable in a way it was not before: `check` for the content rules, `verify:code` for the
    translations, `verify:run` against the Python.

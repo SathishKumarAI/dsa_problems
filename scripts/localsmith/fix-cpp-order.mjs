@@ -8,14 +8,15 @@
 //
 // Run:  node scripts/localsmith/fix-cpp-order.mjs [--dry]
 
-import { readFileSync, writeFileSync } from "node:fs"
+import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { pathToFileURL } from "node:url"
 import { PROBLEMS } from "../../src/data/index.ts"
 
-const FILES = [
-  "arrays-hashing", "binary-search", "dp", "graphs", "heaps",
-  "linked-list", "sliding-window", "stack", "trees", "two-pointers",
-].map((n) => `src/data/problems/${n}.ts`)
+// One problem per file (B34); index.ts files are barrels, not content.
+const FILES = readdirSync("src/data/problems", { recursive: true })
+  .map((f) => String(f).split("\\").join("/"))
+  .filter((f) => f.endsWith(".ts") && !f.endsWith("index.ts"))
+  .map((f) => `src/data/problems/${f}`)
 
 /** split a C++ body into top-level definitions, keyed by the name they define */
 export function definitions(src) {

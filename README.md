@@ -37,6 +37,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
+| Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`) |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |
 | Compile every Java/C++ block (`npm run verify:code`) | `scripts/localsmith/verify.mjs` |
 | Run them against the Python oracle (`npm run verify:run`) | `scripts/localsmith/run.mjs` · inputs: `vectors.mjs` |

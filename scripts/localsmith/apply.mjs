@@ -8,7 +8,7 @@
 //
 // Run:  node scripts/localsmith/apply.mjs --in scripts/localsmith/out/codegen-all.json [--dry]
 
-import { readFileSync, writeFileSync } from "node:fs"
+import { readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { pathToFileURL } from "node:url"
 import { PROBLEMS } from "../../src/data/index.ts"
 
@@ -18,18 +18,11 @@ const arg = (k, d) => {
 }
 const dry = process.argv.includes("--dry")
 
-const FILES = [
-  "arrays-hashing",
-  "binary-search",
-  "dp",
-  "graphs",
-  "heaps",
-  "linked-list",
-  "sliding-window",
-  "stack",
-  "trees",
-  "two-pointers",
-].map((n) => `src/data/problems/${n}.ts`)
+// One problem per file (B34); index.ts files are barrels, not content.
+const FILES = readdirSync("src/data/problems", { recursive: true })
+  .map((f) => String(f).split("\\").join("/"))
+  .filter((f) => f.endsWith(".ts") && !f.endsWith("index.ts"))
+  .map((f) => `src/data/problems/${f}`)
 
 
 // Two independent translations of the same Python rarely land on identical
