@@ -22,6 +22,7 @@ import type {
   Quiz,
   StageModel,
   Tool,
+  Verdict,
 } from "./types.ts"
 
 // `nums` is the row on screen, whatever it holds: numbers for an array
@@ -42,6 +43,9 @@ export interface DFrame {
   corner?: string
   noChips?: boolean
   marks?: Record<number, ChipRole>
+  // The row to draw instead of the input, for an act that reorders it (a sort
+  // rung). Keys stay positional, so a sorted copy morphs rather than teleports.
+  row?: Cell[]
   state?: { label: string; value: Cell }[]
   answer?: unknown
 }
@@ -69,9 +73,19 @@ export interface DerivedSpec<C extends Cell = number> {
   subtitle: string
   reveals?: string[]
   sample?: C[]
-  presets: Record<string, { label: string; nums: C[]; info?: string }>
+  // `extra` carries the scalars a problem needs beside the row (a target, a
+  // k), and every one of them must be declared in `params` so the test-case
+  // drawer can offer a field for it.
+  presets: Record<
+    string,
+    { label: string; nums: C[]; info?: string; extra?: Record<string, number> }
+  >
   defaultPreset: string
   harder?: { preset: string; label: string }
+  params?: { key: string; label: string }[]
+  // Rejects an input the acts cannot honestly run — a binary search on an
+  // unsorted row would animate a lie. Default: everything is legal.
+  classify?: (d: Data<C>) => Verdict
   rungs: Rung<C>[]
   // A corner case plus the preset that loads it. `constraint` cites the line
   // in problem.constraints by index — a case is trivia until a constraint
@@ -127,7 +141,7 @@ export function deriveJourney<C extends Cell = number>(
       code: r.pseudo ? { pseudo: r.pseudo } : tabsFor(src as { python: string; java?: string; cpp?: string }),
       run: (d) => r.run(d),
       view: (f, d): StageModel => ({
-        chips: f.noChips ? null : chips(d.nums, f.marks),
+        chips: f.noChips ? null : chips(f.row ?? d.nums, f.marks),
         panel: f.state?.length
           ? {
               kind: "sorted",
@@ -147,7 +161,11 @@ export function deriveJourney<C extends Cell = number>(
   const presets = Object.fromEntries(
     Object.entries(spec.presets).map(([k, p]) => [
       k,
-      { label: p.label, info: p.info, make: () => ({ nums: [...p.nums] }) },
+      {
+        label: p.label,
+        info: p.info,
+        make: () => ({ nums: [...p.nums], ...p.extra }) as Data<C>,
+      },
     ])
   )
 
@@ -163,21 +181,31 @@ export function deriveJourney<C extends Cell = number>(
     presets,
     defaultPreset: spec.defaultPreset,
     harder: spec.harder,
-    classify: () => ({ ok: true }),
+    params: spec.params,
+    classify: spec.classify ?? (() => ({ ok: true })),
     describe: (d) =>
       spec.cells === "characters" ? d.nums.join("") : d.nums.join(", "),
-    parse: (text) => {
+    parse: (text, params) => {
+      const extra: Record<string, number> = {}
+      for (const { key } of spec.params ?? []) {
+        const v = Number(params[key])
+        if (!Number.isInteger(v)) return null
+        extra[key] = v
+      }
       if (spec.cells === "characters")
-        return { nums: [...text] as C[] }
+        return { nums: [...text] as C[], ...extra } as Data<C>
       const nums = text
         .split(/[^-\d]+/)
         .filter(Boolean)
         .map(Number)
         .filter((v) => Number.isInteger(v))
-      return nums.length ? ({ nums } as Data<C>) : null
+      return nums.length ? ({ nums, ...extra } as Data<C>) : null
     },
     reveals: spec.reveals,
-    sample: { nums: spec.sample ?? spec.presets[spec.defaultPreset].nums },
+    sample: {
+      nums: spec.sample ?? spec.presets[spec.defaultPreset].nums,
+      ...spec.presets[spec.defaultPreset].extra,
+    } as Data<C>,
     edgeCases: spec.edges.map<EdgeCase>((e) => ({
       ...e,
       constraint: problem.constraints[e.constraint],

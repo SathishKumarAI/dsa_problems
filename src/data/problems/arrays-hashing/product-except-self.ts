@@ -75,54 +75,6 @@ export const problem: Problem = {
     }
     return out;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 2, 3, 4] },
-      caption:
-        "Each answer is (everything left) × (everything right). Two sweeps, no division.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 6],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "focus" },
-      },
-      caption:
-        "After the left sweep the output holds the product of everything BEFORE each index: [1, 1, 2, 6].",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 6],
-        marks: { 3: "focus" },
-        labels: { 3: "right=1" },
-      },
-      caption:
-        "Now sweep back. At index 3 the running right product is still 1 → 6 × 1 = 6. Then it becomes 4.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 6],
-        marks: { 2: "focus", 3: "done" },
-        labels: { 2: "right=4" },
-      },
-      caption: "Index 2: 2 × 4 = 8. The running right product becomes 12.",
-    },
-    {
-      cells: {
-        values: [1, 1, 8, 6],
-        marks: { 1: "focus", 2: "done", 3: "done" },
-        labels: { 1: "right=12" },
-      },
-      caption: "Index 1: 1 × 12 = 12. Running product becomes 24.",
-    },
-    {
-      cells: {
-        values: [24, 12, 8, 6],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
-      },
-      caption:
-        "Index 0: 1 × 24 = 24. Two passes, one output array, and zeros needed no special handling.",
-    },
-  ],
   alternatives: [
     {
       name: "Product of the others, each time",

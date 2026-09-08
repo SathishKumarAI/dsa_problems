@@ -51,36 +51,6 @@ export const problem: Problem = {
     }
     return false;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 2, 3, 1] },
-      caption: "The set starts empty. Each step asks one question: seen this?",
-    },
-    {
-      cells: { values: [1, 2, 3, 1], marks: { 0: "focus" } },
-      caption: "1 is new → set {1}.",
-    },
-    {
-      cells: { values: [1, 2, 3, 1], marks: { 0: "done", 1: "focus" } },
-      caption: "2 is new → set {1, 2}.",
-    },
-    {
-      cells: {
-        values: [1, 2, 3, 1],
-        marks: { 0: "done", 1: "done", 2: "focus" },
-      },
-      caption: "3 is new → set {1, 2, 3}.",
-    },
-    {
-      cells: {
-        values: [1, 2, 3, 1],
-        marks: { 0: "compare", 3: "focus" },
-        labels: { 0: "seen", 3: "again" },
-      },
-      caption:
-        "1 is already in the set → return true, without reading further.",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force",

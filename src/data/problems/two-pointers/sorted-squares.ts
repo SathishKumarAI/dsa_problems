@@ -83,58 +83,6 @@ export const problem: Problem = {
     }
     return out;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [-4, -1, 0, 3, 10],
-        labels: { 0: "i", 4: "j" },
-      },
-      caption:
-        "Squares grow toward BOTH ends, so the largest is at one end or the other — never in the middle.",
-    },
-    {
-      cells: {
-        values: [-4, -1, 0, 3, 10],
-        marks: { 4: "focus" },
-        labels: { 0: "i", 4: "j" },
-      },
-      caption:
-        "16 vs 100 → 100 is larger. It goes in the last slot; j moves in.",
-    },
-    {
-      cells: {
-        values: [-4, -1, 0, 3, 10],
-        marks: { 0: "focus", 4: "done" },
-        labels: { 0: "i", 3: "j" },
-      },
-      caption: "16 vs 9 → now the LEFT end wins. 16 goes next; i moves in.",
-    },
-    {
-      cells: {
-        values: [-4, -1, 0, 3, 10],
-        marks: { 0: "done", 3: "focus", 4: "done" },
-        labels: { 1: "i", 3: "j" },
-      },
-      caption:
-        "1 vs 9 → 9. The answer is being filled from the back, in order.",
-    },
-    {
-      cells: {
-        values: [-4, -1, 0, 3, 10],
-        marks: { 0: "done", 1: "focus", 3: "done", 4: "done" },
-        labels: { 1: "i", 2: "j" },
-      },
-      caption: "1 vs 0 → 1, then the last slot takes 0. The pointers have met.",
-    },
-    {
-      cells: {
-        values: [0, 1, 9, 16, 100],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 4: "done" },
-      },
-      caption:
-        "[0, 1, 9, 16, 100] — sorted by construction, one pass, no comparison sort.",
-    },
-  ],
   alternatives: [
     {
       name: "Square, then sort",

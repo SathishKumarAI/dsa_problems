@@ -60,40 +60,6 @@ export const problem: Problem = {
     }
     return -1;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [-3, 0, 4, 9, 12], labels: { 0: "lo", 4: "hi" } },
-      caption: "Search 9. Range covers the whole array.",
-    },
-    {
-      cells: {
-        values: [-3, 0, 4, 9, 12],
-        marks: { 2: "compare" },
-        labels: { 0: "lo", 2: "mid", 4: "hi" },
-      },
-      caption: "mid = 2. nums[2] = 4 < 9 — target must be right of mid.",
-    },
-    {
-      cells: {
-        values: [-3, 0, 4, 9, 12],
-        marks: { 0: "done", 1: "done", 2: "done" },
-        labels: { 3: "lo", 4: "hi" },
-      },
-      caption: "Discard the left half. lo = mid + 1 = 3.",
-    },
-    {
-      cells: {
-        values: [-3, 0, 4, 9, 12],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "compare" },
-        labels: { 3: "lo·mid", 4: "hi" },
-      },
-      caption: "mid = 3. nums[3] = 9 — found, return 3.",
-    },
-    {
-      cells: { values: [-3, 0, 4, 9, 12], marks: { 3: "focus" } },
-      caption: "Two probes for five elements: each step halved the range.",
-    },
-  ],
   alternatives: [
     {
       name: "Linear scan",
