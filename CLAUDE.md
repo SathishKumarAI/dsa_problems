@@ -18,6 +18,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (items U1–U14 in the backlog) |
 | Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
 | How the animations work, and how to build one in Python / for an LLM | `docs/VISUALIZING.md` |
+| Which model wrote what, and what it cost in tokens | `docs/MODELS.md` |
 | What shipped when | `docs/WORKLOG.md` |
 | Why an item exists | `docs/RESEARCH.md`, `docs/PRD.md` |
 

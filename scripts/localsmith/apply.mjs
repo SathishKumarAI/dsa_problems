@@ -17,13 +17,14 @@ const arg = (k, d) => {
   return i > -1 ? (process.argv[i + 1] ?? true) : d
 }
 const dry = process.argv.includes("--dry")
+// write blocks the cross-model check flagged, and let the runner judge them
+const accept = process.argv.includes("--accept-disagreed")
 
 // One problem per file (B34); index.ts files are barrels, not content.
 const FILES = readdirSync("src/data/problems", { recursive: true })
   .map((f) => String(f).split("\\").join("/"))
   .filter((f) => f.endsWith(".ts") && !f.endsWith("index.ts"))
   .map((f) => `src/data/problems/${f}`)
-
 
 // Two independent translations of the same Python rarely land on identical
 // loop counts — one writes a for, the other a while plus a guard — so exact
@@ -51,20 +52,35 @@ function fileFor(id) {
   throw new Error(`no file holds ${id}`)
 }
 
+/** a string as it is WRITTEN inside a template literal, not as it reads */
+const escaped = (code) =>
+  code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${")
+
 /** the exact python literal as it appears in source, so we can anchor on it */
 function pythonLiteral(src, python, from) {
-  const needle = "python: `" + python + "`,"
+  // The value a template literal produces is not the bytes on disk: a Python
+  // line-continuation is ONE backslash in the string and TWO in the source, so
+  // anchoring on the raw value can never match. Use the written form — the
+  // same escaping block() emits. CRLF is the sibling trap, handled by the
+  // caller. This cost validate-bst every run until 2026-09-08.
+  const needle = "python: `" + escaped(python) + "`,"
   const at = src.indexOf(needle, from)
   if (at < 0) throw new Error("python literal not found verbatim")
   return { at, end: at + needle.length }
 }
 
 const block = (indent, lang, code) =>
-  `\n${indent}${lang}: \`${code.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${")}\`,`
+  `\n${indent}${lang}: \`${escaped(code)}\`,`
 
 function main() {
   const gen = JSON.parse(readFileSync(arg("--in"), "utf8"))
-  const report = { written: 0, skipped: [], failed: [], disagreed: [] }
+  const report = {
+    written: 0,
+    skipped: [],
+    failed: [],
+    disagreed: [],
+    accepted: [],
+  }
 
   for (const [id, rungs] of Object.entries(gen)) {
     const problem = PROBLEMS.find((p) => p.id === id)
@@ -86,12 +102,19 @@ function main() {
         continue
       }
       const verdict = adjudicate(out.agree)
-      if (verdict) {
-        // never write a block the two models modelled differently — that is
-        // the only automatic semantic signal available here
+      if (verdict && !accept) {
+        // Two models modelling the same Python differently is a smell, not a
+        // verdict. It was the only automatic semantic signal when this was
+        // written; since B27 the differential runner executes the block
+        // against the Python and is strictly stronger — on 2026-09-08 it
+        // caught a rotting-fruit BFS both models agreed on and both got wrong.
+        // So: still the default gate, but --accept-disagreed hands the
+        // decision to `verify:code` + `verify:run` instead of dropping the
+        // block on the floor.
         report.disagreed.push(`${id}/${key}: ${verdict}`)
         continue
       }
+      if (verdict) report.accepted.push(`${id}/${key}: ${verdict}`)
       const rung =
         key === "optimal"
           ? problem
@@ -124,7 +147,7 @@ function main() {
   }
 
   console.log(`written ${report.written}`)
-  for (const k of ["disagreed", "failed", "skipped"])
+  for (const k of ["accepted", "disagreed", "failed", "skipped"])
     if (report[k].length)
       console.log(`\n${k} (${report[k].length}):\n  ${report[k].join("\n  ")}`)
   if (dry) console.log("\n--dry: nothing was saved")

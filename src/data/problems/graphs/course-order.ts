@@ -146,6 +146,63 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
         if color[c] == WHITE and not dfs(c):
             return []
     return order[::-1]`,
+      java: `public int[] courseOrder(int num, int[][] prereqs) {
+    List<List<Integer>> after = new ArrayList<>();
+    for (int i = 0; i < num; i++) after.add(new ArrayList<>());
+    for (int[] p : prereqs) {
+        int a = p[0], b = p[1];
+        after.get(b).add(a);
+    }
+    final int WHITE = 0, GRAY = 1, BLACK = 2;
+    int[] color = new int[num];
+    List<Integer> order = new ArrayList<>();
+    Function<Integer, Boolean> dfs = new Function<>() {
+        @Override public Boolean apply(Integer c) {
+            color[c] = GRAY;
+            for (int nxt : after.get(c)) {
+                if (color[nxt] == GRAY) return false;
+                if (color[nxt] == WHITE && !apply(nxt)) return false;
+            }
+            color[c] = BLACK;
+            order.add(c);
+            return true;
+        }
+    };
+    for (int c = 0; c < num; c++) {
+        if (color[c] == WHITE && !dfs.apply(c)) return new int[0];
+    }
+    Collections.reverse(order);
+    int[] res = new int[order.size()];
+    for (int i = 0; i < order.size(); i++) res[i] = order.get(i);
+    return res;
+}
+`,
+      cpp: `vector<int> courseOrder(int num, const vector<vector<int>>& prereqs) {
+    vector<vector<int>> after(num);
+    for (const auto& p : prereqs) {
+        int a = p[0], b = p[1];
+        after[b].push_back(a);
+    }
+    const int WHITE = 0, GRAY = 1, BLACK = 2;
+    vector<int> color(num, WHITE);
+    vector<int> order;
+    function<bool(int)> dfs = [&](int c) {
+        color[c] = GRAY;
+        for (int nxt : after[c]) {
+            if (color[nxt] == GRAY) return false;
+            if (color[nxt] == WHITE && !dfs(nxt)) return false;
+        }
+        color[c] = BLACK;
+        order.push_back(c);
+        return true;
+    };
+    for (int c = 0; c < num; ++c) {
+        if (color[c] == WHITE && !dfs(c)) return {};
+    }
+    reverse(order.begin(), order.end());
+    return order;
+}
+`,
     },
   ],
 }

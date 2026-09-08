@@ -57,6 +57,79 @@ def minutes_to_rot(grid: list[list[int]]) -> int:
                     queue.append((nr, nc))
         minutes += 1
     return -1 if fresh else minutes`,
+  java: `public int minutesToRot(int[][] grid) {
+    int rows = grid.length;
+    int cols = grid[0].length;
+    ArrayDeque<int[]> queue = new ArrayDeque<>();
+    int fresh = 0;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == 2) {
+                queue.add(new int[]{r, c});
+            } else if (grid[r][c] == 1) {
+                fresh++;
+            }
+        }
+    }
+    int minutes = 0;
+    int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+    while (!queue.isEmpty() && fresh > 0) {
+        int level = queue.size();
+        for (int i = 0; i < level; i++) {
+            int[] cell = queue.pollFirst();
+            int r = cell[0];
+            int c = cell[1];
+            for (int[] d : dirs) {
+                int nr = r + d[0];
+                int nc = c + d[1];
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] == 1) {
+                    grid[nr][nc] = 2;
+                    fresh--;
+                    queue.add(new int[]{nr, nc});
+                }
+            }
+        }
+        minutes++;
+    }
+    return fresh == 0 ? minutes : -1;
+}
+`,
+  cpp: `int minutesToRot(vector<vector<int>>& grid) {
+    int rows = (int)grid.size();
+    int cols = (int)grid[0].size();
+    queue<pair<int,int>> q;
+    int fresh = 0;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == 2) {
+                q.emplace(r, c);
+            } else if (grid[r][c] == 1) {
+                fresh++;
+            }
+        }
+    }
+    int minutes = 0;
+    const vector<pair<int,int>> dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+    while (!q.empty() && fresh > 0) {
+        int level = (int)q.size();
+        for (int i = 0; i < level; i++) {
+            auto [r, c] = q.front();
+            q.pop();
+            for (auto d : dirs) {
+                int nr = r + d.first;
+                int nc = c + d.second;
+                if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] == 1) {
+                    grid[nr][nc] = 2;
+                    fresh--;
+                    q.emplace(nr, nc);
+                }
+            }
+        }
+        minutes++;
+    }
+    return fresh == 0 ? minutes : -1;
+}
+`,
   walkthrough: [
     {
       text: "2 1 1\n1 1 0\n0 1 1\n\nqueue: [(0,0)]   fresh = 6",

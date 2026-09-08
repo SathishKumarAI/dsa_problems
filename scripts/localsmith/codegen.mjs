@@ -161,8 +161,10 @@ export function gate(out, python) {
       problems.push(`${lang}: empty`)
       continue
     }
-    if (/```|^\s*(Here|This|The)\b/m.test(src)) problems.push(`${lang}: prose or fences`)
-    if (!LOOKS[lang].test(src)) problems.push(`${lang}: does not open with a function signature`)
+    if (/```|^\s*(Here|This|The)\b/m.test(src))
+      problems.push(`${lang}: prose or fences`)
+    if (!LOOKS[lang].test(src))
+      problems.push(`${lang}: does not open with a function signature`)
     if (!balanced(src)) problems.push(`${lang}: unbalanced braces`)
     if (/\bimport\b|#include|using namespace|static void main/.test(src))
       problems.push(`${lang}: imports or main()`)
@@ -184,7 +186,12 @@ const promptFor = (name, python) =>
 
 async function translate(server, name, python) {
   return completeJson(
-    { ...server, prompt: promptFor(name, python), temperature: 0.1, maxTokens: 1400 },
+    {
+      ...server,
+      prompt: promptFor(name, python),
+      temperature: 0.1,
+      maxTokens: 1400,
+    },
     (v) => gate(v, python)
   )
 }
@@ -193,7 +200,11 @@ async function translate(server, name, python) {
 export function pending(p) {
   const rungs = [
     { key: "optimal", name: p.approach.slice(0, 40), code: p },
-    ...(p.alternatives ?? []).map((a) => ({ key: a.name, name: a.name, code: a })),
+    ...(p.alternatives ?? []).map((a) => ({
+      key: a.name,
+      name: a.name,
+      code: a,
+    })),
   ]
   return rungs.filter((r) => !r.code.java || !r.code.cpp)
 }
@@ -216,6 +227,8 @@ async function main() {
   const out = {}
   let done = 0
   let tokens = 0
+  let inTokens = 0
+  let outTokens = 0
   const t0 = Date.now()
   for (const p of targets) {
     const rungs = pending(p)
@@ -228,6 +241,8 @@ async function main() {
       try {
         const a = await translate(PRIMARY, r.name, py)
         tokens += a.tokens
+        inTokens += a.inTokens ?? 0
+        outTokens += a.outTokens ?? 0
         // the second opinion: same task, different model. Agreement on the
         // control-flow fingerprint is the only automatic semantic signal
         // available without a compiler, so disagreement is surfaced, never hidden.
@@ -236,9 +251,13 @@ async function main() {
           try {
             const b = await translate(SECOND, r.name, py)
             tokens += b.tokens
+            inTokens += b.inTokens ?? 0
+            outTokens += b.outTokens ?? 0
             const fa = shape(a.value.java, "java")
             const fb = shape(b.value.java, "java")
-            agree = sameShape(fa, fb) ? "agree" : `DISAGREE ${JSON.stringify(fa)} vs ${JSON.stringify(fb)}`
+            agree = sameShape(fa, fb)
+              ? "agree"
+              : `DISAGREE ${JSON.stringify(fa)} vs ${JSON.stringify(fb)}`
           } catch (e) {
             agree = `second model failed: ${e.message.slice(0, 60)}`
           }
@@ -255,7 +274,8 @@ async function main() {
   const file = arg("--out", "scripts/localsmith/out/codegen.json")
   writeFileSync(file, JSON.stringify(out, null, 2))
   console.log(
-    `\n${done} blocks in ${((Date.now() - t0) / 1000).toFixed(0)}s, ${tokens} local tokens → ${file}`
+    `\n${done} blocks in ${((Date.now() - t0) / 1000).toFixed(0)}s → ${file}
+local tokens: ${inTokens} in + ${outTokens} out = ${inTokens + outTokens}${done ? ` (${Math.round((inTokens + outTokens) / done)} per block)` : ""}`
   )
 }
 

@@ -396,6 +396,7 @@ function main() {
   const dir = mkdtempSync(join(tmpdir(), "dsa-run-"))
   // reuse verify.mjs's scaffolding so the two gates agree on what a block may assume
   const headers = `#include <algorithm>
+#include <cctype>
 #include <climits>
 #include <cmath>
 #include <deque>

@@ -16,7 +16,7 @@ export async function models(base) {
   return (j.data ?? []).map((m) => m.id)
 }
 
-/** one completion; returns { text, tokens, ms } */
+/** one completion; returns { text, inTokens, outTokens, tokens, ms } */
 export async function complete(
   { base, model, prompt, system, temperature = 0.2, maxTokens = 1200 },
   { timeoutMs = 180000 } = {}
@@ -41,9 +41,16 @@ export async function complete(
     })
     if (!r.ok) throw new Error(`${r.status} ${await r.text().catch(() => "")}`)
     const j = await r.json()
+    // Both halves, because only counting what came back hides the larger
+    // number: the prompt carries the house style and two worked examples, so
+    // input dominates output on this task (docs/MODELS.md).
+    const inTokens = j.usage?.prompt_tokens ?? 0
+    const outTokens = j.usage?.completion_tokens ?? 0
     return {
       text: j.choices?.[0]?.message?.content ?? "",
-      tokens: j.usage?.completion_tokens ?? 0,
+      inTokens,
+      outTokens,
+      tokens: outTokens, // kept: existing callers mean "produced"
       ms: Date.now() - t0,
     }
   } finally {
@@ -74,8 +81,7 @@ export function extractJson(text) {
     if (c === '"') inStr = !inStr
     if (inStr) continue
     if (c === "{") depth++
-    if (c === "}" && --depth === 0)
-      return JSON.parse(body.slice(start, i + 1))
+    if (c === "}" && --depth === 0) return JSON.parse(body.slice(start, i + 1))
   }
   throw new Error("unbalanced JSON in reply")
 }
@@ -83,19 +89,25 @@ export function extractJson(text) {
 /** complete → extract JSON → validate; retry with the failure fed back */
 export async function completeJson(opts, validate, tries = 3) {
   let last = ""
+  // a retry costs another prompt, so the totals accumulate across attempts
+  let inTokens = 0
+  let outTokens = 0
   for (let t = 0; t < tries; t++) {
-    const { text, tokens, ms } = await complete({
+    const reply = await complete({
       ...opts,
       prompt:
         t === 0
           ? opts.prompt
           : `${opts.prompt}\n\nYour previous reply was rejected: ${last}\nReturn ONLY the corrected JSON.`,
     })
+    const { text, tokens, ms } = reply
+    inTokens += reply.inTokens ?? 0
+    outTokens += reply.outTokens ?? 0
     try {
       const value = extractJson(text)
       const problem = validate?.(value)
       if (problem) throw new Error(problem)
-      return { value, tokens, ms, attempts: t + 1 }
+      return { value, tokens, inTokens, outTokens, ms, attempts: t + 1 }
     } catch (e) {
       last = e.message
     }
