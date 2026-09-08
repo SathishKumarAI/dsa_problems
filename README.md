@@ -40,7 +40,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`) |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |
 | Compile every Java/C++ block (`npm run verify:code`) | `scripts/localsmith/verify.mjs` |
-| Run them against the Python oracle (`npm run verify:run`) | `scripts/localsmith/run.mjs` · inputs: `vectors.mjs` |
+| Run them against the Python oracle (`npm run verify:run`) | `scripts/localsmith/run.mjs` · inputs: `vectors.mjs` · its own checks: `run.test.mjs` |
 | UI smoke test (routes, earn loop, rails, deep links) | `test/ui-smoke.test.mjs` · driver: `test/browser.mjs` |
 | **HTTP API** — every endpoint | `src/api/routes.ts` (contract: `docs/API.md`) |
 | API transport (HTTP vs in-process) | `src/api/client.ts` |

@@ -10,10 +10,10 @@ through to the differential runner. Nothing is in flight, no branch is open, eve
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **61 tests** |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **65 tests** |
 | The interface, in a real browser | `npm run test:ui` | **42 checks**, ~100 s |
 | Every Java and C++ block compiles | `npm run verify:code` | **154 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **442 comparisons**, 0 disagreed (66 launches refused by Windows — B31) |
+| …and agrees with the Python | `npm run verify:run` | **508 comparisons**, 0 disagreed, ~1m40s |
 
 The last two need a toolchain: `mise use -g java@temurin-21` and `scoop install main/gcc`, both
 user-space. They skip **loudly** when it is missing rather than passing quietly.
@@ -37,11 +37,12 @@ makes the rest cheap is:
 1. ~~**B34 — one problem per file.**~~ Done 2026-09-08 (`refactor/data-one-problem-per-file`):
    one problem is one `src/data/problems/<pattern>/<id>.ts`, the directory `index.ts` a barrel.
    `src/data/problems/README.md` is its change → file map.
-2. **B31 — one binary per block, not per case.** The runner compiles and launches once per case;
-   Windows refused **66 of 508** launches on the 2026-09-08 run (28 the run before — it is noise,
-   and that spread is the argument). Emitting a driver that loops over every case removes the
-   flake and cuts compiles about fourfold. **This is the next action.**
-3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. The gates make this
+2. ~~**B31 — one binary per block, not per case.**~~ Done 2026-09-08
+   (`perf/run-one-binary-per-block`): 508 builds became 120, 7m17s became 1m38s, same 508
+   comparisons. The launch flake it was chasing had measured 66, 28 and 0 refusals on three
+   consecutive runs of the old code — that spread was the argument.
+3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. **This is the next
+   action.** The gates make this
    verifiable in a way it was not before: `check` for the content rules, `verify:code` for the
    translations, `verify:run` against the Python.
 4. **Problem #6** in the journey pipeline — Single Buy/Sell Profit, which can reuse the `bars` panel
@@ -74,9 +75,9 @@ Say the word and any of the three is a small branch to reverse.
   stacked PR. Merge a stack from the tip, or retarget every base first. This cost a recovery rebase
   on 2026-09-05.
 - Windows: `child.kill()` leaves the node grandchild holding the port. Kill the tree.
-- Windows also refuses to launch a freshly compiled `.exe` at random (about 5 % of the time), which
-  surfaces as `spawnSync … UNKNOWN`. It says nothing about the code; `verify:run` counts those
-  separately from disagreements (B31 removes the cause).
+- Windows refuses to launch a freshly compiled `.exe` at random. It says nothing about the code.
+  B31 cut the launches from 508 to 120, so it is rare now rather than constant; `verify:run` still
+  counts a refusal apart from a disagreement.
 - A JS template literal normalises CRLF to LF in its **value**, so a string imported from
   `src/data/**` can never be found verbatim in the file on disk with `git autocrlf` on. Normalise
   before matching — this cost an hour in `apply.mjs`.
