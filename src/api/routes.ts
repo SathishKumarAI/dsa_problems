@@ -87,11 +87,22 @@ export function journeyMeta(j: AnyJourney) {
   }
 }
 
-const isData = (d: unknown): d is { nums: number[]; [k: string]: unknown } =>
+// `nums` is the row a journey animates: integers for an array problem, single
+// characters for a string one (derived journeys, engine/derive.ts). It stays a
+// narrow guard on purpose — this is the trust boundary, and everything past it
+// is fed straight to a generator: one homogeneous row of integers, or one of
+// one-character strings. Nothing else, and never a mix.
+const isRow = (nums: unknown[]) =>
+  nums.every((n) => Number.isInteger(n)) ||
+  nums.every((n) => typeof n === "string" && [...(n as string)].length === 1)
+
+const isData = (
+  d: unknown
+): d is { nums: (number | string)[]; [k: string]: unknown } =>
   !!d &&
   typeof d === "object" &&
   Array.isArray((d as { nums?: unknown }).nums) &&
-  (d as { nums: unknown[] }).nums.every((n) => Number.isInteger(n))
+  isRow((d as { nums: unknown[] }).nums)
 
 function runAct(
   j: AnyJourney,
@@ -101,7 +112,7 @@ function runAct(
 ): ApiResponse {
   const act = j.acts.find((a) => a.key === actKey)
   if (!act) return err(404, `unknown act ${String(actKey)}`)
-  if (!isData(data)) return err(400, "data.nums must be an integer array")
+  if (!isData(data)) return err(400, "data.nums must be a row of integers or of single characters")
   try {
     return ok({
       frames: drain(act.run(data, { trace: (trace as Trace | null) ?? null })),
@@ -114,7 +125,7 @@ function runAct(
 // steps per algorithm act on this input, only for acts up to `upto`
 // (the caller's unlocked count) — the chart never spoils a locked act
 function chart(j: AnyJourney, data: unknown, upto: unknown): ApiResponse {
-  if (!isData(data)) return err(400, "data.nums must be an integer array")
+  if (!isData(data)) return err(400, "data.nums must be a row of integers or of single characters")
   const n = Number.isInteger(upto) ? (upto as number) : j.acts.length
   const rows = j.acts
     .slice(1, n)
@@ -189,7 +200,7 @@ export function route(
       case "classify":
         return isData(body.data)
           ? ok(j.classify(body.data))
-          : err(400, "data.nums must be an integer array")
+          : err(400, "data.nums must be a row of integers or of single characters")
       case "run":
         return runAct(j, body.act, body.data, body.trace)
       case "chart":

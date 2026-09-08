@@ -20,6 +20,11 @@ complexities from `alternatives[]`, the constraint each corner case cites, the L
 supplies the `{nums}` plumbing (`classify`, `describe`, `parse`, presets). You write only what a
 Problem cannot hold: act framing, quiz, corner cases, and one generator per rung.
 
+A row of characters instead of numbers is one line — `cells: "characters"` on the spec, and
+`deriveJourney<string>(...)`. It changes `describe`/`parse` (the test-case drawer reads and writes
+`"abcabcbb"`, not `97, 98, 99`) and nothing else; the API's row guard accepts a homogeneous row of
+integers or of single characters, never a mix (`api/routes.ts`, `isRow`).
+
 Two things to know before you start:
 
 - **The static `walkthrough` goes.** `problems.test.ts` forbids a problem from having both, and it
