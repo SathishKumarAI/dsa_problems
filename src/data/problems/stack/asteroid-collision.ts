@@ -91,43 +91,6 @@ export const problem: Problem = {
     }
     return stack;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [10, 2, -5] },
-      caption:
-        "Positive moves right, negative moves left. Only a positive followed by a negative can ever meet.",
-    },
-    {
-      cells: { values: [10, 2, -5], marks: { 0: "focus" } },
-      caption: "10 moves right → pushed. Stack: [10].",
-    },
-    {
-      cells: { values: [10, 2, -5], marks: { 0: "window", 1: "focus" } },
-      caption:
-        "2 also moves right → pushed. Two right-movers never collide. Stack: [10, 2].",
-    },
-    {
-      cells: {
-        values: [10, 2, -5],
-        marks: { 0: "window", 1: "compare", 2: "focus" },
-      },
-      caption:
-        "−5 arrives and meets 2 first — the most recent right-mover. 2 < 5, so 2 is destroyed and the fight continues.",
-    },
-    {
-      cells: {
-        values: [10, 2, -5],
-        marks: { 0: "compare", 1: "done", 2: "compare" },
-      },
-      caption:
-        "Now −5 meets 10. 10 > 5, so the newcomer is destroyed instead. One arrival, two collisions.",
-    },
-    {
-      cells: { values: [10, 2, -5], marks: { 0: "done" } },
-      caption:
-        "Answer [10]. The loop is what let a single arrival resolve a whole chain.",
-    },
-  ],
   alternatives: [
     {
       name: "Sweep until nothing changes",

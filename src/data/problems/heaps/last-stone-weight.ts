@@ -70,40 +70,6 @@ def last_stone_weight(stones: list[int]) -> int:
     }
     return heap.empty() ? 0 : heap.top();
 }`,
-  walkthrough: [
-    {
-      cells: { values: [2, 7, 4, 1, 8, 1] },
-      caption: "Six stones. The heap will keep the heaviest at the top.",
-    },
-    {
-      cells: {
-        values: [2, 7, 4, 1, 8, 1],
-        marks: { 1: "focus", 4: "focus" },
-        labels: { 4: "8", 1: "7" },
-      },
-      caption:
-        "Heaviest two: 8 and 7. They differ, so a stone of weight 1 goes back.",
-    },
-    {
-      cells: {
-        values: [2, 4, 1, 1, 1],
-        marks: { 1: "focus", 0: "focus" },
-      },
-      caption: "Pile is now {2, 4, 1, 1, 1}. Heaviest two: 4 and 2 → push 2.",
-    },
-    {
-      cells: { values: [2, 1, 1, 1], marks: { 0: "focus", 1: "focus" } },
-      caption: "Pile {2, 1, 1, 1}. Heaviest two: 2 and 1 → push 1.",
-    },
-    {
-      cells: { values: [1, 1, 1], marks: { 0: "compare", 1: "compare" } },
-      caption: "Two equal stones destroy each other, leaving one.",
-    },
-    {
-      cells: { values: [1], marks: { 0: "done" } },
-      caption: "One stone left → the answer is 1.",
-    },
-  ],
   alternatives: [
     {
       name: "Re-sort every round",

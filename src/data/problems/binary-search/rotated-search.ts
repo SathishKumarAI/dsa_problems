@@ -80,59 +80,6 @@ export const problem: Problem = {
     }
     return -1;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [4, 5, 6, 7, 0, 1, 2],
-        labels: { 0: "lo", 6: "hi" },
-      },
-      caption:
-        "Looking for 0. The array is sorted, then cut between 7 and 0 and swapped.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 7, 0, 1, 2],
-        marks: { 0: "window", 1: "window", 2: "window", 3: "focus" },
-        labels: { 3: "mid" },
-      },
-      caption:
-        "mid = 7. nums[lo] = 4 <= 7, so the LEFT half [4,5,6,7] is in plain ascending order.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 7, 0, 1, 2],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
-        labels: { 4: "lo", 6: "hi" },
-      },
-      caption:
-        "Is 0 between 4 and 7? No — so it cannot be in the sorted half, and the whole left side is discarded.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 7, 0, 1, 2],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 5: "focus" },
-        labels: { 4: "lo", 5: "mid", 6: "hi" },
-      },
-      caption:
-        "mid = 1. nums[lo] = 0 <= 1, so the left half [0,1] is sorted, and 0 IS in [0, 1) → keep it.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 7, 0, 1, 2],
-        marks: { 4: "focus" },
-        labels: { 4: "lo·mid·hi" },
-      },
-      caption: "mid = 0 → found at index 4, in three comparisons.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 7, 0, 1, 2],
-        marks: { 4: "done" },
-      },
-      caption:
-        "The pivot was never located. Each step only had to know which SIDE was ordered.",
-    },
-  ],
   alternatives: [
     {
       name: "Scan for it",

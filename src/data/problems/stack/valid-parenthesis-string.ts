@@ -93,50 +93,6 @@ export const problem: Problem = {
     }
     return low == 0;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["(", "*", ")", ")"] },
-      caption:
-        "Two numbers travel with the sweep: the fewest and the most unmatched opens any reading could have.",
-    },
-    {
-      cells: { values: ["(", "*", ")", ")"], marks: { 0: "focus" } },
-      caption:
-        "'(' raises both. low = 1, high = 1 — every reading agrees so far.",
-    },
-    {
-      cells: {
-        values: ["(", "*", ")", ")"],
-        marks: { 0: "window", 1: "focus" },
-      },
-      caption:
-        "'*' splits the possibilities: as ')' it gives 0, as '(' it gives 2. low = 0, high = 2.",
-    },
-    {
-      cells: {
-        values: ["(", "*", ")", ")"],
-        marks: { 0: "window", 1: "window", 2: "focus" },
-      },
-      caption:
-        "')' lowers both → low = −1, high = 1. The −1 is clamped to 0: that reading was already dead.",
-    },
-    {
-      cells: {
-        values: ["(", "*", ")", ")"],
-        marks: { 0: "window", 1: "window", 2: "window", 3: "focus" },
-      },
-      caption:
-        "')' again → low = −1 clamped to 0, high = 0. high never went negative, so a reading survives.",
-    },
-    {
-      cells: {
-        values: ["(", "*", ")", ")"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
-      },
-      caption:
-        "low is 0 at the end → true, via the reading where '*' is '('. Two integers replaced the whole tree.",
-    },
-  ],
   alternatives: [
     {
       name: "Try both meanings for every star",

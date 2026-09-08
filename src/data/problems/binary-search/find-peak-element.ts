@@ -46,42 +46,24 @@ export const problem: Problem = {
         else:
             hi = mid
     return lo`,
-  walkthrough: [
-    {
-      cells: { values: [1, 2, 1, 3, 5, 6, 4], labels: { 0: "lo", 6: "hi" } },
-      caption:
-        "Not sorted — but the SLOPE at the midpoint still decides a direction.",
-    },
-    {
-      cells: {
-        values: [1, 2, 1, 3, 5, 6, 4],
-        marks: { 3: "focus", 4: "compare" },
-        labels: { 3: "mid" },
-      },
-      caption: "nums[3]=3 < nums[4]=5 → rising. A peak must lie to the right.",
-    },
-    {
-      cells: {
-        values: [1, 2, 1, 3, 5, 6, 4],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 5: "focus" },
-        labels: { 5: "mid" },
-      },
-      caption:
-        "nums[5]=6 > nums[6]=4 → falling. Keep the midpoint and everything left of it.",
-    },
-    {
-      cells: {
-        values: [1, 2, 1, 3, 5, 6, 4],
-        marks: { 4: "focus", 5: "compare" },
-        labels: { 4: "mid" },
-      },
-      caption: "nums[4]=5 < nums[5]=6 → rising again; lo moves to 5.",
-    },
-    {
-      cells: { values: [1, 2, 1, 3, 5, 6, 4], marks: { 5: "done" } },
-      caption: "The range is one wide: index 5. Three comparisons, no scan.",
-    },
-  ],
+  java: `public int findPeakElement(int[] nums) {
+    int lo = 0, hi = nums.length - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] < nums[mid + 1]) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}`,
+  cpp: `int findPeakElement(const vector<int>& nums) {
+    int lo = 0, hi = (int)nums.size() - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] < nums[mid + 1]) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}`,
   alternatives: [
     {
       name: "Scan for the turn",
@@ -93,6 +75,18 @@ export const problem: Problem = {
         if nums[i] > nums[i + 1]:
             return i
     return len(nums) - 1`,
+      java: `public int findPeakElement(int[] nums) {
+    for (int i = 0; i < nums.length - 1; i++) {
+        if (nums[i] > nums[i + 1]) return i;
+    }
+    return nums.length - 1;
+}`,
+      cpp: `int findPeakElement(const vector<int>& nums) {
+    for (int i = 0; i < (int)nums.size() - 1; i++) {
+        if (nums[i] > nums[i + 1]) return i;
+    }
+    return (int)nums.size() - 1;
+}`,
     },
   ],
 }

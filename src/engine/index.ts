@@ -10,6 +10,13 @@ import { bestTrade } from "../data/journeys/best-trade.ts"
 import { classicBinarySearch } from "../data/journeys/classic-binary-search.ts"
 import { containsDuplicate } from "../data/journeys/contains-duplicate.ts"
 import { dailyWarmer } from "../data/journeys/daily-warmer.ts"
+import { asteroidCollision } from "../data/journeys/asteroid-collision.ts"
+import { lastStoneWeight } from "../data/journeys/last-stone-weight.ts"
+import { rotatedSearch } from "../data/journeys/rotated-search.ts"
+import { charReplacement } from "../data/journeys/char-replacement.ts"
+import { search2dMatrix } from "../data/journeys/search-2d-matrix.ts"
+import { validPalindrome } from "../data/journeys/valid-palindrome.ts"
+import { validParenthesisString } from "../data/journeys/valid-parenthesis-string.ts"
 import { coinChangeMin } from "../data/journeys/coin-change-min.ts"
 import { kthLargestElement } from "../data/journeys/kth-largest-element.ts"
 import { largestRectangle } from "../data/journeys/largest-rectangle.ts"
@@ -17,6 +24,9 @@ import { trapRainWater } from "../data/journeys/trap-rain-water.ts"
 import { windowMaximum } from "../data/journeys/window-maximum.ts"
 import { longestIncreasingRun } from "../data/journeys/longest-increasing-run.ts"
 import { rotatedMinimum } from "../data/journeys/rotated-minimum.ts"
+import { findPeakElement } from "../data/journeys/find-peak-element.ts"
+import { searchInsertPosition } from "../data/journeys/search-insert-position.ts"
+import { sortColors } from "../data/journeys/sort-colors.ts"
 import { firstLastPosition } from "../data/journeys/first-last-position.ts"
 import { longestConsecutiveRun } from "../data/journeys/longest-consecutive-run.ts"
 import { subarraySumK } from "../data/journeys/subarray-sum-k.ts"
@@ -54,6 +64,16 @@ export const JOURNEYS: AnyJourney[] = [
   largestRectangle as unknown as AnyJourney,
   kthLargestElement as unknown as AnyJourney,
   windowMaximum as unknown as AnyJourney,
+  searchInsertPosition as unknown as AnyJourney,
+  findPeakElement as unknown as AnyJourney,
+  sortColors as unknown as AnyJourney,
+  asteroidCollision as unknown as AnyJourney,
+  lastStoneWeight as unknown as AnyJourney,
+  rotatedSearch as unknown as AnyJourney,
+  validPalindrome as unknown as AnyJourney,
+  validParenthesisString as unknown as AnyJourney,
+  search2dMatrix as unknown as AnyJourney,
+  charReplacement as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

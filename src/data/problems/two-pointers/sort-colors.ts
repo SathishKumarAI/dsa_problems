@@ -78,66 +78,6 @@ export const problem: Problem = {
     }
     return nums;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [2, 0, 2, 1, 1, 0],
-        labels: { 0: "low·mid", 5: "high" },
-      },
-      caption:
-        "low and mid start at the front, high at the back. Nothing is placed yet.",
-    },
-    {
-      cells: {
-        values: [0, 0, 2, 1, 1, 2],
-        marks: { 5: "done" },
-        labels: { 0: "low·mid", 4: "high" },
-      },
-      caption:
-        "nums[mid] = 2 → swap it to the back and retreat high. mid does NOT move: the 0 that arrived is unexamined.",
-    },
-    {
-      cells: {
-        values: [0, 0, 2, 1, 1, 2],
-        marks: { 0: "done", 5: "done" },
-        labels: { 1: "low·mid", 4: "high" },
-      },
-      caption:
-        "Now mid sees a 0 → swap with low (itself here) and advance both.",
-    },
-    {
-      cells: {
-        values: [0, 0, 2, 1, 1, 2],
-        marks: { 0: "done", 1: "done", 5: "done" },
-        labels: { 2: "low·mid", 4: "high" },
-      },
-      caption: "Another 0 → advance again. The 0 region is now two wide.",
-    },
-    {
-      cells: {
-        values: [0, 0, 1, 1, 2, 2],
-        marks: { 0: "done", 1: "done", 4: "done", 5: "done" },
-        labels: { 2: "low·mid", 3: "high" },
-      },
-      caption:
-        "The 2 at mid goes to the back; high retreats. The 1s in the middle just let mid walk past.",
-    },
-    {
-      cells: {
-        values: [0, 0, 1, 1, 2, 2],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-        },
-      },
-      caption:
-        "mid has passed high, so every element is placed. One pass, three indices, no counting.",
-    },
-  ],
   alternatives: [
     {
       name: "Count, then rewrite",
