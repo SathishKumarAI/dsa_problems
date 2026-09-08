@@ -4,6 +4,8 @@ import { problem as dailyWarmer } from "./daily-warmer.ts"
 import { problem as largestRectangle } from "./largest-rectangle.ts"
 import { problem as rpnEval } from "./rpn-eval.ts"
 import { problem as generateParens } from "./generate-parens.ts"
+import { problem as asteroidCollision } from "./asteroid-collision.ts"
+import { problem as validParenthesisString } from "./valid-parenthesis-string.ts"
 
 export const stack: Problem[] = [
   balancedBrackets,
@@ -11,4 +13,6 @@ export const stack: Problem[] = [
   largestRectangle,
   rpnEval,
   generateParens,
+  asteroidCollision,
+  validParenthesisString,
 ]

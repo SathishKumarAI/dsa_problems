@@ -5,6 +5,8 @@ import { problem as threeSumZero } from "./three-sum-zero.ts"
 import { problem as validPalindrome } from "./valid-palindrome.ts"
 import { problem as trapRainWater } from "./trap-rain-water.ts"
 import { problem as sortColors } from "./sort-colors.ts"
+import { problem as moveZeroes } from "./move-zeroes.ts"
+import { problem as sortedSquares } from "./sorted-squares.ts"
 
 export const twoPointers: Problem[] = [
   sortedPairSum,
@@ -13,4 +15,6 @@ export const twoPointers: Problem[] = [
   validPalindrome,
   trapRainWater,
   sortColors,
+  moveZeroes,
+  sortedSquares,
 ]

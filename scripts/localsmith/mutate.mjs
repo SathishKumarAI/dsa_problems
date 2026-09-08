@@ -101,6 +101,20 @@ export const KNOWN_EQUIVALENT = {
     "narrowing to `hi = mid` instead of `mid - 1` leaves in range an element already known not to be the target, which costs one iteration and changes no answer",
   "rotated-search/+ 1 dropped":
     "unproven: `lo = mid` re-tests an element already known not to be the target, so the result is unchanged — but unlike the `hi` case it can fail to terminate when lo == hi, and no case in this set reaches that state through the right-sorted branch",
+  "sorted-squares/> becomes >=":
+    "on a tie the two ends square to the SAME value, so taking either writes the same number — the output array is identical, only which pointer moved differs",
+  "asteroid-collision/< becomes <=":
+    "an asteroid is never 0 (stated constraint), so `a < 0` and `a <= 0` select the same asteroids",
+  "asteroid-collision/> becomes >=":
+    "same constraint from the other side: the stack never holds a 0, so `top > 0` and `top >= 0` agree",
+  "valid-parenthesis-string/< becomes <=":
+    "the clamp assigns 0 to low; running it when low is already 0 writes the value it holds",
+  "first-last-position/< becomes <=":
+    "the `==` branch above has already returned on equality, so this comparison never sees an equal value",
+  "count-provinces/+ 1 dropped":
+    "the inner loop would start at j == i, and matrix[i][i] is 1 by the stated constraint — so it unions i with itself, which find() rejects as already the same group",
+  "network-delay/< becomes <=":
+    "relaxing on an EQUAL distance stores the value already stored and re-pushes a duplicate the heap later skips; the settled distances are unchanged",
   "k-closest-points/> becomes >=":
     "unproven: on a distance tie the heap keeps one of two equally-close points and both are valid answers, so a separating case may not exist — searched, not proved",
 }

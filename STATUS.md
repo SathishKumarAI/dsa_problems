@@ -12,15 +12,15 @@ through to the differential runner. Nothing is in flight, no branch is open, eve
 |---|---|---|
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **67 tests** |
 | The interface, in a real browser | `npm run test:ui` | **42 checks**, ~100 s |
-| Every Java and C++ block compiles | `npm run verify:code` | **266 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **1164 comparisons**, 0 disagreed, ~3m |
-| …on cases strong enough to notice | `npm run verify:vectors` | **252 mutants, 91% caught**, 0 unexplained |
+| Every Java and C++ block compiles | `npm run verify:code` | **310 blocks**, 0 failed |
+| …and agrees with the Python | `npm run verify:run` | **1166 comparisons**, 0 disagreed, ~4m |
+| …on cases strong enough to notice | `npm run verify:vectors` | **299 mutants, 90% caught**, 0 unexplained |
 
 The last two need a toolchain: `mise use -g java@temurin-21` and `scoop install main/gcc`, both
 user-space. They skip **loudly** when it is missing rather than passing quietly.
 
 On screen: five journeys built to completion (Two Sum, Single Number, Triplets Summing to Zero,
-Pair Sum in Sorted Array, Widest Container), a practice set of 52 problems carrying Python, Java and
+Pair Sum in Sorted Array, Widest Container), a practice set of 62 problems carrying Python, Java and
 C++ on every approach, a sorting/search/graph visualizer, SQL drills and stats flashcards,
 inside a shell with collapsible rails, a settings dialog and a keyboard map.
 
@@ -48,8 +48,9 @@ makes the rest cheap is:
    comparisons. The launch flake it was chasing had measured 66, 28 and 0 refusals on three
    consecutive runs of the old code — that spread was the argument.
 3. **B33 — fifty more problems**, in batches of about ten, each batch a PR. Batches 1 and 2
-   landed 2026-09-08 (31 → 42 → 52); **batch 3 is the next action**, and 29 problems remain to
-   reach 81. Write all three languages inline — `docs/MODELS.md` records why the local model is
+   landed 2026-09-08 (31 → 42 → 52 → 62); **batch 4 is the next action**, and 19 problems remain
+   to reach 81. From batch 4 the ask is PYTHON ONLY — Java and C++ are optional until a problem
+   has a journey, and can be backfilled by `scripts/localsmith` later. Write all three languages inline — `docs/MODELS.md` records why the local model is
    for backfill only, with the numbers. Run `verify:vectors` BEFORE opening the PR: on batch 2 it
    found 19 holes in my own first-draft vectors. The gates make this
    verifiable in a way it was not before: `check` for the content rules, `verify:code` for the
