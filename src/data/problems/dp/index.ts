@@ -5,6 +5,8 @@ import { problem as coinChangeMin } from "./coin-change-min.ts"
 import { problem as longestIncreasingRun } from "./longest-increasing-run.ts"
 import { problem as maxSubarray } from "./max-subarray.ts"
 import { problem as longestCommonSubsequence } from "./longest-common-subsequence.ts"
+import { problem as countingBits } from "./counting-bits.ts"
+import { problem as partitionEqualSubset } from "./partition-equal-subset.ts"
 
 export const dp: Problem[] = [
   stairWays,
@@ -13,4 +15,6 @@ export const dp: Problem[] = [
   longestIncreasingRun,
   maxSubarray,
   longestCommonSubsequence,
+  countingBits,
+  partitionEqualSubset,
 ]

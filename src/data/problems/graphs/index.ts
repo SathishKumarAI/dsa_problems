@@ -4,6 +4,8 @@ import { problem as courseOrder } from "./course-order.ts"
 import { problem as rottingFruit } from "./rotting-fruit.ts"
 import { problem as maxIslandArea } from "./max-island-area.ts"
 import { problem as wordSearch } from "./word-search.ts"
+import { problem as countProvinces } from "./count-provinces.ts"
+import { problem as networkDelay } from "./network-delay.ts"
 
 export const graphs: Problem[] = [
   islandCount,
@@ -11,4 +13,6 @@ export const graphs: Problem[] = [
   rottingFruit,
   maxIslandArea,
   wordSearch,
+  countProvinces,
+  networkDelay,
 ]

@@ -343,6 +343,157 @@ export const VECTORS = {
       ["ab", "ba"],
     ],
   },
+  "subarray-sum-k": {
+    params: ["int[]", "int"],
+    ret: "int",
+    exercises:
+      "a prefix sum REVISITED because of negatives, so the map must count occurrences rather than store one index — [1,-1,0] with k=0 answers 3; and a stretch starting at index 0, which only the seeded {0:1} finds",
+    cases: [
+      [[1, 1, 1], 2],
+      [[1, -1, 0], 0],
+      [[3], 3],
+      [[1, 2, 3], 3],
+      [[-1, -1, 1], 0],
+    ],
+  },
+  "move-zeroes": {
+    params: ["int[]"],
+    ret: "int[]",
+    exercises:
+      "a run of zeroes at the FRONT, where a swap-based version would reorder the survivors — [0,0,1]; plus arrays with no zeroes and all zeroes",
+    cases: [[[0, 1, 0, 3, 12]], [[0, 0, 1]], [[0]], [[1, 2, 3]], [[0, 0, 0]]],
+  },
+  "sorted-squares": {
+    params: ["int[]"],
+    ret: "int[]",
+    exercises:
+      "negatives whose squares outrank the positives, so the order genuinely inverts — [-4,-1,0,3,10]; and an all-negative array, which reverses completely",
+    cases: [
+      [[-4, -1, 0, 3, 10]],
+      [[-3, -2, -1]],
+      [[1]],
+      [[-2, 2]],
+      [[0, 1, 2]],
+    ],
+  },
+  "asteroid-collision": {
+    params: ["int[]"],
+    ret: "int[]",
+    exercises:
+      "one arrival causing a CHAIN of collisions — [10,2,-5] kills 2 then dies to 10; and equal magnitudes, which destroy each other rather than leaving a survivor",
+    cases: [
+      [[5, 10, -5]],
+      [[8, -8]],
+      [[10, 2, -5]],
+      [[-2, -1, 1, 2]],
+      [[1, -2, -2, -2]],
+    ],
+  },
+  "valid-parenthesis-string": {
+    params: ["string"],
+    ret: "bool",
+    exercises:
+      "a star that must be read as '(' to balance — '(*))'; a string where no reading works — '(((*)'; and one where the low bound must be CLAMPED at zero rather than going negative",
+    cases: [["()"], ["(*))"], ["(((*)"], ["*"], [")("], ["(*)"]],
+  },
+  "first-last-position": {
+    params: ["int[]", "int"],
+    ret: "int[]",
+    exercises:
+      "a RUN of the target, so a search that stops at the first hit gets the wrong end — [5,7,7,8,8,10] with 8; an absent target; and an array that is entirely the target",
+    cases: [
+      [[5, 7, 7, 8, 8, 10], 8],
+      [[5, 7, 7, 8, 8, 10], 6],
+      [[1], 1],
+      [[2, 2, 2, 2], 2],
+      [[1, 2, 3], 3],
+    ],
+  },
+  "count-provinces": {
+    params: ["int[][]"],
+    ret: "int",
+    exercises:
+      "a CHAIN a-b-c where a and c are not directly linked, so transitivity is required — [[1,1,0],[1,1,1],[0,1,1]] is one province; and a matrix with no links at all",
+    cases: [
+      [
+        [
+          [1, 1, 0],
+          [1, 1, 0],
+          [0, 0, 1],
+        ],
+      ],
+      [
+        [
+          [1, 0, 0],
+          [0, 1, 0],
+          [0, 0, 1],
+        ],
+      ],
+      [[[1]]],
+      [
+        [
+          [1, 1, 0],
+          [1, 1, 1],
+          [0, 1, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1],
+          [1, 1],
+        ],
+      ],
+    ],
+  },
+  "network-delay": {
+    params: ["int[][]", "int", "int"],
+    ret: "int",
+    exercises:
+      "a node reachable only by the LONGER of two routes, and an unreachable node that must answer -1 because the edge points the wrong way — [[1,2,1]] from k=2",
+    cases: [
+      [
+        [
+          [2, 1, 1],
+          [2, 3, 1],
+          [3, 4, 1],
+        ],
+        4,
+        2,
+      ],
+      [[[1, 2, 1]], 2, 2],
+      [[[1, 2, 1]], 2, 1],
+      [
+        [
+          [1, 2, 1],
+          [1, 3, 4],
+          [2, 3, 1],
+        ],
+        3,
+        1,
+      ],
+      [[[1, 2, 5]], 2, 1],
+    ],
+  },
+  "counting-bits": {
+    params: ["int"],
+    ret: "int[]",
+    exercises:
+      "a power of two, where the count DROPS back to one instead of rising — n=5 covers 4; and n=0, whose answer is [0] rather than empty",
+    cases: [[2], [5], [0], [1], [8]],
+  },
+  "partition-equal-subset": {
+    params: ["int[]"],
+    ret: "bool",
+    exercises:
+      "the same value appearing twice, which an upward inner sweep would reuse as one element — [1,5,11,5]; and an odd total, rejected before any table is built",
+    cases: [
+      [[1, 5, 11, 5]],
+      [[1, 2, 3, 5]],
+      [[2, 2]],
+      [[1]],
+      [[3, 3, 3, 4, 5]],
+    ],
+  },
   "pair-sum": {
     params: ["int[]", "int"],
     ret: "int[]",
