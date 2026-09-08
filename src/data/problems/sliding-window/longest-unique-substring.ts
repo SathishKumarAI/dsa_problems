@@ -73,56 +73,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: ["a", "b", "c", "a", "b"],
-        marks: { 0: "window" },
-        labels: { 0: "L·R" },
-      },
-      caption: '"abcab": window starts as just "a".',
-    },
-    {
-      cells: {
-        values: ["a", "b", "c", "a", "b"],
-        marks: { 0: "window", 1: "window", 2: "window" },
-        labels: { 0: "L", 2: "R" },
-      },
-      caption: 'Grow right: "abc" — all unique, best = 3.',
-    },
-    {
-      cells: {
-        values: ["a", "b", "c", "a", "b"],
-        marks: { 0: "compare", 1: "window", 2: "window", 3: "compare" },
-        labels: { 0: "L", 3: "R" },
-      },
-      caption: "Incoming 'a' already inside → rule broken.",
-    },
-    {
-      cells: {
-        values: ["a", "b", "c", "a", "b"],
-        marks: { 1: "window", 2: "window", 3: "window" },
-        labels: { 1: "L", 3: "R" },
-      },
-      caption: "Shrink left past the old 'a'. Window \"bca\" — clean again.",
-    },
-    {
-      cells: {
-        values: ["a", "b", "c", "a", "b"],
-        marks: { 2: "window", 3: "window", 4: "window" },
-        labels: { 2: "L", 4: "R" },
-      },
-      caption: "Incoming 'b' evicts the old 'b' the same way. Best stays 3.",
-    },
-    {
-      cells: {
-        values: ["a", "b", "c", "a", "b"],
-        marks: { 0: "done", 1: "done", 2: "done" },
-      },
-      caption:
-        "Answer 3. Each character enters and leaves the window once — O(n).",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force",

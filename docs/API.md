@@ -99,7 +99,8 @@ warning is what the UI shows.
 ```
 Every frame has `note`; the client prepends its own frame 0 ("press play"). `trace` is the
 learner's execution (`{ events: [{op, i, v}], result, error }`) and only the challenge act reads
-it. 404 for an unknown act, 400 when `data.nums` is not an integer array, 500 if a generator
+it. 404 for an unknown act, 400 when `data.nums` is neither a row of integers nor a row of single characters (a
+row is homogeneous — a mix of the two is rejected), 500 if a generator
 throws or exceeds 10 000 frames.
 
 ### `POST /api/journeys/:slug/chart` — `{ "data": { … }, "upto": 3 }`

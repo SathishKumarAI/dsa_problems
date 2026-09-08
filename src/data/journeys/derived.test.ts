@@ -10,6 +10,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { drain } from "../../engine/index.ts"
 import type { AnyJourney, BaseFrame } from "../../engine/types.ts"
+import { longestUnique, longestUniqueSubstring } from "./longest-unique-substring.ts"
 import { maxSubarray } from "./max-subarray.ts"
 
 const lastAnswer = (frames: BaseFrame[]) =>
@@ -32,16 +33,28 @@ const kadaneReference = (nums: number[]) => {
 const TABLE: {
   journey: AnyJourney
   skip: string[] // acts that narrate rather than solve
-  reference: (nums: number[]) => unknown
+  reference: (nums: unknown[]) => unknown
+  // random rows to test on beyond the presets; `rand(n)` is a seeded 0..n-1
+  row: (rand: (n: number) => number) => unknown[]
 }[] = [
   {
     journey: maxSubarray as unknown as AnyJourney,
     skip: ["story"],
-    reference: kadaneReference,
+    reference: (nums) => kadaneReference(nums as number[]),
+    row: (rand) => Array.from({ length: 1 + rand(9) }, () => rand(41) - 20),
+  },
+  {
+    journey: longestUniqueSubstring as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (nums) => longestUnique(nums as string[]).best,
+    // a four-letter alphabet on purpose: repeats have to be common enough that
+    // the shrink and the stale-memory guard both fire on the random rows
+    row: (rand) =>
+      Array.from({ length: rand(10) }, () => "ab c"[rand(4)]),
   },
 ]
 
-for (const { journey, skip, reference } of TABLE)
+for (const { journey, skip, reference, row } of TABLE)
   test(`${journey.slug}: every rung agrees with the reference, on the presets and on random rows`, () => {
     let seed = 11
     const rand = (n: number) => {
@@ -50,9 +63,7 @@ for (const { journey, skip, reference } of TABLE)
     }
     const rows = [
       ...Object.values(journey.presets).map((p) => p.make().nums),
-      ...Array.from({ length: 200 }, () =>
-        Array.from({ length: 1 + rand(9) }, () => rand(41) - 20)
-      ),
+      ...Array.from({ length: 200 }, () => row(rand)),
     ]
     const acts = journey.acts.filter((a) => !skip.includes(a.key))
     assert.ok(acts.length >= 2, "a derived journey needs a ladder, not one rung")
@@ -60,7 +71,7 @@ for (const { journey, skip, reference } of TABLE)
       const want = reference(nums)
       for (const a of acts)
         assert.deepEqual(
-          lastAnswer(drain(a.run({ nums }, {}))),
+          lastAnswer(drain(a.run({ nums } as never, {}))),
           want,
           `${a.key} on [${nums}]`
         )

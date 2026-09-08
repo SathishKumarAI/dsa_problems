@@ -296,4 +296,9 @@ export interface Journey<D = { nums: number[] }> {
   edgeCases: EdgeCase[] // every one must be tagged by some frame on its preset (journeys.test.ts)
 }
 
-export type AnyJourney = Journey<{ nums: number[]; [k: string]: unknown }>
+// The row a journey animates is integers for an array problem and single
+// characters for a string one (engine/derive.ts, api/routes.ts isRow).
+export type AnyJourney = Journey<{
+  nums: (number | string)[]
+  [k: string]: unknown
+}>

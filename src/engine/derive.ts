@@ -24,8 +24,12 @@ import type {
   Tool,
 } from "./types.ts"
 
-export interface Data {
-  nums: number[]
+// `nums` is the row on screen, whatever it holds: numbers for an array
+// problem, single characters for a string one. The chip row draws either.
+export type Cell = number | string
+
+export interface Data<C extends Cell = number> {
+  nums: C[]
   [k: string]: unknown
 }
 
@@ -38,13 +42,13 @@ export interface DFrame {
   corner?: string
   noChips?: boolean
   marks?: Record<number, ChipRole>
-  state?: { label: string; value: number | string }[]
+  state?: { label: string; value: Cell }[]
   answer?: unknown
 }
 
 // One rung of the ladder. `from` indexes problem.alternatives; omit it for the
 // optimal approach, which lives at the top level of the Problem.
-export interface Rung {
+export interface Rung<C extends Cell = number> {
   key: string
   name: string
   short: string
@@ -57,25 +61,29 @@ export interface Rung {
   from?: number
   pseudo?: string[] // story acts only: no Problem code to read
   complexity?: string
-  run(d: Data): Generator<DFrame>
+  run(d: Data<C>): Generator<DFrame>
 }
 
-export interface DerivedSpec {
+export interface DerivedSpec<C extends Cell = number> {
   slug: string
   subtitle: string
   reveals?: string[]
-  sample?: number[]
-  presets: Record<string, { label: string; nums: number[]; info?: string }>
+  sample?: C[]
+  presets: Record<string, { label: string; nums: C[]; info?: string }>
   defaultPreset: string
   harder?: { preset: string; label: string }
-  rungs: Rung[]
+  rungs: Rung<C>[]
   // A corner case plus the preset that loads it. `constraint` cites the line
   // in problem.constraints by index — a case is trivia until a constraint
   // makes it a decision (R2).
   edges: (Omit<EdgeCase, "constraint"> & { constraint: number })[]
+  // A row of characters reads and parses differently from a row of numbers;
+  // everything else about a derived journey is the same, so this is the only
+  // per-shape hook rather than a second builder.
+  cells?: "numbers" | "characters"
 }
 
-const chips = (nums: number[], marks: Record<number, ChipRole> = {}) =>
+const chips = (nums: Cell[], marks: Record<number, ChipRole> = {}) =>
   nums.map<ChipModel>((value, i) => ({
     key: `c${i}`,
     value,
@@ -98,8 +106,11 @@ function tabsFor(src: { python: string; java?: string; cpp?: string }): CodeTabs
   return out
 }
 
-export function deriveJourney(problem: Problem, spec: DerivedSpec): Journey<Data> {
-  const acts = spec.rungs.map<Act<Data, DFrame>>((r) => {
+export function deriveJourney<C extends Cell = number>(
+  problem: Problem,
+  spec: DerivedSpec<C>
+): Journey<Data<C>> {
+  const acts = spec.rungs.map<Act<Data<C>, DFrame>>((r) => {
     const src = r.from === undefined ? problem : problem.alternatives![r.from]
     const solved = "python" in src && !r.pseudo
     return {
@@ -153,14 +164,17 @@ export function deriveJourney(problem: Problem, spec: DerivedSpec): Journey<Data
     defaultPreset: spec.defaultPreset,
     harder: spec.harder,
     classify: () => ({ ok: true }),
-    describe: (d) => d.nums.join(", "),
+    describe: (d) =>
+      spec.cells === "characters" ? d.nums.join("") : d.nums.join(", "),
     parse: (text) => {
+      if (spec.cells === "characters")
+        return { nums: [...text] as C[] }
       const nums = text
         .split(/[^-\d]+/)
         .filter(Boolean)
         .map(Number)
         .filter((v) => Number.isInteger(v))
-      return nums.length ? { nums } : null
+      return nums.length ? ({ nums } as Data<C>) : null
     },
     reveals: spec.reveals,
     sample: { nums: spec.sample ?? spec.presets[spec.defaultPreset].nums },

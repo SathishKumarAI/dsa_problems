@@ -54,6 +54,30 @@ test("POST run returns frames; bad input is a 400, unknown act a 404", () => {
   assert.equal(get("/api/journeys/two-sum/run").status, 405)
 })
 
+test("POST run accepts a row of characters, and only a homogeneous one", () => {
+  // a derived journey over a string sends single characters, not integers —
+  // the guard has to let that through without letting anything else in
+  const ok = post("/api/journeys/longest-clean-run/run", {
+    act: "window",
+    data: { nums: [..."abcabcbb"] },
+  })
+  assert.equal(ok.status, 200)
+  const { frames } = ok.body as { frames: { note: string }[] }
+  assert.ok(frames.length > 2)
+  for (const bad of [
+    { nums: ["a", 1] }, // mixed
+    { nums: ["ab"] }, // not one character
+    { nums: [1.5] }, // not an integer
+    { nums: [{}] },
+  ])
+    assert.equal(
+      post("/api/journeys/longest-clean-run/run", { act: "window", data: bad })
+        .status,
+      400,
+      JSON.stringify(bad)
+    )
+})
+
 test("POST chart never includes acts past `upto` (no spoilers over the wire)", () => {
   const data = { nums: [2, 7, 11, 15], target: 9 }
   const all = post("/api/journeys/two-sum/chart", { data }).body as {
