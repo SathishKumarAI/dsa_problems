@@ -62,53 +62,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [-2, 1, -3, 4, -1, 2, 1, -5, 4] },
-      caption:
-        "Two numbers: the best run ending here, and the best run anywhere. Both start at −2.",
-    },
-    {
-      cells: {
-        values: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
-        marks: { 0: "compare", 1: "focus" },
-      },
-      caption:
-        "At 1: the carried run is −2, a liability → restart. running = 1, best = 1.",
-    },
-    {
-      cells: {
-        values: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
-        marks: { 1: "window", 2: "focus" },
-      },
-      caption:
-        "At −3: continuing gives 1 − 3 = −2, still better than restarting at −3. running = −2, best stays 1.",
-    },
-    {
-      cells: {
-        values: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
-        marks: { 3: "focus", 2: "compare" },
-      },
-      caption:
-        "At 4: the carried −2 is dropped → restart. running = 4, best = 4.",
-    },
-    {
-      cells: {
-        values: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
-        marks: { 3: "window", 4: "window", 5: "window", 6: "focus" },
-      },
-      caption:
-        "The run 4, −1, 2, 1 never goes negative, so it is never dropped. running = 6, best = 6.",
-    },
-    {
-      cells: {
-        values: [-2, 1, -3, 4, -1, 2, 1, -5, 4],
-        marks: { 3: "done", 4: "done", 5: "done", 6: "done" },
-      },
-      caption:
-        "−5 drags the run to 1 and the final 4 lifts it to 5 — neither beats 6. Answer 6, in one pass and two variables.",
-    },
-  ],
   alternatives: [
     {
       name: "Every subarray",
