@@ -6,6 +6,7 @@ import { singleNumber } from "./journeys/single-number.ts"
 import { sortedPairSum } from "./journeys/sorted-pair-sum.ts"
 import { threeSum } from "./journeys/three-sum.ts"
 import { twoSum } from "./journeys/two-sum.ts"
+import { maxSubarray } from "../data/journeys/max-subarray.ts"
 import type { AnyJourney } from "./types.ts"
 
 export const JOURNEYS: AnyJourney[] = [
@@ -14,6 +15,7 @@ export const JOURNEYS: AnyJourney[] = [
   threeSum as unknown as AnyJourney,
   sortedPairSum as unknown as AnyJourney,
   containerWater as unknown as AnyJourney,
+  maxSubarray as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>
