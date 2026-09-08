@@ -5,6 +5,8 @@ import { problem as minCoverSubstring } from "./min-cover-substring.ts"
 import { problem as charReplacement } from "./char-replacement.ts"
 import { problem as permutationInString } from "./permutation-in-string.ts"
 import { problem as windowMaximum } from "./window-maximum.ts"
+import { problem as maxOnesAfterFlips } from "./max-ones-after-flips.ts"
+import { problem as minSubarraySum } from "./min-subarray-sum.ts"
 
 export const slidingWindow: Problem[] = [
   bestTrade,
@@ -13,4 +15,6 @@ export const slidingWindow: Problem[] = [
   charReplacement,
   permutationInString,
   windowMaximum,
+  maxOnesAfterFlips,
+  minSubarraySum,
 ]

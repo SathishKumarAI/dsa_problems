@@ -6,6 +6,8 @@ import { problem as rpnEval } from "./rpn-eval.ts"
 import { problem as generateParens } from "./generate-parens.ts"
 import { problem as asteroidCollision } from "./asteroid-collision.ts"
 import { problem as validParenthesisString } from "./valid-parenthesis-string.ts"
+import { problem as decodeString } from "./decode-string.ts"
+import { problem as removeKDigits } from "./remove-k-digits.ts"
 
 export const stack: Problem[] = [
   balancedBrackets,
@@ -15,4 +17,6 @@ export const stack: Problem[] = [
   generateParens,
   asteroidCollision,
   validParenthesisString,
+  decodeString,
+  removeKDigits,
 ]

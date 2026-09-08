@@ -494,6 +494,313 @@ export const VECTORS = {
       [[3, 3, 3, 4, 5]],
     ],
   },
+  "majority-element": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "a stretch where a NON-majority takes the lead and is later knocked out — [2,2,1,1,1,2,2] hands the candidacy to 1 midway; plus a single element and an alternating run",
+    cases: [
+      [[3, 2, 3]],
+      [[2, 2, 1, 1, 1, 2, 2]],
+      [[1]],
+      [[1, 2, 1]],
+      [[5, 5, 5, 1, 2]],
+    ],
+  },
+  "longest-common-prefix": {
+    params: ["string[]"],
+    ret: "string",
+    exercises:
+      "a list sharing NOTHING, which must stop at the first column — ['dog','racecar','car']; and one where the shortest string is itself the answer",
+    cases: [
+      [["flower", "flow", "flight"]],
+      [["dog", "racecar", "car"]],
+      [["a"]],
+      [["ab", "ab"]],
+      [["abc", "ab", "abcd"]],
+    ],
+  },
+  "isomorphic-strings": {
+    params: ["string", "string"],
+    ret: "bool",
+    exercises:
+      "a pair that is consistent FORWARD but not backward — 'badc' and 'baba' — which a one-map solution accepts wrongly; plus a self-mapping and a clean relabelling",
+    cases: [
+      ["egg", "add"],
+      ["foo", "bar"],
+      ["badc", "baba"],
+      ["a", "a"],
+      ["paper", "title"],
+    ],
+  },
+  "remove-duplicates-sorted": {
+    params: ["int[]"],
+    ret: "int[]",
+    exercises:
+      "a run of three or more equal values, so the writer must fall several places behind the reader — [0,0,1,1,1,2,2,3,3,4]; plus an array with no duplicates at all",
+    cases: [
+      [[1, 1, 2]],
+      [[0, 0, 1, 1, 1, 2, 2, 3, 3, 4]],
+      [[1]],
+      [[1, 2, 3]],
+      [[2, 2, 2]],
+    ],
+  },
+  "is-subsequence": {
+    params: ["string", "string"],
+    ret: "bool",
+    exercises:
+      "a character of s that appears in t but too EARLY to be used in order — 'axc' against 'ahbgdc'; plus the empty s, which is always a subsequence",
+    cases: [
+      ["abc", "ahbgdc"],
+      ["axc", "ahbgdc"],
+      ["", "abc"],
+      ["abc", "abc"],
+      ["ba", "ab"],
+    ],
+  },
+  "max-ones-after-flips": {
+    params: ["int[]", "int"],
+    ret: "int",
+    exercises:
+      "a window that must SHRINK past a zero it had already paid for — [1,1,0,0,1,1,1] with k=1; plus k=0 on an all-zero array, which answers 0",
+    cases: [
+      [[1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0], 2],
+      [[0, 0, 0], 0],
+      [[1], 0],
+      [[1, 1, 0, 0, 1, 1, 1], 1],
+      [[0, 0, 1, 1], 4],
+    ],
+  },
+  "min-subarray-sum": {
+    params: ["int", "int[]"],
+    ret: "int",
+    exercises:
+      "a target no subarray can reach, which must answer 0 — 11 against [1,1,1,1]; and a case where the shortest window is NOT at the front, so the left edge must travel",
+    cases: [
+      [7, [2, 3, 1, 2, 4, 3]],
+      [11, [1, 1, 1, 1]],
+      [4, [1, 4, 4]],
+      [1, [1]],
+      [15, [1, 2, 3, 4, 5]],
+    ],
+  },
+  "decode-string": {
+    params: ["string"],
+    ret: "string",
+    exercises:
+      "a NESTED group, where the inner expansion must finish before the outer repeat — '3[a2[c]]'; a multi-digit count; and letters sitting outside any group",
+    cases: [["3[a]2[bc]"], ["3[a2[c]]"], ["2[abc]3[cd]ef"], ["10[a]"], ["abc"]],
+  },
+  "remove-k-digits": {
+    params: ["string", "int"],
+    ret: "string",
+    exercises:
+      "a LEADING ZERO exposed by the removals — '10200' with k=1 answers '200'; and removing every digit, which must answer '0' rather than an empty string",
+    cases: [
+      ["1432219", 3],
+      ["10200", 1],
+      ["10", 2],
+      ["112", 1],
+      ["9", 1],
+    ],
+  },
+  "search-insert-position": {
+    params: ["int[]", "int"],
+    ret: "int",
+    exercises:
+      "a target PAST the end, whose answer is the array length — 7 in [1,3,5,6]; a target before the start; and an absent target that lands between two values",
+    cases: [
+      [[1, 3, 5, 6], 5],
+      [[1, 3, 5, 6], 7],
+      [[1, 3, 5, 6], 2],
+      [[1, 3, 5, 6], 0],
+      [[1], 1],
+    ],
+  },
+  "find-peak-element": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "an array with SEVERAL peaks, where the halving must still land on one — [1,2,1,3,5,6,4]; a single element, which is a peak by the infinity rule; and a strictly decreasing array, whose peak is the first index",
+    cases: [
+      // a plateau-free array whose peak is NOT the last rise, so a `<=` slope
+      // test walks past it
+      [[1, 2, 1, 3, 5, 4, 4]],
+      [[1, 2, 3, 1]],
+      [[1, 2, 1, 3, 5, 6, 4]],
+      [[1]],
+      [[3, 2, 1]],
+      [[1, 2]],
+    ],
+  },
+  "single-in-sorted": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "the loner at the FRONT, in the MIDDLE and at the END, since each sends the halving a different way — [1,1,2,3,3,4,4] has it in the middle, [1,1,2] at the end",
+    cases: [
+      [[1, 1, 2, 3, 3, 4, 4, 8, 8]],
+      [[3, 3, 7, 7, 10, 11, 11]],
+      [[1]],
+      [[1, 1, 2]],
+      [[1, 2, 2]],
+    ],
+  },
+  "unique-paths": {
+    params: ["int", "int"],
+    ret: "int",
+    exercises:
+      "a grid one cell wide, whose answer is 1 rather than 0 — m=1; and a rectangular grid where the two dimensions differ, so a transposed recurrence would still look right on a square",
+    cases: [
+      [3, 7],
+      [3, 2],
+      [1, 1],
+      [1, 5],
+      [2, 3],
+    ],
+  },
+  "word-break": {
+    params: ["string", "string[]"],
+    ret: "bool",
+    exercises:
+      "a string where an early long match DEAD-ENDS and a shorter one is needed — 'catsandog' with both 'cats' and 'cat'; and a word reused twice",
+    cases: [
+      ["leetcode", ["leet", "code"]],
+      ["applepenapple", ["apple", "pen"]],
+      ["catsandog", ["cats", "dog", "sand", "and", "cat"]],
+      ["a", ["a"]],
+      ["ab", ["a"]],
+    ],
+  },
+  "min-cost-stairs": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "a stair expensive enough that STEPPING OVER it wins — [1,100,1,...]; and the two-stair case, where the answer is simply the cheaper start",
+    cases: [
+      [[10, 15, 20]],
+      [[1, 100, 1, 1, 1, 100, 1, 1, 100, 1]],
+      [[1, 2]],
+      [[5, 5]],
+      [[0, 0, 0, 1]],
+    ],
+  },
+  "surrounded-regions": {
+    params: ["int[][]"],
+    ret: "int[][]",
+    exercises:
+      "a region that TOUCHES the border and must survive, beside an enclosed one that must not — [[1,1,1,1],[1,0,0,1],[1,1,0,1],[1,0,1,1]]; and a single-cell grid, which is all border",
+    cases: [
+      // one grid per direction the border flood must be able to travel:
+      // up, down, left and right each rescue a region nothing else reaches
+      [
+        [
+          [1, 0, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 0, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1, 1],
+          [0, 0, 0, 1],
+          [1, 1, 0, 1],
+          [1, 0, 1, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1, 1],
+          [1, 0, 0, 0],
+          [1, 1, 0, 1],
+          [1, 0, 1, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1],
+          [1, 0, 0],
+          [1, 1, 1],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1, 1],
+          [1, 0, 0, 1],
+          [1, 1, 0, 1],
+          [1, 0, 1, 1],
+        ],
+      ],
+      [[[0]]],
+      [[[1]]],
+      [
+        [
+          [0, 0],
+          [0, 0],
+        ],
+      ],
+      [
+        [
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+        ],
+      ],
+    ],
+  },
+  "sort-by-frequency": {
+    params: ["string"],
+    ret: "string",
+    exercises:
+      "a TIE in frequency, which the character order must break the same way every time — 'tree' puts r before t; and a string where every character is distinct",
+    cases: [["tree"], ["cccaaa"], ["a"], ["Aabb"], ["abcabc"]],
+  },
+  "kth-smallest-matrix": {
+    params: ["int[][]", "int"],
+    ret: "int",
+    exercises:
+      "a matrix where a row's LAST value exceeds the next row's first, so it is not one sorted sequence — [[1,5,9],[10,11,13],[12,13,15]]; plus k at both ends of the range",
+    cases: [
+      [
+        [
+          [1, 5, 9],
+          [10, 11, 13],
+          [12, 13, 15],
+        ],
+        8,
+      ],
+      [[[-5]], 1],
+      [
+        [
+          [1, 2],
+          [1, 3],
+        ],
+        2,
+      ],
+      [
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        4,
+      ],
+      [
+        [
+          [1, 2],
+          [3, 4],
+        ],
+        1,
+      ],
+    ],
+  },
   "pair-sum": {
     params: ["int[]", "int"],
     ret: "int[]",

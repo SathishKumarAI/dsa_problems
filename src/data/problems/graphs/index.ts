@@ -6,6 +6,7 @@ import { problem as maxIslandArea } from "./max-island-area.ts"
 import { problem as wordSearch } from "./word-search.ts"
 import { problem as countProvinces } from "./count-provinces.ts"
 import { problem as networkDelay } from "./network-delay.ts"
+import { problem as surroundedRegions } from "./surrounded-regions.ts"
 
 export const graphs: Problem[] = [
   islandCount,
@@ -15,4 +16,5 @@ export const graphs: Problem[] = [
   wordSearch,
   countProvinces,
   networkDelay,
+  surroundedRegions,
 ]

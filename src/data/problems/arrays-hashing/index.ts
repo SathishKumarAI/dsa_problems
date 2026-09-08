@@ -8,6 +8,9 @@ import { problem as validAnagram } from "./valid-anagram.ts"
 import { problem as productExceptSelf } from "./product-except-self.ts"
 import { problem as groupAnagrams } from "./group-anagrams.ts"
 import { problem as subarraySumK } from "./subarray-sum-k.ts"
+import { problem as majorityElement } from "./majority-element.ts"
+import { problem as longestCommonPrefix } from "./longest-common-prefix.ts"
+import { problem as isomorphicStrings } from "./isomorphic-strings.ts"
 
 export const arraysHashing: Problem[] = [
   pairSum,
@@ -19,4 +22,7 @@ export const arraysHashing: Problem[] = [
   productExceptSelf,
   groupAnagrams,
   subarraySumK,
+  majorityElement,
+  longestCommonPrefix,
+  isomorphicStrings,
 ]
