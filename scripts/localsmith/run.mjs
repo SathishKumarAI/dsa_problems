@@ -10,6 +10,22 @@
 // driver, rather than parsing JSON in three languages. The driver prints the
 // answer in one canonical text form, and the three strings are compared.
 //
+// ONE DRIVER PER BLOCK, NOT PER CASE (B31). Every case for a rung goes into a
+// single driver that prints one line each, so a block is compiled and launched
+// once instead of once per case. That is ~4x fewer compiles, and it removes the
+// Windows "refused to launch a freshly built .exe" flake that made this gate
+// report a different number every run — 28 refusals one day, 66 the next.
+// Isolation is kept by the driver rather than by the process: each case is
+// wrapped in its own try/catch and prints "!ERROR ..." on the way out, and a
+// process that dies outright still hands back the lines it flushed, so a crash
+// is attributed to the case that caused it instead of hiding the rest.
+//
+// The one thing per-process isolation did better: a HARD crash (a C++ stack
+// overflow is a crash, not an exception) also costs the cases queued behind it.
+// They are reported as "!ERROR process died", never silently passed — and a
+// crash is a finding in its own right — so the trade is a louder failure, not a
+// quieter one. Measured: 7m17s and 508 builds became 1m38s and 120.
+//
 // Run:  node scripts/localsmith/run.mjs
 //       node scripts/localsmith/run.mjs --id best-trade
 //       node scripts/localsmith/run.mjs --keep      # leave the drivers on disk
@@ -47,6 +63,32 @@ function runExe(cmd, args, opts) {
   throw last
 }
 
+/** run a driver and split its stdout into one line per case.
+ *
+ *  A C++ stack overflow is a crash, not an exception, so the process can die
+ *  with some cases already printed. execFileSync still carries that output on
+ *  the error, so read it: the lines that are missing name the case that killed
+ *  the process, instead of the whole block reporting nothing. */
+export function caseLines(run, n) {
+  let out = ""
+  let err = null
+  try {
+    out = run().toString()
+  } catch (e) {
+    out = String(e.stdout ?? "")
+    // an empty stderr is an empty Buffer, and a Buffer is always truthy —
+    // read it, then fall back to the spawn error itself
+    err = String(e.stderr ?? "").trim() || String(e.message ?? e)
+  }
+  const lines = out.split(/\r?\n/)
+  while (lines.length && lines.at(-1) === "") lines.pop()
+  const why = err
+    ? `!ERROR process died: ${err.slice(-140).replace(/\s+/g, " ")}`
+    : "!ERROR no output for this case"
+  while (lines.length < n) lines.push(why)
+  return { lines, err }
+}
+
 // ---------- finding the entry point ----------
 
 /** top-level definitions in a C-family block, as {name, text} */
@@ -60,7 +102,9 @@ function cDefs(src) {
       depth--
       if (depth === 0) {
         const text = src.slice(start, i + 1)
-        const name = text.match(/([A-Za-z_]\w*)\s*\([^)]*\)\s*(?:const\s*)?\{/)?.[1]
+        const name = text.match(
+          /([A-Za-z_]\w*)\s*\([^)]*\)\s*(?:const\s*)?\{/
+        )?.[1]
         if (name) out.push({ name, text })
         start = i + 1
       }
@@ -125,8 +169,10 @@ const lit = {
     if (t === "int") return String(v)
     if (t === "string") return JSON.stringify(v)
     if (t === "int[]") return `{${v.join(",")}}`
-    if (t === "int[][]") return `{${v.map((r) => `{${r.join(",")}}`).join(",")}}`
-    if (t === "string[]") return `{${v.map((s) => JSON.stringify(s)).join(",")}}`
+    if (t === "int[][]")
+      return `{${v.map((r) => `{${r.join(",")}}`).join(",")}}`
+    if (t === "string[]")
+      return `{${v.map((s) => JSON.stringify(s)).join(",")}}`
     throw new Error(`cpp literal for ${t}`)
   },
 }
@@ -152,9 +198,21 @@ def __canon(v):
     return str(v)
 `
 
-function pythonDriver(src, fn, args) {
-  const call = `${fn}(${args.map(lit.python).join(", ")})`
-  return `${src}\n${PY_PRINT}\nprint(__canon(${call}))\n`
+/** one line per case. The try/except is what per-process isolation used to buy:
+ *  a case that raises still lets the next one run, and names itself. */
+export function pythonDriver(src, fn, cases) {
+  const body = cases
+    .map((args) => {
+      const call = `${fn}(${args.map(lit.python).join(", ")})`
+      return [
+        `try:`,
+        `    print(__canon(${call}).replace("\\n", "\\\\n"))`,
+        `except BaseException as __e:`,
+        `    print("!ERROR " + str(__e).replace("\\n", " "))`,
+      ].join("\n")
+    })
+    .join("\n")
+  return `${src}\n${PY_PRINT}\n${body}\n`
 }
 
 const JAVA_PRINT = `
@@ -202,17 +260,26 @@ function javaArg(v, want, declared) {
     return `new ArrayList<>(List.of(${v
       .map((r) => `List.of(${r.join(",")})`)
       .join(",")}))`
-  if (/List</.test(declared))
-    return `new ArrayList<>(List.of(${v.join(",")}))`
+  if (/List</.test(declared)) return `new ArrayList<>(List.of(${v.join(",")}))`
   return lit.java(v, want)
 }
 
-function javaDriver(nodes, block, fn, args, params) {
+export function javaDriver(nodes, block, fn, cases, params) {
   const isStatic = new RegExp(`static\\s[^;{]*\\b${fn}\\s*\\(`).test(block)
   const declared = javaParamTypes(block, fn) ?? []
-  const call = `${isStatic ? "" : "new Solution()."}${fn}(${args
-    .map((v, i) => javaArg(v, params[i], declared[i] ?? params[i]))
-    .join(", ")})`
+  // Throwable, not Exception: the flood fill B27 caught blew the stack on a
+  // 1x1 grid, and a StackOverflowError is an Error.
+  const body = cases
+    .map((args) => {
+      const call = `${isStatic ? "" : "new Solution()."}${fn}(${args
+        .map((v, i) => javaArg(v, params[i], declared[i] ?? params[i]))
+        .join(", ")})`
+      return [
+        `        try { System.out.println(canon(${call}).replace("\\n", "\\\\n")); }`,
+        `        catch (Throwable __t) { System.out.println("!ERROR " + String.valueOf(__t).replace("\\n", " ")); }`,
+      ].join("\n")
+    })
+    .join("\n")
   return `import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
@@ -224,7 +291,9 @@ ${block
   .map((l) => (l.trim() ? "    " + l : l))
   .join("\n")}
 ${JAVA_PRINT}
-    public static void main(String[] a) { System.out.println(canon(${call})); }
+    public static void main(String[] a) {
+${body}
+    }
 }
 `
 }
@@ -239,19 +308,38 @@ template <class T> static string canon(const vector<T>& v) {
     for (size_t i = 0; i < v.size(); i++) { if (i) s += ","; s += canon(v[i]); }
     return s + "]";
 }
+/** a value carrying a newline would silently shift every later case up a line */
+static string __esc(const string& s) {
+    string o;
+    for (char c : s) { if (c == '\\n') o += "\\\\n"; else o += c; }
+    return o;
+}
 `
 
-function cppDriver(headers, nodes, block, fn, args, params) {
-  const decls = args.map(
-    (v, i) => `    ${CPP_TYPE[params[i]]} a${i} = ${lit.cpp(v, params[i])};`
-  )
+export function cppDriver(headers, nodes, block, fn, cases, params) {
+  // each case gets its own scope, so nothing a block mutates leaks sideways
+  const body = cases
+    .map((args, k) => {
+      const decls = args.map(
+        (v, i) =>
+          `        ${CPP_TYPE[params[i]]} a${k}_${i} = ${lit.cpp(v, params[i])};`
+      )
+      const call = `${fn}(${args.map((_, i) => `a${k}_${i}`).join(", ")})`
+      return [
+        `    {`,
+        decls.join("\n"),
+        `        try { cout << __esc(canon(${call})) << endl; }`,
+        `        catch (...) { cout << "!ERROR c++ threw" << endl; }`,
+        `    }`,
+      ].join("\n")
+    })
+    .join("\n")
   return `${headers}
 ${nodes}
 ${block}
 ${CPP_PRINT}
 int main() {
-${decls.join("\n")}
-    cout << canon(${fn}(${args.map((_, i) => `a${i}`).join(", ")})) << endl;
+${body}
     return 0;
 }
 `
@@ -295,7 +383,9 @@ function main() {
     return null
   })()
   if (!python) {
-    console.error("\n  RUN SKIPPED — no python on PATH; it is the oracle here.\n")
+    console.error(
+      "\n  RUN SKIPPED — no python on PATH; it is the oracle here.\n"
+    )
     return
   }
   if (!tools.java && !tools.cpp) {
@@ -330,6 +420,7 @@ using namespace std;`
   let seq = 0
   let ran = 0
   let compared = 0
+  let compiles = 0
 
   for (const p of PROBLEMS) {
     if (only && p.id !== only) continue
@@ -342,85 +433,110 @@ using namespace std;`
     for (const r of rungs) {
       const pyFn = pyEntry(r.code.python)
       if (!pyFn) continue
-      for (const args of spec.cases) {
-        // 1. the oracle
-        let want
-        try {
-          const f = join(dir, "oracle.py")
-          writeFileSync(f, pythonDriver(r.code.python, pyFn, args))
-          want = execFileSync(python, [f], { stdio: "pipe", timeout: 20000 })
-            .toString()
-            .trim()
-        } catch (e) {
+      const cases = spec.cases
+      // one process now runs every case, so the budget has to grow with them
+      const timeout = 20000 + 5000 * cases.length
+
+      // 1. the oracle, once for the whole rung
+      const f = join(dir, `oracle${seq++}.py`)
+      writeFileSync(f, pythonDriver(r.code.python, pyFn, cases))
+      const oracle = caseLines(
+        () => execFileSync(python, [f], { stdio: "pipe", timeout }),
+        cases.length
+      )
+      const want = oracle.lines
+      cases.forEach((args, i) => {
+        if (want[i].startsWith("!ERROR"))
           failures.push(
-            `${p.id}/${r.key} [python] ${String(e.stderr ?? e).slice(-160).replace(/\s+/g, " ")}`
+            `${p.id}/${r.key} [python] on ${JSON.stringify(args)}: ${want[i]}`
+          )
+        else ran++
+      })
+
+      // 2. each translation, against it — compiled once, launched once
+      for (const lang of ["java", "cpp"]) {
+        const block = r.code[lang]
+        if (!block || !tools[lang]) continue
+        const fn = cEntry(block)
+        if (!fn) continue
+        let got
+        try {
+          if (lang === "java") {
+            const src = join(dir, "Solution.java")
+            writeFileSync(
+              src,
+              javaDriver(NODE_JAVA, block, fn, cases, spec.params)
+            )
+            execFileSync(tools.java, ["-nowarn", "-d", dir, src], {
+              stdio: "pipe",
+            })
+            compiles++
+            got = caseLines(
+              () =>
+                runExe(
+                  join(tools.java, "..", "java.exe"),
+                  ["-cp", dir, "Solution"],
+                  { stdio: "pipe", timeout }
+                ),
+              cases.length
+            )
+          } else {
+            // a fresh name per binary: Windows can still hold a lock on the
+            // executable it just finished, and reusing one name turns that
+            // into an intermittent UNKNOWN spawn error
+            const stem = `prog${seq++}`
+            const src = join(dir, `${stem}.cpp`)
+            const exe = join(dir, `${stem}.exe`)
+            writeFileSync(
+              src,
+              cppDriver(headers, NODE_CPP, block, fn, cases, spec.params)
+            )
+            execFileSync(tools.cpp, ["-std=c++17", "-w", "-o", exe, src], {
+              stdio: "pipe",
+            })
+            compiles++
+            got = caseLines(
+              () => runExe(exe, [], { stdio: "pipe", timeout }),
+              cases.length
+            )
+          }
+        } catch (e) {
+          // a build that fails is one finding about the block, not one per case
+          const msg = String(e.stderr ?? e.message ?? e)
+          const list = /UNKNOWN|EBUSY|EPERM|ETXTBSY/.test(msg)
+            ? unrunnable
+            : failures
+          list.push(
+            `${p.id}/${r.key} [${lang}] would not build: ${msg.slice(-160).replace(/\s+/g, " ")}`
           )
           continue
         }
-        ran++
-
-        // 2. each translation, against it
-        for (const lang of ["java", "cpp"]) {
-          const block = r.code[lang]
-          if (!block || !tools[lang]) continue
-          const fn = cEntry(block)
-          if (!fn) continue
-          let got
-          try {
-            if (lang === "java") {
-              const f = join(dir, "Solution.java")
-              writeFileSync(
-                f,
-                javaDriver(NODE_JAVA, block, fn, args, spec.params)
-              )
-              execFileSync(tools.java, ["-nowarn", "-d", dir, f], { stdio: "pipe" })
-              got = runExe(
-                join(tools.java, "..", "java.exe"),
-                ["-cp", dir, "Solution"],
-                { stdio: "pipe", timeout: 20000 }
-              )
-                .toString()
-                .trim()
-            } else {
-              // a fresh name per run: Windows can still hold a lock on the
-              // executable it just finished, and reusing one name turns that
-              // into an intermittent UNKNOWN spawn error
-              const stem = `prog${seq++}`
-              const src = join(dir, `${stem}.cpp`)
-              const exe = join(dir, `${stem}.exe`)
-              writeFileSync(
-                src,
-                cppDriver(headers, NODE_CPP, block, fn, args, spec.params)
-              )
-              execFileSync(tools.cpp, ["-std=c++17", "-w", "-o", exe, src], {
-                stdio: "pipe",
-              })
-              got = runExe(exe, [], { stdio: "pipe", timeout: 20000 })
-                .toString()
-                .trim()
-            }
-          } catch (e) {
-            const msg = String(e.stderr ?? e.message ?? e)
-            // Windows refusing to launch a just-built executable says nothing
-            // about the code; keep it out of the findings
-            const list = /UNKNOWN|EBUSY|EPERM|ETXTBSY/.test(msg)
-              ? unrunnable
-              : failures
-            list.push(
-              `${p.id}/${r.key} [${lang}] on ${JSON.stringify(args)}: ${msg
-                .slice(-160)
-                .replace(/\s+/g, " ")}`
-            )
-            continue
-          }
-          compared++
-          const a = normalise(want, spec.unordered)
-          const b = normalise(got, spec.unordered)
-          if (a !== b)
-            failures.push(
-              `${p.id}/${r.key} [${lang}] on ${JSON.stringify(args)}: python said ${want}, ${lang} said ${got}`
-            )
+        // Windows refusing to launch says nothing about the code; keep it out
+        // of the findings, and say so in the summary
+        if (got.err && /UNKNOWN|EBUSY|EPERM|ETXTBSY/.test(got.err)) {
+          unrunnable.push(
+            `${p.id}/${r.key} [${lang}]: ${got.err.slice(-120).replace(/\s+/g, " ")}`
+          )
+          continue
         }
+        cases.forEach((args, i) => {
+          if (want[i].startsWith("!ERROR")) return // nothing to compare against
+          compared++
+          const mine = got.lines[i]
+          if (mine.startsWith("!ERROR")) {
+            failures.push(
+              `${p.id}/${r.key} [${lang}] on ${JSON.stringify(args)}: ${mine}`
+            )
+            return
+          }
+          if (
+            normalise(want[i], spec.unordered) !==
+            normalise(mine, spec.unordered)
+          )
+            failures.push(
+              `${p.id}/${r.key} [${lang}] on ${JSON.stringify(args)}: python said ${want[i]}, ${lang} said ${mine}`
+            )
+        })
       }
     }
   }
@@ -430,11 +546,15 @@ using namespace std;`
   console.log(
     `\n${ran} oracle runs, ${compared} translations compared, ${failures.length} disagreed`
   )
+  console.log(
+    `${compiles} drivers built — one per block, not one per case (B31)`
+  )
   if (unrunnable.length)
     console.log(
-      `${unrunnable.length} could not be launched (Windows refused a freshly built exe — ` +
-        `see README: compile once per block, run every case in one process)`
+      `${unrunnable.length} blocks could not be built or launched (Windows refusing a ` +
+        `freshly built exe; these say nothing about the code):`
     )
+  for (const u of unrunnable) console.log(`  · ${u}`)
   console.log(`${skipped} problems not yet runnable this way:`)
   for (const [id, why] of Object.entries(NOT_YET_RUNNABLE))
     console.log(`  · ${id} — ${why}`)

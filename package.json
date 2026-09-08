@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "test": "node --test \"src/**/*.test.ts\"",
+    "test": "node --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
     "api": "node server/index.ts",
     "test:ui": "vite build && node --test \"test/**/*.test.mjs\"",
     "verify:code": "node scripts/localsmith/verify.mjs",
