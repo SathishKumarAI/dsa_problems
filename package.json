@@ -15,6 +15,7 @@
     "test:ui": "vite build && node --test \"test/**/*.test.mjs\"",
     "verify:code": "node scripts/localsmith/verify.mjs",
     "verify:run": "node scripts/localsmith/run.mjs",
+    "verify:vectors": "node scripts/localsmith/mutate.mjs",
     "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {

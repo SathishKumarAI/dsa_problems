@@ -136,7 +136,7 @@ function entry(defs, srcOf) {
   return (roots.at(-1) ?? defs.at(-1)).name
 }
 
-const pyEntry = (src) => {
+export const pyEntry = (src) => {
   const defs = pyDefs(src)
   if (!defs.length) return null
   const lines = src.split("\n")
