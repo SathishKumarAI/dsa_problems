@@ -81,55 +81,6 @@ def max_sliding_window(nums: list[int], k: int) -> list[int]:
     }
     return out;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 3, -1, -3, 5, 3, 6, 7] },
-      caption:
-        "k = 3. The deque will hold indices whose values are strictly decreasing — the only ones that can still win.",
-    },
-    {
-      cells: {
-        values: [1, 3, -1, -3, 5, 3, 6, 7],
-        marks: { 0: "compare", 1: "focus" },
-      },
-      caption:
-        "3 arrives and 1 is smaller, so 1 is evicted — it can never be the maximum again while 3 is in the window.",
-    },
-    {
-      cells: {
-        values: [1, 3, -1, -3, 5, 3, 6, 7],
-        marks: { 1: "window", 2: "window", 0: "done" },
-        labels: { 1: "max" },
-      },
-      caption:
-        "Window [1,3,−1] is complete. The front of the deque is 3 → first answer.",
-    },
-    {
-      cells: {
-        values: [1, 3, -1, -3, 5, 3, 6, 7],
-        marks: { 1: "window", 2: "window", 3: "window" },
-        labels: { 1: "max" },
-      },
-      caption:
-        "−3 is smaller than everything held, so it just joins the back. Answer is still 3.",
-    },
-    {
-      cells: {
-        values: [1, 3, -1, -3, 5, 3, 6, 7],
-        marks: { 4: "focus", 1: "compare", 2: "compare", 3: "compare" },
-      },
-      caption:
-        "5 arrives and clears the whole deque — three evictions in one step, and each of those indices is now gone for good.",
-    },
-    {
-      cells: {
-        values: [1, 3, -1, -3, 5, 3, 6, 7],
-        marks: { 4: "done", 6: "done", 7: "done" },
-      },
-      caption:
-        "The rest follows the same rule: [3, 3, 5, 5, 6, 7]. Every index was pushed once and popped once — linear, not k·n.",
-    },
-  ],
   alternatives: [
     {
       name: "Scan each window",

@@ -73,46 +73,6 @@ export const problem: Problem = {
     return best;
 }
 `,
-  walkthrough: [
-    {
-      cells: { values: [2, 1, 5, 6, 2, 3] },
-      caption: "Bars of a histogram. Find the largest rectangle under them.",
-    },
-    {
-      cells: {
-        values: [2, 1, 5, 6, 2, 3],
-        marks: { 0: "compare", 1: "focus" },
-      },
-      caption: "1 < 2 → bar 0 is bounded. Area: 2 × 1 = 2. Pop it, push 1.",
-    },
-    {
-      cells: {
-        values: [2, 1, 5, 6, 2, 3],
-        marks: { 1: "window", 2: "window", 3: "window" },
-      },
-      caption: "1, 5, 6 stack in increasing order — none bounded yet.",
-    },
-    {
-      cells: {
-        values: [2, 1, 5, 6, 2, 3],
-        marks: { 2: "compare", 3: "compare", 4: "focus" },
-      },
-      caption:
-        "2 arrives: pop 6 → area 6×1 = 6; pop 5 → area 5×2 = 10. New best.",
-    },
-    {
-      cells: {
-        values: [2, 1, 5, 6, 2, 3],
-        marks: { 1: "window", 4: "window", 5: "window" },
-      },
-      caption: "Push 2, then 3. Sentinel 0 at the end will flush everything.",
-    },
-    {
-      cells: { values: [2, 1, 5, 6, 2, 3], marks: { 2: "done", 3: "done" } },
-      caption:
-        "Flush: 3×1, 2×4, 1×6 — none beat 10. Answer 10 (height 5 over bars 2–3).",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force",

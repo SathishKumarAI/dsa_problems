@@ -69,41 +69,6 @@ export const problem: Problem = {
     }
     return total;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, -1, 0], labels: { 0: "k = 0" } },
-      caption:
-        "The map starts as {0: 1}: the empty prefix has sum 0 and has happened once.",
-    },
-    {
-      cells: { values: [1, -1, 0], marks: { 0: "focus" } },
-      caption:
-        "running = 1. Looking for an earlier prefix of 1 − 0 = 1 → none yet. Map becomes {0:1, 1:1}.",
-    },
-    {
-      cells: { values: [1, -1, 0], marks: { 0: "window", 1: "focus" } },
-      caption:
-        "running = 0. An earlier prefix of 0 has occurred once → count 1. That is the stretch [1, −1].",
-    },
-    {
-      cells: {
-        values: [1, -1, 0],
-        marks: { 0: "window", 1: "window", 2: "focus" },
-      },
-      caption:
-        "Map now has 0 twice. running is still 0, so the lookup finds TWO earlier prefixes → count rises by 2.",
-    },
-    {
-      cells: { values: [1, -1, 0], marks: { 0: "done", 1: "done", 2: "done" } },
-      caption:
-        "Total 3: [1,−1], [1,−1,0] and [0]. The two zeros in the map are exactly the two different starts.",
-    },
-    {
-      cells: { values: [1, -1, 0] },
-      caption:
-        "Note what a sliding window would do here: adding −1 makes the sum FALL, so there is no rule for when to shrink. That is why this is a hashing problem.",
-    },
-  ],
   alternatives: [
     {
       name: "Sum every subarray",

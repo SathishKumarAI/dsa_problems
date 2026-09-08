@@ -68,41 +68,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [50, 3, 2, 100, 4, 1] },
-      caption: "Load everything into a set: {50, 3, 2, 100, 4, 1}.",
-    },
-    {
-      cells: { values: [50, 3, 2, 100, 4, 1], marks: { 0: "focus" } },
-      caption:
-        "50: is 49 in the set? No → 50 starts a run. Walk: 51 absent. Length 1.",
-    },
-    {
-      cells: {
-        values: [50, 3, 2, 100, 4, 1],
-        marks: { 1: "done", 2: "done" },
-      },
-      caption:
-        "3 and 2: predecessors (2 and 1) exist → NOT run starts. Skipped — this is what keeps it O(n).",
-    },
-    {
-      cells: { values: [50, 3, 2, 100, 4, 1], marks: { 3: "focus" } },
-      caption: "100: 99 absent → run of length 1.",
-    },
-    {
-      cells: { values: [50, 3, 2, 100, 4, 1], marks: { 5: "focus" } },
-      caption: "1: 0 absent → run start. Walk: 2 ✓ 3 ✓ 4 ✓ 5 ✗. Length 4.",
-    },
-    {
-      cells: {
-        values: [50, 3, 2, 100, 4, 1],
-        marks: { 1: "window", 2: "window", 4: "window", 5: "window" },
-      },
-      caption:
-        "Best run: 1, 2, 3, 4 → answer 4. Each value visited at most twice.",
-    },
-  ],
   alternatives: [
     {
       name: "Sort",

@@ -83,57 +83,6 @@ export const problem: Problem = {
     }
     return total;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [4, 2, 0, 3, 2, 5] },
-      caption:
-        "Each column holds min(tallest left, tallest right) − its own height. Two pointers will find those maxima as they go.",
-    },
-    {
-      cells: {
-        values: [4, 2, 0, 3, 2, 5],
-        marks: { 0: "focus", 5: "focus" },
-        labels: { 0: "i", 5: "j" },
-      },
-      caption:
-        "height[i] = 4 < height[j] = 5, so the LEFT side is the shorter wall and its level is settled. leftMax becomes 4, and column 0 holds nothing.",
-    },
-    {
-      cells: {
-        values: [4, 2, 0, 3, 2, 5],
-        marks: { 0: "done", 1: "focus", 5: "compare" },
-        labels: { 1: "i", 5: "j" },
-      },
-      caption:
-        "Column 1 is height 2 under a leftMax of 4 → it holds 2. Total 2.",
-    },
-    {
-      cells: {
-        values: [4, 2, 0, 3, 2, 5],
-        marks: { 0: "done", 1: "done", 2: "focus", 5: "compare" },
-        labels: { 2: "i", 5: "j" },
-      },
-      caption:
-        "Column 2 is height 0 under the same wall of 4 → it holds 4. Total 6.",
-    },
-    {
-      cells: {
-        values: [4, 2, 0, 3, 2, 5],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "focus", 4: "focus" },
-        labels: { 3: "i", 4: "j" },
-      },
-      caption:
-        "Columns 3 and 4 hold 1 and 2 by the same rule. Total 9, and the pointers are about to cross.",
-    },
-    {
-      cells: {
-        values: [4, 2, 0, 3, 2, 5],
-        marks: { 1: "window", 2: "window", 3: "window", 4: "window" },
-      },
-      caption:
-        "Answer 9. Every column was visited once, and the two end bars — with nothing outside them — held nothing.",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force per column",

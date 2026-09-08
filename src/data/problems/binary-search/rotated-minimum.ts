@@ -68,62 +68,6 @@ export const problem: Problem = {
     }
     return nums[lo];
 }`,
-  walkthrough: [
-    {
-      cells: { values: [4, 5, 6, 1, 2, 3], labels: { 0: "lo", 5: "hi" } },
-      caption: "Two sorted runs: 4,5,6 and 1,2,3. The minimum starts run two.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 1, 2, 3],
-        marks: { 2: "compare", 5: "compare" },
-        labels: { 2: "mid", 5: "hi" },
-      },
-      caption:
-        "nums[mid]=6 > nums[hi]=3 — mid is in the first run; minimum is to its right.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 1, 2, 3],
-        marks: { 0: "done", 1: "done", 2: "done" },
-        labels: { 3: "lo", 5: "hi" },
-      },
-      caption: "lo = mid + 1 = 3.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 1, 2, 3],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          4: "compare",
-          5: "compare",
-        },
-        labels: { 4: "mid", 5: "hi" },
-      },
-      caption:
-        "nums[4]=2 ≤ nums[5]=3 — mid is in the second run; keep it: hi = mid = 4.",
-    },
-    {
-      cells: {
-        values: [4, 5, 6, 1, 2, 3],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "compare",
-          4: "compare",
-        },
-        labels: { 3: "mid", 4: "hi" },
-      },
-      caption: "nums[3]=1 ≤ nums[4]=2 — hi = 3. Now lo = hi.",
-    },
-    {
-      cells: { values: [4, 5, 6, 1, 2, 3], marks: { 3: "focus" } },
-      caption: "Range closed at index 3: minimum is 1.",
-    },
-  ],
   alternatives: [
     {
       name: "Linear scan",
