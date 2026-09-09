@@ -3,6 +3,13 @@
 Last session: 2026-09-08. Journeys went **5 → 46**, the practice set's Java/C++ hole was closed,
 and the UI got the pass it had been owed since the set tripled in size.
 
+## The spec checklist
+
+`docs/SPEC-CHECKLIST.md` walks the Widest Container build prompt's 34-line checklist item by item
+with the evidence for each. **33 ticked, one deliberately not**: removing the responsive
+breakpoints, which was asked directly and answered "keep responsive", and which `test:ui` also
+depends on in two checks.
+
 ## Where it stopped
 
 `master` holds six merged PRs from this session (#49–#56). One branch is open and green:
