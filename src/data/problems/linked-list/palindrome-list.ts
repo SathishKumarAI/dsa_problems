@@ -101,35 +101,6 @@ def is_palindrome(head: ListNode | None) -> bool:
     }
     return true;
 }`,
-  walkthrough: [
-    {
-      text: `1 → 2 → 2 → 1 → None`,
-      caption:
-        "A singly linked list cannot be walked backwards — that is the whole problem.",
-    },
-    {
-      text: `1 → 2 → 2 → 1
-         ^middle`,
-      caption: "Fast and slow pointers find the middle in one pass.",
-    },
-    {
-      text: `1 → 2 → None
-2 ← 1`,
-      caption:
-        "The second half is reversed in place by relinking, giving a backwards reader.",
-    },
-    {
-      text: `compare 1 vs 1  ✓
-compare 2 vs 2  ✓`,
-      caption:
-        "Two heads walk toward each other's halves. A mismatch would end it here.",
-    },
-    {
-      text: `right ran out → true`,
-      caption:
-        "On an odd length the unmatched middle simply has no partner, so it needs no special case.",
-    },
-  ],
   alternatives: [
     {
       name: "Copy into an array",

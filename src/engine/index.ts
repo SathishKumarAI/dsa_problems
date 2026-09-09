@@ -68,6 +68,10 @@ import { minCoverSubstring } from "../data/journeys/min-cover-substring.ts"
 import { sameTree } from "../data/journeys/same-tree.ts"
 import { invertTree } from "../data/journeys/invert-tree.ts"
 import { balancedTree } from "../data/journeys/balanced-tree.ts"
+import { bstAncestor } from "../data/journeys/bst-ancestor.ts"
+import { middleOfList } from "../data/journeys/middle-of-list.ts"
+import { palindromeList } from "../data/journeys/palindrome-list.ts"
+import { removeNthFromEnd } from "../data/journeys/remove-nth-from-end.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -142,6 +146,10 @@ export const JOURNEYS: AnyJourney[] = [
   sameTree as unknown as AnyJourney,
   invertTree as unknown as AnyJourney,
   balancedTree as unknown as AnyJourney,
+  bstAncestor as unknown as AnyJourney,
+  middleOfList as unknown as AnyJourney,
+  palindromeList as unknown as AnyJourney,
+  removeNthFromEnd as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,

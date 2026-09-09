@@ -70,6 +70,10 @@ import { minCoverSubstring, minWindow } from "./min-cover-substring.ts"
 import { sameShape, sameTree } from "./same-tree.ts"
 import { invertTree, mirrored } from "./invert-tree.ts"
 import { balancedTree, isHeightBalanced } from "./balanced-tree.ts"
+import { ancestorOf, bstAncestor } from "./bst-ancestor.ts"
+import { middleOfList, middleValue } from "./middle-of-list.ts"
+import { isPalindromeList, palindromeList } from "./palindrome-list.ts"
+import { removeNthFromEnd, withoutNth } from "./remove-nth-from-end.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -911,6 +915,71 @@ const TABLE: {
         nums.push(parentAlive && rand(3) ? String(rand(9)) : ".")
       }
       return { nums }
+    },
+  },
+  {
+    journey: bstAncestor as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) =>
+      ancestorOf(d.nums as string[], d.p as number, d.q as number),
+    // a real search tree, built by inserting into level-order slots, with two
+    // targets drawn from the values it actually holds
+    input: (rand) => {
+      const slots: string[] = ["."]
+      const insert = (v: number) => {
+        let i = 0
+        for (;;) {
+          while (i >= slots.length) slots.push(".")
+          if (slots[i] === ".") {
+            slots[i] = String(v)
+            return
+          }
+          if (v === Number(slots[i])) return
+          i = v < Number(slots[i]) ? 2 * i + 1 : 2 * i + 2
+        }
+      }
+      for (let k = 0; k < 3 + rand(6); k++) insert(rand(20))
+      const values = slots.filter((v) => v !== ".").map(Number)
+      return {
+        nums: slots,
+        p: values[rand(values.length)],
+        q: values[rand(values.length)],
+      }
+    },
+  },
+  {
+    journey: middleOfList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => middleValue(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => 1 + rand(9)),
+    }),
+  },
+  {
+    journey: palindromeList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isPalindromeList(d.nums as number[]),
+    // half the cases are built to BE palindromes, so a true answer is
+    // exercised as often as the many ways to be false
+    input: (rand) => {
+      const half = Array.from({ length: rand(4) }, () => rand(4))
+      if (rand(2))
+        return {
+          nums: [...half, ...(rand(2) ? [rand(4)] : []), ...[...half].reverse()],
+        }
+      return { nums: Array.from({ length: rand(7) }, () => rand(4)) }
+    },
+  },
+  {
+    journey: removeNthFromEnd as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => withoutNth(d.nums as number[], d.n as number),
+    input: (rand) => {
+      const len = 1 + rand(8)
+      return {
+        nums: Array.from({ length: len }, () => 1 + rand(9)),
+        n: 1 + rand(len),
+      }
     },
   },
   {
