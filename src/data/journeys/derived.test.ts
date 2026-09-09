@@ -78,6 +78,18 @@ import { pathCount, uniquePaths } from "./unique-paths.ts"
 import { kthSmallest, kthSmallestMatrix } from "./kth-smallest-matrix.ts"
 import { canSegment, wordBreak } from "./word-break.ts"
 import { captured, surroundedRegions } from "./surrounded-regions.ts"
+import { isAnagram, validAnagram } from "./valid-anagram.ts"
+import {
+  forwardOnly,
+  isIsomorphic,
+  isomorphicStrings,
+} from "./isomorphic-strings.ts"
+import { groupAnagrams, grouped } from "./group-anagrams.ts"
+import { hidesPermutation, permutationInString } from "./permutation-in-string.ts"
+import { evalRpn, rpnEval } from "./rpn-eval.ts"
+import { byFrequency, sortByFrequency } from "./sort-by-frequency.ts"
+import { climbWays, stairWays } from "./stair-ways.ts"
+import { bitCounts, countingBits } from "./counting-bits.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -969,7 +981,11 @@ const TABLE: {
       const half = Array.from({ length: rand(4) }, () => rand(4))
       if (rand(2))
         return {
-          nums: [...half, ...(rand(2) ? [rand(4)] : []), ...[...half].reverse()],
+          nums: [
+            ...half,
+            ...(rand(2) ? [rand(4)] : []),
+            ...[...half].reverse(),
+          ],
         }
       return { nums: Array.from({ length: rand(7) }, () => rand(4)) }
     },
@@ -1018,7 +1034,9 @@ const TABLE: {
     input: (rand) => {
       const pieces = ["a", "aa", "ab", "b", "ba"]
       const dict = Array.from({ length: 1 + rand(3) }, () => pieces[rand(5)])
-      const s = Array.from({ length: 1 + rand(5) }, () => "ab"[rand(2)]).join("")
+      const s = Array.from({ length: 1 + rand(5) }, () => "ab"[rand(2)]).join(
+        ""
+      )
       return { nums: [s, ...new Set(dict)] }
     },
   },
@@ -1034,6 +1052,109 @@ const TABLE: {
         cols,
       }
     },
+  },
+  {
+    journey: validAnagram as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isAnagram(d.nums as string[]),
+    // half the cases are built to BE anagrams, so a true answer is exercised
+    // as often as the several ways to be false
+    input: (rand) => {
+      const word = Array.from({ length: 1 + rand(5) }, () => "abc"[rand(3)])
+      if (rand(2)) {
+        const shuffled = [...word]
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = rand(i + 1)
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        }
+        return { nums: [word.join(""), shuffled.join("")] }
+      }
+      return {
+        nums: [
+          word.join(""),
+          Array.from({ length: 1 + rand(5) }, () => "abc"[rand(3)]).join(""),
+        ],
+      }
+    },
+  },
+  {
+    journey: isomorphicStrings as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isIsomorphic(d.nums as string[]),
+    // a tiny alphabet and equal lengths, so the backward-only failures — the
+    // ones a single forward map misses — actually turn up
+    input: (rand) => {
+      const n = 1 + rand(5)
+      const word = () =>
+        Array.from({ length: n }, () => "abc"[rand(3)]).join("")
+      return { nums: [word(), word()] }
+    },
+  },
+  {
+    journey: groupAnagrams as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => grouped(d.nums as string[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(6) }, () =>
+        Array.from({ length: rand(4) }, () => "abc"[rand(3)]).join("")
+      ),
+    }),
+  },
+  {
+    journey: permutationInString as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => hidesPermutation(d.nums as string[]),
+    input: (rand) => ({
+      nums: [
+        Array.from({ length: 1 + rand(3) }, () => "ab"[rand(2)]).join(""),
+        Array.from({ length: 1 + rand(7) }, () => "abc"[rand(3)]).join(""),
+      ],
+    }),
+  },
+  {
+    journey: rpnEval as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => evalRpn(d.nums as string[]),
+    // build a valid expression by construction: start with a number, then
+    // either push another number or apply an operator when two are waiting
+    input: (rand) => {
+      const out: string[] = [String(rand(9) - 4)]
+      let depth = 1
+      for (let i = 0; i < 2 + rand(6); i++) {
+        if (depth >= 2 && rand(2)) {
+          out.push(["+", "-", "*"][rand(3)])
+          depth--
+        } else {
+          out.push(String(rand(9) - 4))
+          depth++
+        }
+      }
+      while (depth > 1) {
+        out.push(["+", "-", "*"][rand(3)])
+        depth--
+      }
+      return { nums: out }
+    },
+  },
+  {
+    journey: sortByFrequency as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => byFrequency(d.nums as string[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => "abc"[rand(3)]),
+    }),
+  },
+  {
+    journey: stairWays as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => climbWays(d.nums as number[]),
+    input: (rand) => ({ nums: [1 + rand(9)] }),
+  },
+  {
+    journey: countingBits as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => bitCounts(d.nums as number[]),
+    input: (rand) => ({ nums: [rand(13)] }),
   },
   {
     journey: maxDepth as unknown as AnyJourney,
@@ -1121,6 +1242,16 @@ test("partition-equal-subset: the sweep direction is the whole difference", () =
   // same shape with a bigger gap
   assert.equal(canPartition([2, 6]), false)
   assert.equal(canPartitionUpward([2, 6]), true)
+})
+
+test("isomorphic-strings: a forward map alone misses the collapse", () => {
+  // the journey's own backward preset: read left to right nothing contradicts
+  assert.equal(isIsomorphic(["badc", "baba"]), false)
+  assert.equal(forwardOnly(["badc", "baba"]), true)
+  // and they agree on the obvious failure, which is why testing with that one
+  // says nothing about whether the second map exists
+  assert.equal(isIsomorphic(["foo", "bar"]), false)
+  assert.equal(forwardOnly(["foo", "bar"]), false)
 })
 
 test("fewest-coins: the greedy rung is wrong where the journey says it is", () => {

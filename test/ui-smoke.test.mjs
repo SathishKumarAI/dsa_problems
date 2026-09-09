@@ -1323,36 +1323,32 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
-    test("390 px wide: the walkthrough legend has a key, not a gap (V9)", async () => {
-      // The legend was `hidden sm:flex`, so a phone got four load-bearing
-      // colours and no key at all. It wraps now. Checked on a problem WITHOUT a
-      // journey, because a journeyed one draws the engine stage instead.
-      await page.resize(390, 844)
+    test("every problem has a journey, so the static player is unreachable", async () => {
+      // V9 fixed the legend in `step-player.tsx`, which no route renders any
+      // more: all 87 problems have a journey now, so the problem page always
+      // draws the engine stage instead. This check is what makes that a
+      // FACT rather than an assumption — it fails the moment a problem is
+      // added without a journey, which is exactly when the question "keep the
+      // static player or delete it?" (B61) has to be answered.
       await page.goto(`${server.base}/#/p/arrays-hashing/group-anagrams`)
       const out = await page.run(`
-        const swatchRow = [...document.querySelectorAll('span')]
-          .find(el => /current/i.test(el.textContent || '') && el.children.length === 1
-                      && el.querySelector('span.size-2'));
-        const legend = swatchRow ? swatchRow.parentElement : null;
-        const box = legend ? legend.getBoundingClientRect() : null;
+        const walkthrough = [...document.querySelectorAll('h2, h3')]
+          .find(h => /walkthrough/i.test(h.textContent || ''));
         return {
-          labels: legend ? [...legend.children].map(c => c.textContent.trim()) : [],
-          visible: !!box && box.height > 0 && box.width > 0,
-          right: box ? Math.round(box.right) : 0,
-          scrollW: document.documentElement.scrollWidth,
-          clientW: document.documentElement.clientWidth,
+          hasSection: !!walkthrough,
+          // the engine draws real chips and panels, which carry data-k keys;
+          // the static player's cells never do
+          engineStage: !!document.querySelector('[data-k]'),
+          staticPlayer: !!document.querySelector('[aria-label^="walkthrough,"]'),
         };
       `)
-      await page.resize(1440)
-      assert.ok(out.visible, "the legend is not rendered at 390px")
-      assert.deepEqual(out.labels, [
-        "current",
-        "comparing",
-        "in window",
-        "settled",
-      ])
-      assert.ok(out.right <= 390, `the legend runs to ${out.right}px`)
-      assert.equal(out.scrollW, out.clientW, "the page scrolls sideways at 390px")
+      assert.ok(out.hasSection, "the walkthrough section is gone entirely")
+      assert.ok(out.engineStage, "the problem page is not drawing the engine stage")
+      assert.equal(
+        out.staticPlayer,
+        false,
+        "a static walkthrough player rendered — some problem has no journey (see B61)"
+      )
       assert.deepEqual(page.errors(), [])
     })
 

@@ -88,46 +88,6 @@ export const problem: Problem = {
     }
     return stack.back();
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["2", "1", "+", "3", "*"] },
-      caption: "Read left to right. The stack starts empty.",
-    },
-    {
-      cells: { values: ["2", "1", "+", "3", "*"], marks: { 0: "focus" } },
-      caption: "A number → push. Stack: [2].",
-    },
-    {
-      cells: {
-        values: ["2", "1", "+", "3", "*"],
-        marks: { 0: "done", 1: "focus" },
-      },
-      caption: "Another number → push. Stack: [2, 1].",
-    },
-    {
-      cells: {
-        values: ["2", "1", "+", "3", "*"],
-        marks: { 0: "compare", 1: "compare", 2: "focus" },
-      },
-      caption:
-        "'+' pops 1 as the right operand and 2 as the left → push 3. Stack: [3].",
-    },
-    {
-      cells: {
-        values: ["2", "1", "+", "3", "*"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "focus" },
-      },
-      caption: "Push 3. Stack: [3, 3].",
-    },
-    {
-      cells: {
-        values: ["2", "1", "+", "3", "*"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 4: "focus" },
-      },
-      caption:
-        "'*' pops both → push 9. One value left, and that is the answer: 9.",
-    },
-  ],
   alternatives: [
     {
       name: "Rewrite in place",

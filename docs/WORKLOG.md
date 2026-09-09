@@ -95,6 +95,67 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (87 of 87) — the last eight journeys, and a milestone worth stating plainly
+
+One PR (#68). B51 and B52, which between them close the set: **every one of the 87 problems now has
+a journey.**
+
+### B51 — six array-shaped journeys
+
+Each one puts the STRUCTURE on the stage rather than the input, because in every case the structure
+is what the answer is about:
+
+| journey | what the stage draws | what it turns on |
+|---|---|---|
+| `count-dont-sort` | the tally | an anagram is a claim about COUNTS, so both strings are read in one order-independent pass |
+| `one-to-one-both-ways` | two maps | the backward map catches what no forward map can see |
+| `a-key-that-survives-rearranging` | the groups | three rungs about what a KEY is — none, sorted, tallied |
+| `two-letters-move-so-check-two` | need over have | a window move changes two counts, so carry the agreement count |
+| `the-two-most-recent-values` | the stack | "most recently finished" IS a stack |
+| `most-first-and-a-rule-for-ties` | the ranked counts | the tie-break is what makes the answer one answer |
+
+`one-to-one-both-ways` ships a pinning test, the same shape as fewest-coins and word-search:
+`"badc"` → `"baba"` is **false**, a forward-only map says **true**, and the obvious failure
+`"foo"` → `"bar"` is caught by both — which is why testing with that one proves nothing.
+
+`most-first-and-a-rule-for-ties` is another ladder that does not climb in cost, and says so: the
+heap and the sort are the same work here, and the heap is taught because the same shape answers
+"the top k without ordering the rest".
+
+### B52 — the two that take a single number
+
+`stair-ways` and `counting-bits`. Both draw the answer table being filled; `generate-parens` and
+`above-plus-left` had already proved a one-number input works. stair-ways carries the full DP arc in
+three rungs — the recurrence, the same recursion memoised, and then two variables, because a table
+whose entries are each read exactly twice by their neighbours never needed to be a table.
+
+### The milestone, and what it broke
+
+**87 journeys, 87 problems, 0 static walkthroughs.** Which means `step-player.tsx` renders nowhere:
+`problems.test.ts` forbids a problem from carrying both a journey and hand-written frames, so
+`problem.walkthrough` is now undefined everywhere — including the legend V9 fixed two passes ago.
+
+The `test:ui` check that measured that legend failed, correctly, because its last fixture became a
+journey. It has been **replaced rather than deleted**: the new check asserts the fact that changed —
+the problem page draws the engine stage and no static player renders — so it fails the moment a
+problem is added without a journey, which is exactly when the keep-or-delete question (B61) has to
+be answered.
+
+That question is filed, not acted on. The static player is the fallback for a problem authored
+before its journey, and deleting it means every new problem must ship with a journey on the same
+branch. Same shape as B54, filed BEFORE acting this time rather than after.
+
+### Gates
+
+`npm run check` exit 0 (**646 tests**) · `npm run test:ui` exit 0 (**132 checks**) ·
+`verify:code` **412 blocks, 0 failed** · `verify:run` **1676 comparisons, 0 disagreed**.
+
+Gates caught, across the eight: four undeclared corner tags, three edges pointed at presets that
+could not exercise them, two out-of-range `line` indices, and one disclosure leak — stair-ways'
+third hint names the last act, so the story act carries its own.
+
+---
+
 ## 2026-09-09 (the panels) — an audit that found the panels were fine, and one rule they broke
 
 One PR (#67). Asked for: update the docs and the memories, find the next session's tasks, and audit

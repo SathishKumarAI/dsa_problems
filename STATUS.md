@@ -1,6 +1,6 @@
 # STATUS — read this when you return
 
-Last session: 2026-09-09. Journeys went **5 → 79**, the practice set's Java/C++ hole was closed,
+Last session: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
 the UI got the pass it had been owed since the set tripled in size, and the tree and list panels
 finally have something rendering them.
 
@@ -13,15 +13,15 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#67. Nothing is open. The last two are **batch 5**: five
+`master` is clean and holds everything: #49–#68. Nothing is open. The last two are **batch 5**: five
 tree/list journeys (#62), then the remaining fifteen three-language problems (#63).
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **589 tests** |
-| The interface, in a real browser | `npm run test:ui` | **124 checks**, 0 failed |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **646 tests** |
+| The interface, in a real browser | `npm run test:ui` | **132 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **412 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **1694 comparisons**, 0 disagreed — and **14 problems it cannot marshal**, named in `NOT_YET_RUNNABLE` (B30) |
+| …and agrees with the Python | `npm run verify:run` | **1676 comparisons**, 0 disagreed — and **14 problems it cannot marshal**, named in `NOT_YET_RUNNABLE` (B30) |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
 
 ## What happened, in the order it happened
@@ -45,33 +45,32 @@ tree/list journeys (#62), then the remaining fifteen three-language problems (#6
 
 ## The next action — pick from the top
 
-**79 journeys of 87 problems. Zero ASCII walkthroughs. Every panel kind measured and pinned.**
-Nothing on this list is blocked; they are in the order I would take them.
+**87 journeys for 87 problems.** Every problem in the set is built all the way down: a story act,
+an approach ladder earned one rung at a time, corner cases taught in play, and three languages.
+Zero static walkthroughs remain.
 
-### 1. B51 — six array-shaped journeys (M)
-valid-anagram, group-anagrams, isomorphic-strings, permutation-in-string, rpn-eval,
-sort-by-frequency. All three languages present, all shapes proved. This is pure writing at the
-measured ~330 lines each, and it is what takes the set to 85 of 87.
+### 1. B30 — the honest gap in the gates (L)
+The biggest real hole. `verify:run` cannot marshal a linked list or a binary tree, so **14 problems
+are checked by a compiler and nothing else**. They are named in `NOT_YET_RUNNABLE` rather than
+absent, which is the difference between a known gap and an invisible one — but the check is still
+missing. Needs a `tree` and a `list` param shape in `run.mjs`: a node type and a builder in each of
+the three languages, plus a serialiser for the ones that RETURN a structure.
 
-### 2. B52 — stair-ways and counting-bits (S)
-Both take a single number rather than a row. That shape is now proved twice — `generate-parens`
-and `above-plus-left` both do it — and the DP-table stage exists. **These two finish the set: 87
-journeys for 87 problems.**
+### 2. B61 — decide about the static player (S)
+`step-player.tsx` is unreachable: 0 of 87 problems carry a `walkthrough`. It is the fallback for a
+problem authored before its journey, so deleting it means every new problem must ship with a journey
+on the same branch. A `test:ui` check pins the fact and fails the moment that changes. Decide it
+before B53 adds problem 88 — not after.
 
-### 3. B30 — the honest gap in the gates (L)
-`verify:run` cannot marshal a linked list or a binary tree, so **14 problems** are checked by a
-compiler and nothing else. They are named in `NOT_YET_RUNNABLE` rather than being absent, which is
-the difference between a known gap and an invisible one — but the check is still missing. Needs a
-`tree` and a `list` param shape in `run.mjs`: a node type and a builder in each of the three
-languages, plus a serialiser for the ones that RETURN a structure.
+### 3. B53 — thirteen new problems, for a hundred journeys (XL)
+The set holds 87 and every one has a journey, so "a hundred journeys" is now exactly "thirteen more
+problems". Each needs statement, constraints, hints, the ladder, the Python oracle, Java and C++,
+and vectors strong enough for `verify:vectors` — roughly three times the cost of a journey. Answer
+B61 first.
 
-### 4. B58, B59 — the two audit follow-ups (S each)
+### 4. B58, B59 — the panel-audit follow-ups (S each)
 Four raw font sizes below the scale outside the panels, and the design call on whether the
 test-case drawer should stop taking 288px from the stage.
-
-### 5. B53 — thirteen new problems, for a hundred journeys (XL)
-Only worth starting once 1 and 2 are done, because "a hundred journeys" needs a hundred problems
-and the set holds 87.
 
 ### Also open, unchanged
 B42 (trace frames out of the Python — measured and demoted), B43 (Java/C++ tabs on derived acts),
@@ -125,10 +124,10 @@ F-items.
 
 ## What is on screen
 
-79 journeys, a practice set of 87 problems (**all three languages on all 87**), a
+87 journeys, a practice set of 87 problems (**all three languages on all 87**), a
 sorting/search/graph visualizer, SQL drills and stats flashcards. The shell has collapsible rails,
 a settings dialog and a keyboard map. The pattern list filters and searches, difficulty is visible,
-the sidebar and home lead with what is in play rather than all 79 journeys, the problem page is
+the sidebar and home lead with what is in play rather than all 87 journeys, the problem page is
 stacked sections rather than tabs, and the journey page has a clickable trace, a chip row, a grid, a
 tree (used by both trees and heaps) and a list (with a back-edge when it loops). The journey top bar is one row and carries the transport at its right, so play and
 the scrubber are in view however far either column is scrolled.
