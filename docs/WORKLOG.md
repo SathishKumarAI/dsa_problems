@@ -95,6 +95,47 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (chrome) — the theme that was already there, and a footer three times too tall
+
+One PR (#64), asked for directly: *"can i see the setting all themes and light mode"* and *"have all
+the three settings and keyword shortcuts and collapse in one parallel so space less space"*.
+
+### The theme was built and never offered
+
+`components/theme-provider.tsx` has carried dark / light / system since the shell was built — with a
+`d` shortcut, a `prefers-color-scheme` listener, and cross-tab sync through a storage event. **No
+control anywhere exposed it.** Settings has a theme row now, and `d` is in the shortcuts map the `?`
+dialog renders, which is where a key is supposed to be declared in the same commit that adds it.
+
+That is the same bug as `brief` and `difficulty` — and the V10 sweep this session **missed it**,
+because it swept content fields for render sites and this lives in a component. A sweep is only as
+wide as the thing it swept.
+
+### Light was grey, and grey cannot teach here
+
+The light palette was still the shadcn default, where all five chart roles are shades of the same
+colour. In this product the chip roles — anchor, focus, answer, dim — and the walkthrough legend
+say what a step is DOING; a theme that flattens them into greys is not a dimmer version of the
+product, it is a broken one. Light is **Catppuccin Latte** now, the counterpart of the Mocha in the
+dark block, with the same hue for the same role in both.
+
+Measured on the journey page in light: **5 distinct chart colours**, background `rgb(239, 241, 245)`,
+text `rgb(76, 79, 105)`, primary the Latte mauve.
+
+### The footer was three rows to reach three dialogs
+
+Settings, shortcuts and collapse were full-width rows stacked vertically. They sit side by side now,
+labels moved into the tooltips they already had. Measured by toggling the class back on the live
+page: **footer 144px → 72px**. On the collapsed rail they stack again — there is no width to share
+there, and the rail is where the labels are most needed.
+
+### Gates
+
+`npm run check` exit 0 (**512 tests**) · `npm run test:ui` exit 0, **112 checks** — two new: the theme
+switch changes the page and keeps the chart roles distinct, and the three footer controls share a row.
+
+---
+
 ## 2026-09-09 (batch 5, part two) — the other fifteen, and the pool is empty
 
 One PR (#63), fifteen journeys. **53 → 68**, and **every problem carrying all three languages now

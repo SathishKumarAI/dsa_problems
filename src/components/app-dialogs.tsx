@@ -24,6 +24,7 @@ import {
   usePrefs,
 } from "@/lib/store"
 import type { DialogName } from "@/lib/dialogs"
+import { useTheme } from "@/components/theme-provider"
 import type { Prefs } from "@/lib/store"
 
 function Frame({
@@ -264,6 +265,7 @@ function Row({
 
 export function SettingsDialog() {
   const prefs = usePrefs()
+  const { theme, setTheme } = useTheme()
   const [pasted, setPasted] = useState("")
   const [msg, setMsg] = useState("")
   const [armed, setArmed] = useState(false)
@@ -307,6 +309,22 @@ export function SettingsDialog() {
       description="Preferences are saved in this browser. Everything here has a sensible default."
     >
       <div className="flex flex-col gap-4">
+        {/* The theme machinery has been in `theme-provider.tsx` since the
+            shell was built — dark, light, system, a `d` shortcut and cross-tab
+            sync — and nothing on screen ever offered it. Same shape of bug as
+            `brief` and `difficulty` (B40, V10): stored, working, unrendered. */}
+        <Row label="theme" hint="system follows your device; d toggles">
+          <Segmented
+            label="theme"
+            value={theme}
+            onChange={(v) => setTheme(v as "dark" | "light" | "system")}
+            options={[
+              { value: "dark", label: "dark" },
+              { value: "light", label: "light" },
+              { value: "system", label: "system" },
+            ]}
+          />
+        </Row>
         <Row label="playback speed" hint={`${prefs.speed} / 100`}>
           <input
             type="range"
