@@ -76,6 +76,9 @@ import { uniquePaths } from "../data/journeys/unique-paths.ts"
 import { kthSmallestMatrix } from "../data/journeys/kth-smallest-matrix.ts"
 import { wordBreak } from "../data/journeys/word-break.ts"
 import { surroundedRegions } from "../data/journeys/surrounded-regions.ts"
+import { validAnagram } from "../data/journeys/valid-anagram.ts"
+import { isomorphicStrings } from "../data/journeys/isomorphic-strings.ts"
+import { groupAnagrams } from "../data/journeys/group-anagrams.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -158,6 +161,9 @@ export const JOURNEYS: AnyJourney[] = [
   kthSmallestMatrix as unknown as AnyJourney,
   wordBreak as unknown as AnyJourney,
   surroundedRegions as unknown as AnyJourney,
+  validAnagram as unknown as AnyJourney,
+  isomorphicStrings as unknown as AnyJourney,
+  groupAnagrams as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,

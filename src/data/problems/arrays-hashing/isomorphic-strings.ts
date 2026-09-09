@@ -82,33 +82,6 @@ export const problem: Problem = {
     }
     return true;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["b", "a", "d", "c"] },
-      caption: 's = "badc", t = "baba". Two maps travel with the walk.',
-    },
-    {
-      cells: { values: ["b", "a", "d", "c"], marks: { 0: "focus" } },
-      caption: "b→b recorded, and b←b backward.",
-    },
-    {
-      cells: {
-        values: ["b", "a", "d", "c"],
-        marks: { 0: "window", 1: "focus" },
-      },
-      caption: "a→b? No: a→a here. Both maps agree so far.",
-    },
-    {
-      cells: { values: ["b", "a", "d", "c"], marks: { 2: "compare" } },
-      caption:
-        "d must become b — but backward already says b came from b. Two sources, one target.",
-    },
-    {
-      cells: { values: ["b", "a", "d", "c"], marks: { 2: "done" } },
-      caption:
-        "False, on the BACKWARD map. A forward-only check would have accepted this.",
-    },
-  ],
   alternatives: [
     {
       name: "Encode both as patterns",

@@ -92,62 +92,6 @@ export const problem: Problem = {
     sort(out.begin(), out.end());
     return out;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["eat", "tea", "tan", "ate", "nat", "bat"] },
-      caption:
-        "Six words. Each one gets a key that survives rearrangement; the map does the grouping.",
-    },
-    {
-      cells: {
-        values: ["eat", "tea", "tan", "ate", "nat", "bat"],
-        marks: { 0: "focus" },
-      },
-      caption: '"eat" tallies to a:1 e:1 t:1 → a new bucket.',
-    },
-    {
-      cells: {
-        values: ["eat", "tea", "tan", "ate", "nat", "bat"],
-        marks: { 0: "window", 1: "focus" },
-      },
-      caption: '"tea" tallies to the SAME counts → it joins "eat".',
-    },
-    {
-      cells: {
-        values: ["eat", "tea", "tan", "ate", "nat", "bat"],
-        marks: { 0: "window", 1: "window", 2: "focus" },
-      },
-      caption: '"tan" is a:1 n:1 t:1 — one letter different, so a new bucket.',
-    },
-    {
-      cells: {
-        values: ["eat", "tea", "tan", "ate", "nat", "bat"],
-        marks: {
-          0: "window",
-          1: "window",
-          3: "focus",
-          2: "compare",
-          4: "compare",
-        },
-      },
-      caption: '"ate" joins the first bucket; "nat" joins "tan".',
-    },
-    {
-      cells: {
-        values: ["ate", "eat", "tea", "bat", "nat", "tan"],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-        },
-      },
-      caption:
-        'Three buckets, each sorted, then sorted between themselves: [["ate","eat","tea"], ["bat"], ["nat","tan"]].',
-    },
-  ],
   alternatives: [
     {
       name: "Compare every pair",

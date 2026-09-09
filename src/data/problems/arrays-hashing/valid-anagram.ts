@@ -65,52 +65,6 @@ export const problem: Problem = {
     }
     return true;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["a", "n", "a", "g", "r", "a", "m"] },
-      caption:
-        's = "anagram", t = "nagaram". Same length, so the counting can start.',
-    },
-    {
-      cells: {
-        values: ["a", "n", "a", "g", "r", "a", "m"],
-        marks: { 0: "focus" },
-      },
-      caption: "Read s[0] = 'a' → +1 for a. Read t[0] = 'n' → −1 for n.",
-    },
-    {
-      cells: {
-        values: ["a", "n", "a", "g", "r", "a", "m"],
-        marks: { 0: "done", 1: "focus" },
-      },
-      caption:
-        "s[1] = 'n' → +1 for n, cancelling the −1. t[1] = 'a' → −1 for a.",
-    },
-    {
-      cells: {
-        values: ["a", "n", "a", "g", "r", "a", "m"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "focus" },
-      },
-      caption:
-        "The tally swings above and below zero as the two strings disagree about ORDER — that is fine.",
-    },
-    {
-      cells: {
-        values: ["a", "n", "a", "g", "r", "a", "m"],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-          6: "done",
-        },
-      },
-      caption:
-        "Every counter is back to 0 → true. Order never mattered, counts did.",
-    },
-  ],
   alternatives: [
     {
       name: "Sort both",
