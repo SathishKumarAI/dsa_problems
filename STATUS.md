@@ -75,16 +75,15 @@ list agree.
 
 | Order | Item | Branch | Done when |
 |---|---|---|---|
-| 1 | **B61** — keep or delete `step-player.tsx` | `refactor/decide-static-player` (or a docs-only commit if the answer is "keep") | The backlog row is checked with the decision and its reason; if deleted, `Problem.walkthrough`, the `Frame` type and the `test:ui` pin go with it in the same commit |
-| 2 | **B58** — four raw font sizes outside the panels | `fix/type-scale-outside-panels` | Each of the four re-measured at `text-meta`, no clipping in the 48px rail; `npm run test:ui` green |
-| 3 | **B59** — the drawer's 288px | `feat/testcase-drawer-placement` | A design call written down, then built or dropped — measured stage width quoted either way |
-| 4 | **B62** — the one problem that is not a function | `feat/localsmith-stateful-class` | `NOT_YET_RUNNABLE` is **empty**; `kth-largest-stream` driven as a script of calls |
-| 5 | **B53** — thirteen new problems | `feat/problems-batch-6` | Only after B61 answers who owns a problem authored without a journey |
+| 1 | **B58** — four raw font sizes outside the panels | `fix/type-scale-outside-panels` | Each of the four re-measured at `text-meta`, no clipping in the 48px rail; `npm run test:ui` green |
+| 2 | **B59** — the drawer's 288px | `feat/testcase-drawer-placement` | A design call written down, then built or dropped — measured stage width quoted either way |
+| 3 | **B62** — the one problem that is not a function | `feat/localsmith-stateful-class` | `NOT_YET_RUNNABLE` is **empty**; `kth-largest-stream` driven as a script of calls |
+| 4 | **B53** — thirteen new problems | `feat/problems-batch-6` | B61 answered: a problem may ship without a journey, so a batch is a content batch and nothing more |
 
 **B30 is done** (2026-09-09). What it bought, and what it cost, is the entry below.
 
-Gates for any of them: `npm run check`, plus `npm run test:ui` for 1, 2 and 3, plus
-`npm run verify:code` / `verify:run` / `verify:vectors` for 4 and 5.
+Gates for any of them: `npm run check`, plus `npm run test:ui` for 1 and 2, plus
+`npm run verify:code` / `verify:run` / `verify:vectors` for 3 and 4.
 
 ### B30 — shipped, and what it found
 
@@ -134,11 +133,12 @@ balanced-tree        is_balanced(root)                      tree  -> bool
 bst-ancestor         lowest_common_ancestor(root, p, q)     tree, int, int -> int
 ```
 
-### B61 — decide about the static player (S)
-`step-player.tsx` is unreachable: 0 of 87 problems carry a `walkthrough`. It is the fallback for a
-problem authored before its journey, so deleting it means every new problem must ship with a journey
-on the same branch. A `test:ui` check pins the fact and fails the moment that changes. Decide it
-before B53 adds problem 88 — not after.
+### B61 — decided: KEEP the static player
+`step-player.tsx` is unreachable today — 0 of 87 problems carry a `walkthrough` — and it stays.
+Deleting it would make "a problem without a journey" unrenderable, which turns every future content
+batch into a journey batch too. One unreachable component is cheaper than a rule about how work may
+be sliced. The `test:ui` pin stays and fails the moment problem 88 makes it reachable, which is when
+this is worth re-reading.
 
 ### B53 — thirteen new problems, for a hundred journeys (XL)
 The set holds 87 and every one has a journey, so "a hundred journeys" is now exactly "thirteen more
