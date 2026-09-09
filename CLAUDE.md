@@ -16,7 +16,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | The API contract | `docs/API.md` |
 | Where the last session stopped | `STATUS.md` |
 | Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (U1–U14 chrome, V1–V10 content, P1–P4 panels) |
-| Whether a panel still fits its biggest input | `node test/panel-audit.mjs` — measures, asserts nothing |
+| Whether a panel still fits its biggest input | `test/panel-audit.test.mjs` — runs inside `npm run test:ui`, one test per panel kind, and still prints the table |
 | Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
 | How the animations work, and how to build one in Python / for an LLM | `docs/VISUALIZING.md` |
 | Which model wrote what, and what it cost in tokens | `docs/MODELS.md` |

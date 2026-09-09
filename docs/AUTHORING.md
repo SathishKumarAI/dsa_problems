@@ -143,7 +143,7 @@ with a `cols` param. TWO structures travel in one row with `|` between them — 
 same-tree both do this, so the test-case drawer stays a single text field. An input that is just a
 number or two is a row of one or two values (`generate-parens`, `above-plus-left`).
 
-**Panel geometry is measured, not assumed.** `node test/panel-audit.mjs` walks every kind at its
+**Panel geometry is measured, not assumed.** `test/panel-audit.test.mjs` walks every kind at its
 largest preset and prints cells, overlaps, overflow and the smallest text; the densest case is
 pinned in `test:ui`. Run it after touching a view.
 A kind that owns the whole stage returns `chips: null`; the empty-stage placeholder is drawn
