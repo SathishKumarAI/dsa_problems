@@ -61,7 +61,7 @@ a port; the original implementation is the reference, not the spec — the React
 
 | # | Item | Why | Size | Ref |
 |---|---|---|---|---|
-| B18 | ☐ **Unit tests for `lib/store.ts`** — `streakOf` (today / yesterday / gap), `updateStored`, corrupt JSON fallback. | The store is the one module every feature trusts and it has no test. | S | — |
+| B18 | ☑ **Unit tests for `lib/store.ts`** — shipped 2026-09-09 (`test/store-unit-tests`): **19 tests**, no browser. `streakOf` today / yesterday / gap / duplicate / order-independent, a corrupt value falling back, storage that THROWS on read and on write (a full or blocked store, where the in-memory cache still has to drive the UI), `updateStored` accumulating and reading through its fallback, `removeStored` clearing the cache too, and the whole-store moves — export leaves prefs behind, import counts what it wrote and refuses a non-object, reset keeps prefs. node has no `localStorage`, so a Map-backed stub is installed before the module loads. | The store is the one module every feature writes through. | S | — |
 | B19 | ☐ **Undo toast on "restart journey"** (5 s) instead of a confirm dialog. | Restart is one click and irreversible today. | S | — |
 | B20 | ☐ **Timed story challenge** ("The Vault", gated on the earned pattern). | Retrieval practice with stakes. | M | legacy #35 |
 | B21 | ☐ **Per-moment OG preview** for shared `?act=&step=` links. | Sharing a moment is the only viral surface a no-backend site has. | L | legacy #51 |
