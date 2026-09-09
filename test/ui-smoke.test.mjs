@@ -303,7 +303,11 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
-    test("the test-case drawer pushes the stage instead of covering it (R4)", async () => {
+    // B59, decided 2026-09-09. It used to take a column of the row, and that
+    // cost the stage 862px → 574px at 1536px — a third of its width, to show a
+    // short list of preset names. The stage is the product and the drawer is a
+    // control, so the control floats now and the stage keeps its width.
+    test("the test-case drawer floats over the stage instead of shrinking it (R4, B59)", async () => {
       await page.goto(`${server.base}/#/journey/two-sum?act=story`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -311,7 +315,8 @@ describe(
         const flask = () => document.querySelector('[aria-label="test cases"][aria-controls]');
         const drawer = () => document.getElementById('test-cases');
         const before = stage().width;
-        const closedWidth = drawer().getBoundingClientRect().width;
+        const closedPointer = getComputedStyle(drawer()).pointerEvents;
+        const closedInert = drawer().hasAttribute('inert');
         flask().click();
         await wait(600);
         const after = stage().width;
@@ -319,20 +324,28 @@ describe(
         const preset = drawer().querySelector('[aria-label="input preset"]');
         return {
           before, after,
-          closedWidth,
+          closedPointer, closedInert,
           drawerWidth: box.width,
-          overlaps: box.left < stage().right - 1,
+          overStage: box.left < stage().right - 1,
+          inViewport: box.right <= window.innerWidth + 1,
           hasPreset: !!preset,
           inert: drawer().hasAttribute('inert'),
         };
       `)
-      assert.equal(out.closedWidth, 0, "a closed drawer should take no width")
-      assert.ok(
-        out.after < out.before - 100,
-        `the stage did not give way: ${out.before} → ${out.after}`
+      assert.equal(
+        out.closedPointer,
+        "none",
+        "a closed drawer must not swallow clicks meant for the stage"
+      )
+      assert.equal(out.closedInert, true, "a closed drawer must be inert")
+      assert.equal(
+        out.after,
+        out.before,
+        `the stage lost width to a control: ${out.before} → ${out.after}`
       )
       assert.ok(out.drawerWidth > 200, "the drawer did not open")
-      assert.equal(out.overlaps, false, "the drawer covered the stage")
+      assert.equal(out.overStage, true, "the drawer is not over the stage")
+      assert.equal(out.inViewport, true, "the drawer ran off the right edge")
       assert.ok(out.hasPreset, "no preset select inside the drawer")
       assert.equal(out.inert, false, "an open drawer must not be inert")
       assert.deepEqual(page.errors(), [])
@@ -411,13 +424,17 @@ describe(
         await wait(600);
         return {
           opened,
-          closed: d.getBoundingClientRect().width,
+          // it floats now (B59), so "closed" is invisible and inert rather
+          // than zero-width
+          closedOpacity: getComputedStyle(d).opacity,
+          closedPointer: getComputedStyle(d).pointerEvents,
           focusBack: document.activeElement.getAttribute('aria-label'),
           inert: d.hasAttribute('inert'),
         };
       `)
       assert.ok(esc.opened > 200, "the drawer did not open")
-      assert.equal(esc.closed, 0, "Esc did not close the drawer")
+      assert.equal(esc.closedOpacity, "0", "Esc did not close the drawer")
+      assert.equal(esc.closedPointer, "none", "a closed drawer still takes clicks")
       assert.equal(
         esc.focusBack,
         "test cases",

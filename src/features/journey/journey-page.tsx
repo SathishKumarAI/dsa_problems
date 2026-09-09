@@ -219,8 +219,8 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             : "lg:grid-cols-[minmax(0,1fr)_2.75rem]"
         )}
       >
-        {/* ---------- the stage, and the drawer it makes room for ---------- */}
-        <div className="flex min-h-0 min-w-0 gap-4">
+        {/* ---------- the stage, with the drawer floating over it ---------- */}
+        <div className="relative flex min-h-0 min-w-0 gap-4">
           <section
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-lg"
             aria-label="stage"
@@ -399,10 +399,13 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             </div>
           </section>
 
-          {/* The test-case drawer (R4). It is a column of the flex row, not an
-            overlay: opening it pushes the stage narrower instead of covering
-            the thing you are about to change. `inert` while closed so its
-            fields stay out of the tab order at width 0. */}
+          {/* The test-case drawer (R4, B59). It FLOATS over the stage's right
+            edge rather than taking a column of the row. Measured 2026-09-09 at
+            1536px: as a column it cost the stage 862px → 574px, a third of its
+            width, to show a short list of preset names. The stage is the
+            product and the drawer is a control, so the control gives way. Same
+            shape as the reading column's hover-peek next door. `inert` while
+            closed so its fields stay out of the tab order. */}
           <aside
             id="test-cases"
             aria-label="test cases"
@@ -418,11 +421,11 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                 ?.focus()
             }}
             className={cn(
-              "hidden shrink-0 overflow-hidden transition-[width] duration-(--duration-reveal) lg:block",
-              drawer ? "w-72" : "w-0"
+              "absolute top-0 right-0 z-20 hidden w-72 transition-opacity duration-(--duration-reveal) lg:block",
+              drawer ? "opacity-100" : "pointer-events-none opacity-0"
             )}
           >
-            <div className="flex w-72 flex-col gap-3 rounded-xl border bg-card p-4">
+            <div className="flex w-72 flex-col gap-3 rounded-xl border bg-card p-4 shadow-2xl">
               <Label>test cases</Label>
               {data}
             </div>
