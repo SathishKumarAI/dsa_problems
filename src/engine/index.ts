@@ -19,6 +19,7 @@ import { validPalindrome } from "../data/journeys/valid-palindrome.ts"
 import { validParenthesisString } from "../data/journeys/valid-parenthesis-string.ts"
 import { coinChangeMin } from "../data/journeys/coin-change-min.ts"
 import { kthLargestElement } from "../data/journeys/kth-largest-element.ts"
+import { islandCountJourney } from "../data/journeys/island-count.ts"
 import { isSubsequence } from "../data/journeys/is-subsequence.ts"
 import { longestCommonPrefix } from "../data/journeys/longest-common-prefix.ts"
 import { majorityElement } from "../data/journeys/majority-element.ts"
@@ -94,6 +95,7 @@ export const JOURNEYS: AnyJourney[] = [
   decodeString as unknown as AnyJourney,
   removeKDigits as unknown as AnyJourney,
   minCostStairs as unknown as AnyJourney,
+  islandCountJourney as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

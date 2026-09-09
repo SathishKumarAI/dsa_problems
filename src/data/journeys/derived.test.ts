@@ -50,6 +50,7 @@ import {
   longestIncreasingRun,
 } from "./longest-increasing-run.ts"
 import { hiddenIn, isSubsequence } from "./is-subsequence.ts"
+import { islandCount, islandCountJourney } from "./island-count.ts"
 import { lastStone, lastStoneWeight } from "./last-stone-weight.ts"
 import {
   longestCommonPrefix,
@@ -592,6 +593,21 @@ const TABLE: {
     input: (rand) => ({
       nums: Array.from({ length: 2 + rand(8) }, () => rand(20)),
     }),
+  },
+  {
+    journey: islandCountJourney as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => islandCount(d.nums as number[], d.cols as number),
+    // land at about half density, so grids with several islands and grids
+    // with none both turn up
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      return {
+        nums: Array.from({ length: cols * rows }, () => rand(2)),
+        cols,
+      }
+    },
   },
 ]
 
