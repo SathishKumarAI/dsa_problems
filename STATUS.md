@@ -13,8 +13,11 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#68. Nothing is open. The last two are **batch 5**: five
-tree/list journeys (#62), then the remaining fifteen three-language problems (#63).
+`master` is clean and holds everything: **#49–#68**. Nothing is open, nothing half-done. The set is
+**complete**: 87 journeys for 87 problems, all three languages, no static walkthroughs left.
+
+The last three: the panel audit (#67), the eleven translated problems and their journeys (#65, #66),
+and the final eight that closed the set (#68).
 
 | Gate | Command | State |
 |---|---|---|
@@ -42,6 +45,22 @@ tree/list journeys (#62), then the remaining fifteen three-language problems (#6
    render `TreeView` and `ListView`; both shapes arrive as `cells: "words"` with `.` for an absent
    slot, since `Cell` has no null. The same PR moved the transport into the top bar and gave the
    stage the width the reading column was holding.
+7. **The audit follow-ups** (#61) — V8 (the ladder framing), V9 (the phone legend) and V10 (the
+   sweep that found nothing, which is the result).
+8. **Batch 5** (#62, #63) — twenty journeys for the tree, list and graph problems, which spent
+   what B41 proved. Every three-language problem had one by the end of it.
+9. **Theme and chrome** (#64). dark/light/system had existed in `theme-provider.tsx` since the
+   shell was built and nothing on screen offered it; light was the shadcn grey, which flattened the
+   chart roles, so it is Catppuccin Latte now. The sidebar footer went from three rows to one.
+10. **The translation pass and the last eleven** (#65, #66). 44 Java/C++ blocks, then journeys for
+    the problems they unblocked — which closed **B54** by actually deleting the ASCII fallback and
+    the `Frame.text` field.
+11. **The panel audit** (#67). Eight panel kinds measured at their largest presets: no overlaps, no
+    overflow, min cell 40px. It found four raw font sizes below the type scale inside the panels,
+    fixed them, and left the densest panel pinned in `test:ui`.
+12. **The last eight** (#68) — B51 and B52. **87 journeys for 87 problems**, and the milestone
+    broke the V9 legend check, correctly: with every problem journeyed nothing renders the static
+    player any more. That check was replaced by one that pins the new fact (B61).
 
 ## The next action — pick from the top
 
@@ -50,11 +69,46 @@ an approach ladder earned one rung at a time, corner cases taught in play, and t
 Zero static walkthroughs remain.
 
 ### 1. B30 — the honest gap in the gates (L)
-The biggest real hole. `verify:run` cannot marshal a linked list or a binary tree, so **14 problems
-are checked by a compiler and nothing else**. They are named in `NOT_YET_RUNNABLE` rather than
-absent, which is the difference between a known gap and an invisible one — but the check is still
-missing. Needs a `tree` and a `list` param shape in `run.mjs`: a node type and a builder in each of
-the three languages, plus a serialiser for the ones that RETURN a structure.
+The biggest real hole, and **the reconnaissance is already done** — start from this, not from
+reading the runner again. `verify:run` executes every Java and C++ block against the repo's own
+Python; it cannot marshal a linked list or a binary tree, so **14 problems are checked by a compiler
+and nothing else**. They are LISTED in `NOT_YET_RUNNABLE` rather than absent, which is the
+difference between a known gap and an invisible one.
+
+**Where the code is.** `scripts/localsmith/run.mjs` marshals arguments by emitting LITERALS into a
+generated driver: `lit.java` / `lit.cpp` around line 155, and `CPP_TYPE` at line 181. Between them
+they know `int`, `string`, `int[]`, `int[][]`, `string[]`.
+
+**What to add.** Two param shapes — `list` (a row of ints) and `tree` (level order with nulls) —
+and the return shapes `list`, `tree`, `node`. Each of the three drivers needs a node type, a
+**builder** from the literal, and a **serialiser** for the blocks that return a structure.
+`scripts/localsmith/verify.mjs` already carries the Java and C++ node declarations in its `NODES`
+constant; lift those rather than writing them twice. Python needs its own `ListNode`/`TreeNode` in
+the driver preamble, because `has_cycle` and `max_depth` are duck-typed and declare none — the
+blocks that DO declare one use the same field names, so a redefinition is harmless.
+
+**Scope.** 13 of the 14 are reachable this way. `kth-largest-stream` is a stateful class rather
+than a function and stays listed. Two need care: `cycle-detect` wants a second scalar naming the
+index the tail links back to (the journey already models it exactly that way), and
+`middle-of-list` returns a NODE — canonicalise it as the list from that node onward.
+
+**Signatures, already collected:**
+
+```
+reverse-list         reverse_list(head)                     list  -> list
+cycle-detect         has_cycle(head)                        list + cycle index -> bool
+merge-two-sorted     merge_sorted(a, b)                     list, list -> list
+middle-of-list       middle_node(head)                      list  -> node
+palindrome-list      is_palindrome(head)                    list  -> bool
+remove-nth-from-end  remove_nth_from_end(head, n)           list, int -> list
+max-depth            max_depth(root)                        tree  -> int
+validate-bst         is_valid_bst(root)                     tree  -> bool
+level-order          level_order(root)                      tree  -> int[][]
+same-tree            is_same_tree(p, q)                     tree, tree -> bool
+invert-tree          invert_tree(root)                      tree  -> tree
+balanced-tree        is_balanced(root)                      tree  -> bool
+bst-ancestor         lowest_common_ancestor(root, p, q)     tree, int, int -> int
+```
 
 ### 2. B61 — decide about the static player (S)
 `step-player.tsx` is unreachable: 0 of 87 problems carry a `walkthrough`. It is the fallback for a
