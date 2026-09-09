@@ -58,6 +58,8 @@ import {
   canPartitionUpward,
   partitionEqualSubset,
 } from "./partition-equal-subset.ts"
+import { balancedBrackets, isBalanced } from "./balanced-brackets.ts"
+import { kokoBananas, slowestSpeed } from "./koko-bananas.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -719,6 +721,27 @@ const TABLE: {
     input: (rand) => ({
       nums: Array.from({ length: 1 + rand(6) }, () => 1 + rand(9)),
     }),
+  },
+  {
+    journey: balancedBrackets as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isBalanced(d.nums as string[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(8) }, () => "()[]{}"[rand(6)]),
+    }),
+  },
+  {
+    journey: kokoBananas as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => slowestSpeed(d.nums as number[], d.h as number),
+    // h must be at least the pile count, which is what classify demands
+    input: (rand) => {
+      const n = 1 + rand(5)
+      return {
+        nums: Array.from({ length: n }, () => 1 + rand(12)),
+        h: n + rand(10),
+      }
+    },
   },
   {
     journey: maxDepth as unknown as AnyJourney,

@@ -72,25 +72,6 @@ export const problem: Problem = {
     return st.empty();
 }
 `,
-  walkthrough: [
-    {
-      text: "s = ( [ { } ] )\n\nstack: []",
-      caption: "Openers push; closers must match the top.",
-    },
-    {
-      text: "read ( → push\nread [ → push\nread { → push\n\nstack: ( [ {",
-      caption: "Three openers stacked, newest on top.",
-    },
-    {
-      text: "read } → top is { ✓ pop\nread ] → top is [ ✓ pop\nread ) → top is ( ✓ pop\n\nstack: []",
-      caption:
-        "Each closer pops its exact partner — last opened, first closed.",
-    },
-    {
-      text: 'end of string, stack empty → valid\n\ncounter-example "(]":\nread ( → push;  read ] → top is ( ✗ invalid',
-      caption: "Empty stack at the end = balanced. Mismatch fails immediately.",
-    },
-  ],
   alternatives: [
     {
       name: "Repeated replace",
