@@ -95,6 +95,70 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (B30) — the gate stops being blind, and immediately finds something
+
+One PR. `verify:run` executed every Java and C++ block against the repo's own Python — except that
+it could not marshal a linked list or a binary tree, so **14 of the 87 problems were checked by a
+compiler and nothing else**. They were listed in `NOT_YET_RUNNABLE` rather than quietly absent,
+which is the difference between a known gap and an invisible one, and it is why closing it took a
+morning rather than an audit.
+
+### What was built
+
+`params` in a vector set may now say `list` or `tree`, and `run.mjs` builds one in each language
+from the literal:
+
+| Shape | Written as | Built by |
+|---|---|---|
+| `list` | `[1,2,3]`, or `{list: [3,2,0,-4], cycle: 1}` when the tail points back | `__mklist` — a template in C++, one method per class in Java, a private `__LN` in Python |
+| `tree` | level order with `null` for an absent child, the shape LeetCode prints | `__mktree`, same three |
+
+Three details that were not obvious from the outside:
+
+- **The node class is the block's own.** This repo's Python calls a list node `Node` and LeetCode
+  calls it `ListNode`; both are declared, and *different rungs of one problem* use different ones —
+  merge-two-sorted's optimal rung says `ListNode` and its array rung says `Node`. The driver reads
+  the block's signature and builds what that signature asked for.
+- **Python evaluates an annotation at def time.** `def reverse_list(head: Node | None)` raises
+  `NameError` before a single case runs unless `Node` already exists, so the node classes go
+  *before* the block in the driver and the canon goes after. Three rungs also CONSTRUCT a node
+  without declaring one, so the classes are declared when absent and the block's own wins when not.
+- **An absent node prints `null` in all three languages.** Python has only `None` to say it with
+  and Java only `null`, so C++ had to agree rather than print `[]` for a list that is not there.
+
+`verify.mjs` now exports `NODES`, and the runner inserts the same declarations the compile gate
+compiles against — unconditionally, because `canon` carries a branch per node type and those
+branches have to compile in every driver.
+
+### What it found, on the first run
+
+**invert-tree's iterative Java rung threw `NullPointerException` on every case**, the empty tree
+included. It mirrors its Python line for line — push a child, check for null on the way out — and
+`ArrayDeque` refuses `null`. It had compiled cleanly for as long as it had existed, and the compile
+gate is structurally unable to see it. `new LinkedList<>()` fixes it and keeps the block
+line-for-line, which the content gate requires.
+
+Mutating the new vectors then named five missing cases: a right-branch duplicate for validate-bst
+(`[2,1,2]` — a left-branch one cannot separate a loosened lower bound), a one-sided difference for
+same-tree, and three keys standing ON a node for bst-ancestor. One survivor is genuinely
+equivalent and is recorded with the argument: merging a tie from `b` instead of `a` swaps two nodes
+holding the same value, and the answer is compared as values.
+
+### Evidence
+
+| Gate | Before | After |
+|---|---|---|
+| `verify:run` | 1676 comparisons, **14** problems not marshalled | **2084** comparisons, 0 disagreed, **1** not marshalled |
+| `verify:vectors` | 380 mutants, 92% caught | **402** mutants, 92% caught, 0 survived |
+| `verify:code` | 412 blocks, 0 failed | 412 blocks, 0 failed |
+| `npm run check` | 646 tests | **649** tests, tsc 0, eslint 0 |
+| `npm run test:ui` | 132 checks | 132 checks, 0 failed |
+
+What is left is `kth-largest-stream`, a constructor plus a stream of `add()` calls rather than a
+function — filed as **B62**, because the driver calls one entry point and that one needs a script.
+
+---
+
 ## 2026-09-09 (87 of 87) — the last eight journeys, and a milestone worth stating plainly
 
 One PR (#68). B51 and B52, which between them close the set: **every one of the 87 problems now has

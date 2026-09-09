@@ -101,3 +101,44 @@ test("nothing is both runnable and excused", () => {
   for (const id of Object.keys(NOT_YET_RUNNABLE))
     assert.ok(!VECTORS[id], `${id} is in NOT_YET_RUNNABLE and yet has vectors`)
 })
+
+// B30. A list or a tree cannot be spelled as a literal, so the driver BUILDS
+// one — and it has to build it out of the class the block's own signature
+// names, because this repo's Python calls a list node `Node` and LeetCode calls
+// it `ListNode`, and different rungs of one problem use different ones.
+test("a structural argument is built out of the block's own node class", () => {
+  const cases = [[[1, 2, 3]], [[]]]
+
+  const py = pythonDriver("def f(head):\n    return head\n", "f", cases, [
+    "list",
+  ])
+  assert.ok(py.includes("f(__mklist([1,2,3], -1))"), py)
+  assert.ok(py.includes("def __mklist"), "the builder has to be in the driver")
+
+  // Node, because that is what THIS signature says — not the default
+  const java = javaDriver("", "public Node f(Node head) { return head; }", "f", cases, ["list"])
+  assert.ok(java.includes("__mkNode(new int[]{1,2,3}, -1)"), java)
+  assert.ok(java.includes("static Node __mkNode(int[] v, int cyc)"), java)
+
+  const cpp = cppDriver("", "", "ListNode* f(ListNode* head) { return head; }", "f", cases, ["list"])
+  assert.ok(cpp.includes("ListNode* a0_0 = __mklist<ListNode>({1,2,3}, -1)"), cpp)
+})
+
+test("a cycle is part of the SHAPE, not a second argument", () => {
+  const py = pythonDriver("def f(h):\n    return h\n", "f", [[{ list: [1, 2, 3], cycle: 1 }]], ["list"])
+  // one argument still, and the tail points back at index 1
+  assert.ok(py.includes("f(__mklist([1,2,3], 1))"), py)
+})
+
+test("an absent child is spelled the way each language spells it", () => {
+  const tree = [[[1, null, 2]]]
+  const py = pythonDriver("def f(r):\n    return r\n", "f", tree, ["tree"])
+  assert.ok(py.includes("__mktree([1,None,2])"), py)
+
+  const java = javaDriver("", "public TreeNode f(TreeNode r) { return r; }", "f", tree, ["tree"])
+  assert.ok(java.includes("__mkTree(new Integer[]{1,null,2})"), java)
+
+  // C++ cannot put a null in a vector<int>, so it is INT_MIN there
+  const cpp = cppDriver("", "", "TreeNode* f(TreeNode* r) { return r; }", "f", tree, ["tree"])
+  assert.ok(cpp.includes("__mktree<TreeNode>({1,INT_MIN,2})"), cpp)
+})

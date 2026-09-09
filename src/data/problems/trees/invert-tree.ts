@@ -81,7 +81,7 @@ def invert_tree(root: TreeNode | None) -> TreeNode | None:
         stack.append(node.right)
     return root`,
       java: `public TreeNode invertTree(TreeNode root) {
-    Deque<TreeNode> stack = new ArrayDeque<>();
+    Deque<TreeNode> stack = new LinkedList<>();
     stack.push(root);
     while (!stack.isEmpty()) {
         TreeNode node = stack.pop();

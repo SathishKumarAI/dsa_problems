@@ -85,6 +85,10 @@ export function toolchain() {
 // The scaffolding a teaching snippet leaves out. Kept in one place so the
 // blocks stay bare and the compiler still sees valid code.
 //
+// Exported: the differential runner (run.mjs) needs the same declarations to
+// BUILD a list or a tree, and two copies of a node type is how the two gates
+// start disagreeing about what a block may assume.
+//
 // ListNode and TreeNode belong here rather than in the snippets: every linked
 // list and tree problem in the set references them, they are given by the
 // judge rather than written by the candidate, and putting them in each block
@@ -92,7 +96,7 @@ export function toolchain() {
 // This repo's Python calls the linked-list node `Node`, so its translations do
 // too; `ListNode` and `TreeNode` are the names the same problems carry on
 // LeetCode. Both are declared, because a block is free to use either.
-const NODES = {
+export const NODES = {
   java: `class Node {
     int val; Node next;
     Node() {}
