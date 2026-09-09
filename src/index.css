@@ -238,6 +238,19 @@
   animation: step-done 320ms ease-out;
 }
 
+/* F5. Autoplay looks frozen on a narrative frame: `hold: 3` waits three times
+   the usual delay with nothing moving, and the only honest reading of a still
+   screen is "it broke". This bar under Play counts the wait down. Its duration
+   is set per frame from the player, so it is the real wait and not a guess. */
+@keyframes hold-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

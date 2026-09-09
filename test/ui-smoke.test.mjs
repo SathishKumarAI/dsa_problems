@@ -307,6 +307,45 @@ describe(
     // cost the stage 862px → 574px at 1536px — a third of its width, to show a
     // short list of preset names. The stage is the product and the drawer is a
     // control, so the control floats now and the stage keeps its width.
+    // F5. Autoplay on a narrative frame waits `hold` times the usual delay with
+    // nothing moving, and a still screen reads as a broken one. The bar under
+    // Play counts the real wait down.
+    test("the Play button shows the wait it is counting (F5)", async () => {
+      await page.goto(`${server.base}/#/journey/two-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const bar = () => document.querySelector('[data-testid="hold-bar"]');
+        const paused = !!bar();
+        document.querySelector('[aria-label="Play"]').click();
+        await wait(300);
+        const b = bar();
+        const style = b ? getComputedStyle(b) : null;
+        const out = {
+          paused,
+          playing: !!b,
+          duration: style ? style.animationDuration : null,
+          name: style ? style.animationName : null,
+          hidden: b ? b.getAttribute('aria-hidden') : null,
+          insideButton: b ? !!b.closest('button') : false,
+        };
+        document.querySelector('[aria-label="Pause"]')?.click();
+        await wait(200);
+        out.goneWhenPaused = !bar();
+        return out;
+      `)
+      assert.equal(out.paused, false, "a paused player has nothing to count")
+      assert.equal(out.playing, true, "no hold bar while playing")
+      assert.equal(out.name, "hold-fill", `wrong animation: ${out.name}`)
+      assert.ok(
+        parseFloat(out.duration) > 0,
+        `the bar has no duration: ${out.duration}`
+      )
+      assert.equal(out.hidden, "true", "the bar must not be read out")
+      assert.equal(out.insideButton, true, "the bar is not on the Play button")
+      assert.equal(out.goneWhenPaused, true, "the bar outlived the playback")
+      assert.deepEqual(page.errors(), [])
+    })
+
     // B19. Restart is one click and it re-locks every act. Rather than a
     // confirm dialog in front of every restart, the ledger it destroyed is
     // held for five seconds and offered back.
