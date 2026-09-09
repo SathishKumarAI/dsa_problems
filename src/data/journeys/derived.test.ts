@@ -49,6 +49,15 @@ import { biggestIsland, maxIslandArea } from "./max-island-area.ts"
 import { minutesToRot, rottingFruit } from "./rotting-fruit.ts"
 import { canSpell, canSpellGreedy, wordSearch } from "./word-search.ts"
 import { countProvinces, provinces } from "./count-provinces.ts"
+import {
+  lcsLength,
+  longestCommonSubsequence,
+} from "./longest-common-subsequence.ts"
+import {
+  canPartition,
+  canPartitionUpward,
+  partitionEqualSubset,
+} from "./partition-equal-subset.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -694,6 +703,24 @@ const TABLE: {
     },
   },
   {
+    journey: longestCommonSubsequence as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => lcsLength(d.nums as string[]),
+    input: (rand) => {
+      const word = () =>
+        Array.from({ length: 1 + rand(5) }, () => "abc"[rand(3)]).join("")
+      return { nums: [word(), word()] }
+    },
+  },
+  {
+    journey: partitionEqualSubset as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => canPartition(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(6) }, () => 1 + rand(9)),
+    }),
+  },
+  {
     journey: maxDepth as unknown as AnyJourney,
     skip: ["story"],
     reference: (d) => depthOfTree(d.nums as string[]),
@@ -765,6 +792,20 @@ test("word-search: the rung that never restores a cell is wrong where the journe
     canSpell(["abce", "sfcs", "adee"], "abcced"),
     canSpellGreedy(["abce", "sfcs", "adee"], "abcced")
   )
+})
+
+test("partition-equal-subset: the sweep direction is the whole difference", () => {
+  // sweeping upward lets one number be spent twice: 4 alone would "reach" 8
+  // [4, 4] splits, and both directions agree — which is why the bug survives
+  assert.equal(canPartition([4, 4]), true)
+  assert.equal(canPartitionUpward([4, 4]), true)
+  // [1, 3] cannot: the halves would be 2, and no subset makes 2. An upward
+  // sweep spends the 1 twice and claims it can.
+  assert.equal(canPartition([1, 3]), false)
+  assert.equal(canPartitionUpward([1, 3]), true)
+  // same shape with a bigger gap
+  assert.equal(canPartition([2, 6]), false)
+  assert.equal(canPartitionUpward([2, 6]), true)
 })
 
 test("fewest-coins: the greedy rung is wrong where the journey says it is", () => {

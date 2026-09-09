@@ -54,6 +54,8 @@ import { maxIslandArea } from "../data/journeys/max-island-area.ts"
 import { rottingFruit } from "../data/journeys/rotting-fruit.ts"
 import { wordSearch } from "../data/journeys/word-search.ts"
 import { countProvinces } from "../data/journeys/count-provinces.ts"
+import { longestCommonSubsequence } from "../data/journeys/longest-common-subsequence.ts"
+import { partitionEqualSubset } from "../data/journeys/partition-equal-subset.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -114,6 +116,8 @@ export const JOURNEYS: AnyJourney[] = [
   rottingFruit as unknown as AnyJourney,
   wordSearch as unknown as AnyJourney,
   countProvinces as unknown as AnyJourney,
+  longestCommonSubsequence as unknown as AnyJourney,
+  partitionEqualSubset as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,
