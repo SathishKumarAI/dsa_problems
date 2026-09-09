@@ -22,6 +22,24 @@ Six steps. Line heights ship with them, so `text-body` is a full type setting, n
 | `text-title` | 24 / 30 | page and act titles |
 | `text-display` | 32 / 38 | the equation and the answer on the stage |
 
+## The two faces
+
+| Role | Face | Where |
+|---|---|---|
+| prose | **Manrope Variable** (`--font-sans`, and `--font-heading` follows it) | anything read as a sentence, every heading, every control label |
+| data | **JetBrains Mono Variable** (`--font-mono`) | values, indices, counts, act keys, code blocks, the chip row, notation glyphs |
+
+Both are **self-hosted** through `@fontsource-variable/*`, imported at the top of `src/index.css` —
+not a Google Fonts `<link>`. An external stylesheet on the critical path is a render-blocking
+request to somebody else's server, and these pages are read offline as often as not. Changing a
+face is one npm package plus one line in the `@theme inline` block; nothing in the components names
+a font.
+
+The mono stack falls back to `ui-monospace` rather than a generic sans, because every number on the
+stage is set in it and the fallback still has to give tabular figures.
+
+Replaced Geist, 2026-09-08.
+
 Mono (`font-mono`) sits **one step below** its sans sibling in the same block — code at `text-ui`
 beside body prose, a hash pill at `text-meta` beside a `text-ui` label. Code blocks keep their own
 size (13.5 px) because they are read a line at a time, not in paragraphs.

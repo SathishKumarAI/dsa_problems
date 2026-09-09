@@ -1,6 +1,9 @@
-// One pattern's page: blurb header + filterable problem rows.
+// One pattern's page: blurb header, filters, then compact problem rows.
+// A pattern held three problems when this was a card list; it now holds up to
+// twelve and the set is 87, so the row is one line and the filters are the
+// navigation (backlog B37, B40).
 import { useState } from "react"
-import { SearchIcon } from "lucide-react"
+import { RouteIcon, SearchIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -10,16 +13,12 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
-import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import type { Pattern } from "@/data"
+import type { Difficulty, Pattern } from "@/data"
 import { problemsByPattern } from "@/data"
+import { journeyForProblem } from "@/engine"
 import { difficultyClass } from "@/lib/difficulty"
 import {
   MASKED_GLYPH,
@@ -34,14 +33,26 @@ interface Props {
   onOpen: (problemId: string) => void
 }
 
+const LEVELS: Difficulty[] = ["easy", "medium", "hard"]
+
 export function ProblemList({ pattern, onOpen }: Props) {
   const [query, setQuery] = useState("")
+  const [level, setLevel] = useState<Difficulty | "all">("all")
+  const [state, setState] = useState<"all" | "unsolved" | "solved">("all")
   const solved = useSolved()
   const mask = usePatternMask()
   const hidden = mask.hidden.has(pattern.id)
-  const problems = problemsByPattern(pattern.id).filter((p) =>
-    p.title.toLowerCase().includes(query.toLowerCase())
-  )
+  const all = problemsByPattern(pattern.id)
+  const problems = all.filter((p) => {
+    const done = solved.has(p.id)
+    return (
+      (p.title.toLowerCase().includes(query.toLowerCase()) ||
+        p.brief.toLowerCase().includes(query.toLowerCase())) &&
+      (level === "all" || p.difficulty === level) &&
+      (state === "all" || (state === "solved" ? done : !done))
+    )
+  })
+  const filtering = query !== "" || level !== "all" || state !== "all"
 
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
@@ -68,60 +79,140 @@ export function ProblemList({ pattern, onOpen }: Props) {
         )}
       </header>
 
-      <div className="relative">
-        <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Filter problems…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
+      <div className="flex flex-col gap-3">
+        <div className="relative">
+          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            // a placeholder is not an accessible name: it is gone the moment
+            // anything is typed, and it is announced inconsistently
+            aria-label="Filter problems by title or brief"
+            placeholder="Filter by title or brief…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <ToggleGroup
+            size="sm"
+            value={[level]}
+            onValueChange={(v: string[]) =>
+              setLevel((v[0] as Difficulty | "all") ?? "all")
+            }
+            aria-label="filter by difficulty"
+          >
+            <ToggleGroupItem value="all">all</ToggleGroupItem>
+            {LEVELS.map((d) => (
+              <ToggleGroupItem key={d} value={d}>
+                {d}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          <ToggleGroup
+            size="sm"
+            value={[state]}
+            onValueChange={(v: string[]) =>
+              setState((v[0] as "all" | "unsolved" | "solved") ?? "all")
+            }
+            aria-label="filter by solved state"
+          >
+            <ToggleGroupItem value="all">any</ToggleGroupItem>
+            <ToggleGroupItem value="unsolved">unsolved</ToggleGroupItem>
+            <ToggleGroupItem value="solved">solved</ToggleGroupItem>
+          </ToggleGroup>
+          <span
+            className="ml-auto font-mono text-meta text-muted-foreground tabular-nums"
+            aria-live="polite"
+          >
+            {problems.length}/{all.length}
+          </span>
+        </div>
       </div>
 
       {problems.length === 0 ? (
         <Empty>
           <EmptyHeader>
-            <EmptyTitle>No matches</EmptyTitle>
+            <EmptyTitle>Nothing matches</EmptyTitle>
             <EmptyDescription>
-              No problem title contains “{query}”.
+              {all.length} problem{all.length === 1 ? "" : "s"} here, none of
+              them matching these filters.
             </EmptyDescription>
           </EmptyHeader>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setQuery("")
+              setLevel("all")
+              setState("all")
+            }}
+          >
+            Clear filters
+          </Button>
         </Empty>
       ) : (
-        <div className="flex flex-col gap-2">
-          {problems.map((p) => (
-            <Item key={p.id} variant="outline">
-              <div className="flex w-full items-center gap-3">
+        <ul className="flex flex-col divide-y rounded-lg border">
+          {problems.map((p) => {
+            const done = solved.has(p.id)
+            return (
+              <li
+                key={p.id}
+                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-accent/40"
+              >
                 <Checkbox
-                  checked={solved.has(p.id)}
+                  checked={done}
                   onCheckedChange={() => toggleSolved(p.id)}
                   aria-label={`Mark ${p.title} solved`}
                 />
                 <button
-                  className="flex-1 text-left"
+                  className="flex min-w-0 flex-1 items-baseline gap-2 text-left"
                   onClick={() => onOpen(p.id)}
                 >
-                  <ItemContent>
-                    <ItemTitle
-                      className={cn(
-                        solved.has(p.id) && "text-muted-foreground line-through"
-                      )}
-                    >
-                      {p.title}
-                    </ItemTitle>
-                    <ItemDescription>{p.brief}</ItemDescription>
-                  </ItemContent>
+                  <span
+                    className={cn(
+                      "shrink-0 text-body font-medium",
+                      done && "text-muted-foreground line-through"
+                    )}
+                  >
+                    {p.title}
+                  </span>
+                  {journeyForProblem(p.id) && (
+                    <RouteIcon
+                      className="size-3.5 shrink-0 text-chart-1"
+                      aria-label="has a full journey"
+                    />
+                  )}
+                  <span className="truncate text-ui text-muted-foreground">
+                    {p.brief}
+                  </span>
                 </button>
                 <Badge
                   variant="outline"
-                  className={cn("font-mono", difficultyClass[p.difficulty])}
+                  className={cn(
+                    "shrink-0 font-mono",
+                    difficultyClass[p.difficulty]
+                  )}
                 >
                   {p.difficulty}
                 </Badge>
-              </div>
-            </Item>
-          ))}
-        </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+      {filtering && problems.length > 0 && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="self-start text-muted-foreground"
+          onClick={() => {
+            setQuery("")
+            setLevel("all")
+            setState("all")
+          }}
+        >
+          Clear filters
+        </Button>
       )}
     </div>
   )

@@ -98,28 +98,6 @@ export const problem: Problem = {
     return count;
 }
 `,
-  walkthrough: [
-    {
-      text: "1 1 0\n0 1 0\n0 0 1\n\ncount = 0",
-      caption: "Scan row by row for unvisited land.",
-    },
-    {
-      text: "▓ 1 0        ▓ = found land at (0,0)\n0 1 0\n0 0 1\n\ncount = 1 — flood fill starts",
-      caption: "First land cell → new island. Sink everything connected.",
-    },
-    {
-      text: "0 0 0\n0 0 0\n0 0 1\n\ncount = 1 — three cells sunk",
-      caption: "(0,0), (0,1), (1,1) were one island; all sunk to water.",
-    },
-    {
-      text: "0 0 0\n0 0 0\n0 0 ▓\n\ncount = 2 — flood fill sinks it",
-      caption: "Scan continues; (2,2) is untouched land → second island.",
-    },
-    {
-      text: "0 0 0\n0 0 0\n0 0 0\n\nanswer: 2",
-      caption: "Grid drained. Each cell visited O(1) times.",
-    },
-  ],
   alternatives: [
     {
       name: "BFS flood fill",

@@ -1,7 +1,8 @@
 // The array, drawn as chips. Owns the chip grammar — colour is never the
 // only channel (colourblind-safe):
 //   fill   = state    neutral / focus (yellow) / answer (green)
-//   marker = role     ▲ above = anchor (held / left pointer) · ring = focus (current / right pointer)
+//   marker = role     ▲ above = anchor (the value this step is measured against)
+//                     ring    = focus  (the value being read right now)
 //   icon   = outcome  ✓ above = part of the answer
 //   fade   = eliminated
 //   beat   = the chip just became the answer (one 520 ms pulse, not a state)
@@ -105,15 +106,18 @@ export function Legend() {
   )
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2" aria-label="legend">
+      {/* Named by what the MARK means, not by what any one algorithm uses it
+        for: the same grammar has to read true on a stack, a heap, a table and
+        a pair of pointers (B44). */}
       {item(
         "border-chart-4 bg-chart-4/15 text-chart-4",
         "▲",
-        "held · left pointer"
+        "held · what this step is measured against"
       )}
       {item(
         "border-foreground ring-1 ring-foreground/80",
         "",
-        "current · right pointer"
+        "current · being read now"
       )}
       {item("border-chart-3 bg-chart-3/20 text-chart-3", "✓", "answer")}
       {item("border-border opacity-30", "", "eliminated")}

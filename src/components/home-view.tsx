@@ -1,6 +1,8 @@
 // Landing page: the method in one line, the two journeys (the deep builds)
 // with earned-act progress, the streak, then the pattern grid.
+import { useState } from "react"
 import {
+  ChevronDownIcon,
   FlameIcon,
   PlayIcon,
   RouteIcon,
@@ -13,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
 import { JOURNEYS } from "@/engine"
@@ -102,6 +105,23 @@ export function HomeView({
 }: {
   onNavigate: (view: string) => void
 }) {
+  const [allJourneys, setAllJourneys] = useState(false)
+  // one key per journey is more than a hook may subscribe to in a loop, so
+  // re-render on any store write and read the plain getters
+  useStoreVersion()
+  const ledger = JOURNEYS.map((j) => ({
+    journey: j,
+    earned: earnedOf(getStored<number>(K.unlocked(j.slug), 1), j.acts.length),
+  }))
+  // 45 cards buried the practice set four screens down. Lead with what is in
+  // play — started and unfinished first, then the next few — and put the
+  // catalogue behind one click.
+  const started = ledger.filter((r) => r.earned.earned > 0 && !r.earned.done)
+  const shownJourneys = allJourneys
+    ? JOURNEYS
+    : [...started, ...ledger.filter((r) => r.earned.earned === 0)]
+        .slice(0, Math.max(4, started.length))
+        .map((r) => r.journey)
   const solved = useSolved()
   const days = useStored<string[]>(K.days, [])
   const xp = useStored<number>(K.xp, 0)
@@ -138,7 +158,7 @@ export function HomeView({
           learning journeys
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {JOURNEYS.map((j) => (
+          {shownJourneys.map((j) => (
             <JourneyCard
               key={j.slug}
               slug={j.slug}
@@ -147,6 +167,16 @@ export function HomeView({
               acts={j.acts.length}
             />
           ))}
+          {JOURNEYS.length > shownJourneys.length && (
+            <Button
+              variant="outline"
+              className="h-auto justify-start py-4 text-muted-foreground sm:col-span-2"
+              onClick={() => setAllJourneys(true)}
+            >
+              <ChevronDownIcon data-icon="inline-start" />
+              Show all {JOURNEYS.length} journeys
+            </Button>
+          )}
           <a
             href={href("/algorithms")}
             className="flex items-center gap-3 rounded-xl border border-dashed bg-card/50 p-4 text-sm transition-colors hover:border-primary/60 sm:col-span-2"

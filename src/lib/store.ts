@@ -9,7 +9,8 @@
 //   xp                number     total XP
 //   activity-days     string[]   ISO days with any activity (streak source)
 //   scorecard:<slug>  object[]   last 50 challenge runs
-//   prefs             object     speed, code tab, motion, rails, problem panel, drawer
+//   prefs             object     speed, code tab, motion, reduced motion, rails,
+//                                problem panel, drawer
 //   spoilers          boolean    learner opted out of pattern-name masking
 
 import { useSyncExternalStore } from "react"
@@ -153,6 +154,10 @@ export interface Prefs {
   speed: number // slider 1..100
   codeTab: string // pseudo | python | java | cpp
   motion: "calm" | "normal" | "cinematic" | "off"
+  // The in-app reduced-motion override. Separate from `motion`, which only
+  // sizes the FLIP travel: this one also stops every CSS transition, via a
+  // class on <body> that index.css reads.
+  reduceMotion: boolean
   reading: boolean // journey page: reading column open (false = icon rail)
   // journey page: which sections of the problem panel are open. null = the
   // learner has never touched it, so the act decides (R3).
@@ -163,16 +168,23 @@ export const DEFAULT_PREFS: Prefs = {
   speed: 50,
   codeTab: "pseudo",
   motion: "normal",
+  reduceMotion: false,
   reading: true,
   problemSections: null,
   drawer: false,
 }
 
 // merged over the defaults so a pref added later reads as its default, not undefined
-export const usePrefs = (): Prefs => ({
-  ...DEFAULT_PREFS,
-  ...useStored<Partial<Prefs>>(K.prefs, DEFAULT_PREFS),
-})
+export const usePrefs = (): Prefs => {
+  const p = {
+    ...DEFAULT_PREFS,
+    ...useStored<Partial<Prefs>>(K.prefs, DEFAULT_PREFS),
+  }
+  // One switch, not two. reduceMotion forces the motion dial to off for every
+  // consumer, so use-flip and the algorithms page honour the override without
+  // having to know it exists.
+  return p.reduceMotion ? { ...p, motion: "off" } : p
+}
 export const setPref = <P extends keyof Prefs>(k: P, v: Prefs[P]) =>
   updateStored(K.prefs, DEFAULT_PREFS, (p) => ({ ...p, [k]: v }))
 

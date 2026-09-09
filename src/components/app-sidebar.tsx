@@ -3,7 +3,9 @@
 // work. Header carries the wordmark and the help ("how to use") button;
 // footer carries where-you-are, settings, shortcuts and the collapse toggle.
 // Collapses to a 3 rem icon rail that peeks open on hover (ui/sidebar.tsx).
+import { useState } from "react"
 import {
+  ChevronDownIcon,
   CircleHelpIcon,
   DatabaseIcon,
   KeyboardIcon,
@@ -16,6 +18,8 @@ import {
   SlidersHorizontalIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ProgressRing } from "@/components/ui/progress-ring"
+import { RailToken } from "@/components/ui/rail-token"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -36,8 +40,9 @@ import { JOURNEYS } from "@/engine"
 import { openDialog } from "@/lib/dialogs"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import type { Mask } from "@/lib/disclosure"
-import { useEarned, useSolved } from "@/lib/progress"
+import { earnedOf, useEarned, useSolved } from "@/lib/progress"
 import { href, useRoute } from "@/lib/route"
+import { K, getStored, useStoreVersion } from "@/lib/store"
 
 // text that has no room on the icon rail
 const WIDE = "group-data-[collapsible=icon]:hidden"
@@ -64,8 +69,9 @@ function JourneyItem({
         tooltip={title}
         className="pr-12"
       >
-        <RouteIcon className="size-3.5 shrink-0 text-chart-1" />
-        <span className="truncate">{title}</span>
+        <RouteIcon className={`size-3.5 shrink-0 text-chart-1 ${WIDE}`} />
+        <RailToken label={title} done={earned.earned} total={earned.total} />
+        <span className={`truncate ${WIDE}`}>{title}</span>
       </SidebarMenuButton>
       <SidebarMenuBadge className="font-mono" title={earned.long}>
         {earned.done ? "✓" : earned.short}
@@ -126,12 +132,37 @@ function FooterButton({
   )
 }
 
+// 45 journeys is a catalogue, not a menu. Show the ones actually in play —
+// started-and-unfinished first, then the next few unstarted — and put the rest
+// behind one click. Every journey is still reachable from its problem page.
+// One store key per journey is more than a hook may subscribe to in a loop, so
+// re-render on any store write and read the plain getters (as home-view does).
+function journeysInPlay(open: string | undefined) {
+  const ledger = JOURNEYS.map((j) => ({
+    journey: j,
+    earned: earnedOf(getStored<number>(K.unlocked(j.slug), 1), j.acts.length),
+  }))
+  const started = ledger.filter((r) => r.earned.earned > 0 && !r.earned.done)
+  const fresh = ledger.filter((r) => r.earned.earned === 0)
+  const picked = [...started, ...fresh].slice(0, Math.max(6, started.length))
+  const shown = picked.map((r) => r.journey)
+  // never hide the journey the learner is looking at
+  const current = JOURNEYS.find((j) => j.slug === open)
+  if (current && !shown.includes(current)) shown.unshift(current)
+  return shown
+}
+
 export function AppSidebar({ view }: { view: string }) {
+  const [allJourneys, setAllJourneys] = useState(false)
+  useStoreVersion()
   const solved = useSolved()
   const mask = usePatternMask()
   const { state, toggleSidebar } = useSidebar()
   const collapsed = state === "collapsed"
   const route = useRoute()
+  const shown = allJourneys
+    ? JOURNEYS
+    : journeysInPlay(route.parts[0] === "journey" ? route.parts[1] : undefined)
 
   return (
     <Sidebar collapsible="icon">
@@ -160,12 +191,17 @@ export function AppSidebar({ view }: { view: string }) {
           </Button>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent
+        // collapsed, the primitive sets overflow-hidden, so "show all 46
+        // journeys" on a short viewport clipped the list with no way to reach
+        // the rest. The rail scrolls like the expanded column does.
+        className="group-data-[collapsible=icon]:overflow-y-auto"
+      >
         <SidebarGroup>
           <SidebarGroupLabel>DSA</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {JOURNEYS.map((j) => (
+              {shown.map((j) => (
                 <JourneyItem
                   key={j.slug}
                   slug={j.slug}
@@ -177,6 +213,20 @@ export function AppSidebar({ view }: { view: string }) {
                   }
                 />
               ))}
+              {JOURNEYS.length > shown.length && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => setAllJourneys(true)}
+                    tooltip={`show all ${JOURNEYS.length} journeys`}
+                    className="text-muted-foreground"
+                  >
+                    <ChevronDownIcon className="size-3.5 shrink-0" />
+                    <span className="truncate">
+                      {JOURNEYS.length - shown.length} more journeys
+                    </span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={<a href={href("/algorithms")} />}
@@ -213,7 +263,14 @@ export function AppSidebar({ view }: { view: string }) {
                       }
                       className="pr-10"
                     >
-                      <LayersIcon className={RAIL_ICON} />
+                      {/* collapsed, this row used to be a generic icon
+                          identical to the other nine — see rail-token.tsx */}
+                      <RailToken
+                        label={label}
+                        done={done}
+                        total={problems.length}
+                      />
+                      <LayersIcon className={cn(RAIL_ICON, "hidden")} />
                       <span
                         className={`w-16 shrink-0 font-mono text-xs text-muted-foreground ${WIDE}`}
                       >
@@ -228,8 +285,8 @@ export function AppSidebar({ view }: { view: string }) {
                         {label}
                       </span>
                     </SidebarMenuButton>
-                    <SidebarMenuBadge className="font-mono">
-                      {done}/{problems.length}
+                    <SidebarMenuBadge>
+                      <ProgressRing done={done} total={problems.length} />
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
                 )

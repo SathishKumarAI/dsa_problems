@@ -58,7 +58,11 @@ describe(
       ["visualizer", "#/algorithms?algo=quick", "Algorithm visualizer"],
       ["sql drills", "#/sql", "SQL"],
       ["flashcards", "#/flashcards", ""],
-      ...JOURNEYS.map((j) => [`journey ${j.slug}`, `#/journey/${j.slug}`, j.title]),
+      ...JOURNEYS.map((j) => [
+        `journey ${j.slug}`,
+        `#/journey/${j.slug}`,
+        j.title,
+      ]),
     ]
 
     for (const [name, hash, expect] of routes) {
@@ -140,7 +144,9 @@ describe(
       // a link into a locked act is ignored on purpose (disclosure), so the
       // ledger has to say the act is earned before the link can be honoured
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`
+      )
       await page.goto(`${server.base}/#/journey/two-sum?act=hash&step=6`)
       await page.waitFor(
         `/act 05/i.test(document.querySelector('[aria-label=stage]')?.innerText ?? '')`
@@ -172,7 +178,9 @@ describe(
 
     test("a deep link into a locked act is ignored (progressive disclosure)", async () => {
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.setItem('dsa:unlocked:single-number', '2'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:single-number', '2'); return 1`
+      )
       await page.goto(`${server.base}/#/journey/single-number?act=xor&step=3`)
       const act = await page.eval(
         "document.querySelector('[aria-label=stage]').innerText.slice(0, 24)"
@@ -186,6 +194,11 @@ describe(
       await page.goto(`${server.base}/#/journey/three-sum?act=story`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
+        // the reading column is tabs now (spec 5.2) — the corner cases have
+        // a tab of their own, one click away
+        [...document.querySelectorAll('[role=tab]')]
+          .find(t => /edge cases/i.test(t.textContent))?.click();
+        await wait(500);
         const cards = [...document.querySelectorAll('[aria-label="corner cases"] > li')];
         const before = document.querySelector('[aria-label="input preset"]')?.value;
         // one card holds the preset that is already loaded ("loaded ✓") —
@@ -212,7 +225,9 @@ describe(
       // act 05 is deep in the journey: before R3 the statement and the corner
       // cases were on act 1 only, so reading them cost the step you were on
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`
+      )
       await page.goto(`${server.base}/#/journey/two-sum?act=hash`)
       await page.waitFor(
         `/act 05/i.test(document.querySelector('[aria-label=stage]')?.innerText ?? '')`
@@ -220,20 +235,24 @@ describe(
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
         const aside = document.querySelector('[aria-label="approach"]');
-        const trigger = () => [...aside.querySelectorAll('[data-slot=accordion-trigger]')]
-          .find(b => /the problem/i.test(b.innerText));
-        const closed = aside.innerText;
-        trigger().click();
-        await wait(400);
-        const opened = aside.innerText;
+        // ONE click each. The reading column is tabs now, and the tab IS the
+        // disclosure: Explain holds the statement, Edge cases holds the
+        // corner cases, and neither is nested behind a second control.
+        const tab = re => [...aside.querySelectorAll('[role=tab]')]
+          .find(b => re.test(b.textContent));
+        const trigger = () => tab(/explain/i);
         const cases = () => aside.querySelector('[aria-label="corner cases"]');
         const casesClosed = !cases();
-        [...aside.querySelectorAll('[data-slot=accordion-trigger]')]
-          .find(b => /bring three inputs/i.test(b.innerText))?.click();
-        await wait(400);
+        trigger().click();
+        await wait(500);
+        const opened = aside.innerText;
+        const beforeCases = aside.innerText.length;
+        tab(/edge cases/i)?.click();
+        await wait(500);
         return {
           hasTrigger: !!trigger(),
-          grew: opened.length > closed.length,
+          // one click on Edge cases has to reveal something that was not there
+          grew: aside.innerText.length !== beforeCases,
           statement: /nums/i.test(opened),
           casesClosed,
           casesOpen: !!cases(),
@@ -336,7 +355,11 @@ describe(
       assert.equal(quiz.tabstops, 1, "the group should be one tab stop")
       assert.ok(quiz.moved, "ArrowDown did not move focus")
       assert.ok(quiz.returned, "ArrowUp did not come back")
-      assert.equal(quiz.stepped, false, "the arrow keys also stepped the player")
+      assert.equal(
+        quiz.stepped,
+        false,
+        "the arrow keys also stepped the player"
+      )
 
       const esc = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -358,7 +381,11 @@ describe(
       `)
       assert.ok(esc.opened > 200, "the drawer did not open")
       assert.equal(esc.closed, 0, "Esc did not close the drawer")
-      assert.equal(esc.focusBack, "test cases", "focus was left in a closed drawer")
+      assert.equal(
+        esc.focusBack,
+        "test cases",
+        "focus was left in a closed drawer"
+      )
       assert.equal(esc.inert, true, "a closed drawer should be inert")
       assert.deepEqual(page.errors(), [])
     })
@@ -408,7 +435,11 @@ describe(
       assert.ok(out.steps > 5, "the XOR act did not load its frames")
       assert.ok(out.pairsFaded, "a pair was still lit after it annihilated")
       assert.ok(out.lonerLit, "the loner should stay lit and become the answer")
-      assert.equal(out.fadedEarly, false, "a pair faded before its twin arrived")
+      assert.equal(
+        out.fadedEarly,
+        false,
+        "a pair faded before its twin arrived"
+      )
       assert.deepEqual(page.errors(), [])
     })
 
@@ -466,7 +497,11 @@ describe(
         await wait(600);
         return { resting, flashing, settled: bg(), tick: node().innerText.slice(0, 1) };
       `)
-      assert.equal(out.flashing.animation, "step-done", "no flash on completion")
+      assert.equal(
+        out.flashing.animation,
+        "step-done",
+        "no flash on completion"
+      )
       assert.notEqual(out.flashing.bg, out.resting, "the flash changed nothing")
       assert.equal(out.settled, out.resting, "the flash did not settle back")
       assert.equal(out.tick, "✓", "the act was not marked done")
@@ -491,6 +526,11 @@ describe(
 
       await page.goto(`${server.base}/#/journey/single-number?act=story`)
       const cited = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        // corner cases sit in their own tab now (spec 5.2)
+        [...document.querySelectorAll('[role=tab]')]
+          .find(t => /edge cases/i.test(t.textContent))?.click();
+        await wait(500);
         const li = [...document.querySelectorAll('[aria-label="corner cases"] > li')];
         return li.map(l => l.innerText.split(String.fromCharCode(10))
           .filter(x => x.startsWith('from')).length);
@@ -522,18 +562,37 @@ describe(
       `
       // never opened the journey: the whole ladder, ending on the best rung
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.removeItem('dsa:unlocked:single-number'); return 1`)
+      await page.run(
+        `localStorage.removeItem('dsa:unlocked:single-number'); return 1`
+      )
       await page.goto(`${server.base}/#/p/arrays-hashing/single-number`)
       const all = await page.run(read)
-      assert.ok(all.names.length >= 3, `expected several rungs, got ${all.names.length}`)
-      assert.equal(all.names[all.names.length - 1], "XOR", "the best rung should be last")
-      assert.equal(all.capped, false, "nothing should be held back before starting")
+      assert.ok(
+        all.names.length >= 3,
+        `expected several rungs, got ${all.names.length}`
+      )
+      assert.equal(
+        all.names[all.names.length - 1],
+        "XOR",
+        "the best rung should be last"
+      )
+      assert.equal(
+        all.capped,
+        false,
+        "nothing should be held back before starting"
+      )
       assert.equal(all.cta, "https://leetcode.com/problems/single-number/")
-      assert.equal(all.editor, false, "the problem page must not grow an editor")
+      assert.equal(
+        all.editor,
+        false,
+        "the problem page must not grow an editor"
+      )
 
       // midway through the journey: only what has been earned
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.setItem('dsa:unlocked:single-number', '3'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:single-number', '3'); return 1`
+      )
       await page.goto(`${server.base}/#/p/arrays-hashing/single-number`)
       const capped = await page.run(read)
       assert.ok(
@@ -541,7 +600,11 @@ describe(
         `the ledger did not cap the ladder: ${JSON.stringify(capped.names)}`
       )
       assert.equal(capped.capped, true, "no nudge back to the journey")
-      assert.equal(capped.names.includes("XOR"), false, "an unearned rung leaked")
+      assert.equal(
+        capped.names.includes("XOR"),
+        false,
+        "an unearned rung leaked"
+      )
       assert.deepEqual(page.errors(), [])
     })
 
@@ -629,15 +692,27 @@ describe(
       assert.match(fresh.heading, /two pointers/i)
 
       // started and unfinished: the name is withheld everywhere
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
+      )
       await page.goto(`${server.base}/#/p/two-pointers`)
       const mid = await page.run(read)
-      assert.doesNotMatch(mid.sidebar, /two pointers/i, "the sidebar leaked the name")
-      assert.doesNotMatch(mid.heading, /two pointers/i, "the pattern page leaked the name")
+      assert.doesNotMatch(
+        mid.sidebar,
+        /two pointers/i,
+        "the sidebar leaked the name"
+      )
+      assert.doesNotMatch(
+        mid.heading,
+        /two pointers/i,
+        "the pattern page leaked the name"
+      )
       assert.match(mid.heading, /· · ·/)
 
       // finished: earned, so it is shown again
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`
+      )
       await page.goto(`${server.base}/#/p/two-pointers`)
       const done = await page.run(read)
       assert.match(done.sidebar, /two pointers/i)
@@ -645,9 +720,11 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
-    test("\"show names anyway\" turns masking off for good", async () => {
+    test('"show names anyway" turns masking off for good', async () => {
       await page.goto(`${server.base}/#/`)
-      await page.run(`${FRESH} localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.run(
+        `${FRESH} localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
+      )
       await page.goto(`${server.base}/#/p/two-pointers`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -708,9 +785,14 @@ describe(
     test("a journeyed problem draws its walkthrough from the engine, capped by the ledger", async () => {
       const openTab = `
         const wait = ms => new Promise(r => setTimeout(r, ms));
-        [...document.querySelectorAll('[role=tab]')].find(t => /walkthrough/i.test(t.innerText))?.click();
+        // The problem page is stacked sections now, not tabs (B38) — the
+        // walkthrough is open, so there is nothing to click. Find the section
+        // by its own heading rather than by a tab that no longer exists.
         await wait(1200);
-        const panel = document.querySelector('[role=tabpanel]:not([hidden])') ?? document.querySelector('main');
+        const heading = [...document.querySelectorAll('h2')].find(
+          e => /^walkthrough/i.test(e.innerText.trim())
+        );
+        const panel = heading?.closest('section') ?? document.querySelector('main');
         return {
           act: panel.querySelector('b')?.innerText ?? '',
           note: [...panel.querySelectorAll('[aria-live=polite]')].pop()?.innerText ?? '',
@@ -729,10 +811,16 @@ describe(
       assert.equal(fresh.capped, false)
 
       // midway through the journey → only the approach already earned
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '2'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '2'); return 1`
+      )
       await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
       const mid = await page.run(openTab)
-      assert.match(mid.act, /brute force/i, "the page spoiled an unearned approach")
+      assert.match(
+        mid.act,
+        /brute force/i,
+        "the page spoiled an unearned approach"
+      )
       assert.equal(mid.capped, true)
       assert.deepEqual(page.errors(), [])
     })
@@ -752,7 +840,10 @@ describe(
         for (let i = 0; i < 20 && shape().bars > 0; i++) await wait(150);
         return { before, after: shape() };
       `)
-      assert.ok(out.before.bars > 0, "the sort view did not render to begin with")
+      assert.ok(
+        out.before.bars > 0,
+        "the sort view did not render to begin with"
+      )
       assert.equal(out.after.bars, 0, "the hash changed but the bars stayed")
       assert.ok(out.after.graph > 0, "the graph view never appeared")
       assert.deepEqual(page.errors(), [])
@@ -760,7 +851,9 @@ describe(
 
     test("journey progress reads the same on the sidebar and the home card (U5)", async () => {
       await page.goto(`${server.base}/#/`)
-      await page.run(`${FRESH} localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.run(
+        `${FRESH} localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
+      )
       await page.goto(`${server.base}/#/`)
       const out = await page.run(`
         const has = (el, word) => el.innerText.toLowerCase().includes(word);
@@ -772,25 +865,55 @@ describe(
         const line = (card?.innerText ?? '').split(String.fromCharCode(10)).find(t => t.includes('earned')) ?? '';
         return { badge: badgeEl?.innerText.trim(), cardText: line.trim(), title: badgeEl?.getAttribute('title') };
       `)
-      assert.equal(out.badge, "2/6", "sidebar should count acts earned, not acts unlocked")
-      assert.equal(out.cardText, "2/6 earned", "the home card should agree with the sidebar")
+      assert.equal(
+        out.badge,
+        "2/6",
+        "sidebar should count acts earned, not acts unlocked"
+      )
+      assert.equal(
+        out.cardText,
+        "2/6 earned",
+        "the home card should agree with the sidebar"
+      )
       assert.match(out.title ?? "", /2 of 6 acts earned/)
     })
 
-    test("prose stays inside a readable measure (U7)", async () => {
-      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
-      const ch = await page.run(`
-        const p = [...document.querySelectorAll('main p')]
+    // Checked on several routes, not one. The single-route version passed for
+    // months while the walkthrough narration ran to 107ch and the SQL intro to
+    // 110ch — a rule only holds where something looks.
+    for (const route of [
+      "/#/p/arrays-hashing/pair-sum",
+      "/#/p/graphs/island-count",
+      "/#/sql",
+      "/#/journey/container-water",
+    ])
+      test(`prose stays inside a readable measure (U7) — ${route}`, async () => {
+        await page.goto(`${server.base}${route}`)
+        // Reports WHICH paragraph is too wide, not just that one is: the
+        // first version of this test cost an afternoon of hunting because a
+        // bare number says nothing about where to look.
+        const worst = await page.run(`
+        const rows = [...document.querySelectorAll('main p')]
           .filter(e => e.textContent.trim().length > 120)
-          .map(e => Math.round(e.getBoundingClientRect().width / (parseFloat(getComputedStyle(e).fontSize) * 0.5)));
-        return Math.max(...p);
+          .map(e => ({
+            ch: Math.round(e.getBoundingClientRect().width / (parseFloat(getComputedStyle(e).fontSize) * 0.5)),
+            cls: e.className.toString().slice(0, 70),
+            text: e.textContent.trim().slice(0, 40),
+          }))
+          .sort((a, b) => b.ch - a.ch);
+        return rows[0] ?? { ch: 0, cls: '', text: '' };
       `)
-      assert.ok(ch <= 80, `longest measure is ${ch}ch, want <= 80`)
-    })
+        assert.ok(
+          worst.ch <= 80,
+          `longest measure is ${worst.ch}ch, want <= 80 — "${worst.text}…" [${worst.cls}]`
+        )
+      })
 
     test("the narration stays on screen even on a long panel (U1)", async () => {
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`
+      )
       await page.goto(`${server.base}/#/journey/two-sum?act=recap&step=1`)
       const out = await page.run(`
         const stage = document.querySelector('[aria-label=stage]');
@@ -855,7 +978,9 @@ describe(
     test("a phone spends less chrome on the way to the stage, and the stepper is one row (U2, U14, U11)", async () => {
       await page.resize(390, 844)
       await page.goto(`${server.base}/#/`)
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`
+      )
       await page.goto(`${server.base}/#/journey/two-sum?act=hash&step=6`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -920,16 +1045,24 @@ describe(
       await page.run(`${FRESH} return 1`)
       await page.goto(`${server.base}/#/`)
       const fresh = await page.run(read)
-      assert.equal(fresh.has, false, "a fresh learner was offered a resume card")
+      assert.equal(
+        fresh.has,
+        false,
+        "a fresh learner was offered a resume card"
+      )
 
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
+      )
       await page.goto(`${server.base}/#/`)
       const mid = await page.run(read)
       assert.ok(mid.has, "a started journey was not offered")
       assert.match(mid.href, /#\/journey\/two-sum\?act=/)
       assert.match(mid.text, /2 of 6 acts earned/)
 
-      await page.run(`localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '7'); return 1`
+      )
       await page.goto(`${server.base}/#/`)
       const done = await page.run(read)
       assert.equal(done.has, false, "a finished journey was still offered")
@@ -953,9 +1086,18 @@ describe(
         const dialog = document.querySelector('[role=dialog]')?.innerText ?? '';
         return { open, shut, back, dialog: dialog.slice(0, 40) };
       `)
-      assert.ok(out.open.side > 200 && out.open.read > 200, "rails did not start open")
-      assert.ok(out.shut.side < 80 && out.shut.read < 80, "`f` did not close both rails")
-      assert.ok(out.back.side > 200 && out.back.read > 200, "`f` did not reopen them")
+      assert.ok(
+        out.open.side > 200 && out.open.read > 200,
+        "rails did not start open"
+      )
+      assert.ok(
+        out.shut.side < 80 && out.shut.read < 80,
+        "`f` did not close both rails"
+      )
+      assert.ok(
+        out.back.side > 200 && out.back.read > 200,
+        "`f` did not reopen them"
+      )
       assert.match(out.dialog, /keyboard shortcuts/i)
       assert.deepEqual(page.errors(), [])
     })
@@ -984,7 +1126,11 @@ describe(
       const after = await page.run(
         `return JSON.parse(localStorage.getItem('dsa:prefs') ?? '{}').motion;`
       )
-      assert.equal(after, "cinematic", "the preference did not survive a reload")
+      assert.equal(
+        after,
+        "cinematic",
+        "the preference did not survive a reload"
+      )
     })
 
     // ---------- 5. phone width ----------
@@ -999,7 +1145,11 @@ describe(
         };
       `)
       await page.resize(1440)
-      assert.equal(out.scrollW, out.clientW, "the page scrolls sideways at 390 px")
+      assert.equal(
+        out.scrollW,
+        out.clientW,
+        "the page scrolls sideways at 390 px"
+      )
       assert.deepEqual(page.errors(), [])
     })
   }

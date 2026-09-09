@@ -20,7 +20,7 @@ export function SqlView() {
         <h1 className="font-heading text-2xl font-semibold">
           SQL Interview Drills
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="max-w-[35em] text-ui text-muted-foreground">
           The window-function and join patterns that show up in every data
           round: dedupe, top-N per group, running totals, gaps and islands.
         </p>
@@ -38,7 +38,9 @@ export function SqlView() {
                 {p.difficulty}
               </Badge>
             </div>
-            <p className="mt-2 text-sm text-muted-foreground">{p.question}</p>
+            <p className="mt-2 max-w-[35em] text-ui text-muted-foreground">
+              {p.question}
+            </p>
             <pre className="mt-3 overflow-x-auto rounded-lg bg-background/60 p-3 font-mono text-xs text-muted-foreground">
               {p.schema}
             </pre>

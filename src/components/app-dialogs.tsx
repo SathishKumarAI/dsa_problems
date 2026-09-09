@@ -201,17 +201,22 @@ function Segmented<T extends string>({
   options,
   onChange,
   label,
+  disabled,
 }: {
   value: T
   options: { value: T; label: string }[]
   onChange: (v: T) => void
   label: string
+  disabled?: boolean
 }) {
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className="inline-flex flex-wrap gap-0.5 rounded-lg border bg-background p-0.5"
+      className={cn(
+        "inline-flex flex-wrap gap-0.5 rounded-lg border bg-background p-0.5",
+        disabled && "opacity-50"
+      )}
     >
       {options.map((o) => (
         <button
@@ -219,6 +224,7 @@ function Segmented<T extends string>({
           type="button"
           role="radio"
           aria-checked={o.value === value}
+          disabled={disabled}
           onClick={() => onChange(o.value)}
           className={cn(
             "rounded-md px-2.5 py-1 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
@@ -312,9 +318,29 @@ export function SettingsDialog() {
             className="h-1.5 w-full cursor-pointer accent-primary"
           />
         </Row>
-        <Row label="motion" hint="how far chips travel when they morph">
+        <Row
+          label="reduce motion"
+          hint="stop every transition and animation, whatever your system is set to"
+        >
+          <input
+            type="checkbox"
+            checked={prefs.reduceMotion}
+            onChange={(e) => setPref("reduceMotion", e.target.checked)}
+            aria-label="reduce motion"
+            className="size-4 cursor-pointer justify-self-start accent-primary"
+          />
+        </Row>
+        <Row
+          label="motion"
+          hint={
+            prefs.reduceMotion
+              ? "off while reduce motion is on"
+              : "how far chips travel when they morph"
+          }
+        >
           <Segmented
             label="motion"
+            disabled={prefs.reduceMotion}
             value={prefs.motion}
             onChange={(v) => setPref("motion", v)}
             options={[

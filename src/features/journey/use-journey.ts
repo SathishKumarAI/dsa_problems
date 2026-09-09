@@ -320,8 +320,12 @@ export function useJourney(journey: AnyJourney) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
+      // A key pressed while a control has focus belongs to that control, not
+      // to the player: space on a focused trace row or button would otherwise
+      // fire the button AND toggle playback, and arrows would drive the stage
+      // while the learner is tabbing through the reading column.
       if (
-        ["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName) ||
+        ["INPUT", "SELECT", "TEXTAREA", "BUTTON", "A"].includes(t.tagName) ||
         t.isContentEditable
       )
         return

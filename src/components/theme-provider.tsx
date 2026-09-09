@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import * as React from "react"
 
+import { usePrefs } from "@/lib/store"
+
 type Theme = "dark" | "light" | "system"
 type ResolvedTheme = "dark" | "light"
 
@@ -119,6 +121,15 @@ export function ThemeProvider({
     },
     [disableTransitionOnChange]
   )
+
+  // The reduced-motion override, as a class on <body> that index.css reads to
+  // collapse every transition and animation. This provider already owns
+  // "put a class on the document to match a preference", so it owns this too;
+  // the OS-level media query is handled in the CSS beside it.
+  const { reduceMotion } = usePrefs()
+  React.useEffect(() => {
+    document.body.classList.toggle("force-reduced-motion", reduceMotion)
+  }, [reduceMotion])
 
   React.useEffect(() => {
     applyTheme(theme)
