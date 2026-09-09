@@ -67,6 +67,9 @@ import { networkDelay, networkDelayJourney } from "./network-delay.ts"
 import { kClosest, kClosestPoints, pointsOf } from "./k-closest-points.ts"
 import { allParens, generateParens } from "./generate-parens.ts"
 import { minCoverSubstring, minWindow } from "./min-cover-substring.ts"
+import { sameShape, sameTree } from "./same-tree.ts"
+import { invertTree, mirrored } from "./invert-tree.ts"
+import { balancedTree, isHeightBalanced } from "./balanced-tree.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -860,6 +863,54 @@ const TABLE: {
       const word = (len: number) =>
         Array.from({ length: len }, () => "abc"[rand(3)]).join("")
       return { nums: [word(1 + rand(9)), word(1 + rand(3))] }
+    },
+  },
+  {
+    journey: sameTree as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => sameShape(d.nums as string[]),
+    // two well-formed level-order trees, often equal so a true answer is
+    // exercised as well as the many ways to be false
+    input: (rand) => {
+      const tree = () => {
+        const n = 1 + rand(7)
+        const out: string[] = []
+        for (let i = 0; i < n; i++) {
+          const parentAlive = i === 0 || out[Math.floor((i - 1) / 2)] !== "."
+          out.push(parentAlive && rand(4) ? String(rand(4)) : ".")
+        }
+        return out
+      }
+      const p = tree()
+      return { nums: [...p, "|", ...(rand(3) ? tree() : p)] }
+    },
+  },
+  {
+    journey: invertTree as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => mirrored(d.nums as string[]),
+    input: (rand) => {
+      const n = 1 + rand(10)
+      const nums: string[] = []
+      for (let i = 0; i < n; i++) {
+        const parentAlive = i === 0 || nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(4) ? String(rand(9)) : ".")
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: balancedTree as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isHeightBalanced(d.nums as string[]),
+    input: (rand) => {
+      const n = 1 + rand(14)
+      const nums: string[] = []
+      for (let i = 0; i < n; i++) {
+        const parentAlive = i === 0 || nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(3) ? String(rand(9)) : ".")
+      }
+      return { nums }
     },
   },
   {

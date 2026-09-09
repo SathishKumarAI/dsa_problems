@@ -65,6 +65,9 @@ import { networkDelayJourney } from "../data/journeys/network-delay.ts"
 import { kClosestPoints } from "../data/journeys/k-closest-points.ts"
 import { generateParens } from "../data/journeys/generate-parens.ts"
 import { minCoverSubstring } from "../data/journeys/min-cover-substring.ts"
+import { sameTree } from "../data/journeys/same-tree.ts"
+import { invertTree } from "../data/journeys/invert-tree.ts"
+import { balancedTree } from "../data/journeys/balanced-tree.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -136,6 +139,9 @@ export const JOURNEYS: AnyJourney[] = [
   kClosestPoints as unknown as AnyJourney,
   generateParens as unknown as AnyJourney,
   minCoverSubstring as unknown as AnyJourney,
+  sameTree as unknown as AnyJourney,
+  invertTree as unknown as AnyJourney,
+  balancedTree as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,

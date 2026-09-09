@@ -60,36 +60,6 @@ def is_same_tree(p: TreeNode | None, q: TreeNode | None) -> bool:
     if (p->val != q->val) return false;
     return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
 }`,
-  walkthrough: [
-    {
-      text: `   1        1
-  / \\      / \\
- 2   3    2   3`,
-      caption: "Compare the roots first: 1 against 1.",
-    },
-    {
-      text: `left subtrees
- 2        2`,
-      caption: "Then the left pair. Same value, and both have empty children.",
-    },
-    {
-      text: `right subtrees
- 3        3`,
-      caption: "Then the right pair. Every position agreed.",
-    },
-    {
-      text: `   1        1
-  /          \\
- 2            2`,
-      caption: "A mirrored pair: same values, different shape.",
-    },
-    {
-      text: `p.left = 2, q.left = None
-→ false`,
-      caption:
-        "One empty against one node → false. Structure is checked, not just values.",
-    },
-  ],
   alternatives: [
     {
       name: "Serialise and compare",
