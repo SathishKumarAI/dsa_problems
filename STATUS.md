@@ -62,13 +62,28 @@ and the final eight that closed the set (#68).
     broke the V9 legend check, correctly: with every problem journeyed nothing renders the static
     player any more. That check was replaced by one that pins the new fact (B61).
 
-## The next action — pick from the top
+## Next session — do these, in this order
 
 **87 journeys for 87 problems.** Every problem in the set is built all the way down: a story act,
 an approach ladder earned one rung at a time, corner cases taught in play, and three languages.
-Zero static walkthroughs remain.
+Zero static walkthroughs remain. So the next work is not more content — it is the gate that never
+looked at 14 of the translations, and one decision that blocks the next content batch.
 
-### 1. B30 — the honest gap in the gates (L)
+`docs/BACKLOG.md` P0 now opens on these in the same order (B30, B61, B58, B59, B60, then B53), so
+"pick the top unchecked P0" and this list agree.
+
+| Order | Item | Branch | Done when |
+|---|---|---|---|
+| 1 | **B30** — marshal lists and trees in `verify:run` | `feat/localsmith-structural-args` | `NOT_YET_RUNNABLE` holds **1** entry (`kth-largest-stream`), not 14; `npm run verify:run` green with the 13 counted in the comparisons |
+| 2 | **B61** — keep or delete `step-player.tsx` | `refactor/decide-static-player` (or a docs-only commit if the answer is "keep") | The backlog row is checked with the decision and its reason; if deleted, `Problem.walkthrough`, the `Frame` type and the `test:ui` pin go with it in the same commit |
+| 3 | **B58** — four raw font sizes outside the panels | `fix/type-scale-outside-panels` | Each of the four re-measured at `text-meta`, no clipping in the 48px rail; `npm run test:ui` green |
+| 4 | **B59** — the drawer's 288px | `feat/testcase-drawer-placement` | A design call written down, then built or dropped — measured stage width quoted either way |
+| 5 | **B53** — thirteen new problems | `feat/problems-batch-6` | Only after B61 answers who owns a problem authored without a journey |
+
+Gates for any of them: `npm run check`, plus `npm run test:ui` for 3 and 4, plus
+`npm run verify:code` / `verify:run` / `verify:vectors` for 1 and 5.
+
+### 1. B30 — the honest gap in the gates (L) — the design, already done
 The biggest real hole, and **the reconnaissance is already done** — start from this, not from
 reading the runner again. `verify:run` executes every Java and C++ block against the repo's own
 Python; it cannot marshal a linked list or a binary tree, so **14 problems are checked by a compiler
