@@ -41,6 +41,26 @@ export const problem: Problem = {
         two_back = one_back
         one_back = current
     return min(one_back, two_back)`,
+  java: `public int minCostClimbingStairs(int[] cost) {
+    int twoBack = cost[0];
+    int oneBack = cost[1];
+    for (int i = 2; i < cost.length; i++) {
+        int current = cost[i] + Math.min(oneBack, twoBack);
+        twoBack = oneBack;
+        oneBack = current;
+    }
+    return Math.min(oneBack, twoBack);
+}`,
+  cpp: `int minCostClimbingStairs(const vector<int>& cost) {
+    int twoBack = cost[0];
+    int oneBack = cost[1];
+    for (int i = 2; i < (int)cost.size(); i++) {
+        int current = cost[i] + min(oneBack, twoBack);
+        twoBack = oneBack;
+        oneBack = current;
+    }
+    return min(oneBack, twoBack);
+}`,
   walkthrough: [
     {
       cells: { values: [1, 100, 1, 1, 1, 100] },
@@ -87,6 +107,25 @@ export const problem: Problem = {
     for i in range(2, len(cost)):
         best[i] = cost[i] + min(best[i - 1], best[i - 2])
     return min(best[-1], best[-2])`,
+      java: `public int minCostClimbingStairs(int[] cost) {
+    int[] best = new int[cost.length];
+    best[0] = cost[0];
+    best[1] = cost[1];
+    for (int i = 2; i < cost.length; i++) {
+        best[i] = cost[i] + Math.min(best[i - 1], best[i - 2]);
+    }
+    return Math.min(best[cost.length - 1], best[cost.length - 2]);
+}`,
+      cpp: `int minCostClimbingStairs(const vector<int>& cost) {
+    int n = (int)cost.size();
+    vector<int> best(n);
+    best[0] = cost[0];
+    best[1] = cost[1];
+    for (int i = 2; i < n; i++) {
+        best[i] = cost[i] + min(best[i - 1], best[i - 2]);
+    }
+    return min(best[n - 1], best[n - 2]);
+}`,
     },
   ],
 }

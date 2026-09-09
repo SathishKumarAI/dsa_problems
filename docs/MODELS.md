@@ -53,6 +53,31 @@ So:
 This replaces "use the local model wherever it is checkable". It is still checkable — it is just not
 cheaper, at this scale, when the author is already in the file.
 
+## The second translation pass, 2026-09-08: Claude, not the local model
+
+Twelve array-shaped problems shipped Python-only in the batch-4 content drop, and a problem may not
+have a journey until it carries all three languages (`problems.test.ts`). That made them the exact
+job the local model exists for — an algorithm already fixed, a compiler and a differential runner
+standing by. They were written by **Claude inline** anyway, and the reason is scheduling rather than
+capability: the twelve were a blocking dependency for the next content batch, and the decision above
+already measured the local-model path at roughly a quarter of the throughput with two defects in ten
+blocks. The backfill route stays the right one for work nobody is waiting on.
+
+| | This pass |
+|---|---|
+| Problems | 12 |
+| Blocks written | **48** (2 rungs x 2 languages x 12) |
+| `verify:code` | 366 blocks compiled, **0 failed** (318 before) |
+| `verify:run` | **20 comparisons per problem, 0 disagreed**, every problem confirmed individually |
+| Semantically wrong | 0 |
+| Failed to compile | 0 |
+
+Every one of the twelve needed at least one re-run to get a clean sheet: the Windows launch flake
+(see `WORKLOG.md` 2026-09-08) refused a freshly built `.exe` on 43 of 330 drivers in the full sweep,
+about 13% — higher than the 5% first measured, and still counted apart from real disagreements
+rather than hidden in them. `sort-by-frequency` took three attempts before all four of its blocks
+launched. None of those refusals was ever a compile error; `verify:code` had already built all 366.
+
 ## The tier boundary — the rule that decides who writes what
 
 > **A local model gets the work where a machine can prove it wrong. Everything else is judgement.**

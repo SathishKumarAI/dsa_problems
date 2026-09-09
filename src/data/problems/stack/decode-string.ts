@@ -51,6 +51,58 @@ export const problem: Problem = {
         else:
             current += ch
     return current`,
+  java: `public String decodeString(String s) {
+    Deque<Integer> counts = new ArrayDeque<>();
+    Deque<String> texts = new ArrayDeque<>();
+    StringBuilder current = new StringBuilder();
+    int number = 0;
+    for (int i = 0; i < s.length(); i++) {
+        char ch = s.charAt(i);
+        if (Character.isDigit(ch)) {
+            number = number * 10 + (ch - '0');
+        } else if (ch == '[') {
+            counts.push(number);
+            texts.push(current.toString());
+            number = 0;
+            current = new StringBuilder();
+        } else if (ch == ']') {
+            int times = counts.pop();
+            StringBuilder rebuilt = new StringBuilder(texts.pop());
+            for (int r = 0; r < times; r++) rebuilt.append(current);
+            current = rebuilt;
+        } else {
+            current.append(ch);
+        }
+    }
+    return current.toString();
+}`,
+  cpp: `string decodeString(const string& s) {
+    vector<int> counts;
+    vector<string> texts;
+    string current;
+    int number = 0;
+    for (char ch : s) {
+        if (isdigit((unsigned char)ch)) {
+            number = number * 10 + (ch - '0');
+        } else if (ch == '[') {
+            counts.push_back(number);
+            texts.push_back(current);
+            number = 0;
+            current.clear();
+        } else if (ch == ']') {
+            int times = counts.back();
+            counts.pop_back();
+            string prefix = texts.back();
+            texts.pop_back();
+            string rebuilt = prefix;
+            for (int r = 0; r < times; r++) rebuilt += current;
+            current = rebuilt;
+        } else {
+            current += ch;
+        }
+    }
+    return current;
+}`,
   walkthrough: [
     {
       cells: { values: ["3", "[", "a", "2", "[", "c", "]", "]"] },
@@ -117,6 +169,61 @@ export const problem: Problem = {
 
 def decode_string(s: str) -> str:
     return parse(s, 0)[0]`,
+      java: `public String decodeString(String s) {
+    int[] at = new int[] { 0 };
+    return parseFrom(s, at);
+}
+private String parseFrom(String s, int[] at) {
+    StringBuilder out = new StringBuilder();
+    int number = 0;
+    while (at[0] < s.length()) {
+        char ch = s.charAt(at[0]);
+        if (Character.isDigit(ch)) {
+            number = number * 10 + (ch - '0');
+            at[0]++;
+        } else if (ch == '[') {
+            at[0]++;
+            String inner = parseFrom(s, at);
+            for (int r = 0; r < number; r++) out.append(inner);
+            number = 0;
+        } else if (ch == ']') {
+            at[0]++;
+            return out.toString();
+        } else {
+            out.append(ch);
+            at[0]++;
+        }
+    }
+    return out.toString();
+}`,
+      cpp: `string parseFrom(const string& s, size_t& at) {
+    string out;
+    int number = 0;
+    while (at < s.size()) {
+        char ch = s[at];
+        if (isdigit((unsigned char)ch)) {
+            number = number * 10 + (ch - '0');
+            at++;
+        } else if (ch == '[') {
+            at++;
+            string inner = parseFrom(s, at);
+            for (int r = 0; r < number; r++) out += inner;
+            number = 0;
+        } else if (ch == ']') {
+            at++;
+            return out;
+        } else {
+            out += ch;
+            at++;
+        }
+    }
+    return out;
+}
+
+string decodeString(const string& s) {
+    size_t at = 0;
+    return parseFrom(s, at);
+}`,
     },
   ],
 }

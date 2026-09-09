@@ -42,6 +42,26 @@ export const problem: Problem = {
             if i >= len(w) or w[i] != first[i]:
                 return first[:i]
     return first`,
+  java: `public String longestCommonPrefix(String[] words) {
+    if (words.length == 0) return "";
+    String first = words[0];
+    for (int i = 0; i < first.length(); i++) {
+        for (String w : words) {
+            if (i >= w.length() || w.charAt(i) != first.charAt(i)) return first.substring(0, i);
+        }
+    }
+    return first;
+}`,
+  cpp: `string longestCommonPrefix(const vector<string>& words) {
+    if (words.empty()) return "";
+    string first = words[0];
+    for (int i = 0; i < (int)first.size(); i++) {
+        for (const string& w : words) {
+            if (i >= (int)w.size() || w[i] != first[i]) return first.substr(0, i);
+        }
+    }
+    return first;
+}`,
   walkthrough: [
     {
       cells: { values: ["flower", "flow", "flight"] },
@@ -86,6 +106,28 @@ export const problem: Problem = {
             if not prefix:
                 return ""
     return prefix`,
+      java: `public String longestCommonPrefix(String[] words) {
+    if (words.length == 0) return "";
+    String prefix = words[0];
+    for (int i = 1; i < words.length; i++) {
+        while (!words[i].startsWith(prefix)) {
+            prefix = prefix.substring(0, prefix.length() - 1);
+            if (prefix.isEmpty()) return "";
+        }
+    }
+    return prefix;
+}`,
+      cpp: `string longestCommonPrefix(const vector<string>& words) {
+    if (words.empty()) return "";
+    string prefix = words[0];
+    for (size_t i = 1; i < words.size(); i++) {
+        while (words[i].rfind(prefix, 0) != 0) {
+            prefix.pop_back();
+            if (prefix.empty()) return "";
+        }
+    }
+    return prefix;
+}`,
     },
   ],
 }

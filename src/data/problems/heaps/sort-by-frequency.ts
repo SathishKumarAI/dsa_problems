@@ -51,6 +51,34 @@ def frequency_sort(s: str) -> str:
         count, ch = heapq.heappop(heap)
         out += ch * (-count)
     return out`,
+  java: `public String frequencySort(String s) {
+    Map<Character, Integer> counts = new HashMap<>();
+    for (int i = 0; i < s.length(); i++) counts.merge(s.charAt(i), 1, Integer::sum);
+    PriorityQueue<Character> heap = new PriorityQueue<>((a, b) -> {
+        int byCount = counts.get(b) - counts.get(a);
+        return byCount != 0 ? byCount : a - b;
+    });
+    heap.addAll(counts.keySet());
+    StringBuilder out = new StringBuilder();
+    while (!heap.isEmpty()) {
+        char ch = heap.poll();
+        for (int r = 0; r < counts.get(ch); r++) out.append(ch);
+    }
+    return out.toString();
+}`,
+  cpp: `string frequencySort(const string& s) {
+    map<char, int> counts;
+    for (char ch : s) counts[ch]++;
+    priority_queue<pair<int, char>, vector<pair<int, char>>, greater<pair<int, char>>> heap;
+    for (const auto& kv : counts) heap.push(make_pair(-kv.second, kv.first));
+    string out;
+    while (!heap.empty()) {
+        pair<int, char> top = heap.top();
+        heap.pop();
+        out.append((size_t)(-top.first), top.second);
+    }
+    return out;
+}`,
   walkthrough: [
     {
       cells: { values: ["t", "r", "e", "e"] },
@@ -94,6 +122,32 @@ def frequency_sort(s: str) -> str:
     for ch, count in pairs:
         out += ch * count
     return out`,
+      java: `public String frequencySort(String s) {
+    Map<Character, Integer> counts = new HashMap<>();
+    for (int i = 0; i < s.length(); i++) counts.merge(s.charAt(i), 1, Integer::sum);
+    List<Character> keys = new ArrayList<>(counts.keySet());
+    keys.sort((a, b) -> {
+        int byCount = counts.get(b) - counts.get(a);
+        return byCount != 0 ? byCount : a - b;
+    });
+    StringBuilder out = new StringBuilder();
+    for (char ch : keys) {
+        for (int r = 0; r < counts.get(ch); r++) out.append(ch);
+    }
+    return out.toString();
+}`,
+      cpp: `string frequencySort(const string& s) {
+    map<char, int> counts;
+    for (char ch : s) counts[ch]++;
+    vector<pair<char, int>> pairs(counts.begin(), counts.end());
+    sort(pairs.begin(), pairs.end(), [](const pair<char, int>& a, const pair<char, int>& b) {
+        if (a.second != b.second) return a.second > b.second;
+        return a.first < b.first;
+    });
+    string out;
+    for (const auto& kv : pairs) out.append((size_t)kv.second, kv.first);
+    return out;
+}`,
     },
   ],
 }

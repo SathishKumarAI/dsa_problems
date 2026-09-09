@@ -46,6 +46,34 @@ export const problem: Problem = {
             left += 1
         best = max(best, right - left + 1)
     return best`,
+  java: `public int longestOnes(int[] nums, int k) {
+    int left = 0;
+    int zeroes = 0;
+    int best = 0;
+    for (int right = 0; right < nums.length; right++) {
+        if (nums[right] == 0) zeroes++;
+        while (zeroes > k) {
+            if (nums[left] == 0) zeroes--;
+            left++;
+        }
+        best = Math.max(best, right - left + 1);
+    }
+    return best;
+}`,
+  cpp: `int longestOnes(const vector<int>& nums, int k) {
+    int left = 0;
+    int zeroes = 0;
+    int best = 0;
+    for (int right = 0; right < (int)nums.size(); right++) {
+        if (nums[right] == 0) zeroes++;
+        while (zeroes > k) {
+            if (nums[left] == 0) zeroes--;
+            left++;
+        }
+        best = max(best, right - left + 1);
+    }
+    return best;
+}`,
   walkthrough: [
     {
       cells: { values: [1, 1, 0, 0, 1, 1, 1] },
@@ -98,6 +126,28 @@ export const problem: Problem = {
             if zeroes <= k:
                 best = max(best, j - i + 1)
     return best`,
+      java: `public int longestOnes(int[] nums, int k) {
+    int best = 0;
+    for (int i = 0; i < nums.length; i++) {
+        int zeroes = 0;
+        for (int j = i; j < nums.length; j++) {
+            if (nums[j] == 0) zeroes++;
+            if (zeroes <= k) best = Math.max(best, j - i + 1);
+        }
+    }
+    return best;
+}`,
+      cpp: `int longestOnes(const vector<int>& nums, int k) {
+    int best = 0;
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int zeroes = 0;
+        for (int j = i; j < (int)nums.size(); j++) {
+            if (nums[j] == 0) zeroes++;
+            if (zeroes <= k) best = max(best, j - i + 1);
+        }
+    }
+    return best;
+}`,
     },
   ],
 }

@@ -40,6 +40,28 @@ export const problem: Problem = {
         else:
             hi = mid
     return nums[lo]`,
+  java: `public int singleNonDuplicate(int[] nums) {
+    int lo = 0;
+    int hi = nums.length - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (mid % 2 == 1) mid--;
+        if (nums[mid] == nums[mid + 1]) lo = mid + 2;
+        else hi = mid;
+    }
+    return nums[lo];
+}`,
+  cpp: `int singleNonDuplicate(const vector<int>& nums) {
+    int lo = 0;
+    int hi = (int)nums.size() - 1;
+    while (lo < hi) {
+        int mid = (lo + hi) / 2;
+        if (mid % 2 == 1) mid--;
+        if (nums[mid] == nums[mid + 1]) lo = mid + 2;
+        else hi = mid;
+    }
+    return nums[lo];
+}`,
   walkthrough: [
     {
       cells: { values: [1, 1, 2, 3, 3, 4, 4], labels: { 0: "lo", 6: "hi" } },
@@ -88,6 +110,16 @@ export const problem: Problem = {
     for x in nums:
         out ^= x
     return out`,
+      java: `public int singleNonDuplicate(int[] nums) {
+    int out = 0;
+    for (int x : nums) out ^= x;
+    return out;
+}`,
+      cpp: `int singleNonDuplicate(const vector<int>& nums) {
+    int out = 0;
+    for (int x : nums) out ^= x;
+    return out;
+}`,
     },
   ],
 }

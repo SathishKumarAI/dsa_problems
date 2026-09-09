@@ -41,6 +41,24 @@ export const problem: Problem = {
             candidate = x
         count += 1 if x == candidate else -1
     return candidate`,
+  java: `public int majorityElement(int[] nums) {
+    int candidate = nums[0];
+    int count = 0;
+    for (int x : nums) {
+        if (count == 0) candidate = x;
+        count += x == candidate ? 1 : -1;
+    }
+    return candidate;
+}`,
+  cpp: `int majorityElement(const vector<int>& nums) {
+    int candidate = nums[0];
+    int count = 0;
+    for (int x : nums) {
+        if (count == 0) candidate = x;
+        count += x == candidate ? 1 : -1;
+    }
+    return candidate;
+}`,
   walkthrough: [
     {
       cells: { values: [2, 2, 1, 1, 1, 2, 2] },
@@ -90,6 +108,24 @@ export const problem: Problem = {
         if seen > counts[best]:
             best = value
     return best`,
+      java: `public int majorityElement(int[] nums) {
+    Map<Integer, Integer> counts = new HashMap<>();
+    for (int x : nums) counts.merge(x, 1, Integer::sum);
+    int best = nums[0];
+    for (Map.Entry<Integer, Integer> e : counts.entrySet()) {
+        if (e.getValue() > counts.get(best)) best = e.getKey();
+    }
+    return best;
+}`,
+      cpp: `int majorityElement(const vector<int>& nums) {
+    unordered_map<int, int> counts;
+    for (int x : nums) counts[x]++;
+    int best = nums[0];
+    for (const auto& kv : counts) {
+        if (kv.second > counts.at(best)) best = kv.first;
+    }
+    return best;
+}`,
     },
   ],
 }
