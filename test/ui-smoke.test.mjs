@@ -79,6 +79,43 @@ describe(
       })
     }
 
+    // The journeys disclosure used to call setAllJourneys(true) and then hide
+    // itself, so expanding was a one-way door and the only way back was a
+    // reload. Round-trip it, in both places that carry one.
+    test("the journeys disclosure goes both ways (sidebar and home)", async () => {
+      await page.goto(`${server.base}/#/`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const side = () => document.querySelector('[data-slot="sidebar"]') || document.querySelector('aside');
+        const main = () => document.querySelector('main');
+        const btn = root => [...root.querySelectorAll('button')]
+          .find(b => /more journeys|show all|show only|fewer/i.test(b.textContent));
+        const count = root => root.querySelectorAll('a[href*="/journey/"]').length;
+        const steps = [];
+        for (const root of [side, main]) {
+          const start = count(root());
+          btn(root()).click();
+          await wait(500);
+          const opened = count(root());
+          const backBtn = btn(root());
+          const hasWayBack = !!backBtn;
+          if (hasWayBack) { backBtn.click(); await wait(500); }
+          steps.push({ start, opened, hasWayBack, closed: count(root()) });
+        }
+        return steps;
+      `)
+      for (const [i, s] of out.entries()) {
+        const where = i === 0 ? "sidebar" : "home"
+        assert.ok(s.opened > s.start, `${where}: expanding should show more`)
+        assert.ok(s.hasWayBack, `${where}: no control left to collapse again`)
+        assert.equal(
+          s.closed,
+          s.start,
+          `${where}: collapsing should return to ${s.start}`
+        )
+      }
+    })
+
     test("an unknown route falls back to home instead of a blank page", async () => {
       await page.goto(`${server.base}/#/no/such/place`)
       const text = await page.eval("document.body.innerText")
