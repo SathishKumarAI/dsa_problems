@@ -2,8 +2,9 @@
 
 Last session: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
 the UI got the pass it had been owed since the set tripled in size, the tree and list panels
-finally have something rendering them — and the differential gate stopped being blind to 14 of the
-87 problems (B30), which caught a real Java bug on its first run.
+finally have something rendering them — and then eleven PRs (#71–#81) closed **ten backlog items**:
+the differential gate went from blind on 14 problems to blind on none, and four of the five things
+it fixed on screen were found by MEASURING rather than by reading.
 
 ## The spec checklist
 
@@ -67,25 +68,30 @@ and the final eight that closed the set (#68).
 
 **87 journeys for 87 problems.** Every problem in the set is built all the way down: a story act,
 an approach ladder earned one rung at a time, corner cases taught in play, and three languages.
-Zero static walkthroughs remain, and every translation but one is now RUN rather than merely
-compiled. So the next work is a decision that blocks the next content batch, then the small stuff.
+Zero static walkthroughs remain, **every** translation is now RUN rather than merely compiled, and
+the UI backlog is empty of small items. What is left is content and new surfaces.
 
 `docs/BACKLOG.md` P0 opens on these in the same order, so "pick the top unchecked P0" and this
 list agree.
 
 | Order | Item | Branch | Done when |
 |---|---|---|---|
-| 1 | **B58** — four raw font sizes outside the panels | `fix/type-scale-outside-panels` | Each of the four re-measured at `text-meta`, no clipping in the 48px rail; `npm run test:ui` green |
-| 2 | **B59** — the drawer's 288px | `feat/testcase-drawer-placement` | A design call written down, then built or dropped — measured stage width quoted either way |
-| 3 | **B62** — the one problem that is not a function | `feat/localsmith-stateful-class` | `NOT_YET_RUNNABLE` is **empty**; `kth-largest-stream` driven as a script of calls |
-| 4 | **B53** — thirteen new problems | `feat/problems-batch-6` | B61 answered: a problem may ship without a journey, so a batch is a content batch and nothing more |
+| 1 | **B43** — a derived act keeps its Java and C++ tabs | `feat/derived-act-code-tabs` | The three tabs render on a derived act; `journeys.test.ts` gets a per-act escape rather than being weakened |
+| 2 | **B53** — thirteen new problems | `feat/problems-batch-6` | 100 problems, each with vectors strong enough for `verify:vectors`. B61 answered who owns a problem with no journey: it may ship without one |
+| 3 | **B12** — command palette | `feat/command-palette` | Ctrl/⌘K reaches any page, act, pattern or problem, and the disclosure rule holds inside it |
+| 4 | **B10** — progress dashboard | `feat/progress-dashboard` | Acts done, quizzes passed, streak, XP — the data already exists in the store |
+| 5 | **B9** — roadmap page | `feat/roadmap` | The DAG replaces the flat home grid for the journey track |
 
-**B30 is done** (2026-09-09). What it bought, and what it cost, is the entry below.
+Gates: `npm run check` always; `npm run test:ui` for anything on screen (1, 3, 4, 5);
+`verify:code` / `verify:run` / `verify:vectors` for anything touching a code block (1, 2).
 
-Gates for any of them: `npm run check`, plus `npm run test:ui` for 1 and 2, plus
-`npm run verify:code` / `verify:run` / `verify:vectors` for 3 and 4.
+**Eleven items closed on 2026-09-09** — B30, B61, B62, B58, B59, B45, B18, B19, B60, B36 and F5,
+across PRs #70–#81. What each one cost and what it found is in `docs/WORKLOG.md`; the four findings worth
+carrying are in the traps below.
 
-### B30 — shipped, and what it found
+### What the ten items found (2026-09-09)
+
+### B30 — the structural gate
 
 **1676 → 2084 comparisons, 0 disagreed. `NOT_YET_RUNNABLE` went 14 → 1.** The one real finding:
 **invert-tree's iterative Java rung threw `NullPointerException` on every case, including the empty
@@ -156,6 +162,24 @@ B45 (the problem page spoils the ladder), B60 (run the panel audit on a schedule
 F-items.
 
 ## Traps this session added to the list
+
+- **`cn()` deletes a named type step when a colour follows it.** `cn("text-display", "text-chart-3")`
+  returned the colour alone: tailwind-merge cannot tell `text-meta` from `text-muted-foreground`,
+  because both are `text-<word>`, so it files the size under colour and keeps the last. That is why
+  the sub-scale `text-[10px]` literals existed — an arbitrary size is recognised and survives.
+  `lib/utils.ts` teaches the merger the six names; `lib/utils.test.ts` pins it. **Anything that
+  LOOKS applied and renders wrong is a merge, not a typo.**
+- **`tsc -b` is incremental, so a green `npm run check` right after an edit is not proof.** A cast
+  that a cold `tsc` rejects rode into master behind a build-info file that was never rechecked. If a
+  change touches types, look at whether tsc actually recompiled the file.
+- **Measure the built app, not the source.** `vite preview` serves `dist/`, so a UI measurement
+  taken without `npm run build` first is measuring the previous change. Two of this session's
+  measurements were wrong for exactly that reason before anything else was.
+- **A bash heredoc eats one level of backslashes.** A patch script written that way turned a JS
+  regex escape into a literal control character inside a template literal, so `paramTypes` silently
+  stopped matching — every C++ block then got the wrong node type and would not build. Use the
+  editing tools for anything carrying a regex, or read the file back before trusting it. This very
+  trap had to be written twice, for the same reason.
 
 - **`ArrayDeque` refuses `null`, and a tree walk pushes nulls on purpose.** invert-tree's iterative
   Java rung mirrored its Python line for line — `stack.push(node.left)` with a null check on the way
