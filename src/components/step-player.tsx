@@ -1,7 +1,11 @@
 // Walkthrough player. Terminal-styled card rendering Frame[] (data/types):
 // array cells with colored roles + pointer labels, or a monospace diagram.
 // Autoplay, scrubber, arrow-key navigation.
-import { useEffect, useState } from "react"
+//
+// The arrow keys are scoped to the card, not to the window. A window listener
+// stole the arrow keys from the whole page — including from the hint accordion
+// beside it — and two players on one page both answered every press.
+import { useEffect, useRef, useState } from "react"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -73,17 +77,28 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
     return () => clearTimeout(t)
   }, [playing, step, last])
 
+  const card = useRef<HTMLDivElement>(null)
   useEffect(() => {
+    const el = card.current
+    if (!el) return
     const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return
+      e.preventDefault() // otherwise the page scrolls sideways as well
       if (e.key === "ArrowRight") setStep((s) => Math.min(s + 1, last))
-      if (e.key === "ArrowLeft") setStep((s) => Math.max(s - 1, 0))
+      else setStep((s) => Math.max(s - 1, 0))
     }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
+    el.addEventListener("keydown", onKey)
+    return () => el.removeEventListener("keydown", onKey)
   }, [last])
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-lg">
+    <div
+      ref={card}
+      tabIndex={0}
+      role="group"
+      aria-label={`walkthrough, ${frames.length} steps — arrow keys step through it`}
+      className="overflow-hidden rounded-xl border bg-card shadow-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
       {/* terminal chrome */}
       <div className="flex items-center gap-2 border-b bg-background/40 px-4 py-2.5">
         <span className="size-2.5 rounded-full bg-chart-5/60" />

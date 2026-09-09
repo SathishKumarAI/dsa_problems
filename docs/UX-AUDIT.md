@@ -324,3 +324,87 @@ that leaves phones with no equivalent — the buttons are there, so this is acce
 | 5 | **U9, U13** | The visualizer's vertical space and a home page that knows you. |
 
 None of this changes the pedagogy, the engine or the API. It is all frame.
+
+---
+
+# Second pass, 2026-09-08 — after 45 journeys and 87 problems
+
+The first audit (U1–U14) was written when the set held 31 problems and five journeys, and every one
+of its items is closed. This pass is what broke, or newly grated, once the set tripled and the
+journey list went from five rows to forty-five. Items are numbered **V1…** so they cannot be
+confused with the U-series.
+
+## Fixed in this pass
+
+**V1 — The problem page was a tab strip doing hiding nobody asked for.** (`problem-detail.tsx`)
+42 of 87 problems have no journey, so on the majority of pages the three tabs — Hints, Walkthrough,
+Approaches — were pure concealment: there is no ledger on a journey-less problem, so nothing was
+being gated for a pedagogical reason. The page at rest showed a statement, three constraints, one
+example and three collapsed hints, and looked like a stub of a page rather than the main event.
+Reproduced at `#/p/graphs/island-count`.
+*Fixed:* the tabs are gone. The page is now stacked, labelled sections read top to bottom — the
+problem, hints, walkthrough, approaches — each heading stating how much it holds ("3 ways in, worst
+to best", "5 steps"). Where gating IS due it is still done properly and by the ledger, not by the
+layout: `ladderOf` caps the rungs an unfinished journey has not earned, and `MiniPlayer` caps the
+walkthrough the same way. Hints stay collapsed, because that gate belongs to the learner.
+
+**V2 — Three language pickers on one page, all writing the same preference.**
+(`problem-detail.tsx`, was `SolutionBlock`) Every rung of the approach ladder rendered its own
+Python/Java/C++ strip, and all of them set the shared `codeTab` pref — so clicking one moved all
+three, which reads as a bug whichever one you touch. Reproduced on any problem with two or more
+alternatives, e.g. `#/p/graphs/island-count`.
+*Fixed:* one strip, at the head of the approaches section, listing only the languages some rung
+actually carries.
+
+**V3 — No way to navigate a four-screen ladder.** (`problem-detail.tsx`) Three rungs with full code
+blocks is roughly four screens of scroll with no index and no way back to the top of a rung.
+*Fixed:* a jump list of rung names beside the language strip, plain `#anchor` links to `id`s on the
+rungs. No JavaScript, and `scroll-mt-4` keeps the heading clear of the top edge.
+
+**V4 — The walkthrough player stole the arrow keys from the whole page.**
+(`step-player.tsx:78`, was a `window` listener) Pressing ← or → anywhere on a problem page moved the
+walkthrough, including while the focus was in the hint accordion; two players on one page would
+both answer every press; and the page also scrolled sideways because nothing called
+`preventDefault`. Reproduced by focusing a hint and pressing →.
+*Fixed:* the listener is on the card, which is now `tabIndex={0}` with a `role="group"` and a label
+saying the arrow keys step through it.
+
+**V5 — The copy button sat on top of the first line of code.** (`code-block.tsx`) The button is
+absolutely positioned at `top-2 right-2` over a `<pre>` with uniform `p-4`, so any first line long
+enough ran underneath it.
+*Fixed:* `pr-12` on the `<pre>`.
+
+**V6 — A refused clipboard write failed silently.** (`code-block.tsx`) `navigator.clipboard` is
+rejected outright in an insecure context or when the permission is denied, and the rejection was
+unhandled: the button simply did nothing, and said nothing.
+*Fixed:* caught, with an ✕ and a changed `aria-label` for a second and a half.
+
+## Filed, not fixed — outside the files this pass owned
+
+**V7 — The walkthrough of a tree, graph or linked-list problem is ASCII art in a `<pre>`.**
+`step-player.tsx` renders `frame.text` as a monospace block whenever a frame has no `cells`, which
+is 34 of the 87 problems — every graph, tree and linked-list problem in the set. Next to the chip
+grammar the array problems get, it reads as a placeholder. Reproduced at
+`#/p/graphs/island-count` (grid), `#/p/trees/max-depth` (tree), `#/p/linked-list/reverse-list`
+(list). This is already on the board as **B41** (grid / tree / list panel kinds) and is the single
+biggest visual gap left in the product; the `text` fallback should be deleted when B41 lands, not
+improved in place.
+
+**V8 — The approach ladder is presented as "worst to best" and is sometimes a tour instead.**
+`lib/ladder.ts` orders `alternatives` then the optimal, and labels the top rung "The one to
+remember". On `island-count` the rungs read BFS flood fill → Union-Find → DFS sink, and the prose
+between rungs two and three argues that Union-Find was *overkill* — so the middle rung is not a step
+up from the first, it is a detour. That is defensible content, but the numbering and the "worst to
+best" framing promise a monotone climb the data does not always make. Either the framing should
+soften where a rung is a generalisation rather than an improvement, or those rungs want a different
+label. Content decision, not a layout one — needs the author's call.
+
+**V9 — The step-player legend disappears below the `sm` breakpoint.** `step-player.tsx:105`
+(`hidden … sm:flex`). On a phone the four colours have no key at all, and colour is load-bearing in
+that grammar. The row genuinely does not fit; the fix is probably a single line of text under the
+stage rather than four swatches, but it is a design call.
+
+**V10 — `problem.brief` was being carried and never shown on the problem page.** Now shown under
+the title (this pass). Worth noting because the same is likely true elsewhere: `difficulty` was the
+subject of B40 for exactly this reason, and a sweep for other stored-but-unrendered fields would
+probably find more.

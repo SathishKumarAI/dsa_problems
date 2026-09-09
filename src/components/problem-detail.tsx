@@ -1,8 +1,14 @@
-// One problem's page: statement, constraints and examples, then progressive
-// hints, the walkthrough, and the approach ladder — every way in, worst to
-// best, each rung carrying the weakness in the one before it (R1). Tabs keep
-// spoilers behind a click; the primary action is solving it on LeetCode,
-// because this page explains and does not host an editor.
+// One problem's page, read top to bottom: statement, constraints and examples,
+// then the hint ladder, the walkthrough, and every approach worst → best, each
+// rung carrying the weakness in the one before it (R1). The primary action is
+// solving it on LeetCode, because this page explains and does not host an editor.
+//
+// It is NOT tabbed (B38). 42 of 87 problems have no journey, so tabs were doing
+// hiding that no ledger asked for — three sections behind clicks on a page whose
+// whole job is to explain. Where gating IS due it is already done by the ledger:
+// `ladderOf` caps the rungs a started journey has not earned, and MiniPlayer
+// caps the walkthrough the same way. Hints stay collapsed because that gate
+// belongs to the learner, not to the page.
 import { ArrowLeftIcon, ExternalLinkIcon, RouteIcon } from "lucide-react"
 import {
   Accordion,
@@ -14,13 +20,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import type { AnyJourney } from "@/engine"
 import { ladderOf, leetcodeUrl } from "@/lib/ladder"
+import type { Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href } from "@/lib/route"
 import { MiniPlayer } from "@/features/journey/mini-player"
@@ -41,39 +47,64 @@ const LANGS: { key: keyof Code; label: string }[] = [
   { key: "cpp", label: "C++" },
 ]
 
-// One approach: cost line, summary, code with a language strip. The language
-// is the same `codeTab` pref the journey uses (its "pseudo" maps to Python here).
-function SolutionBlock({ summary, code }: { summary: string; code: Code }) {
-  const { codeTab } = usePrefs()
-  const langs = LANGS.filter((l) => code[l.key])
-  const lang =
-    langs.find((l) => l.key === codeTab)?.key ?? ("python" as keyof Code)
+// A labelled band. The label states what the section holds and how much of it,
+// so the page advertises its own depth instead of making the reader click to
+// find out there was nothing there.
+function Section({
+  label,
+  count,
+  children,
+}: {
+  label: string
+  count?: string
+  children: React.ReactNode
+}) {
   return (
-    <div className="flex flex-col gap-4 pt-2">
-      <p className="max-w-[35em] text-body text-muted-foreground">{summary}</p>
-      {langs.length > 1 && (
-        <div className="flex gap-0.5" role="tablist" aria-label="language">
-          {langs.map((l) => (
-            <button
-              key={l.key}
-              role="tab"
-              aria-selected={l.key === lang}
-              onClick={() => setPref("codeTab", l.key)}
-              className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                l.key === lang
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {l.label}
-            </button>
-          ))}
-        </div>
-      )}
-      <CodeBlock code={code[lang] ?? code.python} />
+    <section className="flex flex-col gap-3">
+      <h2 className="flex items-baseline gap-2 text-meta tracking-wide text-muted-foreground uppercase">
+        {label}
+        {count && (
+          <span className="font-mono normal-case opacity-70">{count}</span>
+        )}
+      </h2>
+      {children}
+    </section>
+  )
+}
+
+// One language strip for the whole ladder. It was repeated per rung, and since
+// every copy wrote the same `codeTab` pref, three controls moved as one — which
+// reads as a bug whichever one you touch.
+function LanguageStrip({ langs }: { langs: (keyof Code)[] }) {
+  const { codeTab } = usePrefs()
+  if (langs.length < 2) return null
+  const lang = langs.includes(codeTab as keyof Code) ? codeTab : "python"
+  return (
+    <div className="flex gap-0.5" role="tablist" aria-label="language">
+      {LANGS.filter((l) => langs.includes(l.key)).map((l) => (
+        <button
+          key={l.key}
+          role="tab"
+          aria-selected={l.key === lang}
+          onClick={() => setPref("codeTab", l.key)}
+          className={cn(
+            "rounded-md px-2.5 py-1 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            l.key === lang
+              ? "bg-accent text-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {l.label}
+        </button>
+      ))}
     </div>
   )
+}
+
+function RungCode({ code }: { code: Code }) {
+  const { codeTab } = usePrefs()
+  const lang = (code[codeTab as keyof Code] ? codeTab : "python") as keyof Code
+  return <CodeBlock code={code[lang] ?? code.python} />
 }
 
 // The ladder. Rungs read worst → best; the "why now" line sits BETWEEN them,
@@ -90,50 +121,87 @@ function ApproachLadder({
     1
   )
   const { rungs, capped, hidden } = ladderOf(problem, journey, unlocked)
+  const langs = LANGS.map((l) => l.key).filter((k) =>
+    rungs.some((r) => r.code[k])
+  )
+  const id = (r: Rung) => `rung-${r.key.replace(/\W+/g, "-")}`
+
   return (
-    <div className="flex flex-col gap-6 pt-2" aria-label="approach ladder">
-      {rungs.map((r, i) => (
-        <div key={r.key} className="flex flex-col gap-3">
-          {r.whyNow && (
-            <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
-              {r.whyNow}
-            </p>
-          )}
-          <div className="flex flex-wrap items-baseline gap-x-3">
-            <span className="font-mono text-meta text-muted-foreground">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <b className="text-body">{r.name}</b>
-            <span className="font-mono text-xs text-muted-foreground">
-              {r.cost}
-            </span>
-          </div>
-          <SolutionBlock summary={r.idea} code={r.code} />
-        </div>
-      ))}
-      {capped && journey && (
-        <p className="text-ui text-muted-foreground">
-          {hidden} more {hidden === 1 ? "approach is" : "approaches are"} still
-          ahead of you.{" "}
-          <a
-            href={href(`/journey/${journey.slug}`)}
-            className="text-chart-1 underline-offset-2 hover:underline"
+    <Section
+      label="approaches"
+      count={`${rungs.length} ${rungs.length === 1 ? "way" : "ways"} in, worst to best`}
+    >
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <LanguageStrip langs={langs} />
+        {rungs.length > 1 && (
+          <nav
+            aria-label="jump to an approach"
+            className="flex flex-wrap gap-x-3 gap-y-1"
           >
-            Continue the journey ▸
-          </a>{" "}
-          — each one opens when the previous one runs out of road.
-        </p>
-      )}
-    </div>
+            {rungs.map((r, i) => (
+              <a
+                key={r.key}
+                href={`#${id(r)}`}
+                className="text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                <span className="font-mono">
+                  {String(i + 1).padStart(2, "0")}
+                </span>{" "}
+                {r.name}
+              </a>
+            ))}
+          </nav>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-6 pt-1" aria-label="approach ladder">
+        {rungs.map((r, i) => (
+          <div key={r.key} id={id(r)} className="flex scroll-mt-4 flex-col gap-3">
+            {r.whyNow && (
+              <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
+                {r.whyNow}
+              </p>
+            )}
+            <div className="flex flex-wrap items-baseline gap-x-3">
+              <span className="font-mono text-meta text-muted-foreground">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <b className="text-body">{r.name}</b>
+              <span className="font-mono text-meta text-muted-foreground">
+                {r.cost}
+              </span>
+            </div>
+            <p className="max-w-[35em] text-body text-muted-foreground">
+              {r.idea}
+            </p>
+            <RungCode code={r.code} />
+          </div>
+        ))}
+        {capped && journey && (
+          <p className="text-ui text-muted-foreground">
+            {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
+            still ahead of you.{" "}
+            <a
+              href={href(`/journey/${journey.slug}`)}
+              className="text-chart-1 underline-offset-2 hover:underline"
+            >
+              Continue the journey ▸
+            </a>{" "}
+            — each one opens when the previous one runs out of road.
+          </p>
+        )}
+      </div>
+    </Section>
   )
 }
 
 export function ProblemDetail({ problem, pattern, onBack }: Props) {
   const solved = useSolved()
   const journey = journeyForProblem(problem.id)
+  const steps = journey ? undefined : problem.walkthrough?.length
 
   return (
-    <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-reading flex-col gap-8">
       <div>
         <Button
           variant="ghost"
@@ -158,6 +226,9 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
             {problem.difficulty}
           </Badge>
         </div>
+        <p className="max-w-[35em] text-body text-muted-foreground">
+          {problem.brief}
+        </p>
         {/* the page explains; the learner writes and submits the code on
             LeetCode, so that is the primary action and there is no editor */}
         <div className="flex flex-wrap items-center gap-3">
@@ -171,7 +242,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
             <ExternalLinkIcon className="size-4" />
           </a>
         </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ui text-muted-foreground">
           <span className="font-mono">{pattern.glyph}</span>
           <span className="font-mono">time {problem.complexity.time}</span>
           <span className="font-mono">space {problem.complexity.space}</span>
@@ -203,7 +274,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         </a>
       )}
 
-      <section className="flex flex-col gap-4">
+      <Section label="the problem">
         <p className="max-w-[35em] text-body">{problem.statement}</p>
         {/* the promises the input makes — a corner case is trivia until a
             constraint makes it a decision (R2) */}
@@ -227,7 +298,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           {problem.examples.map((ex, i) => (
             <div
               key={i}
-              className="rounded-lg border bg-card p-3 font-mono text-sm"
+              className="overflow-x-auto rounded-lg border bg-card p-3 font-mono text-sm"
             >
               <div>
                 <span className="text-muted-foreground">in&nbsp;&nbsp;</span>
@@ -238,55 +309,49 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
                 {ex.output}
               </div>
               {ex.note && (
-                <div className="mt-1 text-xs text-muted-foreground">
+                <div className="mt-1 text-meta text-muted-foreground">
                   {ex.note}
                 </div>
               )}
             </div>
           ))}
         </div>
-      </section>
+      </Section>
 
-      <Tabs defaultValue="hints">
-        <TabsList>
-          <TabsTrigger value="hints">Hints</TabsTrigger>
-          {(journey || problem.walkthrough) && (
-            <TabsTrigger value="walkthrough">Walkthrough</TabsTrigger>
+      <Section
+        label="hints"
+        count={`${problem.hints.length}, each one further in`}
+      >
+        <Accordion multiple={false} className="w-full">
+          {problem.hints.map((hint, i) => (
+            <AccordionItem key={i} value={`hint-${i}`}>
+              <AccordionTrigger className="font-mono text-sm">
+                hint {i + 1} of {problem.hints.length}
+              </AccordionTrigger>
+              <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
+                {hint}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </Section>
+
+      {(journey || problem.walkthrough) && (
+        <Section
+          label="walkthrough"
+          count={steps ? `${steps} steps` : "from the journey, as far as you have earned"}
+        >
+          {/* one source of truth: a problem with a journey draws the
+              journey's own frames, not a second hand-written copy (B1) */}
+          {journey ? (
+            <MiniPlayer journey={journey} />
+          ) : (
+            <StepPlayer frames={problem.walkthrough!} />
           )}
-          <TabsTrigger value="solution">Approaches</TabsTrigger>
-        </TabsList>
+        </Section>
+      )}
 
-        <TabsContent value="hints">
-          <Accordion multiple={false} className="w-full">
-            {problem.hints.map((hint, i) => (
-              <AccordionItem key={i} value={`hint-${i}`}>
-                <AccordionTrigger className="font-mono text-sm">
-                  hint {i + 1} of {problem.hints.length}
-                </AccordionTrigger>
-                <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
-                  {hint}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </TabsContent>
-
-        {(journey || problem.walkthrough) && (
-          <TabsContent value="walkthrough">
-            {/* one source of truth: a problem with a journey draws the
-                journey's own frames, not a second hand-written copy (B1) */}
-            {journey ? (
-              <MiniPlayer journey={journey} />
-            ) : (
-              <StepPlayer frames={problem.walkthrough!} />
-            )}
-          </TabsContent>
-        )}
-
-        <TabsContent value="solution">
-          <ApproachLadder problem={problem} journey={journey} />
-        </TabsContent>
-      </Tabs>
+      <ApproachLadder problem={problem} journey={journey} />
     </div>
   )
 }
