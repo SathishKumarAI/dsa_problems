@@ -111,52 +111,6 @@ export const problem: Problem = {
     }
     return agree == 26;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["e", "i", "d", "b", "a", "o", "o", "o"] },
-      caption:
-        's1 = "ab", so the window is exactly 2 wide. It never changes size.',
-    },
-    {
-      cells: {
-        values: ["e", "i", "d", "b", "a", "o", "o", "o"],
-        marks: { 0: "window", 1: "window" },
-      },
-      caption: '"ei" — neither letter is needed. Not all 26 counts agree.',
-    },
-    {
-      cells: {
-        values: ["e", "i", "d", "b", "a", "o", "o", "o"],
-        marks: { 1: "window", 2: "window" },
-      },
-      caption:
-        '"id": d entered, e left. Only those two counts were touched — the other 24 were not re-read.',
-    },
-    {
-      cells: {
-        values: ["e", "i", "d", "b", "a", "o", "o", "o"],
-        marks: { 2: "window", 3: "window" },
-      },
-      caption: '"db": b now matches its needed count, so agreement rises.',
-    },
-    {
-      cells: {
-        values: ["e", "i", "d", "b", "a", "o", "o", "o"],
-        marks: { 3: "focus", 4: "focus" },
-        labels: { 3: "L", 4: "R" },
-      },
-      caption:
-        '"ba": a enters and d leaves; now all 26 counts agree → true. Contiguous, which is the whole point.',
-    },
-    {
-      cells: {
-        values: ["e", "i", "d", "b", "a", "o", "o", "o"],
-        marks: { 3: "done", 4: "done" },
-      },
-      caption:
-        'Compare with "eidboaoo": the same letters exist but never sit side by side, so no window ever agrees.',
-    },
-  ],
   alternatives: [
     {
       name: "Sort every window",

@@ -85,6 +85,11 @@ import {
   isomorphicStrings,
 } from "./isomorphic-strings.ts"
 import { groupAnagrams, grouped } from "./group-anagrams.ts"
+import { hidesPermutation, permutationInString } from "./permutation-in-string.ts"
+import { evalRpn, rpnEval } from "./rpn-eval.ts"
+import { byFrequency, sortByFrequency } from "./sort-by-frequency.ts"
+import { climbWays, stairWays } from "./stair-ways.ts"
+import { bitCounts, countingBits } from "./counting-bits.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -1094,6 +1099,62 @@ const TABLE: {
         Array.from({ length: rand(4) }, () => "abc"[rand(3)]).join("")
       ),
     }),
+  },
+  {
+    journey: permutationInString as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => hidesPermutation(d.nums as string[]),
+    input: (rand) => ({
+      nums: [
+        Array.from({ length: 1 + rand(3) }, () => "ab"[rand(2)]).join(""),
+        Array.from({ length: 1 + rand(7) }, () => "abc"[rand(3)]).join(""),
+      ],
+    }),
+  },
+  {
+    journey: rpnEval as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => evalRpn(d.nums as string[]),
+    // build a valid expression by construction: start with a number, then
+    // either push another number or apply an operator when two are waiting
+    input: (rand) => {
+      const out: string[] = [String(rand(9) - 4)]
+      let depth = 1
+      for (let i = 0; i < 2 + rand(6); i++) {
+        if (depth >= 2 && rand(2)) {
+          out.push(["+", "-", "*"][rand(3)])
+          depth--
+        } else {
+          out.push(String(rand(9) - 4))
+          depth++
+        }
+      }
+      while (depth > 1) {
+        out.push(["+", "-", "*"][rand(3)])
+        depth--
+      }
+      return { nums: out }
+    },
+  },
+  {
+    journey: sortByFrequency as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => byFrequency(d.nums as string[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => "abc"[rand(3)]),
+    }),
+  },
+  {
+    journey: stairWays as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => climbWays(d.nums as number[]),
+    input: (rand) => ({ nums: [1 + rand(9)] }),
+  },
+  {
+    journey: countingBits as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => bitCounts(d.nums as number[]),
+    input: (rand) => ({ nums: [rand(13)] }),
   },
   {
     journey: maxDepth as unknown as AnyJourney,

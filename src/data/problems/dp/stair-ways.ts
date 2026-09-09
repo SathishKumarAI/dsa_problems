@@ -50,39 +50,6 @@ export const problem: Problem = {
     return b;
 }
 `,
-  walkthrough: [
-    {
-      cells: { values: [1, 1, "?", "?", "?"], labels: { 0: "w0", 1: "w1" } },
-      caption:
-        "Base cases: one way to stand at the bottom, one way to reach step 1.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, "?", "?"],
-        marks: { 0: "compare", 1: "compare", 2: "focus" },
-      },
-      caption: "ways(2) = ways(1) + ways(0) = 2.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 3, "?"],
-        marks: { 1: "compare", 2: "compare", 3: "focus" },
-      },
-      caption: "ways(3) = 2 + 1 = 3.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 3, 5],
-        marks: { 2: "compare", 3: "compare", 4: "focus" },
-      },
-      caption:
-        "ways(4) = 3 + 2 = 5. Each cell computed once from its two predecessors.",
-    },
-    {
-      cells: { values: [1, 1, 2, 3, 5], marks: { 4: "done" } },
-      caption: "Answer 5 — matches the enumeration 1111, 112, 121, 211, 22.",
-    },
-  ],
   alternatives: [
     {
       name: "Naive recursion",

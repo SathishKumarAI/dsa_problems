@@ -474,6 +474,11 @@ sitting on top of prose that already says which it is.
 that grammar. The row genuinely does not fit; the fix is probably a single line of text under the
 stage rather than four swatches, but it is a design call.
 
+**Superseded 2026-09-09** — the fix stands, and nothing renders it any more: all 87 problems have
+a journey, so the problem page always draws the engine stage and `step-player.tsx` is unreachable
+(B61). The `test:ui` check that measured the legend has been replaced by one that pins the new fact
+and fails the moment a problem is added without a journey.
+
 **Fixed 2026-09-09** — it wraps instead of disappearing. The chrome bar is `flex-wrap`, the legend
 `flex-wrap`, so at 390px the four swatches take a second line inside the same bar; no second
 rendering to keep in step, and nothing is hidden. Measured at 390×844 on

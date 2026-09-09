@@ -52,46 +52,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [0], labels: { 0: "n = 5" } },
-      caption:
-        "best[0] = 0. Zero has no set bits, and everything else builds on it.",
-    },
-    {
-      cells: { values: [0, 1], marks: { 1: "focus" } },
-      caption: "1 is binary 1. 1 >> 1 = 0 → best[0] + 1 = 1.",
-    },
-    {
-      cells: { values: [0, 1, 1], marks: { 1: "compare", 2: "focus" } },
-      caption:
-        "2 is 10. 2 >> 1 = 1 → best[1] + 0 = 1. The lowest bit was clear.",
-    },
-    {
-      cells: { values: [0, 1, 1, 2], marks: { 1: "compare", 3: "focus" } },
-      caption: "3 is 11. 3 >> 1 = 1 → best[1] + 1 = 2.",
-    },
-    {
-      cells: { values: [0, 1, 1, 2, 1], marks: { 2: "compare", 4: "focus" } },
-      caption:
-        "4 is 100. 4 >> 1 = 2 → best[2] + 0 = 1. A power of two drops straight back to one bit.",
-    },
-    {
-      cells: {
-        values: [0, 1, 1, 2, 1, 2],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-        },
-      },
-      caption:
-        "5 is 101 → best[2] + 1 = 2. Every entry read exactly one earlier entry, already written.",
-    },
-  ],
   alternatives: [
     {
       name: "Count each number's bits",

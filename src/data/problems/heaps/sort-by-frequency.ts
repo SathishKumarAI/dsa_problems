@@ -79,34 +79,6 @@ def frequency_sort(s: str) -> str:
     }
     return out;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["t", "r", "e", "e"] },
-      caption: 's = "tree". First count: t:1, r:1, e:2.',
-    },
-    {
-      cells: { values: ["e", "e"], marks: { 0: "focus", 1: "focus" } },
-      caption: "The heap's top is the highest count — e, twice.",
-    },
-    {
-      cells: { values: ["e", "e", "r"], marks: { 2: "focus" } },
-      caption:
-        "Then the tie between r and t, broken by the character: r first.",
-    },
-    {
-      cells: { values: ["e", "e", "r", "t"], marks: { 3: "focus" } },
-      caption:
-        "Then t. The tie-break is what makes this the only correct answer.",
-    },
-    {
-      cells: {
-        values: ["e", "e", "r", "t"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
-      },
-      caption:
-        '"eert". Without a stated tie-break, "eetr" would look equally right.',
-    },
-  ],
   alternatives: [
     {
       name: "Sort the counted pairs",
