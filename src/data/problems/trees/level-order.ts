@@ -87,24 +87,6 @@ def level_order(root) -> list[list[int]]:
     return out;
 }
 `,
-  walkthrough: [
-    {
-      text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7\n\nqueue: [3]",
-      caption: "Seed the queue with the root.",
-    },
-    {
-      text: "len(queue) = 1 — pop 1 node\n\nvisit 3, push 9, 20\nout: [[3]]\nqueue: [9, 20]",
-      caption: "Round 1: the snapshot (1) bounds the level.",
-    },
-    {
-      text: "len(queue) = 2 — pop 2 nodes\n\nvisit 9 (no children), visit 20, push 15, 7\nout: [[3], [9, 20]]\nqueue: [15, 7]",
-      caption: "Round 2: children pushed now belong to the NEXT round.",
-    },
-    {
-      text: "len(queue) = 2 — pop 2 nodes\n\nvisit 15, visit 7\nout: [[3], [9, 20], [15, 7]]\nqueue: []",
-      caption: "Round 3: queue drains — done.",
-    },
-  ],
   alternatives: [
     {
       name: "DFS with depth",

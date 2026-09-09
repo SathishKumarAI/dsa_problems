@@ -62,28 +62,6 @@ export const problem: Problem = {
     return dummy->next;
 }
 `,
-  walkthrough: [
-    {
-      text: "a: 1 → 3 → 5\nb: 2 → 4\n\nout: [dummy] →",
-      caption: "Dummy head avoids special-casing the first splice.",
-    },
-    {
-      text: "1 ≤ 2 — take 1 from a\n\na: 3 → 5\nb: 2 → 4\nout: [dummy] → 1",
-      caption: "Compare fronts, splice the smaller.",
-    },
-    {
-      text: "2 < 3 — take 2 from b\n\na: 3 → 5\nb: 4\nout: [dummy] → 1 → 2",
-      caption: "Tail always points at the last spliced node.",
-    },
-    {
-      text: "3 ≤ 4 — take 3        4 < 5 — take 4\n\na: 5\nb: ∅\nout: [dummy] → 1 → 2 → 3 → 4",
-      caption: "b just emptied.",
-    },
-    {
-      text: "attach remainder of a in one step\n\nout: [dummy] → 1 → 2 → 3 → 4 → 5\nreturn dummy.next",
-      caption: "The leftover list is already sorted — no loop needed.",
-    },
-  ],
   alternatives: [
     {
       name: "Collect and sort",

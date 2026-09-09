@@ -9,19 +9,10 @@
 
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
-import type { ChipRole } from "../../engine/types.ts"
 import { problem } from "../problems/trees/max-depth.ts"
+import { GAP, asSlots, marksOf, present, wellFormed } from "./tree-slots.ts"
 
 type T = Data<string>
-
-const GAP = "."
-
-export const present = (slots: string[], i: number) =>
-  i < slots.length && slots[i] !== GAP
-
-/** Level-order tokens → the slot array the tree view draws. */
-const asSlots = (nums: string[]) =>
-  nums.map((v) => (v === GAP ? null : (Number(v) as number | string)))
 
 export function depthOfTree(nums: string[]) {
   const walk = (i: number): number =>
@@ -49,15 +40,6 @@ function depthFrom(nums: string[], i: number): number {
   return present(nums, i)
     ? 1 + Math.max(depthFrom(nums, 2 * i + 1), depthFrom(nums, 2 * i + 2))
     : 0
-}
-
-const marksOf = (pick: (i: number) => ChipRole | undefined, n: number) => {
-  const marks: Record<number, ChipRole> = {}
-  for (let i = 0; i < n; i++) {
-    const r = pick(i)
-    if (r) marks[i] = r
-  }
-  return marks
 }
 
 function* story({ nums }: T): Generator<DFrame> {
@@ -91,9 +73,8 @@ function* story({ nums }: T): Generator<DFrame> {
     tree: {
       slots: asSlots(nums),
       label: `depth ${answer}`,
-      marks: marksOf(
-        (i) => (path.includes(i) ? "answer" : undefined),
-        nums.length
+      marks: marksOf(nums.length, (i) =>
+        path.includes(i) ? "answer" : undefined
       ),
     },
     state: [{ label: "depth", value: answer }],
@@ -131,10 +112,8 @@ function* bfs({ nums }: T): Generator<DFrame> {
       tree: {
         slots: asSlots(nums),
         label: `level ${depth}`,
-        marks: marksOf(
-          (i) =>
-            level.includes(i) ? "focus" : present(nums, i) ? "dim" : undefined,
-          nums.length
+        marks: marksOf(nums.length, (i) =>
+          level.includes(i) ? "focus" : present(nums, i) ? "dim" : undefined
         ),
       },
       state: [
@@ -169,14 +148,12 @@ function* dfsStack({ nums }: T): Generator<DFrame> {
       tree: {
         slots: asSlots(nums),
         label: record ? `deepest so far: ${best}` : `depth ${best}`,
-        marks: marksOf(
-          (k) =>
-            k === i
-              ? "focus"
-              : stack.some(([s]) => s === k)
-                ? "anchor"
-                : undefined,
-          nums.length
+        marks: marksOf(nums.length, (k) =>
+          k === i
+            ? "focus"
+            : stack.some(([s]) => s === k)
+              ? "anchor"
+              : undefined
         ),
       },
       state: [
@@ -206,9 +183,8 @@ function* recurse({ nums }: T): Generator<DFrame> {
         tree: {
           slots: asSlots(nums),
           label: "the base case",
-          marks: marksOf(
-            (k) => (k === Math.floor((i - 1) / 2) ? "anchor" : undefined),
-            nums.length
+          marks: marksOf(nums.length, (k) =>
+            k === Math.floor((i - 1) / 2) ? "anchor" : undefined
           ),
         },
         state: [{ label: "returns", value: 0 }],
@@ -225,7 +201,7 @@ function* recurse({ nums }: T): Generator<DFrame> {
       tree: {
         slots: asSlots(nums),
         label: `depth below ${nums[i]}`,
-        marks: marksOf((k) => (k === i ? "answer" : undefined), nums.length),
+        marks: marksOf(nums.length, (k) => (k === i ? "answer" : undefined)),
       },
       state: [
         { label: "left · right", value: `${l} · ${r}` },
@@ -246,14 +222,6 @@ function* recurse({ nums }: T): Generator<DFrame> {
     ],
     note: `${answer}, in three lines. No queue and no stack of pairs — the call stack already holds one path with its depth, which is exactly what both iterative versions were building by hand. The price is real: it went ${deepest} frames deep, and on a chain of 10,000 nodes that is where it stops working.`,
   }
-}
-
-const wellFormed = (nums: string[]) => {
-  if (!nums.every((v) => v === GAP || Number.isInteger(Number(v)))) return false
-  // a node cannot hang off an absent parent
-  for (let i = 1; i < nums.length; i++)
-    if (nums[i] !== GAP && nums[Math.floor((i - 1) / 2)] === GAP) return false
-  return true
 }
 
 export const maxDepth = deriveJourney<string>(problem, {

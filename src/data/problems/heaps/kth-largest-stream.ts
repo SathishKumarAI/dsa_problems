@@ -81,24 +81,6 @@ public:
         return heap.top();
     }
 };`,
-  walkthrough: [
-    {
-      text: "k = 3, start = [4, 5, 8, 2]\n\nheapify → pop smallest until size 3\nmin-heap: [4, 5, 8]   root = 4",
-      caption: "Keep only the 3 largest. Root = 3rd largest = 4.",
-    },
-    {
-      text: "add(3):  push → [3, 4, 5, 8]\n         size 4 > 3 → pop 3\n\nmin-heap: [4, 5, 8]   root = 4",
-      caption: "3 can't be in the top three — evicted immediately.",
-    },
-    {
-      text: "add(5):  push → [4, 5, 5, 8]\n         pop 4\n\nmin-heap: [5, 5, 8]   root = 5",
-      caption: "New 5 pushes old 4 out of the top three.",
-    },
-    {
-      text: "add(10): push → [5, 5, 8, 10]\n         pop 5\n\nmin-heap: [5, 8, 10]  root = 5",
-      caption: "Top three are 10, 8, 5 — root answers in O(1).",
-    },
-  ],
   alternatives: [
     {
       name: "Sort per add",

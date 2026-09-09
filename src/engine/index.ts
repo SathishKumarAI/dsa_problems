@@ -47,7 +47,12 @@ import { maxOnesAfterFlips } from "../data/journeys/max-ones-after-flips.ts"
 import { minSubarraySum } from "../data/journeys/min-subarray-sum.ts"
 import { removeDuplicatesSorted } from "../data/journeys/remove-duplicates-sorted.ts"
 import { singleInSorted } from "../data/journeys/single-in-sorted.ts"
+import { cycleDetect } from "../data/journeys/cycle-detect.ts"
+import { kthLargestStream } from "../data/journeys/kth-largest-stream.ts"
+import { levelOrder } from "../data/journeys/level-order.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
+import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
+import { validateBst } from "../data/journeys/validate-bst.ts"
 import { maxSubarray } from "../data/journeys/max-subarray.ts"
 import type { AnyJourney } from "./types.ts"
 
@@ -98,7 +103,12 @@ export const JOURNEYS: AnyJourney[] = [
   removeKDigits as unknown as AnyJourney,
   minCostStairs as unknown as AnyJourney,
   islandCountJourney as unknown as AnyJourney,
+  cycleDetect as unknown as AnyJourney,
+  kthLargestStream as unknown as AnyJourney,
+  levelOrder as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
+  mergeTwoSorted as unknown as AnyJourney,
+  validateBst as unknown as AnyJourney,
   reverseList as unknown as AnyJourney,
 ]
 

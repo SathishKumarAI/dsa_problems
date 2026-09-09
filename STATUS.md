@@ -13,14 +13,13 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#61. Nothing is open. The last four PRs were the UI
-audit (#57), the journeys disclosure (#58), the tree/list panels plus the top bar (#59) and the
-last three audit findings (#61).
+`master` is clean and holds everything: #49–#62. Nothing is open. The last of them is **batch 5**
+(#62) — the first five journeys for tree- and list-shaped problems.
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **370 tests** |
-| The interface, in a real browser | `npm run test:ui` | **90 checks**, 0 failed |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **405 tests** |
+| The interface, in a real browser | `npm run test:ui` | **95 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **366 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **1452 comparisons**, 0 disagreed |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
@@ -46,21 +45,24 @@ last three audit findings (#61).
 
 ## The next action
 
-**Every open item is content, not a fix.** The audit is closed: B41, B44, B55 and the 34-line spec
-checklist are done, and B54 turned out to be blocked on content once measured (below).
+**Batch 5 shipped five of the 31 tree/list/graph journeys.** Carry on with the same pool, in the
+same shape — each journey deletes its problem's ASCII walkthrough on the way in, because
+`problems.test.ts` refuses to let a journey and a hand-written walkthrough coexist.
 
-1. **The 33 tree / list / graph problems** — the large remaining pool, unblocked by B41.
-   `max-depth` and `reverse-list` are the templates to copy.
-2. **B51** — six array-shaped problems still unwritten: valid-anagram, group-anagrams,
-   isomorphic-strings, permutation-in-string, rpn-eval, sort-by-frequency.
-3. **B54 is NOT the cheap deletion it looked like.** Measured 2026-09-09: **31 problems still carry
-   `text` frames and none of them has a journey**, and every problem without a journey has a
-   walkthrough (39 = 31 text + 8 cells). Deleting the fallback today strips the only visualisation
-   those 31 pages have. It goes when they get journeys — which is item 1.
-4. **B52** — `stair-ways` and `counting-bits` take a single number, not a row. The stage has no
-   shape for "a table being filled" yet.
-5. **B53** — the set holds 87 problems, so **a hundred journeys needs 13 new problems first**.
-   Roughly 3× the cost of a journey each. Only worth starting once the 87 all have one.
+1. **B56, the rest of batch 5's pool.** 15 problems are three-language and unblocked right now:
+   top-k-frequent, min-cover-substring, balanced-brackets, generate-parens, koko-bananas,
+   k-closest-points, task-cooldown, course-order, rotting-fruit, max-island-area, word-search,
+   count-provinces, network-delay, longest-common-subsequence, partition-equal-subset.
+   The templates: `cycle-detect` (list, back-edge), `level-order` / `validate-bst` (tree),
+   `kth-largest-stream` (heap on the tree view), `merge-two-sorted` (two structures in one row).
+2. **A translation pass** for the 11 that are Python-only — middle-of-list, palindrome-list,
+   remove-nth-from-end, same-tree, invert-tree, balanced-tree, bst-ancestor, kth-smallest-matrix,
+   surrounded-regions, unique-paths, word-break — which is what blocks a journey on each of them
+   (`problems.test.ts`). Same shape as B50.
+3. **B51** — six array-shaped problems still unwritten.
+4. **B54 pays itself off** as those land: 26 ASCII walkthroughs left, down from 31.
+5. **B52** — `stair-ways` and `counting-bits` take a single number, not a row.
+6. **B53** — a hundred journeys needs 13 new problems first.
 
 ## Traps this session added to the list
 
@@ -99,10 +101,10 @@ checklist are done, and B54 turned out to be blocked on content once measured (b
 
 ## What is on screen
 
-48 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
+53 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
 sorting/search/graph visualizer, SQL drills and stats flashcards. The shell has collapsible rails,
 a settings dialog and a keyboard map. The pattern list filters and searches, difficulty is visible,
-the sidebar and home lead with what is in play rather than all 48 journeys, the problem page is
+the sidebar and home lead with what is in play rather than all 53 journeys, the problem page is
 stacked sections rather than tabs, and the journey page has a clickable trace, a chip row, a grid, a
-tree and a list. The journey top bar is one row and carries the transport at its right, so play and
+tree (used by both trees and heaps) and a list (with a back-edge when it loops). The journey top bar is one row and carries the transport at its right, so play and
 the scrubber are in view however far either column is scrolled.

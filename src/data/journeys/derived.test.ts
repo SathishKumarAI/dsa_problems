@@ -42,7 +42,12 @@ import { lastStone, lastStoneWeight } from "./last-stone-weight.ts"
 import { longestCommonPrefix, sharedPrefix } from "./longest-common-prefix.ts"
 import { majorityElement, majorityOf } from "./majority-element.ts"
 import { longestAfterFlips, maxOnesAfterFlips } from "./max-ones-after-flips.ts"
+import { cycleDetect, loops } from "./cycle-detect.ts"
+import { kthLargestOf, kthLargestStream } from "./kth-largest-stream.ts"
+import { levelOrder, levelValues } from "./level-order.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
+import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
+import { isBst, validateBst } from "./validate-bst.ts"
 import { maxSubarray } from "./max-subarray.ts"
 import { minSubarraySum, shortestReaching } from "./min-subarray-sum.ts"
 import {
@@ -580,6 +585,46 @@ const TABLE: {
     },
   },
   {
+    journey: cycleDetect as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => loops(d.nums as number[], d.cycle as number),
+    // the tail points at a real index or nowhere; -1 is a list that ends
+    input: (rand) => {
+      const n = rand(7)
+      return {
+        nums: Array.from({ length: n }, () => rand(9) - 4),
+        cycle: n && rand(2) ? rand(n) : -1,
+      }
+    },
+  },
+  {
+    journey: kthLargestStream as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => kthLargestOf(d.nums as number[], d.k as number),
+    // k must be legal against the stream it arrives with
+    input: (rand) => {
+      const n = 1 + rand(10)
+      return {
+        nums: Array.from({ length: n }, () => rand(15) - 5),
+        k: 1 + rand(n),
+      }
+    },
+  },
+  {
+    journey: levelOrder as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => levelValues(d.nums as string[]),
+    input: (rand) => {
+      const n = 1 + rand(15)
+      const nums: string[] = []
+      for (let i = 0; i < n; i++) {
+        const parentAlive = i === 0 || nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(4) ? String(rand(9)) : ".")
+      }
+      return { nums }
+    },
+  },
+  {
     journey: maxDepth as unknown as AnyJourney,
     skip: ["story"],
     reference: (d) => depthOfTree(d.nums as string[]),
@@ -593,6 +638,41 @@ const TABLE: {
         nums.push(parentAlive && rand(4) ? String(rand(9)) : ".")
       }
       return { nums }
+    },
+  },
+  {
+    journey: validateBst as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isBst(d.nums as string[]),
+    // a non-empty tree, values narrow enough that random trees are sometimes
+    // valid and sometimes not — a generator that never produces a BST proves
+    // only that the rungs agree on rejecting
+    input: (rand) => {
+      const n = 1 + rand(12)
+      const nums: string[] = ["" + (3 + rand(6))]
+      for (let i = 1; i < n; i++) {
+        const parentAlive = nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(4) ? String(rand(12)) : ".")
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: mergeTwoSorted as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => merged(d.nums as string[]),
+    // two ascending lists with a single bar between them; either may be empty
+    input: (rand) => {
+      const run = () => {
+        const xs: string[] = []
+        let v = rand(9) - 4
+        for (let i = rand(5); i > 0; i--) {
+          xs.push(String(v))
+          v += rand(4)
+        }
+        return xs
+      }
+      return { nums: [...run(), "|", ...run()] }
     },
   },
   {
