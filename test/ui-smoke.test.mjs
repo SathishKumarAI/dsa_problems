@@ -307,6 +307,69 @@ describe(
     // cost the stage 862px → 574px at 1536px — a third of its width, to show a
     // short list of preset names. The stage is the product and the drawer is a
     // control, so the control floats now and the stage keeps its width.
+    // B19. Restart is one click and it re-locks every act. Rather than a
+    // confirm dialog in front of every restart, the ledger it destroyed is
+    // held for five seconds and offered back.
+    test("restart can be undone, and the ledger comes back exactly (B19)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.clear();
+        localStorage.setItem('dsa:unlocked:two-sum', '4');
+        localStorage.setItem('dsa:quizzes:two-sum', JSON.stringify(['story']));
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/journey/two-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const banner = () => document.querySelector('[aria-label="restart undo"]');
+        const before = localStorage.getItem('dsa:unlocked:two-sum');
+        document.querySelector('[aria-label="restart journey"]').click();
+        await wait(400);
+        const afterRestart = localStorage.getItem('dsa:unlocked:two-sum');
+        const offered = !!banner();
+        [...banner().querySelectorAll('button')]
+          .find(b => /^undo$/i.test(b.textContent.trim())).click();
+        await wait(400);
+        return {
+          before, afterRestart, offered,
+          restored: localStorage.getItem('dsa:unlocked:two-sum'),
+          quizzes: localStorage.getItem('dsa:quizzes:two-sum'),
+          gone: !banner(),
+        };
+      `)
+      assert.equal(out.before, "4")
+      assert.equal(out.afterRestart, "1", "restart did not re-lock the acts")
+      assert.equal(out.offered, true, "no undo was offered")
+      assert.equal(out.restored, "4", "undo did not put the ledger back")
+      assert.equal(out.quizzes, '["story"]', "the quiz record was not restored")
+      assert.equal(out.gone, true, "the banner stayed after undo")
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("the undo window closes on its own, and restart is then final (B19)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.setItem('dsa:unlocked:two-sum', '4');
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/journey/two-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const banner = () => document.querySelector('[aria-label="restart undo"]');
+        document.querySelector('[aria-label="restart journey"]').click();
+        await wait(400);
+        const offered = !!banner();
+        await wait(5200);
+        return { offered, gone: !banner(),
+                 unlocked: localStorage.getItem('dsa:unlocked:two-sum') };
+      `)
+      assert.equal(out.offered, true, "no undo was offered")
+      assert.equal(out.gone, true, "the undo window never closed")
+      assert.equal(out.unlocked, "1", "the restart did not stick")
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+    })
+
     // B45. The catalogue has masked a pattern name under an active promise
     // since B8; the problem page named it twice anyway — in the back link and
     // in the glyph strip. Measured 2026-09-09: sorted-pair-sum and

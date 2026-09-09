@@ -35,6 +35,8 @@ import type { ChartRow } from "./steps-chart"
 import { delayFor, usePlayer } from "./use-player"
 
 const IDLE_MS = 45000
+// how long a destroyed ledger is held before restart becomes final (B19)
+const UNDO_MS = 5000
 
 export function useJourney(journey: AnyJourney) {
   const route = useRoute()
@@ -136,6 +138,15 @@ export function useJourney(journey: AnyJourney) {
     label: string
     preset: string
   } | null>(null)
+  // B19. Restart is one click and it re-locks every act. A confirm dialog in
+  // front of it would tax the 99 clicks that meant it to protect the one that
+  // did not, so the click goes through and the ledger it destroyed is held for
+  // five seconds instead.
+  const [undo, setUndo] = useState<{
+    unlocked: number
+    quizzes: string[]
+    act: string
+  } | null>(null)
   const [hintTier, setHintTier] = useState(0)
   const [hintsOffered, setHintsOffered] = useState(false)
   const [quizWrongs, setQuizWrongs] = useState(0)
@@ -203,6 +214,13 @@ export function useJourney(journey: AnyJourney) {
     const t = setTimeout(() => setHintsOffered(true), IDLE_MS)
     return () => clearTimeout(t)
   }, [player.pos, actKey])
+
+  // ---- the undo window closes on its own ----
+  useEffect(() => {
+    if (!undo) return
+    const t = setTimeout(() => setUndo(null), UNDO_MS)
+    return () => clearTimeout(t)
+  }, [undo])
 
   // ---- act switching ----
   const setAct = useCallback((key: string) => {
@@ -409,11 +427,28 @@ export function useJourney(journey: AnyJourney) {
     speed: prefs.speed,
     setSpeed: (v: number) => setPref("speed", v),
     restart: () => {
+      setUndo({
+        unlocked: getStored<number>(K.unlocked(slug), 1),
+        quizzes: getStored<string[]>(K.quizzes(slug), []),
+        act: actKey,
+      })
       setStored(K.unlocked(slug), 1)
       setStored(K.quizzes(slug), [])
       setDone(new Set())
       setAct(journey.acts[0].key)
     },
+    /** null once the window has closed; the banner reads this to decide
+     *  whether it is on screen at all */
+    undoRestart: undo
+      ? () => {
+          setStored(K.unlocked(slug), undo.unlocked)
+          setStored(K.quizzes(slug), undo.quizzes)
+          setDone(new Set(undo.quizzes))
+          setAct(undo.act)
+          setUndo(null)
+        }
+      : null,
+    dismissUndo: () => setUndo(null),
     solvedBefore: getStored<number>(K.unlocked(slug), 1) >= journey.acts.length,
   }
 }
