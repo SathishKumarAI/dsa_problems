@@ -43,6 +43,31 @@ def kth_smallest(matrix: list[list[int]], k: int) -> int:
         if c + 1 < len(matrix[r]):
             heapq.heappush(heap, (matrix[r][c + 1], r, c + 1))
     return value`,
+  java: `public int kthSmallest(int[][] matrix, int k) {
+    PriorityQueue<int[]> heap = new PriorityQueue<>((a, b) -> a[0] - b[0]);
+    for (int r = 0; r < matrix.length; r++) heap.add(new int[]{matrix[r][0], r, 0});
+    int value = 0;
+    for (int i = 0; i < k; i++) {
+        int[] top = heap.poll();
+        value = top[0];
+        int r = top[1], c = top[2];
+        if (c + 1 < matrix[r].length) heap.add(new int[]{matrix[r][c + 1], r, c + 1});
+    }
+    return value;
+}`,
+  cpp: `int kthSmallest(const vector<vector<int>>& matrix, int k) {
+    priority_queue<vector<int>, vector<vector<int>>, greater<vector<int>>> heap;
+    for (int r = 0; r < (int)matrix.size(); r++) heap.push({matrix[r][0], r, 0});
+    int value = 0;
+    for (int i = 0; i < k; i++) {
+        vector<int> top = heap.top();
+        heap.pop();
+        value = top[0];
+        int r = top[1], c = top[2];
+        if (c + 1 < (int)matrix[r].size()) heap.push({matrix[r][c + 1], r, c + 1});
+    }
+    return value;
+}`,
   walkthrough: [
     {
       text: ` 1   5   9
@@ -88,6 +113,20 @@ heap: 10, 12`,
             values.append(x)
     values.sort()
     return values[k - 1]`,
+      java: `public int kthSmallest(int[][] matrix, int k) {
+    List<Integer> values = new ArrayList<>();
+    for (int[] row : matrix)
+        for (int x : row) values.add(x);
+    Collections.sort(values);
+    return values.get(k - 1);
+}`,
+      cpp: `int kthSmallest(const vector<vector<int>>& matrix, int k) {
+    vector<int> values;
+    for (const auto& row : matrix)
+        for (int x : row) values.push_back(x);
+    sort(values.begin(), values.end());
+    return values[k - 1];
+}`,
     },
   ],
 }

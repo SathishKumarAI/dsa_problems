@@ -50,6 +50,30 @@ def remove_nth_from_end(head: ListNode | None, n: int) -> ListNode | None:
         follower = follower.next
     follower.next = follower.next.next
     return dummy.next`,
+  java: `public ListNode removeNthFromEnd(ListNode head, int n) {
+    ListNode dummy = new ListNode(0, head);
+    ListNode leader = dummy;
+    ListNode follower = dummy;
+    for (int i = 0; i < n; i++) leader = leader.next;
+    while (leader.next != null) {
+        leader = leader.next;
+        follower = follower.next;
+    }
+    follower.next = follower.next.next;
+    return dummy.next;
+}`,
+  cpp: `ListNode* removeNthFromEnd(ListNode* head, int n) {
+    ListNode dummy(0, head);
+    ListNode* leader = &dummy;
+    ListNode* follower = &dummy;
+    for (int i = 0; i < n; i++) leader = leader->next;
+    while (leader->next != nullptr) {
+        leader = leader->next;
+        follower = follower->next;
+    }
+    follower->next = follower->next->next;
+    return dummy.next;
+}`,
   walkthrough: [
     {
       text: `dummy → 1 → 2 → 3 → 4 → 5 → None
@@ -106,6 +130,32 @@ def remove_nth_from_end(head: ListNode | None, n: int) -> ListNode | None:
         node = node.next
     node.next = node.next.next
     return head`,
+      java: `public ListNode removeNthFromEnd(ListNode head, int n) {
+    int count = 0;
+    ListNode node = head;
+    while (node != null) {
+        count++;
+        node = node.next;
+    }
+    if (count == n) return head.next;
+    node = head;
+    for (int i = 0; i < count - n - 1; i++) node = node.next;
+    node.next = node.next.next;
+    return head;
+}`,
+      cpp: `ListNode* removeNthFromEnd(ListNode* head, int n) {
+    int count = 0;
+    ListNode* node = head;
+    while (node != nullptr) {
+        count++;
+        node = node->next;
+    }
+    if (count == n) return head->next;
+    node = head;
+    for (int i = 0; i < count - n - 1; i++) node = node->next;
+    node->next = node->next->next;
+    return head;
+}`,
     },
   ],
 }

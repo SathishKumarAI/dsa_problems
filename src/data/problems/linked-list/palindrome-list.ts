@@ -55,6 +55,52 @@ def is_palindrome(head: ListNode | None) -> bool:
         left = left.next
         right = right.next
     return True`,
+  java: `public boolean isPalindrome(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    ListNode previous = null;
+    while (slow != null) {
+        ListNode nxt = slow.next;
+        slow.next = previous;
+        previous = slow;
+        slow = nxt;
+    }
+    ListNode left = head;
+    ListNode right = previous;
+    while (right != null) {
+        if (left.val != right.val) return false;
+        left = left.next;
+        right = right.next;
+    }
+    return true;
+}`,
+  cpp: `bool isPalindrome(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    ListNode* previous = nullptr;
+    while (slow != nullptr) {
+        ListNode* nxt = slow->next;
+        slow->next = previous;
+        previous = slow;
+        slow = nxt;
+    }
+    ListNode* left = head;
+    ListNode* right = previous;
+    while (right != nullptr) {
+        if (left->val != right->val) return false;
+        left = left->next;
+        right = right->next;
+    }
+    return true;
+}`,
   walkthrough: [
     {
       text: `1 → 2 → 2 → 1 → None`,
@@ -103,6 +149,28 @@ def is_palindrome(head: ListNode | None) -> bool:
         values.append(node.val)
         node = node.next
     return values == values[::-1]`,
+      java: `public boolean isPalindrome(ListNode head) {
+    List<Integer> values = new ArrayList<>();
+    ListNode node = head;
+    while (node != null) {
+        values.add(node.val);
+        node = node.next;
+    }
+    for (int i = 0, j = values.size() - 1; i < j; i++, j--)
+        if (!values.get(i).equals(values.get(j))) return false;
+    return true;
+}`,
+      cpp: `bool isPalindrome(ListNode* head) {
+    vector<int> values;
+    ListNode* node = head;
+    while (node != nullptr) {
+        values.push_back(node->val);
+        node = node->next;
+    }
+    for (int i = 0, j = (int)values.size() - 1; i < j; i++, j--)
+        if (values[i] != values[j]) return false;
+    return true;
+}`,
     },
   ],
 }

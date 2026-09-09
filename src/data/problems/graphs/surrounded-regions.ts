@@ -60,6 +60,60 @@ def solve(board: list[list[int]]) -> list[list[int]]:
             elif board[r][c] == 2:
                 board[r][c] = 0
     return board`,
+  java: `public void rescue(int[][] grid, int r, int c) {
+    if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length) return;
+    if (grid[r][c] != 0) return;
+    grid[r][c] = 2;
+    rescue(grid, r + 1, c);
+    rescue(grid, r - 1, c);
+    rescue(grid, r, c + 1);
+    rescue(grid, r, c - 1);
+}
+
+public int[][] solve(int[][] board) {
+    int rows = board.length, cols = board[0].length;
+    for (int r = 0; r < rows; r++) {
+        rescue(board, r, 0);
+        rescue(board, r, cols - 1);
+    }
+    for (int c = 0; c < cols; c++) {
+        rescue(board, 0, c);
+        rescue(board, rows - 1, c);
+    }
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++) {
+            if (board[r][c] == 0) board[r][c] = 1;
+            else if (board[r][c] == 2) board[r][c] = 0;
+        }
+    return board;
+}`,
+  cpp: `void rescue(vector<vector<int>>& grid, int r, int c) {
+    if (r < 0 || r >= (int)grid.size() || c < 0 || c >= (int)grid[0].size()) return;
+    if (grid[r][c] != 0) return;
+    grid[r][c] = 2;
+    rescue(grid, r + 1, c);
+    rescue(grid, r - 1, c);
+    rescue(grid, r, c + 1);
+    rescue(grid, r, c - 1);
+}
+
+vector<vector<int>> solve(vector<vector<int>> board) {
+    int rows = (int)board.size(), cols = (int)board[0].size();
+    for (int r = 0; r < rows; r++) {
+        rescue(board, r, 0);
+        rescue(board, r, cols - 1);
+    }
+    for (int c = 0; c < cols; c++) {
+        rescue(board, 0, c);
+        rescue(board, rows - 1, c);
+    }
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++) {
+            if (board[r][c] == 0) board[r][c] = 1;
+            else if (board[r][c] == 2) board[r][c] = 0;
+        }
+    return board;
+}`,
   walkthrough: [
     {
       text: `1 1 1 1
@@ -133,6 +187,54 @@ def solve(board: list[list[int]]) -> list[list[int]]:
                     for cr, cc in cells:
                         board[cr][cc] = 1
     return board`,
+      java: `public boolean collect(int[][] grid, boolean[][] seen, int r, int c, List<int[]> cells) {
+    if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length) return false;
+    if (seen[r][c] || grid[r][c] != 0) return false;
+    seen[r][c] = true;
+    cells.add(new int[]{r, c});
+    boolean touches = r == 0 || c == 0 || r == grid.length - 1 || c == grid[0].length - 1;
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    for (int[] d : dirs)
+        if (collect(grid, seen, r + d[0], c + d[1], cells)) touches = true;
+    return touches;
+}
+
+public int[][] solve(int[][] board) {
+    int rows = board.length, cols = board[0].length;
+    boolean[][] seen = new boolean[rows][cols];
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            if (board[r][c] == 0 && !seen[r][c]) {
+                List<int[]> cells = new ArrayList<>();
+                if (!collect(board, seen, r, c, cells))
+                    for (int[] cell : cells) board[cell[0]][cell[1]] = 1;
+            }
+    return board;
+}`,
+      cpp: `bool collect(vector<vector<int>>& grid, vector<vector<bool>>& seen, int r, int c, vector<pair<int, int>>& cells) {
+    if (r < 0 || r >= (int)grid.size() || c < 0 || c >= (int)grid[0].size()) return false;
+    if (seen[r][c] || grid[r][c] != 0) return false;
+    seen[r][c] = true;
+    cells.push_back({r, c});
+    bool touches = r == 0 || c == 0 || r == (int)grid.size() - 1 || c == (int)grid[0].size() - 1;
+    const int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    for (auto& d : dirs)
+        if (collect(grid, seen, r + d[0], c + d[1], cells)) touches = true;
+    return touches;
+}
+
+vector<vector<int>> solve(vector<vector<int>> board) {
+    int rows = (int)board.size(), cols = (int)board[0].size();
+    vector<vector<bool>> seen(rows, vector<bool>(cols, false));
+    for (int r = 0; r < rows; r++)
+        for (int c = 0; c < cols; c++)
+            if (board[r][c] == 0 && !seen[r][c]) {
+                vector<pair<int, int>> cells;
+                if (!collect(board, seen, r, c, cells))
+                    for (auto& cell : cells) board[cell.first][cell.second] = 1;
+            }
+    return board;
+}`,
     },
   ],
 }

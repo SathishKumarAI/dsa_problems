@@ -1157,12 +1157,23 @@ export const VECTORS = {
 // Linked-list, tree and stateful-class problems need node builders in three
 // languages before they can be driven this way. Named here rather than left
 // silent, so the runner can report what it is NOT covering.
+/* Problems whose ARGUMENTS this runner cannot marshal yet (B30). Listing them
+   is the point: a problem that is simply absent from VECTORS is invisible to
+   this gate, and an invisible gap reads as a pass. Every entry here is a
+   translation checked by `verify:code` (it compiles) and by nothing else. */
 export const NOT_YET_RUNNABLE = {
   "reverse-list": "linked list in, linked list out",
   "cycle-detect": "needs a list with a deliberate cycle",
   "merge-two-sorted": "two lists in, one list out",
+  "middle-of-list": "linked list in, a node out",
+  "palindrome-list": "linked list in",
+  "remove-nth-from-end": "linked list in, linked list out",
   "max-depth": "binary tree in",
   "validate-bst": "binary tree in",
   "level-order": "binary tree in",
+  "same-tree": "two binary trees in",
+  "invert-tree": "binary tree in, binary tree out",
+  "balanced-tree": "binary tree in",
+  "bst-ancestor": "binary tree in",
   "kth-largest-stream": "a stateful class, not a function",
 }

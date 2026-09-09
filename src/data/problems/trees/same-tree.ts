@@ -48,6 +48,18 @@ def is_same_tree(p: TreeNode | None, q: TreeNode | None) -> bool:
     if p.val != q.val:
         return False
     return is_same_tree(p.left, q.left) and is_same_tree(p.right, q.right)`,
+  java: `public boolean isSameTree(TreeNode p, TreeNode q) {
+    if (p == null && q == null) return true;
+    if (p == null || q == null) return false;
+    if (p.val != q.val) return false;
+    return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
+}`,
+  cpp: `bool isSameTree(TreeNode* p, TreeNode* q) {
+    if (p == nullptr && q == nullptr) return true;
+    if (p == nullptr || q == nullptr) return false;
+    if (p->val != q->val) return false;
+    return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
+}`,
   walkthrough: [
     {
       text: `   1        1
@@ -99,6 +111,22 @@ def serialise(node: TreeNode | None) -> str:
 
 def is_same_tree(p: TreeNode | None, q: TreeNode | None) -> bool:
     return serialise(p) == serialise(q)`,
+      java: `public String serialise(TreeNode node) {
+    if (node == null) return "#";
+    return "(" + node.val + serialise(node.left) + serialise(node.right) + ")";
+}
+
+public boolean isSameTree(TreeNode p, TreeNode q) {
+    return serialise(p).equals(serialise(q));
+}`,
+      cpp: `string serialise(const TreeNode* node) {
+    if (node == nullptr) return "#";
+    return "(" + to_string(node->val) + serialise(node->left) + serialise(node->right) + ")";
+}
+
+bool isSameTree(const TreeNode* p, const TreeNode* q) {
+    return serialise(p) == serialise(q);
+}`,
     },
   ],
 }

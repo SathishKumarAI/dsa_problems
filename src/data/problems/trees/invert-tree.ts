@@ -41,6 +41,22 @@ def invert_tree(root: TreeNode | None) -> TreeNode | None:
         return None
     root.left, root.right = invert_tree(root.right), invert_tree(root.left)
     return root`,
+  java: `public TreeNode invertTree(TreeNode root) {
+    if (root == null) return null;
+    TreeNode left = invertTree(root.right);
+    TreeNode right = invertTree(root.left);
+    root.left = left;
+    root.right = right;
+    return root;
+}`,
+  cpp: `TreeNode* invertTree(TreeNode* root) {
+    if (root == nullptr) return nullptr;
+    TreeNode* left = invertTree(root->right);
+    TreeNode* right = invertTree(root->left);
+    root->left = left;
+    root->right = right;
+    return root;
+}`,
   walkthrough: [
     {
       text: `      4
@@ -97,6 +113,35 @@ def invert_tree(root: TreeNode | None) -> TreeNode | None:
         stack.append(node.left)
         stack.append(node.right)
     return root`,
+      java: `public TreeNode invertTree(TreeNode root) {
+    Deque<TreeNode> stack = new ArrayDeque<>();
+    stack.push(root);
+    while (!stack.isEmpty()) {
+        TreeNode node = stack.pop();
+        if (node == null) continue;
+        TreeNode swap = node.left;
+        node.left = node.right;
+        node.right = swap;
+        stack.push(node.left);
+        stack.push(node.right);
+    }
+    return root;
+}`,
+      cpp: `TreeNode* invertTree(TreeNode* root) {
+    vector<TreeNode*> stack;
+    stack.push_back(root);
+    while (!stack.empty()) {
+        TreeNode* node = stack.back();
+        stack.pop_back();
+        if (node == nullptr) continue;
+        TreeNode* swapped = node->left;
+        node->left = node->right;
+        node->right = swapped;
+        stack.push_back(node->left);
+        stack.push_back(node->right);
+    }
+    return root;
+}`,
     },
   ],
 }
