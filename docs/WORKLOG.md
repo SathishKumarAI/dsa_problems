@@ -95,6 +95,71 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 — the tree and list panels get something to render, and the bar gets one row
+
+One PR (#59), three commits, on the back of the UI pass (#57) and the disclosure fix (#58).
+
+### The panels were never rendered
+
+`shape-views.tsx` shipped `GridView`, `TreeView` and `ListView` in #57. The grid was proved by
+`count-the-islands`; the tree and the list had **never been rendered by anything** — stated plainly
+in their own commit message, and still true a day later. Every tree and list problem in the set
+showed a static ASCII walkthrough instead.
+
+Two derived journeys close that:
+
+- **`max-depth`** — four rungs (story, BFS by levels, DFS with an explicit stack, recursion) and
+  four corner cases (empty, single node, fully skewed, negatives).
+- **`reverse-list`** — four rungs (story, copy to an array, recursive, three pointers) with
+  `prev` / `curr` / `next` labelled on the nodes.
+
+**The shape decision:** a tree and a list both arrive as `cells: "words"` tokens in level order,
+with `.` for an absent slot, because `Cell` has no null and a sentinel token costs nothing at the
+API boundary — the guard there measures size, not meaning. The grid had already solved the same
+problem by arriving flattened with a `cols` param.
+
+Measured on screen: `[3, 9, 20, ., ., 15, 7]` renders **5 nodes** (the two absent slots omitted, not
+drawn empty) and **4 SVG edges**, root at 50% with its children at 25% / 75% one row down; the list
+renders `1 → 2 → 3 → ∅` with the head labelled. Neither falls back to the chip row.
+Layout is arithmetic — `centre(i) = ((i - 2^d + 1 + 0.5) / 2^d) × 100` — so no node position
+comes from a measured box.
+
+This unblocks **33 problems** and makes B54 (delete the ASCII fallback) a deletion rather than a
+project.
+
+### The transport moved to the top bar, twice
+
+Asked for: play controls at the top right, and more of the screen for the visualizer. At
+1536×776, stage width went **812px (68%) → 860px (72%)** and the reading column 384 → 336.
+
+The first attempt put the existing `Transport` in the bar as it was — two rows with its own speed
+slider — inside a `flex-nowrap` row. The bar wrapped to **150px** and the h1 rendered as
+**"Widest Co…"**. The fix was an `inline` variant: scrubber, counter and buttons on one line, and
+**no speed slider**, because settings already owns a live one and the second slider is exactly what
+cost the title its name. The title is `shrink-0` now, so the subtitle is what gives way.
+
+After: bar **one row at 48px**, header **150 → 110px**, title untruncated, no overflow, Play at
+`y=24` and moving **0px** once every scrollable region is scrolled to its end. Below `lg` the
+stacked transport still sits at the foot of the stage — the phone header is budgeted at 220px —
+and exactly one of the two is ever visible, both wired to the same handlers.
+
+### Gates
+
+`npm run check` exit 0 (tsc 0, eslint 0, **370 tests**) · `npm run test:ui` exit 0, **89 checks**.
+
+### What this session teaches
+
+1. **A component designed for a footer does not become a header component by moving it.** Two rows
+   and a slider are fine at the foot of a stage and wrong in a bar. The variant is the honest fix;
+   squeezing the neighbours is not.
+2. **In a flex row, decide what is allowed to shrink.** The title and the subtitle were both
+   shrinkable, so the browser shrank the name of the page. An ellipsis on the gloss is cheap; an
+   ellipsis on the name is a bug.
+3. **"Shipped" and "rendered" are different words.** Three views passed every gate for a day while
+   two of them had no caller. A gate that only reads types cannot notice that.
+
+---
+
 ## 2026-09-08 — the local-model workbench, and two gates that run the code
 
 Three PRs (#38, #39, #40). The theme: the practice set gained Java and C++ everywhere, and the repo

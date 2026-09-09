@@ -1,7 +1,8 @@
 # STATUS — read this when you return
 
-Last session: 2026-09-08. Journeys went **5 → 46**, the practice set's Java/C++ hole was closed,
-and the UI got the pass it had been owed since the set tripled in size.
+Last session: 2026-09-09. Journeys went **5 → 48**, the practice set's Java/C++ hole was closed,
+the UI got the pass it had been owed since the set tripled in size, and the tree and list panels
+finally have something rendering them.
 
 ## The spec checklist
 
@@ -12,14 +13,13 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` holds six merged PRs from this session (#49–#56). One branch is open and green:
-**`feat/ui-audit-and-fixes`**, seven commits, both gates passing — that is the UI work, and it is
-ready to merge.
+`master` is clean and holds everything: #49–#59. Nothing is open. The last three PRs were the UI
+audit (#57), the journeys disclosure (#58) and the tree/list panels plus the top bar (#59).
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **356 tests** |
-| The interface, in a real browser | `npm run test:ui` | **83 checks**, 0 failed |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **370 tests** |
+| The interface, in a real browser | `npm run test:ui` | **89 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **366 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **1452 comparisons**, 0 disagreed |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
@@ -34,24 +34,30 @@ ready to merge.
 2. **Four content batches** (#50, #51, #53, #54, #56) — 40 derived journeys, mean ~350 lines.
 3. **The translation pass** (#55). `problems.test.ts` refuses a journey on a problem lacking Java
    and C++, and twelve array-shaped problems had shipped Python-only. 48 blocks written and gated.
-4. **The UI pass** (open branch) — three agents in parallel on disjoint files, then integration.
+4. **The UI pass** (#57) — three agents in parallel on disjoint files, then integration. The
+   34-line spec checklist is walked item by item in `docs/SPEC-CHECKLIST.md`.
+5. **The disclosure fix** (#58) — "42 more journeys" was a one-way door: expanding hid its own
+   control, because the guard asked "is there more to show?" rather than "am I expanded?".
+6. **The tree and list panels** (#59). `max-depth` and `reverse-list` are the first journeys to
+   render `TreeView` and `ListView`; both shapes arrive as `cells: "words"` with `.` for an absent
+   slot, since `Cell` has no null. The same PR moved the transport into the top bar and gave the
+   stage the width the reading column was holding.
 
 ## The next action
 
-1. **Merge `feat/ui-audit-and-fixes`.** Both gates green. Then:
-2. **B41 is half done.** The grid / tree / list panels exist (`features/journey/shape-views.tsx`)
-   and the grid is proved by the `count-the-islands` journey. **The tree and list views have never
-   been rendered by anything** — that is stated in their commit and it is the first thing to fix.
-   A tree journey (`max-depth`) and a list journey (`reverse-list`) would prove both; each needs a
-   decision first about how a tree or a list arrives as `nums`, since `Cell` has no null. The grid
-   solved the same problem by arriving flattened with a `cols` param, and the tree's level-order
-   slots want the same treatment with a sentinel.
-3. **B51** — six array-shaped problems still unwritten, all unblocked: valid-anagram,
+1. **B54 — delete the `text` walkthrough fallback.** It is dead code now: `step-player.tsx` renders
+   ASCII art in a `<pre>` for 39 problems that have no journey, and with the tree and list views
+   proved there is nothing those problems can only say in ASCII. This is the cheapest item on the
+   board and it removes a component.
+2. **B51** — six array-shaped problems still unwritten, all unblocked: valid-anagram,
    group-anagrams, isomorphic-strings, permutation-in-string, rpn-eval, sort-by-frequency.
+3. **The 33 tree / list / graph problems are now unblocked too** — that is the large remaining
+   pool, and `max-depth` / `reverse-list` are the templates to copy.
 4. **B52** — `stair-ways` and `counting-bits` take a single number, not a row. The stage has no
    shape for "a table being filled" yet.
 5. **B53** — the set holds 87 problems, so **a hundred journeys needs 13 new problems first**.
    Roughly 3× the cost of a journey each. Only worth starting once the 87 all have one.
+6. **B55** — three audit findings that need an author's call rather than a fix.
 
 ## Traps this session added to the list
 
@@ -76,10 +82,19 @@ ready to merge.
   disagreements, but it means a green summary with launch failures in it is only a partial pass.
   Re-run per problem (`--id`) to tell "not checked" from "checked and fine".
 
+- **A control designed for a footer does not become a header control by moving it.** The transport
+  is two rows with its own speed slider; dropped into a nowrap bar it wrapped the bar to 150px and
+  truncated the h1 to "Widest Co…". It needed an `inline` variant, and dropping the second speed
+  slider entirely — settings already owns a live one.
+- **In a flex row, decide what is allowed to shrink.** Both the title and its subtitle were
+  shrinkable, so the browser shrank the title. `shrink-0` on the name, `truncate` on the gloss.
+
 ## What is on screen
 
-46 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
+48 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
 sorting/search/graph visualizer, SQL drills and stats flashcards. The shell has collapsible rails,
-a settings dialog and a keyboard map. As of the open branch: the pattern list filters and searches,
-difficulty is visible, the sidebar and home lead with what is in play rather than all 46 journeys,
-the problem page is stacked sections rather than tabs, and the journey page has a clickable trace.
+a settings dialog and a keyboard map. The pattern list filters and searches, difficulty is visible,
+the sidebar and home lead with what is in play rather than all 48 journeys, the problem page is
+stacked sections rather than tabs, and the journey page has a clickable trace, a chip row, a grid, a
+tree and a list. The journey top bar is one row and carries the transport at its right, so play and
+the scrubber are in view however far either column is scrolled.
