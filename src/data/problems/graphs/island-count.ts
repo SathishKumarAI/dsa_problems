@@ -131,7 +131,7 @@ def count_islands(grid: list[list[int]]) -> int:
     int rows = grid.length;
     int cols = grid[0].length;
     int count = 0;
-    java.util.ArrayDeque<int[]> queue = new java.util.ArrayDeque<>();
+    ArrayDeque<int[]> queue = new ArrayDeque<>();
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
             if (grid[r][c] != 1) continue;
@@ -160,7 +160,7 @@ def count_islands(grid: list[list[int]]) -> int:
     int rows = (int)grid.size();
     int cols = (int)grid[0].size();
     int count = 0;
-    std::deque<std::pair<int,int>> queue;
+    deque<pair<int,int>> queue;
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
             if (grid[r][c] != 1) continue;
@@ -170,7 +170,7 @@ def count_islands(grid: list[list[int]]) -> int:
             while (!queue.empty()) {
                 auto [y, x] = queue.front();
                 queue.pop_front();
-                for (auto [dy, dx] : std::vector<std::pair<int,int>>{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                for (auto [dy, dx] : vector<pair<int,int>>{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
                     int ny = y + dy;
                     int nx = x + dx;
                     if (ny >= 0 && ny < rows && nx >= 0 && nx < cols && grid[ny][nx] == 1) {
@@ -221,7 +221,7 @@ def count_islands(grid: list[list[int]]) -> int:
     int[] parent = new int[rows * cols];
     for (int i = 0; i < parent.length; i++) parent[i] = i;
 
-    java.util.function.IntUnaryOperator find = new java.util.function.IntUnaryOperator() {
+    IntUnaryOperator find = new IntUnaryOperator() {
         public int applyAsInt(int a) {
             while (parent[a] != a) {
                 parent[a] = parent[parent[a]];
@@ -231,7 +231,7 @@ def count_islands(grid: list[list[int]]) -> int:
         }
     };
 
-    java.util.function.BiConsumer<Integer, Integer> union = new java.util.function.BiConsumer<Integer, Integer>() {
+    BiConsumer<Integer, Integer> union = new BiConsumer<Integer, Integer>() {
         public void accept(Integer a, Integer b) {
             parent[find.applyAsInt(a)] = find.applyAsInt(b);
         }
@@ -245,7 +245,7 @@ def count_islands(grid: list[list[int]]) -> int:
         }
     }
 
-    java.util.HashSet<Integer> roots = new java.util.HashSet<>();
+    HashSet<Integer> roots = new HashSet<>();
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
             if (grid[r][c] == 1) roots.add(find.applyAsInt(r * cols + c));

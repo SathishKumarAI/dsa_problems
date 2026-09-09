@@ -59,7 +59,7 @@ private boolean valid(TreeNode node, double low, double high) {
 }
 
 bool isValidBST(const TreeNode* root) {
-    return valid(root, -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+    return valid(root, -numeric_limits<double>::infinity(), numeric_limits<double>::infinity());
 }`,
   alternatives: [
     {

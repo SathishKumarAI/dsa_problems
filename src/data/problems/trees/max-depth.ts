@@ -35,7 +35,7 @@ export const problem: Problem = {
 }`,
   cpp: `int maxDepth(const TreeNode* root) {
     if (!root) return 0;
-    return 1 + std::max(maxDepth(root->left), maxDepth(root->right));
+    return 1 + max(maxDepth(root->left), maxDepth(root->right));
 }`,
   alternatives: [
     {
@@ -79,7 +79,7 @@ def max_depth(root) -> int:
       cpp: `int maxDepth(TreeNode* root) {
     if (!root) return 0;
     int depth = 0;
-    std::queue<TreeNode*> q;
+    queue<TreeNode*> q;
     q.push(root);
     while (!q.empty()) {
         depth++;
@@ -114,27 +114,27 @@ def max_depth(root) -> int:
     return best`,
       java: `public int maxDepth(TreeNode root) {
     int best = 0;
-    java.util.Deque<java.util.AbstractMap.SimpleEntry<TreeNode,Integer>> stack = new java.util.ArrayDeque<>();
-    if (root != null) stack.push(new java.util.AbstractMap.SimpleEntry<>(root,1));
+    Deque<AbstractMap.SimpleEntry<TreeNode,Integer>> stack = new ArrayDeque<>();
+    if (root != null) stack.push(new AbstractMap.SimpleEntry<>(root,1));
     while (!stack.isEmpty()) {
-        java.util.AbstractMap.SimpleEntry<TreeNode,Integer> entry = stack.pop();
+        AbstractMap.SimpleEntry<TreeNode,Integer> entry = stack.pop();
         TreeNode node = entry.getKey();
         int d = entry.getValue();
         best = Math.max(best,d);
-        if (node.left != null) stack.push(new java.util.AbstractMap.SimpleEntry<>(node.left,d+1));
-        if (node.right != null) stack.push(new java.util.AbstractMap.SimpleEntry<>(node.right,d+1));
+        if (node.left != null) stack.push(new AbstractMap.SimpleEntry<>(node.left,d+1));
+        if (node.right != null) stack.push(new AbstractMap.SimpleEntry<>(node.right,d+1));
     }
     return best;
 }
 `,
       cpp: `int maxDepth(const TreeNode* root) {
     int best = 0;
-    std::vector<std::pair<const TreeNode*,int>> stack;
+    vector<pair<const TreeNode*,int>> stack;
     if (root) stack.push_back({root,1});
     while (!stack.empty()) {
         auto [node,d] = stack.back();
         stack.pop_back();
-        best = std::max(best,d);
+        best = max(best,d);
         if (node->left) stack.push_back({node->left,d+1});
         if (node->right) stack.push_back({node->right,d+1});
     }

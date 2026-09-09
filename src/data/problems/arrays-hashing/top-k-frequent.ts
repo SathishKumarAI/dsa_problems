@@ -44,17 +44,17 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
                 return out
     return out`,
   java: `public int[] topKFrequent(int[] nums, int k) {
-    java.util.Map<Integer,Integer> counts = new java.util.HashMap<>();
+    Map<Integer,Integer> counts = new HashMap<>();
     for (int num : nums) {
         counts.put(num, counts.getOrDefault(num, 0)+1);
     }
-    java.util.List<java.util.List<Integer>> buckets = new java.util.ArrayList<>(nums.length+1);
-    for (int i=0;i<=nums.length;i++) buckets.add(new java.util.ArrayList<>());
-    for (java.util.Map.Entry<Integer,Integer> e : counts.entrySet()) {
+    List<List<Integer>> buckets = new ArrayList<>(nums.length+1);
+    for (int i=0;i<=nums.length;i++) buckets.add(new ArrayList<>());
+    for (Map.Entry<Integer,Integer> e : counts.entrySet()) {
         int value=e.getKey(), c=e.getValue();
         buckets.get(c).add(value);
     }
-    java.util.List<Integer> out = new java.util.ArrayList<>();
+    List<Integer> out = new ArrayList<>();
     for (int c=nums.length;c>=1;c--) {
         for (int val : buckets.get(c)) {
             out.add(val);
@@ -98,12 +98,12 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     counts = Counter(nums)
     return sorted(counts, key=counts.get, reverse=True)[:k]`,
       java: `public int[] topKFrequent(int[] nums, int k) {
-    java.util.HashMap<Integer,Integer> counts = new java.util.HashMap<>();
+    HashMap<Integer,Integer> counts = new HashMap<>();
     for (int num : nums) {
         counts.put(num, counts.getOrDefault(num, 0) + 1);
     }
-    java.util.List<Integer> keys = new java.util.ArrayList<>(counts.keySet());
-    java.util.Collections.sort(keys, new java.util.Comparator<Integer>() {
+    List<Integer> keys = new ArrayList<>(counts.keySet());
+    Collections.sort(keys, new Comparator<Integer>() {
         public int compare(Integer a, Integer b) {
             return counts.get(b).compareTo(counts.get(a));
         }

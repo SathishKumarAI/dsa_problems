@@ -44,7 +44,7 @@ export const problem: Problem = {
         best = max(best, right - left + 1)
     return best`,
   java: `public int longestUnique(String s) {
-    java.util.HashSet<Character> inside = new java.util.HashSet<>();
+    HashSet<Character> inside = new HashSet<>();
     int left = 0;
     int best = 0;
     for (int right = 0; right < s.length(); right++) {
@@ -58,8 +58,8 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  cpp: `int longestUnique(const std::string& s) {
-    std::unordered_set<char> inside;
+  cpp: `int longestUnique(const string& s) {
+    unordered_set<char> inside;
     int left = 0;
     int best = 0;
     for (int right = 0; right < (int)s.size(); right++) {
@@ -69,7 +69,7 @@ export const problem: Problem = {
             left++;
         }
         inside.insert(ch);
-        best = std::max(best, right - left + 1);
+        best = max(best, right - left + 1);
     }
     return best;
 }`,
@@ -91,21 +91,21 @@ export const problem: Problem = {
     for (int i = 0; i < s.length(); i++) {
         for (int j = i; j < s.length(); j++) {
             String window = s.substring(i, j + 1);
-            java.util.Set<Character> set = new java.util.HashSet<>();
+            Set<Character> set = new HashSet<>();
             for (char c : window.toCharArray()) set.add(c);
             if (set.size() == window.length()) best = Math.max(best, window.length());
         }
     }
     return best;
 }`,
-      cpp: `int longestUnique(const std::string& s) {
+      cpp: `int longestUnique(const string& s) {
     int best = 0;
     for (int i = 0; i < (int)s.size(); i++) {
         for (int j = i; j < (int)s.size(); j++) {
-            std::string window = s.substr(i, j - i + 1);
-            std::unordered_set<char> set;
+            string window = s.substr(i, j - i + 1);
+            unordered_set<char> set;
             for (char c : window) set.insert(c);
-            if ((int)set.size() == (int)window.length()) best = std::max(best, (int)window.length());
+            if ((int)set.size() == (int)window.length()) best = max(best, (int)window.length());
         }
     }
     return best;
