@@ -45,7 +45,7 @@ export const problem: Problem = {
         best = max(best, length)
     return best`,
   java: `public int longestConsecutive(int[] nums) {
-    java.util.Set<Integer> values = new java.util.HashSet<>();
+    Set<Integer> values = new HashSet<>();
     for (int num : nums) values.add(num);
     int best = 0;
     for (int x : values) {

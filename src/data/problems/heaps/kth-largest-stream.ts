@@ -49,11 +49,11 @@ class KthLargest:
         return self.heap[0]`,
   java: `public class KthLargest {
     private int k;
-    private java.util.PriorityQueue<Integer> heap;
+    private PriorityQueue<Integer> heap;
 
     public KthLargest(int k, int[] nums) {
         this.k = k;
-        this.heap = new java.util.PriorityQueue<>();
+        this.heap = new PriorityQueue<>();
         for (int num : nums) heap.add(num);
         while (heap.size() > k) heap.poll();
     }
@@ -68,9 +68,9 @@ class KthLargest:
   cpp: `class KthLargest {
 public:
     int k;
-    std::priority_queue<int, std::vector<int>, std::greater<int>> heap;
+    priority_queue<int, vector<int>, greater<int>> heap;
 
-    KthLargest(int k, const std::vector<int>& nums): k(k), heap(std::greater<int>()) {
+    KthLargest(int k, const vector<int>& nums): k(k), heap(greater<int>()) {
         for (int num : nums) heap.push(num);
         while ((int)heap.size() > k) heap.pop();
     }
@@ -115,13 +115,13 @@ public:
       cpp: `class KthLargest {
 public:
     int k;
-    std::vector<int> nums;
+    vector<int> nums;
 
-    KthLargest(int k, const std::vector<int>& nums): k(k), nums(nums) {}
+    KthLargest(int k, const vector<int>& nums): k(k), nums(nums) {}
 
     int add(int x) {
         nums.push_back(x);
-        std::sort(nums.begin(), nums.end());
+        sort(nums.begin(), nums.end());
         return nums[nums.size() - k];
     }
 };`,
@@ -164,14 +164,14 @@ class KthLargest:
       cpp: `class KthLargest {
 public:
     int k;
-    std::vector<int> nums;
+    vector<int> nums;
 
-    KthLargest(int k, std::vector<int> nums): k(k), nums(nums) {
-        std::sort(this->nums.begin(), this->nums.end());
+    KthLargest(int k, vector<int> nums): k(k), nums(nums) {
+        sort(this->nums.begin(), this->nums.end());
     }
 
     int add(int x) {
-        auto it = std::lower_bound(nums.begin(), nums.end(), x);
+        auto it = lower_bound(nums.begin(), nums.end(), x);
         nums.insert(it, x);
         return nums[nums.size() - k];
     }

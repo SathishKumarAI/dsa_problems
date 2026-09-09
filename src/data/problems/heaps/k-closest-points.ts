@@ -43,7 +43,7 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
             heapq.heappushpop(heap, (d, p))
     return [p for _, p in heap]`,
   java: `public List<List<Integer>> kClosest(List<List<Integer>> points, int k) {
-    PriorityQueue<Object[]> heap = new PriorityQueue<>(new java.util.Comparator<Object[]>() {
+    PriorityQueue<Object[]> heap = new PriorityQueue<>(new Comparator<Object[]>() {
         public int compare(Object[] a, Object[] b) { return Integer.compare((Integer)a[0], (Integer)b[0]); }
     });
     for (List<Integer> p : points) {

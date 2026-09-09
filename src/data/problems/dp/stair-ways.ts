@@ -84,10 +84,10 @@ def climb_ways(n: int) -> int:
         return 1
     return climb_ways(n - 1) + climb_ways(n - 2)`,
       java: `public int climbWays(int n) {
-    java.util.Map<Integer,Integer> cache = new java.util.HashMap<>();
+    Map<Integer,Integer> cache = new HashMap<>();
     return climbWaysRec(n, cache);
 }
-private static int climbWaysRec(int n, java.util.Map<Integer,Integer> cache) {
+private static int climbWaysRec(int n, Map<Integer,Integer> cache) {
     if (cache.containsKey(n)) return cache.get(n);
     int result;
     if (n <= 1) {
@@ -99,7 +99,7 @@ private static int climbWaysRec(int n, java.util.Map<Integer,Integer> cache) {
     return result;
 }
 `,
-      cpp: `int climbWaysRec(int n, std::unordered_map<int,int>& memo) {
+      cpp: `int climbWaysRec(int n, unordered_map<int,int>& memo) {
     auto it = memo.find(n);
     if (it != memo.end()) return it->second;
     int result;
@@ -113,7 +113,7 @@ private static int climbWaysRec(int n, java.util.Map<Integer,Integer> cache) {
 }
 
 int climbWays(int n) {
-    std::unordered_map<int,int> memo;
+    unordered_map<int,int> memo;
     return climbWaysRec(n, memo);
 }`,
     },

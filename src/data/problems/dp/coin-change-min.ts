@@ -40,7 +40,7 @@ export const problem: Problem = {
   java: `public int minCoins(int[] coins, int amount) {
     final int INF = Integer.MAX_VALUE/2;
     int[] best = new int[amount + 1];
-    java.util.Arrays.fill(best, INF);
+    Arrays.fill(best, INF);
     best[0] = 0;
     for (int a = 1; a <= amount; a++) {
         for (int c : coins) {
@@ -77,7 +77,7 @@ export const problem: Problem = {
         amount %= c
     return count if amount == 0 else -1`,
       java: `public int minCoinsWrong(int[] coins, int amount) {
-    java.util.Arrays.sort(coins);
+    Arrays.sort(coins);
     int count = 0;
     for (int i = coins.length - 1; i >= 0; i--) {
         int c = coins[i];
@@ -86,9 +86,9 @@ export const problem: Problem = {
     }
     return amount == 0 ? count : -1;
 }`,
-      cpp: `int minCoinsWrong(const std::vector<int>& coins, int amount) {
-    std::vector<int> sorted = coins;
-    std::sort(sorted.begin(), sorted.end(), std::greater<int>());
+      cpp: `int minCoinsWrong(const vector<int>& coins, int amount) {
+    vector<int> sorted = coins;
+    sort(sorted.begin(), sorted.end(), greater<int>());
     int count = 0;
     for (int c : sorted) {
         count += amount / c;

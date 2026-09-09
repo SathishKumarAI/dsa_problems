@@ -209,3 +209,31 @@ test("problems: a finished journey shows the whole ladder", () => {
     assert.equal(hidden, 0, `${p.id}: finished and still hiding ${hidden}`)
   }
 })
+
+// B36. The harness supplies `import java.util.*` and `using namespace std;`,
+// so a block that writes `java.util.HashMap` or `std::vector` is teaching a
+// second style in the same tab strip for no reason — and the reader cannot
+// tell which one the judge wants. 62 uses across 12 files on 2026-09-09,
+// removed; this keeps them gone. What the SCAFFOLDING supplies is in one
+// place (scripts/localsmith/verify.mjs), and the blocks stay bare.
+test("problems: no block qualifies what the scaffolding already imports", () => {
+  const banned = [
+    ["java", "java.util."],
+    ["cpp", "std::"],
+  ] as const
+  for (const p of PROBLEMS) {
+    const rungs = [
+      ["optimal", p] as const,
+      ...(p.alternatives ?? []).map((a) => [a.name, a] as const),
+    ]
+    for (const [key, code] of rungs)
+      for (const [lang, prefix] of banned) {
+        const src = (code as Record<string, string | undefined>)[lang]
+        if (!src) continue
+        assert.ok(
+          !src.includes(prefix),
+          `${p.id}/${key} [${lang}]: writes "${prefix}", which the harness already imports`
+        )
+      }
+  }
+})

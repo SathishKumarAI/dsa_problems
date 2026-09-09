@@ -79,14 +79,14 @@ export const problem: Problem = {
         head = Node(v, head)
     return head`,
       java: `public Node mergeSorted(Node a, Node b){
-    java.util.List<Integer> vals = new java.util.ArrayList<>();
+    List<Integer> vals = new ArrayList<>();
     for (Node head : new Node[]{a,b}){
         while (head != null){
             vals.add(head.val);
             head = head.next;
         }
     }
-    java.util.Collections.sort(vals, java.util.Comparator.reverseOrder());
+    Collections.sort(vals, Comparator.reverseOrder());
     Node head = null;
     for (int v : vals){
         head = new Node(v, head);
@@ -94,14 +94,14 @@ export const problem: Problem = {
     return head;
 }`,
       cpp: `Node* mergeSorted(const Node* a, const Node* b){
-    std::vector<int> vals;
+    vector<int> vals;
     for (const Node* head : {a,b}){
         while (head){
             vals.push_back(head->val);
             head = head->next;
         }
     }
-    std::sort(vals.rbegin(), vals.rend());
+    sort(vals.rbegin(), vals.rend());
     Node* head = nullptr;
     for (int v : vals){
         head = new Node(v, head);

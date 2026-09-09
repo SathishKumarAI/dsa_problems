@@ -117,7 +117,7 @@ def min_window(s: str, t: str) -> str:
                 break  # longer j only makes it fatter
     return best`,
       java: `public String minWindow(String s, String t) {
-    java.util.HashMap<Character,Integer> need = new java.util.HashMap<>();
+    HashMap<Character,Integer> need = new HashMap<>();
     for (int i = 0; i < t.length(); i++) {
         char c = t.charAt(i);
         need.put(c, need.getOrDefault(c, 0) + 1);
@@ -125,13 +125,13 @@ def min_window(s: str, t: str) -> str:
     String best = "";
     for (int i = 0; i < s.length(); i++) {
         for (int j = i; j < s.length(); j++) {
-            java.util.HashMap<Character,Integer> window = new java.util.HashMap<>();
+            HashMap<Character,Integer> window = new HashMap<>();
             for (int k = i; k <= j; k++) {
                 char c = s.charAt(k);
                 window.put(c, window.getOrDefault(c, 0) + 1);
             }
             boolean ok = true;
-            for (java.util.Map.Entry<Character,Integer> e : need.entrySet()) {
+            for (Map.Entry<Character,Integer> e : need.entrySet()) {
                 if (window.getOrDefault(e.getKey(), 0) < e.getValue()) { ok = false; break; }
             }
             if (ok) {
