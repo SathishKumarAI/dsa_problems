@@ -121,7 +121,10 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             </a>
           )}
           <span className="hidden min-w-0 items-baseline gap-3 lg:flex">
-            <span className="truncate font-heading text-title font-semibold tracking-tight text-foreground">
+            {/* the title does not shrink — the subtitle is the one that gives
+                way, because an ellipsis on the name of the page is worse than
+                an ellipsis on its gloss */}
+            <span className="max-w-[22rem] shrink-0 truncate font-heading text-title font-semibold tracking-tight text-foreground">
               {journey.title}
             </span>
             <span className="hidden truncate text-ui text-muted-foreground xl:inline">
@@ -140,8 +143,9 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               390px phone (test/ui-smoke.test.mjs, U2/U14/U11) and an 85px
               transport blows that. Same handlers either way, so the two can
               never disagree. */}
-          <div className="hidden lg:flex lg:min-w-[22rem] lg:flex-1 lg:justify-end">
+          <div className="ml-2 hidden shrink-0 lg:flex">
             <Transport
+              inline
               pos={j.player.pos}
               last={j.player.last}
               playing={j.player.playing}
