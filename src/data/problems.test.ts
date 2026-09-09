@@ -173,3 +173,39 @@ test("problems: journeyed problems carry Java and C++ for every approach", () =>
       checkCode(`${p.id}/${a.name}`, a, ["python", "java", "cpp"])
   }
 })
+
+// B45. The journey's own disclosure gate checks ACT prose against later ACT
+// names. Nothing checked what the PROBLEM PAGE renders, which is a different
+// question: `ladderOf` picks the rungs, from the journey when there is one and
+// from `alternatives` when there is not, and it is the picker that has to hold
+// the line. Measured 2026-09-09 with the ledger at 2: the ladder was already
+// capped correctly — the leak was the pattern NAME in the page header, which
+// the catalogue has masked since B8 and this page did not.
+test("problems: the ladder never shows a rung the ledger has not earned", () => {
+  for (const j of JOURNEYS) {
+    const p = PROBLEMS.find((x) => x.id === j.problemId)
+    if (!p) continue
+    // a learner one act in: everything from act 2 on is unearned
+    const { rungs, capped, hidden } = ladderOf(p, j, 2)
+    const later = j.acts.slice(2).map((a) => a.name.toLowerCase())
+    for (const r of rungs)
+      assert.ok(
+        !later.includes(r.name.toLowerCase()),
+        `${p.id}: the ladder shows "${r.name}", which is act ${j.acts.findIndex((a) => a.name === r.name)} and not yet earned`
+      )
+    if (j.acts.length > 2) {
+      assert.equal(capped, true, `${p.id}: a mid-flight ladder must say it is capped`)
+      assert.ok(hidden > 0, `${p.id}: capped, but claims to hide nothing`)
+    }
+  }
+})
+
+test("problems: a finished journey shows the whole ladder", () => {
+  for (const j of JOURNEYS) {
+    const p = PROBLEMS.find((x) => x.id === j.problemId)
+    if (!p) continue
+    const { capped, hidden } = ladderOf(p, j, j.acts.length)
+    assert.equal(capped, false, `${p.id}: finished and still capped`)
+    assert.equal(hidden, 0, `${p.id}: finished and still hiding ${hidden}`)
+  }
+})

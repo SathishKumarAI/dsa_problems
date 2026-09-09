@@ -307,6 +307,45 @@ describe(
     // cost the stage 862px → 574px at 1536px — a third of its width, to show a
     // short list of preset names. The stage is the product and the drawer is a
     // control, so the control floats now and the stage keeps its width.
+    // B45. The catalogue has masked a pattern name under an active promise
+    // since B8; the problem page named it twice anyway — in the back link and
+    // in the glyph strip. Measured 2026-09-09: sorted-pair-sum and
+    // container-water both read "Two Pointers" with the journey unfinished.
+    test("the problem page masks a pattern its journey has not revealed (B45)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.clear();
+        localStorage.setItem('dsa:unlocked:sorted-pair-sum', '2');
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const midFlight = await page.eval("document.body.innerText")
+      assert.ok(
+        !midFlight.toLowerCase().includes("two pointers"),
+        "the problem page named the pattern the journey is still teaching"
+      )
+      assert.ok(
+        midFlight.includes("· · ·"),
+        "nothing was masked, so the page is not using the mask at all"
+      )
+
+      // and it comes back the moment the journey is finished
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.setItem('dsa:unlocked:sorted-pair-sum', '99');
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const earned = await page.eval("document.body.innerText")
+      assert.ok(
+        earned.toLowerCase().includes("two pointers"),
+        "the name was earned and still hidden"
+      )
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the test-case drawer floats over the stage instead of shrinking it (R4, B59)", async () => {
       await page.goto(`${server.base}/#/journey/two-sum?act=story`)
       const out = await page.run(`
