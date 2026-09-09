@@ -92,7 +92,7 @@ export function FlashcardsView() {
             >
               <Badge
                 variant="secondary"
-                className="w-fit font-mono text-[10px]"
+                className="w-fit font-mono text-meta"
               >
                 {card.tag}
               </Badge>

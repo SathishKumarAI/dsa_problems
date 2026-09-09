@@ -135,7 +135,7 @@ function Ribbon({
               <span className="flex items-center gap-1.5 text-sm font-medium">
                 <span
                   className={cn(
-                    "font-mono text-[10px]",
+                    "font-mono text-meta",
                     isDone ? "text-chart-3" : "text-muted-foreground"
                   )}
                 >

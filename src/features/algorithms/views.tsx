@@ -61,7 +61,12 @@ export function BarsView({
             {showValues && (
               <span
                 className={cn(
-                  "font-mono text-[10px] tabular-nums",
+                  "font-mono text-meta tabular-nums",
+                  // 12px is the floor for anything read as text, and a 2-digit
+                  // label is 14.4px wide. Past 16 bars a phone gives each bar
+                  // ~10px, so the labels would overlap: drop them there rather
+                  // than shrink them below the scale.
+                  frame.arr.length > 16 && "hidden sm:block",
                   mark ? "text-foreground" : "text-muted-foreground"
                 )}
               >

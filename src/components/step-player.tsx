@@ -134,7 +134,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
       </div>
 
       {/* narration */}
-      <p className="min-h-12 border-t bg-background/40 px-6 py-3 text-center font-mono text-[13px] leading-relaxed text-muted-foreground">
+      <p className="min-h-12 border-t bg-background/40 px-6 py-3 text-center font-mono text-ui leading-relaxed text-muted-foreground">
         <span className="text-primary">›</span> {frame.caption}
       </p>
 
