@@ -61,26 +61,6 @@ private boolean valid(TreeNode node, double low, double high) {
 bool isValidBST(const TreeNode* root) {
     return valid(root, -std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
 }`,
-  walkthrough: [
-    {
-      text: "        5 (-∞, +∞)\n       / \\\n      1   8\n         / \\\n        6   4",
-      caption:
-        "Each node must fall inside an interval inherited from its ancestors.",
-    },
-    {
-      text: "1: interval (-∞, 5)   ✓\n8: interval (5, +∞)   ✓",
-      caption: "Children of 5: left tightens the upper bound, right the lower.",
-    },
-    {
-      text: "6: interval (5, 8)    ✓\n4: interval (5, 8)    ✗   4 ≤ 5",
-      caption:
-        "4 satisfies its parent 8, but violates ancestor 5 — intervals catch it.",
-    },
-    {
-      text: "parent-only check:  4 < 8  ✓  (wrong: accepts)\ninterval check:     4 ∉ (5, 8)  ✗  (correct: rejects)",
-      caption: "Why bounds beat local comparisons.",
-    },
-  ],
   alternatives: [
     {
       name: "In-order traversal",

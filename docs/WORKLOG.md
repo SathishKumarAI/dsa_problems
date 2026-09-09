@@ -95,6 +95,65 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (batch 5) — the first five journeys for problems that are not rows
+
+One PR (#62). **48 → 53 journeys**, and the pool they came from is the 31 problems whose
+walkthrough was ASCII art because there was nothing else to draw.
+
+| journey | problem | what it proves |
+|---|---|---|
+| `two-runners-one-track` | cycle-detect | the list view's **back-edge**, which had never rendered |
+| `one-row-at-a-time` | level-order | a tree whose answer is a shape, not a number |
+| `the-window-every-ancestor-leaves-open` | validate-bst | the wrong answer is the lesson |
+| `the-smallest-of-the-big-ones` | kth-largest-stream | **a heap is drawn by the tree view unchanged** |
+| `take-the-smaller-front` | merge-two-sorted | two structures arriving as one row |
+
+### Three shape decisions, each made once and reused
+
+- **A cycle is a scalar.** `cycle-detect` takes the row of values plus one param: the index the tail
+  points at, or -1. The learner can move the tail anywhere and watch two runners chase it. The
+  `cycleTo` back-edge shipped with the list view in #57 and had never been rendered by anything;
+  measured on screen now — 4 nodes, `↩` where `∅` would be, "links back to position 1".
+- **A heap needs no view.** The claim made when the tree view was built was that a heap is an array
+  read as level-order slots, so the same drawing shows it. `kth-largest-stream` runs a real
+  push/sift-up and pop/sift-down on a plain array and hands it straight to the tree view. Verified
+  on screen at k = 3: 4 nodes, 3 edges, root labelled, the newcomer at the bottom.
+- **Two structures, one row.** `merge-two-sorted` puts both lists in the same token row with `|`
+  between them, so the drawer stays one text field and the divider can be dragged to either end to
+  make a list empty. The list view draws the OUTPUT being spliced, marked by which side each node
+  came from; the inputs live in the state line.
+
+Tree helpers moved out of `max-depth.ts` into `data/journeys/tree-slots.ts` — the third tree journey
+is when a shared module stops being speculative.
+
+### What the gates caught, again
+
+- **Two out-of-range `line` indices** in the heap rung: the frames pointed past the end of that
+  rung's own Python block. Same class of mistake as the last batch, caught the same way.
+- **Two untagged corner cases** — `range` on validate-bst and `negatives` on merge-two-sorted —
+  where the edge was declared and no frame explained it on its preset. Both are now taught in play:
+  the sentinel must sit outside the value range, and the dummy node's 0 must never be compared.
+
+### B54 gets paid off by writing, not by deleting
+
+Each journey deletes its problem's hand-written frames on the way in, because `problems.test.ts`
+refuses to let a journey and a static walkthrough coexist — one source of truth. **31 ASCII
+walkthroughs → 26.** That is what "blocked on content" looks like when the content starts landing.
+
+### Gates
+
+`npm run check` exit 0 (tsc 0, eslint 0, **405 tests**) · `npm run test:ui` exit 0, **95 checks**.
+
+### What this batch teaches
+
+1. **A view is not proved until something draws it.** Two of these journeys exist to render code
+   paths that had passed every gate for two days without being executed once.
+2. **The input notation is a design decision, not a formality.** A cycle as an index, two lists as
+   one row with a divider — both keep the test-case drawer a single text field, which is what lets
+   a learner break the input on purpose.
+
+---
+
 ## 2026-09-09 (later) — the last three audit findings, and one item that failed its own measurement
 
 One PR (#61). B55 closes; B54 does not, and why is the finding.

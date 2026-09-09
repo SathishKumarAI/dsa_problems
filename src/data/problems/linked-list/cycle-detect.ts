@@ -57,25 +57,6 @@ export const problem: Problem = {
     }
     return false;
 }`,
-  walkthrough: [
-    {
-      text: "1 → 2 → 3 → 4\n    ↑       │\n    └───────┘\n\nslow = 1, fast = 1",
-      caption: "List with a cycle: 4 points back to 2.",
-    },
-    {
-      text: "slow: 1 → 2\nfast: 1 → 3\n\n(slow +1, fast +2)",
-      caption: "Step 1: runners separate.",
-    },
-    {
-      text: "slow: 2 → 3\nfast: 3 → 2  (via 4, wrapping)",
-      caption: "Step 2: fast wraps around the cycle.",
-    },
-    {
-      text: "slow: 3 → 4\nfast: 2 → 4\n\nslow is fast  →  cycle!",
-      caption:
-        "Step 3: they collide. Gap shrinks by 1 per step inside the loop — collision is guaranteed.",
-    },
-  ],
   alternatives: [
     {
       name: "Visited set",
