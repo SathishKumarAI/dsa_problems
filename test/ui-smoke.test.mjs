@@ -186,6 +186,11 @@ describe(
       await page.goto(`${server.base}/#/journey/three-sum?act=story`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
+        // the reading column is tabs now (spec 5.2) — the corner cases have
+        // a tab of their own, one click away
+        [...document.querySelectorAll('[role=tab]')]
+          .find(t => /edge cases/i.test(t.textContent))?.click();
+        await wait(500);
         const cards = [...document.querySelectorAll('[aria-label="corner cases"] > li')];
         const before = document.querySelector('[aria-label="input preset"]')?.value;
         // one card holds the preset that is already loaded ("loaded ✓") —
@@ -220,20 +225,24 @@ describe(
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
         const aside = document.querySelector('[aria-label="approach"]');
-        const trigger = () => [...aside.querySelectorAll('[data-slot=accordion-trigger]')]
-          .find(b => /the problem/i.test(b.innerText));
-        const closed = aside.innerText;
-        trigger().click();
-        await wait(400);
-        const opened = aside.innerText;
+        // ONE click each. The reading column is tabs now, and the tab IS the
+        // disclosure: Explain holds the statement, Edge cases holds the
+        // corner cases, and neither is nested behind a second control.
+        const tab = re => [...aside.querySelectorAll('[role=tab]')]
+          .find(b => re.test(b.textContent));
+        const trigger = () => tab(/explain/i);
         const cases = () => aside.querySelector('[aria-label="corner cases"]');
         const casesClosed = !cases();
-        [...aside.querySelectorAll('[data-slot=accordion-trigger]')]
-          .find(b => /bring three inputs/i.test(b.innerText))?.click();
-        await wait(400);
+        trigger().click();
+        await wait(500);
+        const opened = aside.innerText;
+        const beforeCases = aside.innerText.length;
+        tab(/edge cases/i)?.click();
+        await wait(500);
         return {
           hasTrigger: !!trigger(),
-          grew: opened.length > closed.length,
+          // one click on Edge cases has to reveal something that was not there
+          grew: aside.innerText.length !== beforeCases,
           statement: /nums/i.test(opened),
           casesClosed,
           casesOpen: !!cases(),
@@ -491,6 +500,11 @@ describe(
 
       await page.goto(`${server.base}/#/journey/single-number?act=story`)
       const cited = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        // corner cases sit in their own tab now (spec 5.2)
+        [...document.querySelectorAll('[role=tab]')]
+          .find(t => /edge cases/i.test(t.textContent))?.click();
+        await wait(500);
         const li = [...document.querySelectorAll('[aria-label="corner cases"] > li')];
         return li.map(l => l.innerText.split(String.fromCharCode(10))
           .filter(x => x.startsWith('from')).length);

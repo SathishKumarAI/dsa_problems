@@ -71,7 +71,9 @@ function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
     <TabsPrimitive.Panel
       data-slot="tabs-content"
-      className={cn("flex-1 text-sm outline-none", className)}
+      // no `outline-none` here: the panel is focusable, so removing its
+      // outline left nothing visible when you tabbed to it
+      className={cn("flex-1 text-sm", className)}
       {...props}
     />
   )

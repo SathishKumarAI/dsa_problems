@@ -10,7 +10,6 @@
 
 import {
   ArrowLeftIcon,
-  ExternalLinkIcon,
   FlameIcon,
   FlaskConicalIcon,
   PanelRightCloseIcon,
@@ -22,22 +21,16 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { AnyJourney } from "@/engine"
-import type { Problem } from "@/data"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { href } from "@/lib/route"
 import { setPref, usePrefs } from "@/lib/store"
 import { ActStepper } from "./act-stepper"
 import { EdgeCaseCard, HintLadder, PredictCard, QuizCard } from "./cards"
 import { ChallengeEditor } from "./challenge-editor"
-import { Legend } from "./chip-row"
-import { CodePanel } from "./code-panel"
+import { DrawerTabs } from "./drawer-tabs"
 import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
-import { ProblemPanel } from "./problem-panel"
-import { StepsChart } from "./steps-chart"
-import { TracePanel } from "./trace-panel"
 import { useJourney } from "./use-journey"
-import type { JourneyController } from "./use-journey"
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -64,96 +57,6 @@ function ReadingToggle({ open }: { open: boolean }) {
         {open ? <PanelRightCloseIcon /> : <PanelRightOpenIcon />}
       </Button>
     </div>
-  )
-}
-
-// Everything in the reading column, so the open column and the hover-peek
-// overlay of the closed rail draw the same thing.
-function ReadingBody({
-  j,
-  journey,
-  problem,
-}: {
-  j: JourneyController
-  journey: AnyJourney
-  problem?: Problem
-}) {
-  const { act, frame } = j
-  const storyAct = j.actIndex === 0
-  return (
-    <>
-      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-        {act.insight && (
-          <p className="font-semibold text-chart-1">{act.insight}</p>
-        )}
-        <p className="text-muted-foreground">{act.idea}</p>
-      </div>
-
-      <ProblemPanel
-        journey={journey}
-        problem={problem}
-        storyAct={storyAct}
-        input={j.data ? journey.describe(j.data) : ""}
-        current={j.presetKey}
-        onLoad={j.applyPreset}
-      />
-
-      {act.tools?.length ? (
-        <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-          <Label>what this approach is built from</Label>
-          {act.tools.map((t) => (
-            <div key={t.name}>
-              <b>{t.name}</b>{" "}
-              <span className="text-muted-foreground">— {t.role}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      <CodePanel code={act.code} line={frame?.line ?? -1} />
-
-      <TracePanel frames={j.frames} pos={j.player.pos} onSeek={j.seek} />
-
-      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-        <Label>what to understand</Label>
-        <ul className="flex flex-col gap-1.5 text-muted-foreground">
-          {act.takeaways.map((t, i) => (
-            <li key={i} className="flex gap-2">
-              <span className="text-chart-1">›</span>
-              {t}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {j.chart.length > 0 && (
-        <div className="rounded-xl border bg-card p-4">
-          <StepsChart rows={j.chart} active={j.actKey} />
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
-        <Label>legend</Label>
-        <Legend />
-      </div>
-
-      <p className="text-sm text-muted-foreground">
-        same problem elsewhere:{" "}
-        {journey.resources.map((r, i) => (
-          <span key={r.url}>
-            {i > 0 && " · "}
-            <a
-              href={r.url}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-0.5 underline-offset-2 hover:text-foreground hover:underline"
-            >
-              {r.label} <ExternalLinkIcon className="size-3" />
-            </a>
-          </span>
-        ))}
-      </p>
-    </>
   )
 }
 
@@ -187,7 +90,12 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-stage flex-col gap-4 lg:h-full">
+    // `h-full` at EVERY width, not just lg. SidebarInset is min-h-svh and
+    // <main> is flex-1 inside it, so this resolves to "the space left under
+    // the chrome" — which is what lets the regions below scroll internally
+    // instead of the document scrolling. That is the whole mechanism behind
+    // the transport staying put (spec 1.1).
+    <div className="mx-auto flex h-full w-full max-w-stage flex-col gap-4 overflow-hidden">
       {/* header */}
       <header className="flex flex-col gap-2 lg:gap-3">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -264,21 +172,27 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
 
       <div
         className={cn(
-          "grid gap-5 lg:min-h-0 lg:flex-1",
+          // one column below lg: the stage takes the space that is left and
+          // the reading column is capped, so both scroll inside themselves
+          // rather than growing the document
+          "grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-5 lg:grid-rows-none",
           reading
             ? "lg:grid-cols-[minmax(0,1fr)_24rem]"
             : "lg:grid-cols-[minmax(0,1fr)_2.75rem]"
         )}
       >
         {/* ---------- the stage, and the drawer it makes room for ---------- */}
-        <div className="flex min-w-0 gap-4 lg:min-h-0">
+        <div className="flex min-h-0 min-w-0 gap-4">
           <section
-            className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-lg lg:min-h-0"
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-lg"
             aria-label="stage"
           >
             <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
+              {/* the act NUMBER only. The stepper directly above already says
+                the act's name and its subtitle, and repeating it here was the
+                same words twice in adjacent rows (spec 3.2). */}
               <span className="font-mono text-ui text-muted-foreground">
-                act {String(j.actIndex + 1).padStart(2, "0")} · {act.name}
+                act {String(j.actIndex + 1).padStart(2, "0")}
               </span>
               <span className="ml-auto font-mono text-xs text-muted-foreground">
                 {act.complexity}
@@ -288,7 +202,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             {/* the middle scrolls; the narration and the controls below it do
               not, so the sentence explaining the step is always on screen
               (UX audit U1) */}
-            <div className="flex flex-col lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               {(j.warning || j.info) && (
                 <p
                   className={cn(
@@ -490,17 +404,17 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                 className="absolute top-0 right-0 z-20 hidden max-h-full w-[26rem] flex-col gap-4 overflow-y-auto rounded-xl border bg-card p-3 text-body shadow-2xl lg:flex"
                 data-testid="reading-peek"
               >
-                <ReadingBody j={j} journey={journey} problem={problem} />
+                <DrawerTabs j={j} journey={journey} problem={problem} />
               </div>
             )}
             <ReadingToggle open={false} />
           </aside>
         ) : (
           <aside
-            className="flex flex-col gap-4 text-body lg:min-h-0 lg:overflow-y-auto lg:pr-1"
+            className="flex max-h-[45svh] min-h-0 flex-col gap-4 overflow-y-auto text-body lg:max-h-none lg:pr-1"
             aria-label="approach"
           >
-            <ReadingBody j={j} journey={journey} problem={problem} />
+            <DrawerTabs j={j} journey={journey} problem={problem} />
             <ReadingToggle open />
           </aside>
         )}
