@@ -73,16 +73,21 @@ export interface DerivedSpec<C extends Cell = number> {
   subtitle: string
   reveals?: string[]
   sample?: C[]
-  // `extra` carries the scalars a problem needs beside the row (a target, a
-  // k), and every one of them must be declared in `params` so the test-case
-  // drawer can offer a field for it.
+  // `extra` carries what a problem needs beside the row — a target, a k, or a
+  // second string — and every one of them must be declared in `params` so the
+  // test-case drawer can offer a field for it.
   presets: Record<
     string,
-    { label: string; nums: C[]; info?: string; extra?: Record<string, number> }
+    {
+      label: string
+      nums: C[]
+      info?: string
+      extra?: Record<string, number | string>
+    }
   >
   defaultPreset: string
   harder?: { preset: string; label: string }
-  params?: { key: string; label: string }[]
+  params?: { key: string; label: string; kind?: "number" | "string" }[]
   // Rejects an input the acts cannot honestly run — a binary search on an
   // unsorted row would animate a lie. Default: everything is legal.
   classify?: (d: Data<C>) => Verdict
@@ -94,7 +99,7 @@ export interface DerivedSpec<C extends Cell = number> {
   // A row of characters reads and parses differently from a row of numbers;
   // everything else about a derived journey is the same, so this is the only
   // per-shape hook rather than a second builder.
-  cells?: "numbers" | "characters"
+  cells?: "numbers" | "characters" | "words"
 }
 
 const chips = (nums: Cell[], marks: Record<number, ChipRole> = {}) =>
@@ -184,16 +189,28 @@ export function deriveJourney<C extends Cell = number>(
     params: spec.params,
     classify: spec.classify ?? (() => ({ ok: true })),
     describe: (d) =>
-      spec.cells === "characters" ? d.nums.join("") : d.nums.join(", "),
+      spec.cells === "characters"
+        ? d.nums.join("")
+        : spec.cells === "words"
+          ? d.nums.join(" ")
+          : d.nums.join(", "),
     parse: (text, params) => {
-      const extra: Record<string, number> = {}
-      for (const { key } of spec.params ?? []) {
+      const extra: Record<string, number | string> = {}
+      for (const { key, kind } of spec.params ?? []) {
+        if (kind === "string") {
+          extra[key] = params[key] ?? ""
+          continue
+        }
         const v = Number(params[key])
         if (!Number.isInteger(v)) return null
         extra[key] = v
       }
       if (spec.cells === "characters")
         return { nums: [...text] as C[], ...extra } as Data<C>
+      if (spec.cells === "words") {
+        const words = text.split(/[\s,]+/).filter(Boolean)
+        return words.length ? ({ nums: words, ...extra } as Data<C>) : null
+      }
       const nums = text
         .split(/[^-\d]+/)
         .filter(Boolean)

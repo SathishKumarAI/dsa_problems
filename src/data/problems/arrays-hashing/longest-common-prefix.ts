@@ -62,34 +62,6 @@ export const problem: Problem = {
     }
     return first;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["flower", "flow", "flight"] },
-      caption: "Read down the columns, not across the strings.",
-    },
-    {
-      cells: {
-        values: ["flower", "flow", "flight"],
-        marks: { 0: "focus", 1: "focus", 2: "focus" },
-      },
-      caption: "Column 0: f, f, f — agreed.",
-    },
-    {
-      cells: {
-        values: ["flower", "flow", "flight"],
-        marks: { 0: "window", 1: "window", 2: "window" },
-      },
-      caption: "Column 1: l, l, l — agreed. The prefix is 'fl' so far.",
-    },
-    {
-      cells: { values: ["flower", "flow", "flight"], marks: { 2: "compare" } },
-      caption: "Column 2: o, o, i — 'flight' disagrees. Stop immediately.",
-    },
-    {
-      cells: { values: ["fl"], marks: { 0: "done" } },
-      caption: "Answer 'fl'. Only three columns were ever read.",
-    },
-  ],
   alternatives: [
     {
       name: "Shrink against each string",

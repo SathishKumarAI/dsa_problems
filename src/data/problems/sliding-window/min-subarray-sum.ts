@@ -76,40 +76,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [2, 3, 1, 2, 4, 3] },
-      caption: "target = 7. The window grows right and shrinks left.",
-    },
-    {
-      cells: {
-        values: [2, 3, 1, 2, 4, 3],
-        marks: { 0: "window", 1: "window", 2: "window", 3: "window" },
-      },
-      caption: "2+3+1+2 = 8 ≥ 7 → record width 4, then try to shrink.",
-    },
-    {
-      cells: {
-        values: [2, 3, 1, 2, 4, 3],
-        marks: { 1: "window", 2: "window", 3: "window" },
-      },
-      caption:
-        "Dropping the 2 leaves 6 — no longer qualifying, so the shrink stops.",
-    },
-    {
-      cells: {
-        values: [2, 3, 1, 2, 4, 3],
-        marks: { 3: "window", 4: "window" },
-      },
-      caption:
-        "Growing to 4 lets the left edge run forward: 2+4 = 6, then 4+3 = 7.",
-    },
-    {
-      cells: { values: [2, 3, 1, 2, 4, 3], marks: { 4: "done", 5: "done" } },
-      caption:
-        "[4,3] qualifies at width 2 — the answer. Both edges only moved forward.",
-    },
-  ],
   alternatives: [
     {
       name: "Every subarray",

@@ -54,7 +54,7 @@ test("POST run returns frames; bad input is a 400, unknown act a 404", () => {
   assert.equal(get("/api/journeys/two-sum/run").status, 405)
 })
 
-test("POST run accepts a row of characters, and only a homogeneous one", () => {
+test("POST run accepts a row of characters or words, homogeneous and bounded", () => {
   // a derived journey over a string sends single characters, not integers —
   // the guard has to let that through without letting anything else in
   const ok = post("/api/journeys/longest-clean-run/run", {
@@ -66,7 +66,8 @@ test("POST run accepts a row of characters, and only a homogeneous one", () => {
   assert.ok(frames.length > 2)
   for (const bad of [
     { nums: ["a", 1] }, // mixed
-    { nums: ["ab"] }, // not one character
+    { nums: [""] }, // empty, so not a cell at all
+    { nums: ["x".repeat(33)] }, // past the length cap
     { nums: [1.5] }, // not an integer
     { nums: [{}] },
   ])

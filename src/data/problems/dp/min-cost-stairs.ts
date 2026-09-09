@@ -61,39 +61,6 @@ export const problem: Problem = {
     }
     return min(oneBack, twoBack);
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 100, 1, 1, 1, 100] },
-      caption: "Cost to STAND on each stair, carried in two variables.",
-    },
-    {
-      cells: {
-        values: [1, 100, 1, 1, 1, 100],
-        marks: { 0: "focus", 1: "focus" },
-      },
-      caption: "Both starts cost only themselves: 1 and 100.",
-    },
-    {
-      cells: {
-        values: [1, 100, 1, 1, 1, 100],
-        marks: { 2: "focus", 0: "compare" },
-      },
-      caption:
-        "Stair 2: 1 + min(100, 1) = 2. The expensive stair is simply stepped over.",
-    },
-    {
-      cells: {
-        values: [1, 100, 1, 1, 1, 100],
-        marks: { 3: "focus", 1: "compare", 2: "compare" },
-      },
-      caption: "Stair 3: 1 + min(2, 100) = 3.",
-    },
-    {
-      cells: { values: [1, 100, 1, 1, 1, 100], marks: { 4: "done" } },
-      caption:
-        "Stair 4: 1 + min(3, 2) = 3. The answer is the cheaper of the last two, since either steps past the top.",
-    },
-  ],
   alternatives: [
     {
       name: "A table of costs",

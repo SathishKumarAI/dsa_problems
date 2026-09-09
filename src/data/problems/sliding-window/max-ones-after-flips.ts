@@ -74,42 +74,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 1, 0, 0, 1, 1, 1] },
-      caption: "k = 1. The window pays one flip per zero it contains.",
-    },
-    {
-      cells: {
-        values: [1, 1, 0, 0, 1, 1, 1],
-        marks: { 0: "window", 1: "window", 2: "window" },
-      },
-      caption: "One zero inside → affordable. Width 3.",
-    },
-    {
-      cells: {
-        values: [1, 1, 0, 0, 1, 1, 1],
-        marks: { 0: "compare", 1: "window", 2: "window", 3: "focus" },
-      },
-      caption: "A second zero enters → over budget. The left edge must move.",
-    },
-    {
-      cells: {
-        values: [1, 1, 0, 0, 1, 1, 1],
-        marks: { 3: "window", 4: "window", 5: "window", 6: "window" },
-      },
-      caption:
-        "The left edge walks past the first zero; the window regrows to width 4.",
-    },
-    {
-      cells: {
-        values: [1, 1, 0, 0, 1, 1, 1],
-        marks: { 3: "done", 4: "done", 5: "done", 6: "done" },
-      },
-      caption:
-        "Answer 4. The left edge only ever moved forward, so the pass is linear.",
-    },
-  ],
   alternatives: [
     {
       name: "Try every window",

@@ -103,44 +103,6 @@ export const problem: Problem = {
     }
     return current;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["3", "[", "a", "2", "[", "c", "]", "]"] },
-      caption:
-        '"3[a2[c]]". Two stacks travel with the walk: pending counts and suspended text.',
-    },
-    {
-      cells: {
-        values: ["3", "[", "a", "2", "[", "c", "]", "]"],
-        marks: { 0: "focus", 1: "focus" },
-      },
-      caption:
-        "Count 3 accumulated, then '[' suspends the empty text. Stacks: [3], [\"\"].",
-    },
-    {
-      cells: {
-        values: ["3", "[", "a", "2", "[", "c", "]", "]"],
-        marks: { 2: "window", 3: "focus", 4: "focus" },
-      },
-      caption:
-        'Current is "a"; then 2 and a second \'[\' suspend it too. Stacks: [3,2], ["","a"].',
-    },
-    {
-      cells: {
-        values: ["3", "[", "a", "2", "[", "c", "]", "]"],
-        marks: { 5: "window", 6: "focus" },
-      },
-      caption: 'The first \']\' pops: "a" + "c"×2 = "acc".',
-    },
-    {
-      cells: {
-        values: ["3", "[", "a", "2", "[", "c", "]", "]"],
-        marks: { 7: "focus" },
-      },
-      caption:
-        'The second \']\' pops: "" + "acc"×3 = "accaccacc". Nesting needed no special case.',
-    },
-  ],
   alternatives: [
     {
       name: "Recursive descent",

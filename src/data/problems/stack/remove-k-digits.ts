@@ -86,42 +86,6 @@ export const problem: Problem = {
     string out = kept.substr(start);
     return out.empty() ? "0" : out;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["1", "4", "3", "2", "2", "1", "9"] },
-      caption:
-        'num = "1432219", k = 3. Kept digits will end up non-decreasing.',
-    },
-    {
-      cells: {
-        values: ["1", "4", "3", "2", "2", "1", "9"],
-        marks: { 0: "window", 1: "compare", 2: "focus" },
-      },
-      caption: "3 arrives and 4 is larger → pop 4. Budget 2 left.",
-    },
-    {
-      cells: {
-        values: ["1", "4", "3", "2", "2", "1", "9"],
-        marks: { 2: "compare", 3: "focus" },
-      },
-      caption: "2 arrives and 3 is larger → pop 3. Budget 1.",
-    },
-    {
-      cells: {
-        values: ["1", "4", "3", "2", "2", "1", "9"],
-        marks: { 3: "compare", 5: "focus" },
-      },
-      caption: "1 arrives and 2 is larger → pop 2. Budget spent.",
-    },
-    {
-      cells: {
-        values: ["1", "2", "1", "9"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
-      },
-      caption:
-        '"1219". Each pop removed a digit that a smaller one immediately followed.',
-    },
-  ],
   alternatives: [
     {
       name: "Pick the smallest digit at each step",

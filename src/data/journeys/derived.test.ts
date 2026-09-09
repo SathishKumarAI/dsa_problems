@@ -26,6 +26,7 @@ import {
   greedyCoins,
 } from "./coin-change-min.ts"
 import { containsDuplicate, firstRepeat } from "./contains-duplicate.ts"
+import { decoded, decodeString } from "./decode-string.ts"
 import { findPeakElement, isPeak, peaks } from "./find-peak-element.ts"
 import { firstLastPosition, rangeOf } from "./first-last-position.ts"
 import {
@@ -48,8 +49,29 @@ import {
   longestIncreasing,
   longestIncreasingRun,
 } from "./longest-increasing-run.ts"
+import { hiddenIn, isSubsequence } from "./is-subsequence.ts"
 import { lastStone, lastStoneWeight } from "./last-stone-weight.ts"
+import {
+  longestCommonPrefix,
+  sharedPrefix,
+} from "./longest-common-prefix.ts"
+import { majorityElement, majorityOf } from "./majority-element.ts"
+import {
+  longestAfterFlips,
+  maxOnesAfterFlips,
+} from "./max-ones-after-flips.ts"
 import { maxSubarray } from "./max-subarray.ts"
+import { minSubarraySum, shortestReaching } from "./min-subarray-sum.ts"
+import {
+  distinctInOrder,
+  removeDuplicatesSorted,
+} from "./remove-duplicates-sorted.ts"
+import { loneValue, singleInSorted } from "./single-in-sorted.ts"
+import { cheapestClimb, minCostStairs } from "./min-cost-stairs.ts"
+import {
+  removeKDigits,
+  smallestAfterRemoving,
+} from "./remove-k-digits.ts"
 import { rotatedMin, rotatedMinimum } from "./rotated-minimum.ts"
 import { holdsTarget, search2dMatrix } from "./search-2d-matrix.ts"
 import { findRotated, rotatedSearch } from "./rotated-search.ts"
@@ -436,6 +458,139 @@ const TABLE: {
     input: (rand) => ({
       nums: Array.from({ length: 1 + rand(9) }, () => "ABC"[rand(3)]),
       k: rand(4),
+    }),
+  },
+  {
+    journey: majorityElement as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => majorityOf(d.nums as number[]),
+    // build rows that actually HAVE a majority, since classify refuses the
+    // rest — a winner plus a shuffled minority
+    input: (rand) => {
+      const n = 1 + rand(9)
+      const winner = rand(4)
+      const nums: number[] = []
+      const owned = Math.floor(n / 2) + 1
+      for (let i = 0; i < owned; i++) nums.push(winner)
+      while (nums.length < n) nums.push(4 + rand(4))
+      for (let i = nums.length - 1; i > 0; i--) {
+        const j = rand(i + 1)
+        ;[nums[i], nums[j]] = [nums[j], nums[i]]
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: longestCommonPrefix as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => sharedPrefix(d.nums as string[]),
+    // words drawn from a two-letter alphabet so they share prefixes often,
+    // and empty words turn up on their own
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(4) }, () =>
+        Array.from({ length: rand(5) }, () => "ab"[rand(2)]).join("")
+      ),
+    }),
+  },
+  {
+    journey: isSubsequence as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => hiddenIn(d.s as string, d.nums as string[]),
+    // a three-letter alphabet and a short needle, so true and false both occur
+    input: (rand) => ({
+      nums: Array.from({ length: rand(10) }, () => "abc"[rand(3)]),
+      s: Array.from({ length: rand(4) }, () => "abc"[rand(3)]).join(""),
+    }),
+  },
+  {
+    journey: removeDuplicatesSorted as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => distinctInOrder(d.nums as number[]),
+    // sorted with heavy repetition, so runs of three or more turn up often
+    input: (rand) => {
+      const nums: number[] = []
+      let v = -2
+      for (let i = 0; i < 1 + rand(9); i++) {
+        if (rand(2)) v += 1
+        nums.push(v)
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: maxOnesAfterFlips as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => longestAfterFlips(d.nums as number[], d.k as number),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => rand(2)),
+      k: rand(4),
+    }),
+  },
+  {
+    journey: minSubarraySum as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => shortestReaching(d.nums as number[], d.target as number),
+    // strictly positive, as classify demands, and a target often out of reach
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => 1 + rand(5)),
+      target: 1 + rand(20),
+    }),
+  },
+  {
+    journey: singleInSorted as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => loneValue(d.nums as number[]),
+    // build the shape classify insists on: sorted pairs with exactly one
+    // unpaired value dropped somewhere among them
+    input: (rand) => {
+      const values: number[] = []
+      let v = 0
+      for (let i = 0; i < 1 + rand(6); i++) values.push((v += 1 + rand(2)))
+      const lone = rand(values.length)
+      const nums: number[] = []
+      for (let i = 0; i < values.length; i++) {
+        nums.push(values[i])
+        if (i !== lone) nums.push(values[i])
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: decodeString as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => decoded(d.nums as string[]),
+    // generate WELL FORMED encodings only, since the problem promises that:
+    // a small grammar, nested at most twice
+    input: (rand) => {
+      const letters = () =>
+        Array.from({ length: 1 + rand(2) }, () => "abc"[rand(3)]).join("")
+      const group = (depth: number): string =>
+        depth > 0 && rand(2)
+          ? `${1 + rand(3)}[${letters()}${group(depth - 1)}]`
+          : `${1 + rand(3)}[${letters()}]`
+      return { nums: [...(letters() + group(2) + letters())] }
+    },
+  },
+  {
+    journey: removeKDigits as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) =>
+      smallestAfterRemoving(d.nums as string[], d.k as number),
+    // small digits so ties and exposed leading zeroes both turn up
+    input: (rand) => {
+      const n = 1 + rand(7)
+      return {
+        nums: Array.from({ length: n }, () => "0123"[rand(4)]),
+        k: rand(n + 1),
+      }
+    },
+  },
+  {
+    journey: minCostStairs as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => cheapestClimb(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 2 + rand(8) }, () => rand(20)),
     }),
   },
 ]
