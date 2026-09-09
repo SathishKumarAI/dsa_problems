@@ -84,6 +84,9 @@ export function ProblemList({ pattern, onOpen }: Props) {
           <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-9"
+            // a placeholder is not an accessible name: it is gone the moment
+            // anything is typed, and it is announced inconsistently
+            aria-label="Filter problems by title or brief"
             placeholder="Filter by title or brief…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

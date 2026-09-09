@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProgressRing } from "@/components/ui/progress-ring"
+import { RailToken } from "@/components/ui/rail-token"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -68,8 +69,9 @@ function JourneyItem({
         tooltip={title}
         className="pr-12"
       >
-        <RouteIcon className="size-3.5 shrink-0 text-chart-1" />
-        <span className="truncate">{title}</span>
+        <RouteIcon className={`size-3.5 shrink-0 text-chart-1 ${WIDE}`} />
+        <RailToken label={title} done={earned.earned} total={earned.total} />
+        <span className={`truncate ${WIDE}`}>{title}</span>
       </SidebarMenuButton>
       <SidebarMenuBadge className="font-mono" title={earned.long}>
         {earned.done ? "✓" : earned.short}
@@ -189,7 +191,12 @@ export function AppSidebar({ view }: { view: string }) {
           </Button>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent
+        // collapsed, the primitive sets overflow-hidden, so "show all 46
+        // journeys" on a short viewport clipped the list with no way to reach
+        // the rest. The rail scrolls like the expanded column does.
+        className="group-data-[collapsible=icon]:overflow-y-auto"
+      >
         <SidebarGroup>
           <SidebarGroupLabel>DSA</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -256,7 +263,14 @@ export function AppSidebar({ view }: { view: string }) {
                       }
                       className="pr-10"
                     >
-                      <LayersIcon className={RAIL_ICON} />
+                      {/* collapsed, this row used to be a generic icon
+                          identical to the other nine — see rail-token.tsx */}
+                      <RailToken
+                        label={label}
+                        done={done}
+                        total={problems.length}
+                      />
+                      <LayersIcon className={cn(RAIL_ICON, "hidden")} />
                       <span
                         className={`w-16 shrink-0 font-mono text-xs text-muted-foreground ${WIDE}`}
                       >
