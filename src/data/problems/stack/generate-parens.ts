@@ -92,45 +92,6 @@ vector<string> generateParenthesis(int n) {
     build(n, 0, 0, current, out);
     return out;
 }`,
-  walkthrough: [
-    {
-      text: `n = 2, building left to right
-""`,
-      caption:
-        "Two counters: opens used, closes used. Both start at 0, and only legal characters are ever added.",
-    },
-    {
-      text: `"("        opened 1, closed 0
- └ ")" legal? closed < opened → yes
- └ "(" legal? opened < n     → yes`,
-      caption:
-        'A close is only offered because one bracket is already open. From "" a close was never even considered.',
-    },
-    {
-      text: `"(("       opened 2, closed 0
- └ "(" legal? opened < n → NO, n is used up`,
-      caption: "The opening branch is exhausted; only a close can follow.",
-    },
-    {
-      text: `"(()"  →  "(())"   complete`,
-      caption:
-        "First answer. The recursion unwinds and tries the other branch.",
-    },
-    {
-      text: `"()"       opened 1, closed 1
- └ ")" legal? closed < opened → NO
- └ "(" legal? opened < n      → yes`,
-      caption:
-        'Here the close is REFUSED — there is nothing open to close. That refusal is what "()) " never being built means.',
-    },
-    {
-      text: `"()("  →  "()()"   complete
-
-["(())", "()()"]`,
-      caption:
-        "Two answers out of four arrangements. The two invalid ones were never constructed, not filtered away.",
-    },
-  ],
   alternatives: [
     {
       name: "Generate everything, then filter",

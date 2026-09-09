@@ -86,25 +86,6 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     return out;
 }
 `,
-  walkthrough: [
-    {
-      text: "nums = [4, 4, 4, 6, 6, 2]   k = 2\n\ncounts: {4: 3, 6: 2, 2: 1}",
-      caption: "Pass 1: hash-map count.",
-    },
-    {
-      text: "buckets (index = count):\n\n[0] —\n[1] 2\n[2] 6\n[3] 4\n[4] —\n[5] —\n[6] —",
-      caption:
-        "Pass 2: value goes into bucket[count]. Counts can't exceed n = 6.",
-    },
-    {
-      text: "read top-down:\n\n[6] —\n[5] —\n[4] —\n[3] 4   ← take\n[2] 6   ← take, have k=2, stop",
-      caption: "Highest buckets first — no sort ever happens.",
-    },
-    {
-      text: "answer: [4, 6]\n\ncount O(n) + bucket O(n) + read O(n) = O(n)",
-      caption: "Bucket sort by count beats O(n log n) sorting.",
-    },
-  ],
   alternatives: [
     {
       name: "Sort by count",

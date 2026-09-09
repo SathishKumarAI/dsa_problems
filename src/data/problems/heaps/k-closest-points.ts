@@ -81,25 +81,6 @@ def k_closest(points: list[list[int]], k: int) -> list[list[int]]:
     }
     return res;
 }`,
-  walkthrough: [
-    {
-      text: "points: [1,3] [-2,2] [5,8]   k = 2\n\ndist²:  [1,3]→10  [-2,2]→8  [5,8]→89",
-      caption:
-        "Squared distance is enough — ordering is identical to true distance.",
-    },
-    {
-      text: "push [1,3]  (d²=10)\npush [-2,2] (d²=8)\n\nkept: {[1,3], [-2,2]}   worst kept: 10",
-      caption: "First k points always enter the heap.",
-    },
-    {
-      text: "[5,8]: d² = 89 > 10 (worst kept)\n→ skip\n\nkept: {[1,3], [-2,2]}",
-      caption: "Farther than the worst kept point — rejected in O(1).",
-    },
-    {
-      text: "answer: [[-2,2], [1,3]]\n\nn log k, not n log n:\nonly the k kept points ever touch the heap",
-      caption: "Bounded heap = the whole trick.",
-    },
-  ],
   alternatives: [
     {
       name: "Sort all",

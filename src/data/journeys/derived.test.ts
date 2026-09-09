@@ -60,6 +60,13 @@ import {
 } from "./partition-equal-subset.ts"
 import { balancedBrackets, isBalanced } from "./balanced-brackets.ts"
 import { kokoBananas, slowestSpeed } from "./koko-bananas.ts"
+import { topK, topKFrequent } from "./top-k-frequent.ts"
+import { shortestSchedule, taskCooldown } from "./task-cooldown.ts"
+import { courseOrder, courseOrderJourney, edgesOf } from "./course-order.ts"
+import { networkDelay, networkDelayJourney } from "./network-delay.ts"
+import { kClosest, kClosestPoints, pointsOf } from "./k-closest-points.ts"
+import { allParens, generateParens } from "./generate-parens.ts"
+import { minCoverSubstring, minWindow } from "./min-cover-substring.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -741,6 +748,118 @@ const TABLE: {
         nums: Array.from({ length: n }, () => 1 + rand(12)),
         h: n + rand(10),
       }
+    },
+  },
+  {
+    journey: topKFrequent as unknown as AnyJourney,
+    skip: ["story"],
+    // the answer is a SET — every rung returns it sorted so the comparison is
+    // about membership, which is what the problem actually asks for
+    reference: (d) => topK(d.nums as number[], d.k as number),
+    input: (rand) => {
+      const nums = Array.from({ length: 1 + rand(9) }, () => rand(5))
+      const distinct = new Set(nums).size
+      return { nums, k: 1 + rand(distinct) }
+    },
+  },
+  {
+    journey: taskCooldown as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => shortestSchedule(d.nums as string[], d.n as number),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => "ABCD"[rand(4)]),
+      n: rand(4),
+    }),
+  },
+  {
+    journey: courseOrderJourney as unknown as AnyJourney,
+    skip: ["story"],
+    // any valid order is correct, so compare what the rungs mean rather than
+    // the exact list: a full topological order, or the empty list on a cycle
+    reference: (d) => courseOrder(d.nums as number[], d.courses as number),
+    accept: (d, got) => {
+      const nums = d.nums as number[]
+      const courses = d.courses as number
+      const order = got as number[]
+      const truth = courseOrder(nums, courses)
+      if (!truth.length) return Array.isArray(order) && order.length === 0
+      if (!Array.isArray(order) || order.length !== courses) return false
+      const at = new Map(order.map((c, i) => [c, i]))
+      if (at.size !== courses) return false
+      return edgesOf(nums).every(([a, b]) => at.get(b)! < at.get(a)!)
+    },
+    input: (rand) => {
+      const courses = 1 + rand(5)
+      const pairs: number[] = []
+      for (let i = rand(5); i > 0; i--) {
+        const a = rand(courses)
+        const b = rand(courses)
+        if (a !== b) pairs.push(a, b)
+      }
+      return { nums: pairs, courses }
+    },
+  },
+  {
+    journey: networkDelayJourney as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) =>
+      networkDelay(d.nums as number[], d.nodes as number, d.source as number),
+    input: (rand) => {
+      const nodes = 1 + rand(5)
+      const triples: number[] = []
+      for (let i = rand(6); i > 0; i--) {
+        const u = 1 + rand(nodes)
+        const v = 1 + rand(nodes)
+        if (u !== v) triples.push(u, v, 1 + rand(5))
+      }
+      return { nums: triples, nodes, source: 1 + rand(nodes) }
+    },
+  },
+  {
+    journey: kClosestPoints as unknown as AnyJourney,
+    skip: ["story"],
+    // any valid set of k is accepted, so a rung is judged on the DISTANCES it
+    // kept, not on which of two tied points it happened to pick
+    reference: (d) => kClosest(d.nums as number[], d.k as number),
+    accept: (d, got) => {
+      const nums = d.nums as number[]
+      const k = d.k as number
+      const list = got as string[]
+      if (!Array.isArray(list) || list.length !== k) return false
+      const dist = (s: string) => {
+        const [x, y] = s.split(",").map(Number)
+        return x * x + y * y
+      }
+      const all = pointsOf(nums).map(([x, y]) => `${x},${y}`)
+      if (!list.every((p) => all.includes(p))) return false
+      const mine = list.map(dist).sort((a, b) => a - b)
+      const best = kClosest(nums, k)
+        .map(dist)
+        .sort((a, b) => a - b)
+      return mine.every((v, i) => v === best[i])
+    },
+    input: (rand) => {
+      const n = 1 + rand(5)
+      return {
+        nums: Array.from({ length: n * 2 }, () => rand(9) - 4),
+        k: 1 + rand(n),
+      }
+    },
+  },
+  {
+    journey: generateParens as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => allParens((d.nums as number[])[0]),
+    input: (rand) => ({ nums: [1 + rand(4)] }),
+  },
+  {
+    journey: minCoverSubstring as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => minWindow(d.nums as string[]),
+    input: (rand) => {
+      const word = (len: number) =>
+        Array.from({ length: len }, () => "abc"[rand(3)]).join("")
+      return { nums: [word(1 + rand(9)), word(1 + rand(3))] }
     },
   },
   {

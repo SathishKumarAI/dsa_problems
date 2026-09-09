@@ -91,24 +91,6 @@ def least_interval(tasks: list[str], n: int) -> int:
     return time;
 }
 `,
-  walkthrough: [
-    {
-      text: "tasks: A×3 B×3   n = 2\nheap: [A:3, B:3]   cooling: []",
-      caption: "Counts in a max-heap; cooldown queue empty.",
-    },
-    {
-      text: "t=1  run A (2 left) → cooling until t=4\nt=2  run B (2 left) → cooling until t=5\nt=3  nothing ready → idle",
-      caption: "Most-frequent-first; both cooling, clock still ticks.",
-    },
-    {
-      text: "t=4  A ready → run A (1 left) → cool to t=7\nt=5  B ready → run B (1 left) → cool to t=8\nt=6  idle",
-      caption: "Same shape repeats: A B idle.",
-    },
-    {
-      text: "t=7  run A (0 left)\nt=8  run B (0 left)\n\nA B _ A B _ A B   →  8 units",
-      caption: "Heap and queue empty at t=8 — answer 8.",
-    },
-  ],
   alternatives: [
     {
       name: "Math formula",

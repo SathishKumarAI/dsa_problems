@@ -58,6 +58,13 @@ import { longestCommonSubsequence } from "../data/journeys/longest-common-subseq
 import { partitionEqualSubset } from "../data/journeys/partition-equal-subset.ts"
 import { balancedBrackets } from "../data/journeys/balanced-brackets.ts"
 import { kokoBananas } from "../data/journeys/koko-bananas.ts"
+import { topKFrequent } from "../data/journeys/top-k-frequent.ts"
+import { taskCooldown } from "../data/journeys/task-cooldown.ts"
+import { courseOrderJourney } from "../data/journeys/course-order.ts"
+import { networkDelayJourney } from "../data/journeys/network-delay.ts"
+import { kClosestPoints } from "../data/journeys/k-closest-points.ts"
+import { generateParens } from "../data/journeys/generate-parens.ts"
+import { minCoverSubstring } from "../data/journeys/min-cover-substring.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -122,6 +129,13 @@ export const JOURNEYS: AnyJourney[] = [
   partitionEqualSubset as unknown as AnyJourney,
   balancedBrackets as unknown as AnyJourney,
   kokoBananas as unknown as AnyJourney,
+  topKFrequent as unknown as AnyJourney,
+  taskCooldown as unknown as AnyJourney,
+  courseOrderJourney as unknown as AnyJourney,
+  networkDelayJourney as unknown as AnyJourney,
+  kClosestPoints as unknown as AnyJourney,
+  generateParens as unknown as AnyJourney,
+  minCoverSubstring as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,

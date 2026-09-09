@@ -99,24 +99,6 @@ def course_order(num: int, prereqs: list[list[int]]) -> list[int]:
     return order;
 }
 `,
-  walkthrough: [
-    {
-      text: "0 → 1 → 3\n └→ 2 ─┘\n\nin-degree: 0:0  1:1  2:1  3:2",
-      caption: "Edges point prerequisite → dependent.",
-    },
-    {
-      text: "queue: [0]   order: []\n\ntake 0 → order [0]\n1 and 2 drop to in-degree 0",
-      caption: "Only course 0 starts available.",
-    },
-    {
-      text: "queue: [1, 2]   order: [0]\n\ntake 1 → 3 drops to 1\ntake 2 → 3 drops to 0",
-      caption: "Each taken course unlocks its dependents.",
-    },
-    {
-      text: "queue: [3]   order: [0, 1, 2]\n\ntake 3 → order [0, 1, 2, 3]",
-      caption: "All 4 processed = no cycle. Valid schedule found.",
-    },
-  ],
   alternatives: [
     {
       name: "DFS post-order",
