@@ -58,28 +58,6 @@ def reverse_list(head: Node | None) -> Node | None:
     }
     return prev;
 }`,
-  walkthrough: [
-    {
-      text: "prev   curr\n ∅      1 → 2 → 3 → ∅",
-      caption: "Start: prev is None, curr at head.",
-    },
-    {
-      text: "       save nxt = 2\n ∅ ← 1      2 → 3 → ∅\nprev'  curr'",
-      caption: "Point 1 back at None, step both pointers.",
-    },
-    {
-      text: "       save nxt = 3\n ∅ ← 1 ← 2      3 → ∅\n       prev   curr",
-      caption: "Point 2 back at 1, step forward.",
-    },
-    {
-      text: " ∅ ← 1 ← 2 ← 3      ∅\n            prev   curr",
-      caption: "Point 3 back at 2. curr is now None — loop ends.",
-    },
-    {
-      text: "return prev\n\n3 → 2 → 1 → ∅",
-      caption: "prev holds the new head. Three pointers, zero extra memory.",
-    },
-  ],
   alternatives: [
     {
       name: "Copy to array",

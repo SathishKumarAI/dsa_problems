@@ -1025,8 +1025,14 @@ describe(
         const stage = document.querySelector('[aria-label=stage]').getBoundingClientRect();
         const pill = [...document.querySelectorAll('header button')]
           .find(b => b.getAttribute('aria-haspopup') === 'dialog');
+        // There are two transports in the DOM now — one in the top bar from
+        // lg, one at the foot of the stage below it — and exactly one is
+        // displayed. Measure the VISIBLE one: querySelector would take the
+        // first in document order, which on a phone is the hidden one.
+        const shown = l => [...document.querySelectorAll('[aria-label="' + l + '"]')]
+          .find(el => el.getBoundingClientRect().height > 0);
         const transport = ['Play', 'Step back', 'Step forward', 'Restart act']
-          .map(l => document.querySelector('[aria-label="' + l + '"]'))
+          .map(shown)
           .filter(Boolean)
           .map(el => Math.round(el.getBoundingClientRect().height));
         pill?.click();

@@ -98,7 +98,10 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
     <div className="mx-auto flex h-full w-full max-w-stage flex-col gap-4 overflow-hidden">
       {/* header */}
       <header className="flex flex-col gap-2 lg:gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        {/* One bar from lg — the trail and title on the left, the transport in
+            the middle, XP and restart on the right (spec 1.1). Stacked below
+            lg, where there is no width to put them side by side. */}
+        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground lg:flex-nowrap">
           {problem && pattern ? (
             <a
               href={href(`/p/${pattern.id}/${problem.id}`)}
@@ -117,12 +120,47 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               <ArrowLeftIcon className="size-4" /> home
             </a>
           )}
+          <span className="hidden min-w-0 items-baseline gap-3 lg:flex">
+            {/* the title does not shrink — the subtitle is the one that gives
+                way, because an ellipsis on the name of the page is worse than
+                an ellipsis on its gloss */}
+            <span className="max-w-[22rem] shrink-0 truncate font-heading text-title font-semibold tracking-tight text-foreground">
+              {journey.title}
+            </span>
+            <span className="hidden truncate text-ui text-muted-foreground xl:inline">
+              {journey.subtitle}
+            </span>
+          </span>
           <span
-            className="ml-auto inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-xs"
+            className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-xs"
             aria-label="experience points"
           >
             <StarIcon className="size-3 text-chart-4" /> {j.xp} XP
           </span>
+          {/* The transport lives up here from lg, where it is always in view
+              however far the reading column is scrolled. Below lg it stays at
+              the foot of the stage: the header is budgeted at 220px on a
+              390px phone (test/ui-smoke.test.mjs, U2/U14/U11) and an 85px
+              transport blows that. Same handlers either way, so the two can
+              never disagree. */}
+          <div className="ml-2 hidden shrink-0 lg:flex">
+            <Transport
+              inline
+              pos={j.player.pos}
+              last={j.player.last}
+              playing={j.player.playing}
+              onToggle={j.player.toggle}
+              onStep={() => {
+                j.player.pause()
+                j.player.step()
+              }}
+              onBack={() => j.seek(j.player.pos - 1)}
+              onReset={() => j.seek(0)}
+              onSeek={j.seek}
+              speed={j.speed}
+              onSpeed={j.setSpeed}
+            />
+          </div>
           <Button
             size="icon-sm"
             variant={drawer ? "secondary" : "ghost"}
@@ -147,7 +185,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             <span className="hidden sm:inline">restart journey</span>
           </Button>
         </div>
-        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 lg:hidden">
           <h1 className="font-heading text-title font-semibold tracking-tight">
             {journey.title}
           </h1>
@@ -177,7 +215,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           // rather than growing the document
           "grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] gap-5 lg:grid-rows-none",
           reading
-            ? "lg:grid-cols-[minmax(0,1fr)_24rem]"
+            ? "lg:grid-cols-[minmax(0,1fr)_21rem]"
             : "lg:grid-cols-[minmax(0,1fr)_2.75rem]"
         )}
       >
@@ -339,7 +377,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                 leftover space to travel in and it tracks the scroll 1:1.
               Pinning it below lg needs `fixed`, which is a chrome-budget
               decision, not a bug fix. */}
-            <div className="flex flex-col gap-3 border-t px-4 py-3">
+            <div className="flex flex-col gap-3 border-t px-4 py-3 lg:hidden">
               <Transport
                 pos={j.player.pos}
                 last={j.player.last}

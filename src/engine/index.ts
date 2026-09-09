@@ -34,6 +34,7 @@ import { sortColors } from "../data/journeys/sort-colors.ts"
 import { decodeString } from "../data/journeys/decode-string.ts"
 import { minCostStairs } from "../data/journeys/min-cost-stairs.ts"
 import { removeKDigits } from "../data/journeys/remove-k-digits.ts"
+import { reverseList } from "../data/journeys/reverse-list.ts"
 import { firstLastPosition } from "../data/journeys/first-last-position.ts"
 import { longestConsecutiveRun } from "../data/journeys/longest-consecutive-run.ts"
 import { subarraySumK } from "../data/journeys/subarray-sum-k.ts"
@@ -46,6 +47,7 @@ import { maxOnesAfterFlips } from "../data/journeys/max-ones-after-flips.ts"
 import { minSubarraySum } from "../data/journeys/min-subarray-sum.ts"
 import { removeDuplicatesSorted } from "../data/journeys/remove-duplicates-sorted.ts"
 import { singleInSorted } from "../data/journeys/single-in-sorted.ts"
+import { maxDepth } from "../data/journeys/max-depth.ts"
 import { maxSubarray } from "../data/journeys/max-subarray.ts"
 import type { AnyJourney } from "./types.ts"
 
@@ -96,6 +98,8 @@ export const JOURNEYS: AnyJourney[] = [
   removeKDigits as unknown as AnyJourney,
   minCostStairs as unknown as AnyJourney,
   islandCountJourney as unknown as AnyJourney,
+  maxDepth as unknown as AnyJourney,
+  reverseList as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>
