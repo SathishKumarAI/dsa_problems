@@ -228,7 +228,7 @@ test("problems: no block qualifies what the scaffolding already imports", () => 
     ]
     for (const [key, code] of rungs)
       for (const [lang, prefix] of banned) {
-        const src = (code as Record<string, string | undefined>)[lang]
+        const src = code[lang]
         if (!src) continue
         assert.ok(
           !src.includes(prefix),
