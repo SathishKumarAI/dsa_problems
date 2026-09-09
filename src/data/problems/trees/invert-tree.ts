@@ -57,39 +57,6 @@ def invert_tree(root: TreeNode | None) -> TreeNode | None:
     root->right = right;
     return root;
 }`,
-  walkthrough: [
-    {
-      text: `      4
-    /   \\
-   2     7
-  / \\   / \\
- 1   3 6   9`,
-      caption: "Swap the children of every node, from the root down.",
-    },
-    {
-      text: `      4
-    /   \\
-   7     2`,
-      caption: "The root's children swap places.",
-    },
-    {
-      text: `      4
-    /   \\
-   7     2
-  / \\   / \\
- 9   6 3   1`,
-      caption: "Each subtree is then inverted in turn.",
-    },
-    {
-      text: `result: [4,7,2,9,6,3,1]`,
-      caption: "Every node's two children ended up exchanged.",
-    },
-    {
-      text: `empty tree → empty tree`,
-      caption:
-        "The base case is an answer, not an error — which is what lets the recursion terminate cleanly.",
-    },
-  ],
   alternatives: [
     {
       name: "Iterative with an explicit stack",

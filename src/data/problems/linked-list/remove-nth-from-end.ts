@@ -74,37 +74,6 @@ def remove_nth_from_end(head: ListNode | None, n: int) -> ListNode | None:
     follower->next = follower->next->next;
     return dummy.next;
 }`,
-  walkthrough: [
-    {
-      text: `dummy → 1 → 2 → 3 → 4 → 5 → None
-^both`,
-      caption:
-        "A dummy in front means removing the head is not a special case.",
-    },
-    {
-      text: `dummy → 1 → 2 → 3 → 4 → 5
-^follower        ^leader`,
-      caption: "The leader takes n = 2 steps first. The gap is now fixed.",
-    },
-    {
-      text: `dummy → 1 → 2 → 3 → 4 → 5
-            ^follower       ^leader`,
-      caption: "Both advance together, keeping the gap.",
-    },
-    {
-      text: `dummy → 1 → 2 → 3 → 4 → 5
-                 ^follower      ^leader at last node`,
-      caption:
-        "The leader is at the end, so the follower sits just BEFORE the target.",
-    },
-    {
-      text: `1 → 2 → 3 → 5
-
-(node 4 relinked past)`,
-      caption:
-        "Relink and return dummy.next — correct whether or not the head was the one removed.",
-    },
-  ],
   alternatives: [
     {
       name: "Count, then walk forward",

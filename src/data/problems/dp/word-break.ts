@@ -72,43 +72,6 @@ export const problem: Problem = {
             }
     return reachable[s.size()];
 }`,
-  walkthrough: [
-    {
-      text: `s = "leetcode"   words = ["leet", "code"]
-
-reachable  T . . . . . . . .
-position   0 1 2 3 4 5 6 7 8`,
-      caption: "Position 0 is reachable by taking nothing.",
-    },
-    {
-      text: `positions 1..3
-
-reachable  T F F F . . . . .`,
-      caption: '"l", "le", "lee" are not words, and nothing else reaches them.',
-    },
-    {
-      text: `position 4
-
-reachable  T F F F T . . . .`,
-      caption:
-        's[0:4] is "leet", and position 0 was reachable → position 4 is reachable.',
-    },
-    {
-      text: `positions 5..7
-
-reachable  T F F F T F F F .`,
-      caption: "No word ends at these, from any reachable start.",
-    },
-    {
-      text: `position 8
-
-reachable  T F F F T F F F T   ←
-
-s[4:8] = "code", and 4 was reachable`,
-      caption:
-        "The last entry is true → the whole string segments. Each position was asked once.",
-    },
-  ],
   alternatives: [
     {
       name: "Backtrack over every split",

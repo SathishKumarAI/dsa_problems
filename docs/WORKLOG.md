@@ -95,6 +95,68 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (the last eleven) — a translation pass, eleven journeys, and B54 finally deleted
+
+Two PRs (#65, #66). The eleven problems that carried Python only were the last ones that could not
+have a journey — and they were also, exactly, the eleven ASCII walkthroughs left in the set.
+
+### 44 blocks, and how far the gates see
+
+`problems.test.ts` refuses a journey on a problem without Java and C++. Every approach of all eleven
+now carries all three, written to match the Python step for step **including where it is
+deliberately naive**: the unique-paths alternative still branches at every cell, balanced-tree's
+still measures the height at every node.
+
+`verify:code` compiles all 44 (**412 blocks, 0 failed**). `verify:run` covers **four** of the eleven
+— the other seven take a linked list or a tree, and the differential runner cannot marshal those
+arguments (**B30**).
+
+Those seven were added to `NOT_YET_RUNNABLE` with their reason. That matters more than it sounds: a
+problem simply *absent* from `VECTORS` is invisible to the gate, and an invisible gap reads as a
+pass. The runner names **14** unrunnable problems now where it named 7.
+
+### Eleven journeys
+
+| journey | what it turns on |
+|---|---|
+| `same-values-same-places` | the `#` for an empty child IS the shape — without it, mirrored trees serialise alike |
+| `swap-every-pair` | climbs in ROBUSTNESS, not cost: both rungs O(n), the recursion shorter |
+| `one-number-two-jobs` | −1 as a height that cannot exist, so one return carries measurement and verdict |
+| `the-tree-knows-the-way` | the general-tree rung is correct on ANY tree and therefore cannot use the ordering |
+| `twice-as-fast-is-halfway` | the loop condition is the specification |
+| `read-it-both-ways` | climbs in memory against side effects — the fast rung rewires the caller's list |
+| `a-gap-that-measures-the-end` | a maintained gap, and a dummy that deletes the head case |
+| `the-front-of-every-row` | sorted rows and columns do NOT make a sorted matrix |
+| `start-where-the-exits-are` | inverting the question removes the verdict entirely |
+| `above-plus-left` | one row, and the slot holds two rows at different moments |
+| `which-cut-points-can-you-stand-on` | store the position, never the path that reached it |
+
+### B54, closed by actually deleting something
+
+Filed when 33 of 87 problems rendered ASCII art in a `<pre>`. Re-scoped once, when counting showed
+the deletion would have stripped 31 pages of their only visualisation — so it was paid off by
+writing, one journey at a time. **31 → 11 → 0.**
+
+With no producer left, the fallback branch in `step-player.tsx` is gone and so is `Frame.text`, which
+makes `Frame.cells` required rather than optional — a type that is now honest about what a static
+walkthrough is.
+
+### Gates
+
+`npm run check` exit 0 (**589 tests**) · `npm run test:ui` exit 0 (**123 checks**) · `verify:code`
+**412 blocks, 0 failed** · `verify:run` **1694 comparisons, 0 disagreed**.
+
+### What this teaches
+
+1. **An item can be right and its scope wrong.** B54 said "delete this" for two days. The deletion
+   was correct and the sequencing was not, and only counting showed the difference.
+2. **Name the gap or it disappears.** Seven translations went from silently unchecked to listed as
+   unchecked. Nothing about the code changed; what changed is that the gate now says so.
+3. **A type is a claim.** `Frame.text` outlived its last producer by a whole batch. Deleting the
+   branch and the field together is what stops it coming back.
+
+---
+
 ## 2026-09-09 (chrome) — the theme that was already there, and a footer three times too tall
 
 One PR (#64), asked for directly: *"can i see the setting all themes and light mode"* and *"have all

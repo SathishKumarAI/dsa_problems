@@ -48,41 +48,6 @@ export const problem: Problem = {
         for (int c = 1; c < n; c++) row[c] += row[c - 1];
     return row[n - 1];
 }`,
-  walkthrough: [
-    {
-      text: `m = 3, n = 3
-
-row   1  1  1`,
-      caption:
-        "The top row has one path to each cell — you can only walk right.",
-    },
-    {
-      text: `after row 2
-
-row   1  2  3`,
-      caption: "Each cell adds the one to its left: 1, 1+1=2, 1+2=3.",
-    },
-    {
-      text: `after row 3
-
-row   1  3  6   ←`,
-      caption: "Again: 1, 1+2=3, 3+3=6. The last entry is the answer.",
-    },
-    {
-      text: `full grid, for comparison
-
-1  1  1
-1  2  3
-1  3  6`,
-      caption:
-        "The one row was the bottom of this grid at each step — the rows above were never needed again.",
-    },
-    {
-      text: `answer 6`,
-      caption:
-        "Each cell was computed once. The recursion would have re-asked the middle cells dozens of times.",
-    },
-  ],
   alternatives: [
     {
       name: "Branch at every cell",

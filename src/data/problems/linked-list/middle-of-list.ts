@@ -64,37 +64,6 @@ def middle_node(head: ListNode | None) -> ListNode | None:
     }
     return slow;
 }`,
-  walkthrough: [
-    {
-      text: `1 → 2 → 3 → 4 → 5 → None
-^slow
-^fast`,
-      caption: "Both pointers start at the head.",
-    },
-    {
-      text: `1 → 2 → 3 → 4 → 5 → None
-     ^slow
-          ^fast`,
-      caption: "Slow moves one, fast moves two.",
-    },
-    {
-      text: `1 → 2 → 3 → 4 → 5 → None
-          ^slow
-                    ^fast`,
-      caption: "Fast is at the last node; its next is None, so the loop ends.",
-    },
-    {
-      text: `answer: node 3`,
-      caption:
-        "Slow travelled half of fast's distance — that is the middle, in one pass.",
-    },
-    {
-      text: `even length: 1 → 2 → 3 → 4
-                    ^slow lands here`,
-      caption:
-        "With four nodes the same loop lands on 3 — the SECOND middle, as required.",
-    },
-  ],
   alternatives: [
     {
       name: "Count, then walk half",

@@ -67,6 +67,17 @@ import { networkDelay, networkDelayJourney } from "./network-delay.ts"
 import { kClosest, kClosestPoints, pointsOf } from "./k-closest-points.ts"
 import { allParens, generateParens } from "./generate-parens.ts"
 import { minCoverSubstring, minWindow } from "./min-cover-substring.ts"
+import { sameShape, sameTree } from "./same-tree.ts"
+import { invertTree, mirrored } from "./invert-tree.ts"
+import { balancedTree, isHeightBalanced } from "./balanced-tree.ts"
+import { ancestorOf, bstAncestor } from "./bst-ancestor.ts"
+import { middleOfList, middleValue } from "./middle-of-list.ts"
+import { isPalindromeList, palindromeList } from "./palindrome-list.ts"
+import { removeNthFromEnd, withoutNth } from "./remove-nth-from-end.ts"
+import { pathCount, uniquePaths } from "./unique-paths.ts"
+import { kthSmallest, kthSmallestMatrix } from "./kth-smallest-matrix.ts"
+import { canSegment, wordBreak } from "./word-break.ts"
+import { captured, surroundedRegions } from "./surrounded-regions.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -860,6 +871,168 @@ const TABLE: {
       const word = (len: number) =>
         Array.from({ length: len }, () => "abc"[rand(3)]).join("")
       return { nums: [word(1 + rand(9)), word(1 + rand(3))] }
+    },
+  },
+  {
+    journey: sameTree as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => sameShape(d.nums as string[]),
+    // two well-formed level-order trees, often equal so a true answer is
+    // exercised as well as the many ways to be false
+    input: (rand) => {
+      const tree = () => {
+        const n = 1 + rand(7)
+        const out: string[] = []
+        for (let i = 0; i < n; i++) {
+          const parentAlive = i === 0 || out[Math.floor((i - 1) / 2)] !== "."
+          out.push(parentAlive && rand(4) ? String(rand(4)) : ".")
+        }
+        return out
+      }
+      const p = tree()
+      return { nums: [...p, "|", ...(rand(3) ? tree() : p)] }
+    },
+  },
+  {
+    journey: invertTree as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => mirrored(d.nums as string[]),
+    input: (rand) => {
+      const n = 1 + rand(10)
+      const nums: string[] = []
+      for (let i = 0; i < n; i++) {
+        const parentAlive = i === 0 || nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(4) ? String(rand(9)) : ".")
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: balancedTree as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isHeightBalanced(d.nums as string[]),
+    input: (rand) => {
+      const n = 1 + rand(14)
+      const nums: string[] = []
+      for (let i = 0; i < n; i++) {
+        const parentAlive = i === 0 || nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(3) ? String(rand(9)) : ".")
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: bstAncestor as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) =>
+      ancestorOf(d.nums as string[], d.p as number, d.q as number),
+    // a real search tree, built by inserting into level-order slots, with two
+    // targets drawn from the values it actually holds
+    input: (rand) => {
+      const slots: string[] = ["."]
+      const insert = (v: number) => {
+        let i = 0
+        for (;;) {
+          while (i >= slots.length) slots.push(".")
+          if (slots[i] === ".") {
+            slots[i] = String(v)
+            return
+          }
+          if (v === Number(slots[i])) return
+          i = v < Number(slots[i]) ? 2 * i + 1 : 2 * i + 2
+        }
+      }
+      for (let k = 0; k < 3 + rand(6); k++) insert(rand(20))
+      const values = slots.filter((v) => v !== ".").map(Number)
+      return {
+        nums: slots,
+        p: values[rand(values.length)],
+        q: values[rand(values.length)],
+      }
+    },
+  },
+  {
+    journey: middleOfList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => middleValue(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => 1 + rand(9)),
+    }),
+  },
+  {
+    journey: palindromeList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isPalindromeList(d.nums as number[]),
+    // half the cases are built to BE palindromes, so a true answer is
+    // exercised as often as the many ways to be false
+    input: (rand) => {
+      const half = Array.from({ length: rand(4) }, () => rand(4))
+      if (rand(2))
+        return {
+          nums: [...half, ...(rand(2) ? [rand(4)] : []), ...[...half].reverse()],
+        }
+      return { nums: Array.from({ length: rand(7) }, () => rand(4)) }
+    },
+  },
+  {
+    journey: removeNthFromEnd as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => withoutNth(d.nums as number[], d.n as number),
+    input: (rand) => {
+      const len = 1 + rand(8)
+      return {
+        nums: Array.from({ length: len }, () => 1 + rand(9)),
+        n: 1 + rand(len),
+      }
+    },
+  },
+  {
+    journey: uniquePaths as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => pathCount(d.nums as number[]),
+    input: (rand) => ({ nums: [1 + rand(5), 1 + rand(5)] }),
+  },
+  {
+    journey: kthSmallestMatrix as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => kthSmallest(d.nums as number[], d.k as number),
+    // rows and columns each sorted, built by accumulating rightwards and
+    // downwards, which is what classify demands
+    input: (rand) => {
+      const cols = 1 + rand(3)
+      const rows = 1 + rand(3)
+      const m: number[] = []
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++) {
+          const left = c ? m[r * cols + c - 1] : 0
+          const up = r ? m[(r - 1) * cols + c] : 0
+          m.push(Math.max(left, up) + rand(3))
+        }
+      return { nums: m, cols, k: 1 + rand(rows * cols) }
+    },
+  },
+  {
+    journey: wordBreak as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => canSegment(d.nums as string[]),
+    input: (rand) => {
+      const pieces = ["a", "aa", "ab", "b", "ba"]
+      const dict = Array.from({ length: 1 + rand(3) }, () => pieces[rand(5)])
+      const s = Array.from({ length: 1 + rand(5) }, () => "ab"[rand(2)]).join("")
+      return { nums: [s, ...new Set(dict)] }
+    },
+  },
+  {
+    journey: surroundedRegions as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => captured(d.nums as number[], d.cols as number),
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      return {
+        nums: Array.from({ length: cols * rows }, () => rand(2)),
+        cols,
+      }
     },
   },
   {

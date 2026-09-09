@@ -130,13 +130,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
         key={step}
         className="flex min-h-48 animate-in items-center justify-center px-6 py-8 duration-300 fade-in slide-in-from-bottom-1"
       >
-        {frame.cells ? (
-          <Cells frame={frame.cells} />
-        ) : (
-          <pre className="overflow-x-auto font-mono text-sm leading-relaxed whitespace-pre text-foreground/90">
-            {frame.text}
-          </pre>
-        )}
+        <Cells frame={frame.cells} />
       </div>
 
       {/* narration */}

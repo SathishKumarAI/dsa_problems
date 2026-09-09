@@ -68,41 +68,6 @@ def lowest_common_ancestor(root: TreeNode | None, p: int, q: int) -> int:
     }
     return -1;
 }`,
-  walkthrough: [
-    {
-      text: `       6
-     /   \\
-    2     8
-   / \\   / \\
-  0   4 7   9`,
-      caption:
-        "A search tree: everything left is smaller, everything right is larger.",
-    },
-    {
-      text: `targets 2 and 8, at node 6
-2 < 6 < 8  → they straddle`,
-      caption:
-        "One on each side means the current node is the answer — return 6 immediately.",
-    },
-    {
-      text: `targets 0 and 4, at node 6
-both < 6  → go left`,
-      caption:
-        "A different pair sends the walk down one side, without touching the other.",
-    },
-    {
-      text: `at node 2
-0 < 2 < 4  → straddle  →  2`,
-      caption: "Two comparisons total. The right subtree was never visited.",
-    },
-    {
-      text: `targets 2 and 4, at node 6 → left
-at node 2: q = 2 is the node itself
-→ 2`,
-      caption:
-        "A node counts as its own descendant, which the straddle test already covers.",
-    },
-  ],
   alternatives: [
     {
       name: "Search both sides, ignoring the ordering",

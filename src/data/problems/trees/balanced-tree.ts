@@ -82,38 +82,6 @@ public boolean isBalanced(TreeNode root) {
 bool isBalanced(const TreeNode* root) {
     return height(root) != -1;
 }`,
-  walkthrough: [
-    {
-      text: `      3
-    /   \\
-   9    20
-       /  \\
-     15    7`,
-      caption: "Every node must have subtrees within one level of each other.",
-    },
-    {
-      text: `height(9) = 1
-height(15) = 1   height(7) = 1`,
-      caption: "Post-order: the leaves report first.",
-    },
-    {
-      text: `height(20) = 1 + max(1,1) = 2
-|1 - 1| = 0  ✓`,
-      caption: "Node 20 checks its own balance as it computes its height.",
-    },
-    {
-      text: `height(3): left 1, right 2
-|1 - 2| = 1  ✓  →  3`,
-      caption: "The root is within one. Each height was computed exactly once.",
-    },
-    {
-      text: `unbalanced case:
-some node returns -1
-→ every ancestor returns -1 immediately`,
-      caption:
-        "The sentinel carries the verdict up without a second traversal.",
-    },
-  ],
   alternatives: [
     {
       name: "Measure the height at every node",
