@@ -23,6 +23,7 @@ import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import { earnedOf, useEarned, useSolved } from "@/lib/progress"
 import { href } from "@/lib/route"
 import { K, getStored, streakOf, useStored, useStoreVersion } from "@/lib/store"
+import { cn } from "@/lib/utils"
 
 function JourneyCard({
   slug,
@@ -167,14 +168,25 @@ export function HomeView({
               acts={j.acts.length}
             />
           ))}
-          {JOURNEYS.length > shownJourneys.length && (
+          {/* Both ways, for the same reason as the sidebar: this used to hide
+              itself once expanded, stranding the reader in a 46-card list. */}
+          {(allJourneys || JOURNEYS.length > shownJourneys.length) && (
             <Button
               variant="outline"
               className="h-auto justify-start py-4 text-muted-foreground sm:col-span-2"
-              onClick={() => setAllJourneys(true)}
+              onClick={() => setAllJourneys((v) => !v)}
+              aria-expanded={allJourneys}
             >
-              <ChevronDownIcon data-icon="inline-start" />
-              Show all {JOURNEYS.length} journeys
+              <ChevronDownIcon
+                data-icon="inline-start"
+                className={cn(
+                  "transition-transform",
+                  allJourneys && "rotate-180"
+                )}
+              />
+              {allJourneys
+                ? "Show only the journeys in play"
+                : `Show all ${JOURNEYS.length} journeys`}
             </Button>
           )}
           <a

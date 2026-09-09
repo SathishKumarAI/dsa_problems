@@ -213,16 +213,31 @@ export function AppSidebar({ view }: { view: string }) {
                   }
                 />
               ))}
-              {JOURNEYS.length > shown.length && (
+              {/* A disclosure has to go both ways. This used to set the flag
+                  to true and then hide itself, so expanding to all 46 was a
+                  one-way door — the only way back was a reload. */}
+              {(allJourneys || JOURNEYS.length > shown.length) && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => setAllJourneys(true)}
-                    tooltip={`show all ${JOURNEYS.length} journeys`}
+                    onClick={() => setAllJourneys((v) => !v)}
+                    aria-expanded={allJourneys}
+                    tooltip={
+                      allJourneys
+                        ? "show only the journeys in play"
+                        : `show all ${JOURNEYS.length} journeys`
+                    }
                     className="text-muted-foreground"
                   >
-                    <ChevronDownIcon className="size-3.5 shrink-0" />
+                    <ChevronDownIcon
+                      className={cn(
+                        "size-3.5 shrink-0 transition-transform",
+                        allJourneys && "rotate-180"
+                      )}
+                    />
                     <span className="truncate">
-                      {JOURNEYS.length - shown.length} more journeys
+                      {allJourneys
+                        ? "show fewer"
+                        : `${JOURNEYS.length - shown.length} more journeys`}
                     </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
