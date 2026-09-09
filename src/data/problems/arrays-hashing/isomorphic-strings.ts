@@ -52,6 +52,36 @@ export const problem: Problem = {
         forward[a] = b
         backward[b] = a
     return True`,
+  java: `public boolean isIsomorphic(String s, String t) {
+    if (s.length() != t.length()) return false;
+    Map<Character, Character> forward = new HashMap<>();
+    Map<Character, Character> backward = new HashMap<>();
+    for (int i = 0; i < s.length(); i++) {
+        char a = s.charAt(i);
+        char b = t.charAt(i);
+        if (forward.containsKey(a) && forward.get(a) != b) return false;
+        if (backward.containsKey(b) && backward.get(b) != a) return false;
+        forward.put(a, b);
+        backward.put(b, a);
+    }
+    return true;
+}`,
+  cpp: `bool isIsomorphic(const string& s, const string& t) {
+    if (s.size() != t.size()) return false;
+    unordered_map<char, char> forward;
+    unordered_map<char, char> backward;
+    for (size_t i = 0; i < s.size(); i++) {
+        char a = s[i];
+        char b = t[i];
+        auto f = forward.find(a);
+        if (f != forward.end() && f->second != b) return false;
+        auto g = backward.find(b);
+        if (g != backward.end() && g->second != a) return false;
+        forward[a] = b;
+        backward[b] = a;
+    }
+    return true;
+}`,
   walkthrough: [
     {
       cells: { values: ["b", "a", "d", "c"] },
@@ -97,6 +127,32 @@ export const problem: Problem = {
 
 def is_isomorphic(s: str, t: str) -> bool:
     return encode(s) == encode(t)`,
+      java: `public boolean isIsomorphic(String s, String t) {
+    return Arrays.equals(shapeOf(s), shapeOf(t));
+}
+private int[] shapeOf(String s) {
+    Map<Character, Integer> first = new HashMap<>();
+    int[] out = new int[s.length()];
+    for (int i = 0; i < s.length(); i++) {
+        char ch = s.charAt(i);
+        if (!first.containsKey(ch)) first.put(ch, i);
+        out[i] = first.get(ch);
+    }
+    return out;
+}`,
+      cpp: `vector<int> shapeOf(const string& s) {
+    unordered_map<char, int> first;
+    vector<int> out;
+    for (int i = 0; i < (int)s.size(); i++) {
+        if (!first.count(s[i])) first[s[i]] = i;
+        out.push_back(first[s[i]]);
+    }
+    return out;
+}
+
+bool isIsomorphic(const string& s, const string& t) {
+    return shapeOf(s) == shapeOf(t);
+}`,
     },
   ],
 }

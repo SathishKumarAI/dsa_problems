@@ -47,6 +47,45 @@ export const problem: Problem = {
         budget -= 1
     out = "".join(stack).lstrip("0")
     return out if out else "0"`,
+  java: `public String removeKdigits(String num, int k) {
+    StringBuilder kept = new StringBuilder();
+    int budget = k;
+    for (int i = 0; i < num.length(); i++) {
+        char ch = num.charAt(i);
+        while (budget > 0 && kept.length() > 0 && kept.charAt(kept.length() - 1) > ch) {
+            kept.deleteCharAt(kept.length() - 1);
+            budget--;
+        }
+        kept.append(ch);
+    }
+    while (budget > 0 && kept.length() > 0) {
+        kept.deleteCharAt(kept.length() - 1);
+        budget--;
+    }
+    int start = 0;
+    while (start < kept.length() && kept.charAt(start) == '0') start++;
+    String out = kept.substring(start);
+    return out.isEmpty() ? "0" : out;
+}`,
+  cpp: `string removeKdigits(const string& num, int k) {
+    string kept;
+    int budget = k;
+    for (char ch : num) {
+        while (budget > 0 && !kept.empty() && kept.back() > ch) {
+            kept.pop_back();
+            budget--;
+        }
+        kept += ch;
+    }
+    while (budget > 0 && !kept.empty()) {
+        kept.pop_back();
+        budget--;
+    }
+    size_t start = 0;
+    while (start < kept.size() && kept[start] == '0') start++;
+    string out = kept.substr(start);
+    return out.empty() ? "0" : out;
+}`,
   walkthrough: [
     {
       cells: { values: ["1", "4", "3", "2", "2", "1", "9"] },
@@ -103,6 +142,42 @@ export const problem: Problem = {
         start = best + 1
     out = out.lstrip("0")
     return out if out else "0"`,
+      java: `public String removeKdigits(String num, int k) {
+    int keep = num.length() - k;
+    StringBuilder picked = new StringBuilder();
+    int start = 0;
+    for (int slot = 0; slot < keep; slot++) {
+        int limit = num.length() - (keep - slot);
+        int best = start;
+        for (int j = start; j <= limit; j++) {
+            if (num.charAt(j) < num.charAt(best)) best = j;
+        }
+        picked.append(num.charAt(best));
+        start = best + 1;
+    }
+    int at = 0;
+    while (at < picked.length() && picked.charAt(at) == '0') at++;
+    String out = picked.substring(at);
+    return out.isEmpty() ? "0" : out;
+}`,
+      cpp: `string removeKdigits(const string& num, int k) {
+    int keep = (int)num.size() - k;
+    string picked;
+    int start = 0;
+    for (int slot = 0; slot < keep; slot++) {
+        int limit = (int)num.size() - (keep - slot);
+        int best = start;
+        for (int j = start; j <= limit; j++) {
+            if (num[j] < num[best]) best = j;
+        }
+        picked += num[best];
+        start = best + 1;
+    }
+    size_t at = 0;
+    while (at < picked.size() && picked[at] == '0') at++;
+    string out = picked.substr(at);
+    return out.empty() ? "0" : out;
+}`,
     },
   ],
 }

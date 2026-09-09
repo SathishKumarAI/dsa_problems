@@ -39,6 +39,20 @@ export const problem: Problem = {
         if i < len(s) and s[i] == ch:
             i += 1
     return i == len(s)`,
+  java: `public boolean isSubsequence(String s, String t) {
+    int i = 0;
+    for (int j = 0; j < t.length(); j++) {
+        if (i < s.length() && s.charAt(i) == t.charAt(j)) i++;
+    }
+    return i == s.length();
+}`,
+  cpp: `bool isSubsequence(const string& s, const string& t) {
+    size_t i = 0;
+    for (char ch : t) {
+        if (i < s.size() && s[i] == ch) i++;
+    }
+    return i == s.size();
+}`,
   walkthrough: [
     {
       cells: { values: ["a", "h", "b", "g", "d", "c"] },
@@ -90,6 +104,37 @@ export const problem: Problem = {
             return False
         at = found + 1
     return True`,
+      java: `public boolean isSubsequence(String s, String t) {
+    int at = 0;
+    for (int k = 0; k < s.length(); k++) {
+        char ch = s.charAt(k);
+        int found = -1;
+        for (int j = at; j < t.length(); j++) {
+            if (t.charAt(j) == ch) {
+                found = j;
+                break;
+            }
+        }
+        if (found < 0) return false;
+        at = found + 1;
+    }
+    return true;
+}`,
+      cpp: `bool isSubsequence(const string& s, const string& t) {
+    int at = 0;
+    for (char ch : s) {
+        int found = -1;
+        for (int j = at; j < (int)t.size(); j++) {
+            if (t[j] == ch) {
+                found = j;
+                break;
+            }
+        }
+        if (found < 0) return false;
+        at = found + 1;
+    }
+    return true;
+}`,
     },
   ],
 }

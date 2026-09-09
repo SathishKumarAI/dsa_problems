@@ -41,6 +41,29 @@ export const problem: Problem = {
             nums[write] = nums[read]
             write += 1
     return nums[:write]`,
+  java: `public int[] removeDuplicates(int[] nums) {
+    if (nums.length == 0) return new int[0];
+    int write = 1;
+    for (int read = 1; read < nums.length; read++) {
+        if (nums[read] != nums[write - 1]) {
+            nums[write] = nums[read];
+            write++;
+        }
+    }
+    return Arrays.copyOf(nums, write);
+}`,
+  cpp: `vector<int> removeDuplicates(vector<int> nums) {
+    if (nums.empty()) return {};
+    int write = 1;
+    for (int read = 1; read < (int)nums.size(); read++) {
+        if (nums[read] != nums[write - 1]) {
+            nums[write] = nums[read];
+            write++;
+        }
+    }
+    nums.resize(write);
+    return nums;
+}`,
   walkthrough: [
     {
       cells: { values: [0, 0, 1, 1, 2], labels: { 1: "read" } },
@@ -79,6 +102,24 @@ export const problem: Problem = {
         if not out or out[-1] != x:
             out.append(x)
     return out`,
+      java: `public int[] removeDuplicates(int[] nums) {
+    int[] out = new int[nums.length];
+    int size = 0;
+    for (int x : nums) {
+        if (size == 0 || out[size - 1] != x) {
+            out[size] = x;
+            size++;
+        }
+    }
+    return Arrays.copyOf(out, size);
+}`,
+      cpp: `vector<int> removeDuplicates(const vector<int>& nums) {
+    vector<int> out;
+    for (int x : nums) {
+        if (out.empty() || out.back() != x) out.push_back(x);
+    }
+    return out;
+}`,
     },
   ],
 }

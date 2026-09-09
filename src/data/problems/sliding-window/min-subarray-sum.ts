@@ -46,6 +46,36 @@ export const problem: Problem = {
             running -= nums[left]
             left += 1
     return best`,
+  java: `public int minSubArrayLen(int target, int[] nums) {
+    int left = 0;
+    int running = 0;
+    int best = 0;
+    for (int right = 0; right < nums.length; right++) {
+        running += nums[right];
+        while (running >= target) {
+            int width = right - left + 1;
+            if (best == 0 || width < best) best = width;
+            running -= nums[left];
+            left++;
+        }
+    }
+    return best;
+}`,
+  cpp: `int minSubArrayLen(int target, const vector<int>& nums) {
+    int left = 0;
+    int running = 0;
+    int best = 0;
+    for (int right = 0; right < (int)nums.size(); right++) {
+        running += nums[right];
+        while (running >= target) {
+            int width = right - left + 1;
+            if (best == 0 || width < best) best = width;
+            running -= nums[left];
+            left++;
+        }
+    }
+    return best;
+}`,
   walkthrough: [
     {
       cells: { values: [2, 3, 1, 2, 4, 3] },
@@ -98,6 +128,36 @@ export const problem: Problem = {
                     best = width
                 break
     return best`,
+      java: `public int minSubArrayLen(int target, int[] nums) {
+    int best = 0;
+    for (int i = 0; i < nums.length; i++) {
+        int running = 0;
+        for (int j = i; j < nums.length; j++) {
+            running += nums[j];
+            if (running >= target) {
+                int width = j - i + 1;
+                if (best == 0 || width < best) best = width;
+                break;
+            }
+        }
+    }
+    return best;
+}`,
+      cpp: `int minSubArrayLen(int target, const vector<int>& nums) {
+    int best = 0;
+    for (int i = 0; i < (int)nums.size(); i++) {
+        int running = 0;
+        for (int j = i; j < (int)nums.size(); j++) {
+            running += nums[j];
+            if (running >= target) {
+                int width = j - i + 1;
+                if (best == 0 || width < best) best = width;
+                break;
+            }
+        }
+    }
+    return best;
+}`,
     },
   ],
 }
