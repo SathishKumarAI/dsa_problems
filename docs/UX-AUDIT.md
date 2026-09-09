@@ -390,6 +390,12 @@ grammar the array problems get, it reads as a placeholder. Reproduced at
 biggest visual gap left in the product; the `text` fallback should be deleted when B41 lands, not
 improved in place.
 
+**Update 2026-09-09** — B41 landed, and the deletion is **not** the cleanup it looked like. Counted:
+**31 problems still carry `text` frames and none of them has a journey**, and every problem without
+a journey has a walkthrough (39 = 31 text + 8 cells). Deleting the fallback today removes the only
+visualisation those 31 pages have. B54 is therefore blocked on content, not on B41 — the fallback
+goes when those problems get journeys, and `max-depth` / `reverse-list` are the templates.
+
 **V8 — The approach ladder is presented as "worst to best" and is sometimes a tour instead.**
 `lib/ladder.ts` orders `alternatives` then the optimal, and labels the top rung "The one to
 remember". On `island-count` the rungs read BFS flood fill → Union-Find → DFS sink, and the prose
@@ -399,12 +405,34 @@ best" framing promise a monotone climb the data does not always make. Either the
 soften where a rung is a generalisation rather than an improvement, or those rungs want a different
 label. Content decision, not a layout one — needs the author's call.
 
+**Fixed 2026-09-09** — softened, not re-labelled per rung. The heading said "N ways in, worst to
+best"; it says **"N ways in, each answering the one before it"**. That is true of every pair in
+every ladder — it is literally what `whyNow` carries — while "worst to best" is a promise the data
+sometimes breaks. Per-rung labels were the other option and were rejected: classifying a rung as
+"detour" or "climb" needs a ranking of complexity strings, which is a heuristic with a ceiling
+sitting on top of prose that already says which it is.
+
 **V9 — The step-player legend disappears below the `sm` breakpoint.** `step-player.tsx:105`
 (`hidden … sm:flex`). On a phone the four colours have no key at all, and colour is load-bearing in
 that grammar. The row genuinely does not fit; the fix is probably a single line of text under the
 stage rather than four swatches, but it is a design call.
 
+**Fixed 2026-09-09** — it wraps instead of disappearing. The chrome bar is `flex-wrap`, the legend
+`flex-wrap`, so at 390px the four swatches take a second line inside the same bar; no second
+rendering to keep in step, and nothing is hidden. Measured at 390×844 on
+`#/p/arrays-hashing/group-anagrams`: four labels present — current, comparing, in window, settled —
+legend right edge at ≤390px, no horizontal scroll. **The test was run against the old class first
+and failed** ("the legend is not rendered at 390px"), so it is checking the fix and not the
+weather.
+
 **V10 — `problem.brief` was being carried and never shown on the problem page.** Now shown under
 the title (this pass). Worth noting because the same is likely true elsewhere: `difficulty` was the
 subject of B40 for exactly this reason, and a sweep for other stored-but-unrendered fields would
 probably find more.
+
+**Swept 2026-09-09 — it found nothing.** Every field of `Problem`, `Solution`, `Example`,
+`Pattern`, `SqlProblem`, `Flashcard`, `Journey`, `EdgeCase` and `Resource` was traced to a render
+site outside `src/data/`. The two that looked dead are not: `Journey.harder` reaches the screen
+through `use-journey.ts` → `adaptive` → the offer button after a flawless challenge, and
+`Journey.reveals` through `lib/disclosure.ts` into the catalogue masking. `brief` and `difficulty`
+were the whole population. Recording the negative result so nobody pays for the sweep twice.

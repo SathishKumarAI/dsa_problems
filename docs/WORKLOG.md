@@ -95,6 +95,66 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (later) — the last three audit findings, and one item that failed its own measurement
+
+One PR (#61). B55 closes; B54 does not, and why is the finding.
+
+### V9 — the legend was hidden exactly where colour is hardest to read
+
+`step-player.tsx` set the four-swatch key to `hidden sm:flex`, so at 390px the walkthrough kept
+four load-bearing colours and no key. It wraps now: the chrome bar and the legend are both
+`flex-wrap`, so the swatches take a second line inside the same bar. One rendering, nothing hidden,
+no second copy to keep in step.
+
+Measured at 390×844 on `#/p/arrays-hashing/group-anagrams` — a problem with `cells` frames and no
+journey, since a journeyed problem draws the engine stage instead: four labels present, legend right
+edge ≤ 390px, no sideways scroll. **The check was run against the old class first and failed** ("the
+legend is not rendered at 390px"), so it is testing the fix rather than the weather.
+
+### V8 — the ladder promised a climb it does not always make
+
+The heading read "N ways in, worst to best". On `island-count` the rungs run BFS flood fill →
+Union-Find → DFS sink and the prose between two and three argues Union-Find was *overkill* — the
+middle rung is a detour, not a step up. It reads **"N ways in, each answering the one before it"**
+now, which is true of every pair in every ladder because it is literally what `whyNow` carries.
+
+Per-rung labels ("detour" / "climb") were the other option and were rejected: telling them apart
+needs a ranking of complexity strings — a heuristic with a ceiling — sitting on top of prose that
+already says which it is.
+
+### V10 — the sweep found nothing, which is the result
+
+`brief` was stored and never rendered; `difficulty` had been the same bug (B40); the audit guessed
+there were more. There are not. Every field of `Problem`, `Solution`, `Example`, `Pattern`,
+`SqlProblem`, `Flashcard`, `Journey`, `EdgeCase` and `Resource` traces to a render site outside
+`src/data/`. The two that look dead are not: `Journey.harder` reaches the screen through
+`use-journey.ts` → `adaptive` → the offer after a flawless challenge, and `Journey.reveals` through
+`lib/disclosure.ts` into catalogue masking. Written down so nobody pays for the sweep twice.
+
+### B54 failed its own measurement
+
+Yesterday's entry called deleting the ASCII `text` fallback "a deletion rather than a project" and
+the next action. Counted before touching it: **31 problems still carry `text` frames and none of
+them has a journey**, and every problem without a journey has a walkthrough (39 = 31 text + 8
+cells). Deleting the fallback today removes the only visualisation those 31 pages have.
+
+So B54 is blocked on **content**, not on B41, and its backlog row says so now. The fallback goes
+when those problems get journeys — the same 33-problem batch that is the next real item.
+
+### Gates
+
+`npm run check` exit 0 (tsc 0, eslint 0, **370 tests**) · `npm run test:ui` exit 0, **90 checks**.
+
+### What this session teaches
+
+1. **"Dead code" is a claim to measure.** One script separated a cleanup from a content loss.
+2. **A negative sweep is a result worth committing.** "There are probably more" is a cost every
+   future session pays until someone writes down that there are not.
+3. **Soften the claim, do not classify the data.** V8 could have been per-rung labels driven by a
+   complexity ranking; it was one line of copy that is true in every case instead.
+
+---
+
 ## 2026-09-09 — the tree and list panels get something to render, and the bar gets one row
 
 One PR (#59), three commits, on the back of the UI pass (#57) and the disclosure fix (#58).

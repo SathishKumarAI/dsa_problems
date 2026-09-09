@@ -13,13 +13,14 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#59. Nothing is open. The last three PRs were the UI
-audit (#57), the journeys disclosure (#58) and the tree/list panels plus the top bar (#59).
+`master` is clean and holds everything: #49–#61. Nothing is open. The last four PRs were the UI
+audit (#57), the journeys disclosure (#58), the tree/list panels plus the top bar (#59) and the
+last three audit findings (#61).
 
 | Gate | Command | State |
 |---|---|---|
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **370 tests** |
-| The interface, in a real browser | `npm run test:ui` | **89 checks**, 0 failed |
+| The interface, in a real browser | `npm run test:ui` | **90 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **366 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **1452 comparisons**, 0 disagreed |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
@@ -45,19 +46,21 @@ audit (#57), the journeys disclosure (#58) and the tree/list panels plus the top
 
 ## The next action
 
-1. **B54 — delete the `text` walkthrough fallback.** It is dead code now: `step-player.tsx` renders
-   ASCII art in a `<pre>` for 39 problems that have no journey, and with the tree and list views
-   proved there is nothing those problems can only say in ASCII. This is the cheapest item on the
-   board and it removes a component.
-2. **B51** — six array-shaped problems still unwritten, all unblocked: valid-anagram,
-   group-anagrams, isomorphic-strings, permutation-in-string, rpn-eval, sort-by-frequency.
-3. **The 33 tree / list / graph problems are now unblocked too** — that is the large remaining
-   pool, and `max-depth` / `reverse-list` are the templates to copy.
+**Every open item is content, not a fix.** The audit is closed: B41, B44, B55 and the 34-line spec
+checklist are done, and B54 turned out to be blocked on content once measured (below).
+
+1. **The 33 tree / list / graph problems** — the large remaining pool, unblocked by B41.
+   `max-depth` and `reverse-list` are the templates to copy.
+2. **B51** — six array-shaped problems still unwritten: valid-anagram, group-anagrams,
+   isomorphic-strings, permutation-in-string, rpn-eval, sort-by-frequency.
+3. **B54 is NOT the cheap deletion it looked like.** Measured 2026-09-09: **31 problems still carry
+   `text` frames and none of them has a journey**, and every problem without a journey has a
+   walkthrough (39 = 31 text + 8 cells). Deleting the fallback today strips the only visualisation
+   those 31 pages have. It goes when they get journeys — which is item 1.
 4. **B52** — `stair-ways` and `counting-bits` take a single number, not a row. The stage has no
    shape for "a table being filled" yet.
 5. **B53** — the set holds 87 problems, so **a hundred journeys needs 13 new problems first**.
    Roughly 3× the cost of a journey each. Only worth starting once the 87 all have one.
-6. **B55** — three audit findings that need an author's call rather than a fix.
 
 ## Traps this session added to the list
 
@@ -88,6 +91,11 @@ audit (#57), the journeys disclosure (#58) and the tree/list panels plus the top
   slider entirely — settings already owns a live one.
 - **In a flex row, decide what is allowed to shrink.** Both the title and its subtitle were
   shrinkable, so the browser shrank the title. `shrink-0` on the name, `truncate` on the gloss.
+
+- **"Delete the dead fallback" is a claim to measure, not to act on.** B54 read as a cleanup for a
+  day. Counting said 31 pages would lose their only visualisation. The count took one script.
+- **A negative sweep is worth writing down.** V10's "there are probably more unrendered fields" was
+  false — every field of every content type traces to a render site. Recorded so nobody re-runs it.
 
 ## What is on screen
 

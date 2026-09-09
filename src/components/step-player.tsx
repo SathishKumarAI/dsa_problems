@@ -100,7 +100,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
       className="overflow-hidden rounded-xl border bg-card shadow-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       {/* terminal chrome */}
-      <div className="flex items-center gap-2 border-b bg-background/40 px-4 py-2.5">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-b bg-background/40 px-4 py-2.5">
         <span className="size-2.5 rounded-full bg-chart-5/60" />
         <span className="size-2.5 rounded-full bg-chart-4/60" />
         <span className="size-2.5 rounded-full bg-chart-3/60" />
@@ -109,7 +109,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
           {String(frames.length).padStart(2, "0")}
         </span>
         {usesCells && (
-          <div className="ml-auto hidden items-center gap-3 sm:flex">
+          <div className="ml-auto flex flex-wrap items-center gap-x-3 gap-y-1">
             {legend.map((l) => (
               <span
                 key={l.role}
