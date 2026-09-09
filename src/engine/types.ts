@@ -135,6 +135,12 @@ export type PanelModel =
       bars: BarModel[]
       water?: WaterModel
       best?: string // the best area found so far, as a line under the chart
+      // This frame SET a new best, rather than merely tying or matching the
+      // running one. The view cannot work this out for itself — it sees one
+      // frame at a time and would have to remember the previous maximum — and
+      // on a flat row every pair ties, so "is the best" and "beat the best"
+      // are genuinely different facts.
+      record?: boolean
     }
   | {
       // k-term equation against a target + the distinct answers so far:

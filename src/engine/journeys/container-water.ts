@@ -36,6 +36,7 @@ type F = Frame<{
   area?: number
   best?: number
   bestSpan?: number[]
+  record?: boolean // this frame BEAT the running best, rather than tying it
   answer?: number[]
   done?: boolean
   op?: "get" | "set"
@@ -149,6 +150,7 @@ function* runBrute({ nums }: ContainerData): Generator<F> {
         area,
         best,
         bestSpan,
+        record: beat,
         corner: zero ? "zeros" : undefined,
         hold: zero ? 2 : undefined,
         note: `posts ${i} and ${j}: width ${j - i} × height ${Math.min(nums[i], nums[j])} = ${area}${beat ? " — a new best" : ""}${zero ? ". A post of height 0 caps the container at nothing, however far away its partner is" : ""}`,
@@ -196,6 +198,7 @@ function* runSqueeze({ nums }: ContainerData): Generator<F> {
       area,
       best,
       bestSpan,
+      record: beat,
       corner:
         beat && bestSpan[1] - bestSpan[0] < nums.length - 1
           ? "notwidest"
@@ -302,14 +305,24 @@ function barStage(
   b: number | undefined
 ): StageModel {
   const roles: Record<number, string[]> = {}
-  if (f.bestSpan?.length && f.done) {
+  // The best pair keeps its highlight from the frame that set it onward, not
+  // only at the end — so once the pointers have moved past the winner it is
+  // still obvious which pair won. This discloses nothing early: the same
+  // frame already prints "best so far N — posts a and b" underneath.
+  if (f.bestSpan?.length) {
     roles[f.bestSpan[0]] = ["answer"]
     roles[f.bestSpan[1]] = ["answer"]
   }
   if (!f.done && a !== undefined && b !== undefined) {
-    roles[a] = ["anchor"]
-    roles[b] = ["focus"]
-    for (const k of range(d.nums.length)) if (k < a || k > b) roles[k] = ["dim"]
+    // pushed onto whatever the best-pair pass left, so a bar that is both the
+    // winner and a live pointer keeps both facts; the caret still names it
+    roles[a] = [...(roles[a] ?? []), "anchor"]
+    roles[b] = [...(roles[b] ?? []), "focus"]
+    // append, never overwrite: a retired post that is still the best pair has
+    // to keep its highlight, and that is precisely the case this whole
+    // highlight exists for — the pointers have moved past the winner
+    for (const k of range(d.nums.length))
+      if (k < a || k > b) roles[k] = [...(roles[k] ?? []), "dim"]
   }
   const span =
     f.done && f.bestSpan?.length
@@ -335,6 +348,7 @@ function barStage(
         f.best !== undefined && f.bestSpan?.length
           ? `best so far ${f.best} — posts ${f.bestSpan[0]} and ${f.bestSpan[1]}`
           : undefined,
+      record: f.record,
     },
   }
 }

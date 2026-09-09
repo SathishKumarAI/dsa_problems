@@ -227,74 +227,128 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
 // block from the floor up to the shorter wall, with the bar itself painted
 // over it. A wall taller than the water therefore sticks out of it, which is
 // the physical fact the problem turns on.
+// The bars are equal-width flex children, so the centre of bar i is an exact
+// percentage of the row — no measuring, and nothing to re-measure when the
+// column resizes. This is why the bracket cannot drift from the pair it
+// describes.
+const centre = (i: number, n: number) => ((i + 0.5) / n) * 100
+
 function Bars({ p }: { p: Extract<PanelModel, { kind: "bars" }> }) {
   const max = Math.max(...p.bars.map((b) => b.value), 1)
   const pct = (v: number) => `${(v / max) * 88}%`
   const showValues = p.bars.length <= 24
+  const n = p.bars.length
+  // The pointers name themselves through their roles rather than through the
+  // water span: on the closing frame the span is the WINNING pair, and
+  // labelling that "L" and "R" would be a lie about where the pointers are.
+  const leftAt = p.bars.findIndex((b) => b.roles.includes("anchor"))
+  const rightAt = p.bars.findIndex((b) => b.roles.includes("focus"))
   return (
     <div className="flex flex-col gap-3">
-      <div
-        className="flex h-56 items-stretch justify-center gap-[3px]"
-        aria-label="heights as bars"
-      >
-        {p.bars.map((b, i) => {
-          const wet =
-            p.water !== undefined && i >= p.water.from && i <= p.water.to
-          const r = b.roles
-          const fill = r.includes("answer")
-            ? "bg-chart-3"
-            : r.includes("anchor")
-              ? "bg-chart-4"
-              : r.includes("focus")
-                ? "bg-[var(--yellow)]"
-                : r.includes("dim")
-                  ? "bg-muted/60 opacity-40"
-                  : "bg-chart-2/70"
-          return (
-            <div
-              key={b.key}
-              data-k={b.key}
-              className="relative flex min-w-1 flex-1 flex-col items-center justify-end gap-1"
-              style={{ maxWidth: 40 }}
-            >
-              {wet && (
-                <div
-                  className="absolute inset-x-0 bottom-0 rounded-t-[2px] bg-chart-2/25"
-                  style={{ height: pct(p.water!.height) }}
-                  aria-hidden
-                />
-              )}
-              {showValues && (
-                <span
-                  className={cn(
-                    "z-10 font-mono text-[10px] tabular-nums",
-                    r.length ? "text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {b.value}
-                </span>
-              )}
-              <div
-                className={cn(
-                  "z-10 w-full origin-bottom rounded-t-[4px]",
-                  fill
-                )}
-                style={{ height: pct(b.value), minHeight: 3 }}
-              />
+      <div className="relative">
+        {p.water && (
+          <div
+            className="absolute inset-x-0 top-0 h-4"
+            aria-hidden
+            style={{
+              left: `${centre(p.water.from, n)}%`,
+              width: `${centre(p.water.to, n) - centre(p.water.from, n)}%`,
+            }}
+          >
+            <div className="relative h-px w-full bg-chart-2">
+              <span className="absolute -top-0.5 left-0 h-2 w-px bg-chart-2" />
+              <span className="absolute -top-0.5 right-0 h-2 w-px bg-chart-2" />
+              <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded bg-background px-1 font-mono text-meta whitespace-nowrap text-chart-2">
+                width {p.water.to - p.water.from}
+              </span>
             </div>
+          </div>
+        )}
+        <div
+          className="flex h-56 items-stretch justify-center gap-[3px] pt-5"
+          aria-label="heights as bars"
+        >
+          {p.bars.map((b, i) => {
+            const wet =
+              p.water !== undefined && i >= p.water.from && i <= p.water.to
+            const r = b.roles
+            const fill = r.includes("answer")
+              ? "bg-chart-3"
+              : r.includes("anchor")
+                ? "bg-chart-4"
+                : r.includes("focus")
+                  ? "bg-[var(--yellow)]"
+                  : r.includes("dim")
+                    ? "bg-muted/60 opacity-40"
+                    : "bg-chart-2/70"
+            return (
+              <div
+                key={b.key}
+                data-k={b.key}
+                className="relative flex min-w-1 flex-1 flex-col items-center justify-end gap-1"
+                style={{ maxWidth: 40 }}
+              >
+                {wet && (
+                  <div
+                    className="absolute inset-x-0 bottom-0 rounded-t-[2px] bg-chart-2/25"
+                    style={{ height: pct(p.water!.height) }}
+                    aria-hidden
+                  />
+                )}
+                {showValues && (
+                  <span
+                    className={cn(
+                      "z-10 font-mono text-[10px] tabular-nums",
+                      r.length ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    {b.value}
+                  </span>
+                )}
+                <div
+                  className={cn(
+                    "z-10 w-full origin-bottom rounded-t-[4px]",
+                    fill
+                  )}
+                  style={{ height: pct(b.value), minHeight: 3 }}
+                />
+              </div>
+            )
+          })}
+        </div>
+        {/* the carets sit under the row, so they never cover a bar */}
+        {[
+          { at: leftAt, name: "L" },
+          { at: rightAt, name: "R" },
+        ].map(({ at, name }) =>
+          at < 0 ? null : (
+            <span
+              key={name}
+              className="absolute -bottom-4 -translate-x-1/2 font-mono text-meta text-foreground"
+              style={{ left: `${centre(at, n)}%` }}
+            >
+              {name}
+            </span>
           )
-        })}
+        )}
       </div>
       {p.water && (
-        <div className="text-center font-mono text-lg tabular-nums">
+        <div className="mt-4 text-center font-mono text-lg tabular-nums">
           <span className={p.water.best ? "text-chart-3" : "text-foreground"}>
             {p.water.label}
           </span>
         </div>
       )}
       {p.best && (
-        <div className="text-center font-mono text-meta text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 text-center font-mono text-meta text-muted-foreground">
           {p.best}
+          {/* a record is called out in words as well as colour — the row can
+              be flat, where every pair ties and none of them is a record */}
+          {p.record && (
+            <span className="rounded border border-chart-3 px-1 text-chart-3">
+              ▲ new best
+            </span>
+          )}
         </div>
       )}
     </div>
