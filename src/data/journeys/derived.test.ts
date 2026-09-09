@@ -15,24 +15,14 @@ import { drain } from "../../engine/index.ts"
 import type { AnyJourney, BaseFrame } from "../../engine/types.ts"
 import { asteroidCollision, survivors } from "./asteroid-collision.ts"
 import { bestProfit, bestTrade } from "./best-trade.ts"
-import {
-  charReplacement,
-  longestAfterRewrites,
-} from "./char-replacement.ts"
+import { charReplacement, longestAfterRewrites } from "./char-replacement.ts"
 import { classicBinarySearch, indexOfTarget } from "./classic-binary-search.ts"
-import {
-  coinChangeMin,
-  fewestCoins,
-  greedyCoins,
-} from "./coin-change-min.ts"
+import { coinChangeMin, fewestCoins, greedyCoins } from "./coin-change-min.ts"
 import { containsDuplicate, firstRepeat } from "./contains-duplicate.ts"
 import { decoded, decodeString } from "./decode-string.ts"
 import { findPeakElement, isPeak, peaks } from "./find-peak-element.ts"
 import { firstLastPosition, rangeOf } from "./first-last-position.ts"
-import {
-  longestConsecutiveRun,
-  longestRun,
-} from "./longest-consecutive-run.ts"
+import { longestConsecutiveRun, longestRun } from "./longest-consecutive-run.ts"
 import { countSubarrays, subarraySumK } from "./subarray-sum-k.ts"
 import { dailyWarmer, warmerDays } from "./daily-warmer.ts"
 import { bestTake, houseRobber } from "./house-robber.ts"
@@ -41,10 +31,7 @@ import {
   longestUniqueSubstring,
 } from "./longest-unique-substring.ts"
 import { kthLargest, kthLargestElement } from "./kth-largest-element.ts"
-import {
-  biggestRectangle,
-  largestRectangle,
-} from "./largest-rectangle.ts"
+import { biggestRectangle, largestRectangle } from "./largest-rectangle.ts"
 import {
   longestIncreasing,
   longestIncreasingRun,
@@ -52,15 +39,10 @@ import {
 import { hiddenIn, isSubsequence } from "./is-subsequence.ts"
 import { islandCount, islandCountJourney } from "./island-count.ts"
 import { lastStone, lastStoneWeight } from "./last-stone-weight.ts"
-import {
-  longestCommonPrefix,
-  sharedPrefix,
-} from "./longest-common-prefix.ts"
+import { longestCommonPrefix, sharedPrefix } from "./longest-common-prefix.ts"
 import { majorityElement, majorityOf } from "./majority-element.ts"
-import {
-  longestAfterFlips,
-  maxOnesAfterFlips,
-} from "./max-ones-after-flips.ts"
+import { longestAfterFlips, maxOnesAfterFlips } from "./max-ones-after-flips.ts"
+import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { maxSubarray } from "./max-subarray.ts"
 import { minSubarraySum, shortestReaching } from "./min-subarray-sum.ts"
 import {
@@ -69,38 +51,28 @@ import {
 } from "./remove-duplicates-sorted.ts"
 import { loneValue, singleInSorted } from "./single-in-sorted.ts"
 import { cheapestClimb, minCostStairs } from "./min-cost-stairs.ts"
-import {
-  removeKDigits,
-  smallestAfterRemoving,
-} from "./remove-k-digits.ts"
+import { removeKDigits, smallestAfterRemoving } from "./remove-k-digits.ts"
+import { reversed, reverseList } from "./reverse-list.ts"
 import { rotatedMin, rotatedMinimum } from "./rotated-minimum.ts"
 import { holdsTarget, search2dMatrix } from "./search-2d-matrix.ts"
 import { findRotated, rotatedSearch } from "./rotated-search.ts"
-import {
-  insertAt,
-  searchInsertPosition,
-} from "./search-insert-position.ts"
+import { insertAt, searchInsertPosition } from "./search-insert-position.ts"
 import { colorsSorted, sortColors } from "./sort-colors.ts"
 import { isPalindrome, validPalindrome } from "./valid-palindrome.ts"
-import {
-  balances,
-  validParenthesisString,
-} from "./valid-parenthesis-string.ts"
+import { balances, validParenthesisString } from "./valid-parenthesis-string.ts"
 import { trapRainWater, waterHeld } from "./trap-rain-water.ts"
 import { windowMaxima, windowMaximum } from "./window-maximum.ts"
 import { moveZeroes, zeroesLast } from "./move-zeroes.ts"
-import {
-  productExceptSelf,
-  productsExceptSelf,
-} from "./product-except-self.ts"
+import { productExceptSelf, productsExceptSelf } from "./product-except-self.ts"
 import { sortedSquares, squaresSorted } from "./sorted-squares.ts"
 
 type Row = { nums: unknown[]; [k: string]: unknown }
 
 const lastAnswer = (frames: BaseFrame[]) =>
-  (frames.findLast((f) => "answer" in f && f.answer !== undefined) as
-    | { answer?: unknown }
-    | undefined)?.answer
+  (
+    frames.findLast((f) => "answer" in f && f.answer !== undefined) as
+      { answer?: unknown } | undefined
+  )?.answer
 
 const kadaneReference = (nums: number[]) => {
   let best = nums[0]
@@ -453,8 +425,7 @@ const TABLE: {
   {
     journey: charReplacement as unknown as AnyJourney,
     skip: ["story"],
-    reference: (d) =>
-      longestAfterRewrites(d.nums as string[], d.k as number),
+    reference: (d) => longestAfterRewrites(d.nums as string[], d.k as number),
     // three letters and a small budget, so the window shrinks often
     input: (rand) => ({
       nums: Array.from({ length: 1 + rand(9) }, () => "ABC"[rand(3)]),
@@ -575,8 +546,7 @@ const TABLE: {
   {
     journey: removeKDigits as unknown as AnyJourney,
     skip: ["story"],
-    reference: (d) =>
-      smallestAfterRemoving(d.nums as string[], d.k as number),
+    reference: (d) => smallestAfterRemoving(d.nums as string[], d.k as number),
     // small digits so ties and exposed leading zeroes both turn up
     input: (rand) => {
       const n = 1 + rand(7)
@@ -609,6 +579,30 @@ const TABLE: {
       }
     },
   },
+  {
+    journey: maxDepth as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => depthOfTree(d.nums as string[]),
+    // level-order tokens with "." for an absent node, built so a node never
+    // hangs off an absent parent — which is exactly what classify demands
+    input: (rand) => {
+      const n = 1 + rand(15)
+      const nums: string[] = []
+      for (let i = 0; i < n; i++) {
+        const parentAlive = i === 0 || nums[Math.floor((i - 1) / 2)] !== "."
+        nums.push(parentAlive && rand(4) ? String(rand(9)) : ".")
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: reverseList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => reversed(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: rand(8) }, () => rand(9) - 4),
+    }),
+  },
 ]
 
 test("fewest-coins: the greedy rung is wrong where the journey says it is", () => {
@@ -632,7 +626,10 @@ for (const { journey, skip, reference, input, accept } of TABLE)
       ...Array.from({ length: 200 }, () => input(rand)),
     ]
     const acts = journey.acts.filter((a) => !skip.includes(a.key))
-    assert.ok(acts.length >= 2, "a derived journey needs a ladder, not one rung")
+    assert.ok(
+      acts.length >= 2,
+      "a derived journey needs a ladder, not one rung"
+    )
     for (const d of cases) {
       // classify is the journey's own statement of what it can honestly run;
       // an input it rejects is out of scope, not a disagreement
@@ -645,8 +642,7 @@ for (const { journey, skip, reference, input, accept } of TABLE)
             accept(d, got),
             `${a.key} on ${JSON.stringify(d)} answered ${JSON.stringify(got)}`
           )
-        else
-          assert.deepEqual(got, want, `${a.key} on ${JSON.stringify(d)}`)
+        else assert.deepEqual(got, want, `${a.key} on ${JSON.stringify(d)}`)
       }
     }
   })

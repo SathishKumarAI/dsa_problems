@@ -37,24 +37,6 @@ export const problem: Problem = {
     if (!root) return 0;
     return 1 + std::max(maxDepth(root->left), maxDepth(root->right));
 }`,
-  walkthrough: [
-    {
-      text: "        3\n       / \\\n      9   20\n         /  \\\n        15   7",
-      caption: "The example tree. Ask each node: how deep is your subtree?",
-    },
-    {
-      text: "depth(9)  = 1 + max(0, 0) = 1\ndepth(15) = 1 + max(0, 0) = 1\ndepth(7)  = 1 + max(0, 0) = 1",
-      caption: "Leaves: both children are None (depth 0).",
-    },
-    {
-      text: "depth(20) = 1 + max(depth(15), depth(7))\n          = 1 + max(1, 1) = 2",
-      caption: "Internal node combines its children's answers.",
-    },
-    {
-      text: "depth(3) = 1 + max(depth(9), depth(20))\n         = 1 + max(1, 2) = 3",
-      caption: "Root: answer is 3. Every node computed exactly once.",
-    },
-  ],
   alternatives: [
     {
       name: "Iterative BFS",
