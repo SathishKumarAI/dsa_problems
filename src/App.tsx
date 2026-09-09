@@ -97,7 +97,13 @@ export default function App() {
         <AppSidebar view={view} />
         <GlobalKeys />
         <AppDialogs />
-        <SidebarInset className={cn(panels && "lg:h-svh lg:overflow-hidden")}>
+        {/* The journey page bounds its own height so the transport can be
+            pinned to the foot of a column that scrolls INSIDE itself. That
+            only worked at lg, so below it SidebarInset computed min-height
+            auto, grew to 1202px against a 788px viewport, and every
+            descendant height became content-driven — the transport rode the
+            page instead of sitting still. Bounded at every width now. */}
+        <SidebarInset className={cn(panels && "h-svh overflow-hidden")}>
           <div className="flex items-center gap-2 border-b px-4 py-2 md:hidden">
             <SidebarTrigger />
             <span className="font-mono text-sm">dsa.patterns</span>
@@ -114,7 +120,7 @@ export default function App() {
           <main
             className={cn(
               wide ? "flex-1 px-4 py-6 md:px-6" : "flex-1 px-4 py-8 md:px-8",
-              panels && "lg:min-h-0 lg:overflow-hidden lg:py-4"
+              panels && "min-h-0 overflow-hidden py-4 lg:py-4"
             )}
           >
             <Suspense fallback={<Loading />}>
