@@ -14,6 +14,7 @@
 import type { Problem } from "../data/types.ts"
 import type {
   Act,
+  CellModel,
   ChipModel,
   ChipRole,
   CodeTabs,
@@ -46,6 +47,24 @@ export interface DFrame {
   // The row to draw instead of the input, for an act that reorders it (a sort
   // rung). Keys stay positional, so a sorted copy morphs rather than teleports.
   row?: Cell[]
+  // A shape the chip row cannot draw. At most one per frame; when present it
+  // replaces the state panel, and the chip row is hidden — a grid IS the data,
+  // so a row of chips above it would be a second, contradictory picture.
+  grid?: { cells: Cell[][]; marks?: Record<string, ChipRole>; label?: string }
+  tree?: {
+    // level-order: the node at i has children 2i+1 and 2i+2, null = absent
+    slots: (Cell | null)[]
+    marks?: Record<number, ChipRole>
+    labels?: Record<number, string>
+    label?: string
+  }
+  list?: {
+    values: Cell[]
+    marks?: Record<number, ChipRole>
+    labels?: Record<number, string>
+    cycleTo?: number
+    label?: string
+  }
   state?: { label: string; value: Cell }[]
   answer?: unknown
 }
@@ -115,7 +134,11 @@ const chips = (nums: Cell[], marks: Record<number, ChipRole> = {}) =>
 // language every problem carries, and it reads as pseudocode by construction.
 // ponytail: costs the Java/C++ tabs on any rung whose translations differ in
 // length — relax journeys.test.ts with a per-act `sync: false` if that bites.
-function tabsFor(src: { python: string; java?: string; cpp?: string }): CodeTabs {
+function tabsFor(src: {
+  python: string
+  java?: string
+  cpp?: string
+}): CodeTabs {
   const pseudo = src.python.split("\n")
   const out: CodeTabs = { pseudo }
   for (const lang of ["java", "cpp"] as const) {
@@ -136,29 +159,81 @@ export function deriveJourney<C extends Cell = number>(
       key: r.key,
       name: r.name,
       short: r.short,
-      complexity: r.complexity ?? (solved ? `${src.complexity.time} time · ${src.complexity.space} space` : "no code yet — just the shape"),
+      complexity:
+        r.complexity ??
+        (solved
+          ? `${src.complexity.time} time · ${src.complexity.space} space`
+          : "no code yet — just the shape"),
       insight: r.insight,
       idea: r.idea,
       tools: r.tools,
       takeaways: r.takeaways,
       hints: r.hints,
       quiz: r.quiz,
-      code: r.pseudo ? { pseudo: r.pseudo } : tabsFor(src as { python: string; java?: string; cpp?: string }),
+      code: r.pseudo
+        ? { pseudo: r.pseudo }
+        : tabsFor(src as { python: string; java?: string; cpp?: string }),
       run: (d) => r.run(d),
       view: (f, d): StageModel => ({
-        chips: f.noChips ? null : chips(f.row ?? d.nums, f.marks),
-        panel: f.state?.length
+        chips:
+          f.grid || f.tree || f.list
+            ? null
+            : f.noChips
+              ? null
+              : chips(f.row ?? d.nums, f.marks),
+        panel: f.grid
           ? {
-              kind: "sorted",
-              label: f.state.map((s) => s.label).join(" · "),
-              chips: f.state.map((s) => ({
-                key: s.label,
-                value: s.value,
-                sub: s.label,
-                roles: [],
-              })),
+              kind: "grid",
+              label: f.grid.label ?? "grid",
+              rows: f.grid.cells.map((row, r) =>
+                row.map((value, c) => ({
+                  key: `g${r}-${c}`,
+                  value,
+                  roles: f.grid!.marks?.[`${r},${c}`]
+                    ? [f.grid!.marks[`${r},${c}`]]
+                    : [],
+                }))
+              ),
             }
-          : { kind: "none" },
+          : f.tree
+            ? {
+                kind: "tree",
+                label: f.tree.label ?? "tree",
+                slots: f.tree.slots.map((value, i) =>
+                  value === null
+                    ? null
+                    : ({
+                        key: `t${i}`,
+                        value,
+                        roles: f.tree!.marks?.[i] ? [f.tree!.marks[i]] : [],
+                        label: f.tree!.labels?.[i],
+                      } as CellModel)
+                ),
+              }
+            : f.list
+              ? {
+                  kind: "list",
+                  label: f.list.label ?? "list",
+                  cycleTo: f.list.cycleTo,
+                  nodes: f.list.values.map((value, i) => ({
+                    key: `l${i}`,
+                    value,
+                    roles: f.list!.marks?.[i] ? [f.list!.marks[i]] : [],
+                    label: f.list!.labels?.[i],
+                  })),
+                }
+              : f.state?.length
+                ? {
+                    kind: "sorted",
+                    label: f.state.map((s) => s.label).join(" · "),
+                    chips: f.state.map((s) => ({
+                      key: s.label,
+                      value: s.value,
+                      sub: s.label,
+                      roles: [],
+                    })),
+                  }
+                : { kind: "none" },
       }),
     }
   })
@@ -181,7 +256,10 @@ export function deriveJourney<C extends Cell = number>(
     problemId: problem.id,
     acts,
     resources: [
-      { label: `${problem.title} on LeetCode`, url: `https://leetcode.com/problems/${problem.leetcode}/` },
+      {
+        label: `${problem.title} on LeetCode`,
+        url: `https://leetcode.com/problems/${problem.leetcode}/`,
+      },
     ],
     presets,
     defaultPreset: spec.defaultPreset,

@@ -76,6 +76,16 @@ export interface HashModel {
   fmt: "at" | "times" // "7 @ 1" (value @ index) or "7 ×2" (value × count)
 }
 
+// One cell of a grid, node of a tree, or link of a list. Deliberately the same
+// role vocabulary as ChipModel: the grammar a learner reads on the array row
+// is the grammar they read everywhere else.
+export interface CellModel {
+  key: string
+  value: number | string
+  roles: ChipRole[]
+  label?: string // a pointer name drawn beside it
+}
+
 export interface SumModel {
   a: number
   b: number
@@ -144,6 +154,21 @@ export type PanelModel =
       rows: RecapRow[]
       note: string
       links: RecapLink[]
+    }
+  | { kind: "grid"; rows: CellModel[][]; label: string }
+  | {
+      // Level-order slots: the node at i has children 2i+1 and 2i+2, and null
+      // is an absent node. One shape covers binary trees and binary heaps,
+      // which is why the heap problems can use this view unchanged.
+      kind: "tree"
+      slots: (CellModel | null)[]
+      label: string
+    }
+  | {
+      kind: "list"
+      nodes: CellModel[]
+      cycleTo?: number // the last node links back to this index
+      label: string
     }
   | { kind: "challenge" }
 

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import type { BitRowModel, PanelModel, StageModel, SumModel } from "@/engine"
 import { ChipRow } from "./chip-row"
 import { HashMapView } from "./hash-map-view"
+import { GridView, ListView, TreeView } from "./shape-views"
 import { useFlip } from "./use-flip"
 
 function SumEq({
@@ -354,6 +355,18 @@ export function Panel({
       return <Terms p={panel} />
     case "recap":
       return <Recap p={panel} />
+    case "grid":
+      return <GridView rows={panel.rows} label={panel.label} />
+    case "tree":
+      return <TreeView slots={panel.slots} label={panel.label} />
+    case "list":
+      return (
+        <ListView
+          nodes={panel.nodes}
+          cycleTo={panel.cycleTo}
+          label={panel.label}
+        />
+      )
     case "challenge":
       return <>{challenge}</>
   }
