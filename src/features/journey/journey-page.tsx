@@ -35,6 +35,7 @@ import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
 import { ProblemPanel } from "./problem-panel"
 import { StepsChart } from "./steps-chart"
+import { TracePanel } from "./trace-panel"
 import { useJourney } from "./use-journey"
 import type { JourneyController } from "./use-journey"
 
@@ -110,6 +111,8 @@ function ReadingBody({
       ) : null}
 
       <CodePanel code={act.code} line={frame?.line ?? -1} />
+
+      <TracePanel frames={j.frames} pos={j.player.pos} onSeek={j.seek} />
 
       <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
         <Label>what to understand</Label>
@@ -191,10 +194,12 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           {problem && pattern ? (
             <a
               href={href(`/p/${pattern.id}/${problem.id}`)}
+              title={`back to ${problem.title}`}
               className="-ml-2 inline-flex items-center gap-1 rounded-md px-2 py-1 hover:text-foreground"
             >
-              <ArrowLeftIcon className="size-4" /> {problem.title} ·{" "}
-              {pattern.name}
+              {/* the trail only — the title itself belongs to the h1 below,
+                and having it in both places said the same thing twice */}
+              <ArrowLeftIcon className="size-4" /> {pattern.name}
             </a>
           ) : (
             <a
@@ -405,6 +410,21 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               </div>
             )}
 
+            {/* The transport stays here, at the foot of the stage, and that is
+              a measured decision rather than an oversight.
+              At lg it is ALREADY pinned: the stage is a fixed-height flex
+              column and only its middle scrolls, so play/scrub never leave
+              the viewport (measured at 1536x776: the page does not scroll).
+              Below lg the page scrolls and the transport leaves with the
+              stage. Two fixes were tried and rejected:
+              · into the header — the phone test budgets the header at 220px
+                and the stage top at 320px, and an 85px transport blows both
+                (test/ui-smoke.test.mjs, U2/U14/U11).
+              · sticky bottom-0 — a NO-OP here, measured: the transport is the
+                last child of its containing block, so `bottom: 0` has no
+                leftover space to travel in and it tracks the scroll 1:1.
+              Pinning it below lg needs `fixed`, which is a chrome-budget
+              decision, not a bug fix. */}
             <div className="flex flex-col gap-3 border-t px-4 py-3">
               <Transport
                 pos={j.player.pos}
