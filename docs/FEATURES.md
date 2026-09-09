@@ -218,6 +218,16 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | Brackets With a Wildcard (LeetCode 678) | The Problem · Try every meaning of every star · Carry the range of open counts | 6 + 3 corner cases (star as nothing, two stars different jobs, no reading works) | — | shipped **derived**; character row |
 | Search a Fully Sorted Matrix (LeetCode 74) | The Problem · Read every cell · Pick the row, then search it · One search over the whole thing | 6 + 3 corner cases (falls between rows, a single row, target in a later row) | — | shipped **derived**; the grid arrives flattened, with `cols` as a param — that IS the lesson |
 | Longest Run After k Rewrites (LeetCode 424) | The Problem · Price every stretch · Carry the counts with the window | 6 + 3 corner cases (no rewrites, budget bigger than the string, already one letter) | — | shipped **derived**; character row + `k` |
+| The Value That Owns the Majority (LeetCode 169) | The Problem · Count every value · Pair each one off against the rest | 6 + 3 corner cases (one element, all the same, the majority starts late) | — | shipped **derived**; `classify` refuses a row with no true majority |
+| Prefix Shared by Every String (LeetCode 14) | The Problem · Trim against each word in turn · Read one column at a time | 6 + 3 corner cases (an empty word, nothing shared, the shortest word is the answer) | — | shipped **derived**; **first row of WORDS** (`cells: "words"`) |
+| Is One String Hidden in the Other? (LeetCode 392) | The Problem · Search for each character in turn · One pointer each, both moving forward | 6 + 3 corner cases (nothing to look for, picks far apart, needle longer than the string) | — | shipped **derived**; **first STRING parameter** |
+| Squeeze Out the Duplicates (LeetCode 26) | The Problem · Collect into a new row · One reader, one writer | 6 + 3 corner cases (nothing repeats, all the same, a run of three or more) | — | shipped **derived** |
+| Longest Run of 1s With k Flips (LeetCode 1004) | The Problem · Price every window · Carry the count with the window | 6 + 3 corner cases (no flips, budget covers everything, nothing but zeroes) | — | shipped **derived** |
+| Shortest Subarray That Reaches the Target (LeetCode 209) | The Problem · Extend from every start · Grow right, shrink left | 6 + 3 corner cases (unreachable, one element is enough, the best stretch is late) | — | shipped **derived** |
+| The Lone Value Among Pairs (LeetCode 540) | The Problem · Cancel every pair · Find where the pattern breaks | 6 + 3 corner cases (one value, loner first, loner last) | — | shipped **derived** |
+| Expand a Nested Encoding (LeetCode 394) | The Problem · A call per group · Set aside, and resume newest first | 6 + 3 corner cases (nested groups, a two-digit count, letters outside any group) | — | shipped **derived** |
+| Smallest Number After Removing k Digits (LeetCode 402) | The Problem · Choose each digit in turn · Delete on the way past | 6 + 3 corner cases (remove everything, a zero exposed, digits never decrease) | — | shipped **derived** |
+| Cheapest Way Up the Stairs (LeetCode 746) | The Problem · The cheapest way to stand on each stair · Two numbers | 6 + 3 corner cases (two stairs, the top is skipped, a stair worth stepping over) | — | shipped **derived** |
 
 ## 5. Algorithm visualizer
 

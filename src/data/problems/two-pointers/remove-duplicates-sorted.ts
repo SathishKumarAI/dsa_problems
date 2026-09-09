@@ -64,32 +64,6 @@ export const problem: Problem = {
     nums.resize(write);
     return nums;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [0, 0, 1, 1, 2], labels: { 1: "read" } },
-      caption:
-        "The first value is always kept, so the write index starts at 1.",
-    },
-    {
-      cells: { values: [0, 0, 1, 1, 2], marks: { 1: "compare" } },
-      caption:
-        "nums[1] equals the last survivor → skip. Only the reader moves.",
-    },
-    {
-      cells: { values: [0, 1, 1, 1, 2], marks: { 1: "focus" } },
-      caption:
-        "1 differs → written at slot 1. The gap between the indices is now one.",
-    },
-    {
-      cells: { values: [0, 1, 1, 1, 2], marks: { 3: "compare" } },
-      caption: "Another 1 → skipped, because it matches the last survivor.",
-    },
-    {
-      cells: { values: [0, 1, 2], marks: { 0: "done", 1: "done", 2: "done" } },
-      caption:
-        "2 written. Truncated to three values, order intact, no extra memory.",
-    },
-  ],
   alternatives: [
     {
       name: "Build a distinct copy",

@@ -62,43 +62,6 @@ export const problem: Problem = {
     }
     return nums[lo];
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 1, 2, 3, 3, 4, 4], labels: { 0: "lo", 6: "hi" } },
-      caption: "Pairs start on EVEN indices until the loner, then on odd ones.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 3, 3, 4, 4],
-        marks: { 2: "focus", 3: "compare" },
-        labels: { 2: "mid" },
-      },
-      caption:
-        "mid rounded to 2: nums[2]=2 vs nums[3]=3 — not a pair, so the loner is here or to the left.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 3, 3, 4, 4],
-        marks: { 4: "done", 5: "done", 6: "done" },
-        labels: { 0: "lo", 2: "hi" },
-      },
-      caption: "The right half is discarded in one step.",
-    },
-    {
-      cells: {
-        values: [1, 1, 2, 3, 3, 4, 4],
-        marks: { 0: "focus", 1: "compare" },
-        labels: { 0: "mid" },
-      },
-      caption:
-        "mid 0: nums[0]=nums[1] — a clean pair, so the loner is past it. lo jumps to 2.",
-    },
-    {
-      cells: { values: [1, 1, 2, 3, 3, 4, 4], marks: { 2: "done" } },
-      caption:
-        "Range is one wide → 2. Two comparisons on a seven-element array.",
-    },
-  ],
   alternatives: [
     {
       name: "XOR everything",

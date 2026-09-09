@@ -59,40 +59,6 @@ export const problem: Problem = {
     }
     return candidate;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [2, 2, 1, 1, 1, 2, 2] },
-      caption: "One candidate, one counter. Nothing else is remembered.",
-    },
-    {
-      cells: {
-        values: [2, 2, 1, 1, 1, 2, 2],
-        marks: { 0: "focus", 1: "window" },
-      },
-      caption: "Count is 0 → adopt 2. The second 2 raises the count to 2.",
-    },
-    {
-      cells: {
-        values: [2, 2, 1, 1, 1, 2, 2],
-        marks: { 2: "compare", 3: "compare" },
-      },
-      caption:
-        "Two 1s cancel both 2s. Count is back to 0 — the pairing has used up what it can.",
-    },
-    {
-      cells: { values: [2, 2, 1, 1, 1, 2, 2], marks: { 4: "focus" } },
-      caption:
-        "Count is 0, so 1 is adopted as the candidate. This is the moment a non-majority can lead.",
-    },
-    {
-      cells: {
-        values: [2, 2, 1, 1, 1, 2, 2],
-        marks: { 5: "compare", 6: "focus" },
-      },
-      caption:
-        "The last two 2s knock 1 out and take over. 2 survives — as it must, having more than half.",
-    },
-  ],
   alternatives: [
     {
       name: "Count everything",

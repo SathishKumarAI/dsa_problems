@@ -88,13 +88,24 @@ export function journeyMeta(j: AnyJourney) {
 }
 
 // `nums` is the row a journey animates: integers for an array problem, single
-// characters for a string one (derived journeys, engine/derive.ts). It stays a
-// narrow guard on purpose — this is the trust boundary, and everything past it
-// is fed straight to a generator: one homogeneous row of integers, or one of
-// one-character strings. Nothing else, and never a mix.
+// characters for a string one, short words for a problem whose cells are words
+// (derived journeys, engine/derive.ts). It stays a narrow guard on purpose —
+// this is the trust boundary, and everything past it is fed straight to a
+// generator: one homogeneous row of integers, or one of strings no longer than
+// WORD_MAX. Nothing else, and never a mix.
+//
+// The cap is what keeps "a row of strings" from being an unbounded payload.
+// A journey that needs single characters enforces that itself, in classify —
+// the boundary's job is size, not semantics.
+const WORD_MAX = 32
 const isRow = (nums: unknown[]) =>
   nums.every((n) => Number.isInteger(n)) ||
-  nums.every((n) => typeof n === "string" && [...(n as string)].length === 1)
+  nums.every(
+    (n) =>
+      typeof n === "string" &&
+      [...n].length >= 1 &&
+      [...n].length <= WORD_MAX
+  )
 
 const isData = (
   d: unknown
@@ -112,7 +123,7 @@ function runAct(
 ): ApiResponse {
   const act = j.acts.find((a) => a.key === actKey)
   if (!act) return err(404, `unknown act ${String(actKey)}`)
-  if (!isData(data)) return err(400, "data.nums must be a row of integers or of single characters")
+  if (!isData(data)) return err(400, "data.nums must be a row of integers, or of strings of at most 32 characters")
   try {
     return ok({
       frames: drain(act.run(data, { trace: (trace as Trace | null) ?? null })),
@@ -125,7 +136,7 @@ function runAct(
 // steps per algorithm act on this input, only for acts up to `upto`
 // (the caller's unlocked count) — the chart never spoils a locked act
 function chart(j: AnyJourney, data: unknown, upto: unknown): ApiResponse {
-  if (!isData(data)) return err(400, "data.nums must be a row of integers or of single characters")
+  if (!isData(data)) return err(400, "data.nums must be a row of integers, or of strings of at most 32 characters")
   const n = Number.isInteger(upto) ? (upto as number) : j.acts.length
   const rows = j.acts
     .slice(1, n)
@@ -200,7 +211,7 @@ export function route(
       case "classify":
         return isData(body.data)
           ? ok(j.classify(body.data))
-          : err(400, "data.nums must be a row of integers or of single characters")
+          : err(400, "data.nums must be a row of integers, or of strings of at most 32 characters")
       case "run":
         return runAct(j, body.act, body.data, body.trace)
       case "chart":

@@ -53,39 +53,6 @@ export const problem: Problem = {
     }
     return i == s.size();
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["a", "h", "b", "g", "d", "c"] },
-      caption:
-        't = "ahbgdc", looking for "abc". One pointer walks t, one walks s.',
-    },
-    {
-      cells: { values: ["a", "h", "b", "g", "d", "c"], marks: { 0: "focus" } },
-      caption: "a matches a → the s pointer advances to b.",
-    },
-    {
-      cells: {
-        values: ["a", "h", "b", "g", "d", "c"],
-        marks: { 0: "done", 1: "compare" },
-      },
-      caption: "h is not b → only the t pointer moves. Nothing is lost.",
-    },
-    {
-      cells: {
-        values: ["a", "h", "b", "g", "d", "c"],
-        marks: { 0: "done", 2: "focus" },
-      },
-      caption: "b matches → advance to c.",
-    },
-    {
-      cells: {
-        values: ["a", "h", "b", "g", "d", "c"],
-        marks: { 0: "done", 2: "done", 5: "focus" },
-      },
-      caption:
-        "c matches at the end → the s pointer is exhausted, so the answer is true.",
-    },
-  ],
   alternatives: [
     {
       name: "Search for each character in turn",

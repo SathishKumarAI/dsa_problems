@@ -19,6 +19,9 @@ import { validPalindrome } from "../data/journeys/valid-palindrome.ts"
 import { validParenthesisString } from "../data/journeys/valid-parenthesis-string.ts"
 import { coinChangeMin } from "../data/journeys/coin-change-min.ts"
 import { kthLargestElement } from "../data/journeys/kth-largest-element.ts"
+import { isSubsequence } from "../data/journeys/is-subsequence.ts"
+import { longestCommonPrefix } from "../data/journeys/longest-common-prefix.ts"
+import { majorityElement } from "../data/journeys/majority-element.ts"
 import { largestRectangle } from "../data/journeys/largest-rectangle.ts"
 import { trapRainWater } from "../data/journeys/trap-rain-water.ts"
 import { windowMaximum } from "../data/journeys/window-maximum.ts"
@@ -27,6 +30,9 @@ import { rotatedMinimum } from "../data/journeys/rotated-minimum.ts"
 import { findPeakElement } from "../data/journeys/find-peak-element.ts"
 import { searchInsertPosition } from "../data/journeys/search-insert-position.ts"
 import { sortColors } from "../data/journeys/sort-colors.ts"
+import { decodeString } from "../data/journeys/decode-string.ts"
+import { minCostStairs } from "../data/journeys/min-cost-stairs.ts"
+import { removeKDigits } from "../data/journeys/remove-k-digits.ts"
 import { firstLastPosition } from "../data/journeys/first-last-position.ts"
 import { longestConsecutiveRun } from "../data/journeys/longest-consecutive-run.ts"
 import { subarraySumK } from "../data/journeys/subarray-sum-k.ts"
@@ -35,6 +41,10 @@ import { longestUniqueSubstring } from "../data/journeys/longest-unique-substrin
 import { sortedSquares } from "../data/journeys/sorted-squares.ts"
 import { moveZeroes } from "../data/journeys/move-zeroes.ts"
 import { productExceptSelf } from "../data/journeys/product-except-self.ts"
+import { maxOnesAfterFlips } from "../data/journeys/max-ones-after-flips.ts"
+import { minSubarraySum } from "../data/journeys/min-subarray-sum.ts"
+import { removeDuplicatesSorted } from "../data/journeys/remove-duplicates-sorted.ts"
+import { singleInSorted } from "../data/journeys/single-in-sorted.ts"
 import { maxSubarray } from "../data/journeys/max-subarray.ts"
 import type { AnyJourney } from "./types.ts"
 
@@ -74,6 +84,16 @@ export const JOURNEYS: AnyJourney[] = [
   validParenthesisString as unknown as AnyJourney,
   search2dMatrix as unknown as AnyJourney,
   charReplacement as unknown as AnyJourney,
+  majorityElement as unknown as AnyJourney,
+  longestCommonPrefix as unknown as AnyJourney,
+  isSubsequence as unknown as AnyJourney,
+  removeDuplicatesSorted as unknown as AnyJourney,
+  maxOnesAfterFlips as unknown as AnyJourney,
+  minSubarraySum as unknown as AnyJourney,
+  singleInSorted as unknown as AnyJourney,
+  decodeString as unknown as AnyJourney,
+  removeKDigits as unknown as AnyJourney,
+  minCostStairs as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>
