@@ -8,18 +8,21 @@ export interface Example {
   note?: string
 }
 
-// One frame of a step-by-step walkthrough. Either `cells` (array/string
-// problems: values + colored index marks) or `text` (monospace diagram for
-// lists/trees/graphs). `caption` narrates the step.
+// One frame of a step-by-step walkthrough: values plus coloured index marks,
+// with `caption` narrating the step.
+//
+// There used to be a second shape here — `text`, a monospace diagram — for the
+// lists, trees and graphs the chip row could not draw. Every one of those
+// problems has a journey now, with a real tree, list or grid on the stage, so
+// the fallback and the field are gone (B54 / V7).
 export type CellRole = "focus" | "compare" | "window" | "done"
 
 export interface Frame {
-  cells?: {
+  cells: {
     values: (number | string)[]
     marks?: Record<number, CellRole>
     labels?: Record<number, string> // pointer names drawn under cells, e.g. {0: "i", 5: "j"}
   }
-  text?: string
   caption: string
 }
 

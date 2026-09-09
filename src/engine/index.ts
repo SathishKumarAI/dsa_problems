@@ -72,6 +72,10 @@ import { bstAncestor } from "../data/journeys/bst-ancestor.ts"
 import { middleOfList } from "../data/journeys/middle-of-list.ts"
 import { palindromeList } from "../data/journeys/palindrome-list.ts"
 import { removeNthFromEnd } from "../data/journeys/remove-nth-from-end.ts"
+import { uniquePaths } from "../data/journeys/unique-paths.ts"
+import { kthSmallestMatrix } from "../data/journeys/kth-smallest-matrix.ts"
+import { wordBreak } from "../data/journeys/word-break.ts"
+import { surroundedRegions } from "../data/journeys/surrounded-regions.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -150,6 +154,10 @@ export const JOURNEYS: AnyJourney[] = [
   middleOfList as unknown as AnyJourney,
   palindromeList as unknown as AnyJourney,
   removeNthFromEnd as unknown as AnyJourney,
+  uniquePaths as unknown as AnyJourney,
+  kthSmallestMatrix as unknown as AnyJourney,
+  wordBreak as unknown as AnyJourney,
+  surroundedRegions as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,

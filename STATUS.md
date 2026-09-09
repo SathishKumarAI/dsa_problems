@@ -13,15 +13,15 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#64. Nothing is open. The last two are **batch 5**: five
+`master` is clean and holds everything: #49–#66. Nothing is open. The last two are **batch 5**: five
 tree/list journeys (#62), then the remaining fifteen three-language problems (#63).
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **512 tests** |
-| The interface, in a real browser | `npm run test:ui` | **112 checks**, 0 failed |
-| Every Java and C++ block compiles | `npm run verify:code` | **366 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **1452 comparisons**, 0 disagreed |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **589 tests** |
+| The interface, in a real browser | `npm run test:ui` | **123 checks**, 0 failed |
+| Every Java and C++ block compiles | `npm run verify:code` | **412 blocks**, 0 failed |
+| …and agrees with the Python | `npm run verify:run` | **1694 comparisons**, 0 disagreed — and **14 problems it cannot marshal**, named in `NOT_YET_RUNNABLE` (B30) |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
 
 ## What happened, in the order it happened
@@ -45,25 +45,20 @@ tree/list journeys (#62), then the remaining fifteen three-language problems (#6
 
 ## The next action
 
-**Batch 5 finished the pool it started.** 68 journeys of 87 problems, and **every problem carrying
-all three languages now has one**. The 19 without a journey are 11 that are Python-only and 8
-array-shaped ones from B51.
+**79 journeys of 87 problems, and zero ASCII walkthroughs.** B54 is closed by deletion: the `text`
+fallback and the `Frame.text` field are gone, because nothing produces those frames any more.
 
-1. **A translation pass — the only thing blocking eleven journeys.** `problems.test.ts` refuses a
-   journey on a problem without Java and C++: middle-of-list, palindrome-list, remove-nth-from-end,
-   same-tree, invert-tree, balanced-tree, bst-ancestor, kth-smallest-matrix, surrounded-regions,
-   unique-paths, word-break. Same shape as B50. Those eleven are also **exactly the ASCII
-   walkthroughs left**, so this pass plus their journeys closes B54 completely.
-2. **B51** — six array-shaped problems still unwritten: valid-anagram, group-anagrams,
-   isomorphic-strings, permutation-in-string, rpn-eval, sort-by-frequency.
-3. **B52** — `stair-ways` and `counting-bits`, now unblocked: `generate-parens` proved a single
-   number works as input, and the two DP-table journeys proved the stage for a table being filled.
+The eight problems still without a journey are all array-shaped and none of them is blocked:
+
+1. **B51** — valid-anagram, group-anagrams, isomorphic-strings, permutation-in-string, rpn-eval,
+   sort-by-frequency.
+2. **B52** — `stair-ways` and `counting-bits`, whose input is one number. Both shape questions are
+   answered now: `generate-parens` and `unique-paths` take numbers rather than rows, and the
+   DP-table stage exists.
+3. **B30 is the honest gap in the gates.** `verify:run` cannot marshal a linked list or a tree, so
+   **14 problems** are compile-checked and nothing more. They are named in `NOT_YET_RUNNABLE`
+   rather than being absent, but the check itself is still missing.
 4. **B53** — a hundred journeys needs 13 new problems first.
-
-- **A sweep is only as wide as the thing it swept.** V10 checked every CONTENT field for a render
-  site and found nothing. It did not check components: `theme-provider.tsx` had offered dark, light
-  and system since the shell was built, and no control anywhere exposed it. Same bug class, one
-  directory over.
 
 ## Traps this session added to the list
 
@@ -102,10 +97,10 @@ array-shaped ones from B51.
 
 ## What is on screen
 
-68 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
+79 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
 sorting/search/graph visualizer, SQL drills and stats flashcards. The shell has collapsible rails,
 a settings dialog and a keyboard map. The pattern list filters and searches, difficulty is visible,
-the sidebar and home lead with what is in play rather than all 68 journeys, the problem page is
+the sidebar and home lead with what is in play rather than all 79 journeys, the problem page is
 stacked sections rather than tabs, and the journey page has a clickable trace, a chip row, a grid, a
 tree (used by both trees and heaps) and a list (with a back-edge when it loops). The journey top bar is one row and carries the transport at its right, so play and
 the scrubber are in view however far either column is scrolled.

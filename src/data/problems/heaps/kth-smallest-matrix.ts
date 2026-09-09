@@ -68,38 +68,6 @@ def kth_smallest(matrix: list[list[int]], k: int) -> int:
     }
     return value;
 }`,
-  walkthrough: [
-    {
-      text: ` 1   5   9
-10  11  13
-12  13  15
-
-heap: 1, 10, 12`,
-      caption:
-        "The heap holds the front of each row — the only cells that can be next.",
-    },
-    {
-      text: `pop 1 → push 5
-heap: 5, 10, 12`,
-      caption:
-        "Row 0 advances by one. Its next candidate is exactly the cell to the right.",
-    },
-    {
-      text: `pop 5 → push 9
-heap: 9, 10, 12`,
-      caption: "Still only three entries, whatever the size of the matrix.",
-    },
-    {
-      text: `pop 9 → row 0 exhausted
-heap: 10, 12`,
-      caption: "A finished row simply leaves the heap.",
-    },
-    {
-      text: `... after 8 pops → 13`,
-      caption:
-        "Never more than n entries held, and only k values ever examined.",
-    },
-  ],
   alternatives: [
     {
       name: "Flatten and sort",

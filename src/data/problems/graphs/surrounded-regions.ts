@@ -114,48 +114,6 @@ vector<vector<int>> solve(vector<vector<int>> board) {
         }
     return board;
 }`,
-  walkthrough: [
-    {
-      text: `1 1 1 1
-1 0 0 1
-1 1 0 1
-1 0 1 1`,
-      caption:
-        "Two regions of 0s: one enclosed, one touching the bottom border.",
-    },
-    {
-      text: `start from the BORDER
-
-1 1 1 1
-1 0 0 1
-1 1 0 1
-1 2 1 1`,
-      caption: "The border 0 at the bottom is rescued and marked 2.",
-    },
-    {
-      text: `1 1 1 1
-1 0 0 1
-1 1 0 1
-1 2 1 1`,
-      caption:
-        "The interior region was never reached — no border cell connects to it.",
-    },
-    {
-      text: `sweep: 0 → 1, 2 → 0
-
-1 1 1 1
-1 1 1 1
-1 1 1 1
-1 0 1 1`,
-      caption: "Remaining 0s are captured; the rescued cells are restored.",
-    },
-    {
-      text: `the question was inverted:
-not 'is this enclosed?'
-but 'what does the border reach?'`,
-      caption: "That inversion is what removes the per-region verdict.",
-    },
-  ],
   alternatives: [
     {
       name: "Fill each region and check afterwards",
