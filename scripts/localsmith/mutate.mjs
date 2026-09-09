@@ -36,7 +36,12 @@ import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { PROBLEMS } from "../../src/data/index.ts"
 import { VECTORS } from "./vectors.mjs"
-import { caseLines, pyEntry, pythonDriver } from "./run.mjs"
+import {
+  caseLines,
+  pyEntry,
+  pythonClassDriver,
+  pythonDriver,
+} from "./run.mjs"
 
 const arg = (k, d) => {
   const i = process.argv.indexOf(k)
@@ -229,14 +234,22 @@ function main() {
     if (only && p.id !== only) continue
     const spec = VECTORS[p.id]
     if (!spec) continue
-    const fn = pyEntry(p.python)
+    // a class-shaped problem has no top-level def; it is driven as a
+    // constructor plus a stream of calls, and mutating it is worth as much
+    const isClass = spec.shape === "class"
+    const fn = isClass ? spec.klass : pyEntry(p.python)
     if (!fn) continue
     const cases = spec.cases
     const timeout = 10000 + 2000 * cases.length
 
     const run = (src, over = cases) => {
       const f = join(dir, `m${seq++}.py`)
-      writeFileSync(f, pythonDriver(src, fn, over, spec.params))
+      writeFileSync(
+        f,
+        isClass
+          ? pythonClassDriver(src, spec, over)
+          : pythonDriver(src, fn, over, spec.params)
+      )
       return caseLines(
         () =>
           execFileSync(python, [f], {

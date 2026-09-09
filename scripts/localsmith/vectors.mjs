@@ -1314,16 +1314,49 @@ export const VECTORS = {
       [[6, 2, 8, 0, 4, 7, 9], 9, 8],
     ],
   },
+  // ---- a rung that is a CLASS (B62). A case is the constructor's arguments
+  // followed by the stream of calls, and the answer is the row of results. ----
+  "kth-largest-stream": {
+    shape: "class",
+    klass: "KthLargest",
+    method: "add",
+    ctor: ["int", "int[]"],
+    params: ["int", "int[]", "int[]"],
+    ret: "int[]",
+    exercises:
+      "the heap being trimmed to k and staying there — [4,5,8,2] with k=3 must drop the 2 in the CONSTRUCTOR, and k=1 on an empty start has nothing to trim until the first add",
+    cases: [
+      [3, [4, 5, 8, 2], [3, 5, 10, 9, 4]],
+      [1, [], [-3, -2, -4, 0, 4]],
+      [2, [0], [-1, 1, -2, -4, 3]],
+      [4, [7, 7, 7, 7, 8, 3], [2, 10, 9, 9]],
+    ],
+  },
+
+  // ---- a rung that is a CLASS (B62). A case is the constructor's arguments
+  // followed by the stream of calls, and the answer is the row of results. ----
+  "kth-largest-stream": {
+    shape: "class",
+    klass: "KthLargest",
+    method: "add",
+    ctor: ["int", "int[]"],
+    params: ["int", "int[]", "int[]"],
+    ret: "int[]",
+    exercises:
+      "the heap being trimmed to k and staying there — [4,5,8,2] with k=3 must drop the 2 in the CONSTRUCTOR, and k=1 on an empty start has nothing to trim until the first add",
+    cases: [
+      [3, [4, 5, 8, 2], [3, 5, 10, 9, 4]],
+      [1, [], [-3, -2, -4, 0, 4]],
+      [2, [0], [-1, 1, -2, -4, 3]],
+      [4, [7, 7, 7, 7, 8, 3], [2, 10, 9, 9]],
+    ],
+  },
 }
 
-// Linked lists and trees ARE driven now (B30): `params` may say `list` or
-// `tree`, and run.mjs builds one in each language from the literal. What is
-// left is the problem that is not a function at all.
-/* Problems whose ARGUMENTS this runner cannot marshal yet (B30). Listing them
-   is the point: a problem that is simply absent from VECTORS is invisible to
-   this gate, and an invisible gap reads as a pass. Every entry here is a
-   translation checked by `verify:code` (it compiles) and by nothing else. */
-export const NOT_YET_RUNNABLE = {
-  "kth-largest-stream":
-    "a stateful class, not a function — the driver calls one entry point, and this one is a constructor plus a stream of add() calls",
-}
+/* Nothing is excused any more (B30, B62). Every problem in VECTORS is RUN in
+   all three languages: a `list` or `tree` argument is built from its literal,
+   and a problem that is a class rather than a function is driven as a
+   constructor plus a stream of calls. The export stays, empty, because the
+   next problem shaped in a way the driver cannot reach belongs here rather
+   than absent from VECTORS — an invisible gap reads as a pass. */
+export const NOT_YET_RUNNABLE = {}
