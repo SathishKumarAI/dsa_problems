@@ -113,7 +113,11 @@ export function HashMapView({ map }: { map: HashModel }) {
       </div>
 
       {/* facts: the arithmetic, the load meter, the collisions */}
-      <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+      {/* These are sentences, not labels, so they take the ui step and the
+          35em measure like any other prose (U6, U7). They were invisible to
+          the UI suite until the walkthrough stopped living behind a closed
+          tab — a reminder that a rule only holds where something looks. */}
+      <div className="text-ui flex max-w-[35em] flex-col gap-1.5 text-muted-foreground">
         {probing && (
           <div>
             lookup:{" "}

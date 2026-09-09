@@ -708,9 +708,14 @@ describe(
     test("a journeyed problem draws its walkthrough from the engine, capped by the ledger", async () => {
       const openTab = `
         const wait = ms => new Promise(r => setTimeout(r, ms));
-        [...document.querySelectorAll('[role=tab]')].find(t => /walkthrough/i.test(t.innerText))?.click();
+        // The problem page is stacked sections now, not tabs (B38) — the
+        // walkthrough is open, so there is nothing to click. Find the section
+        // by its own heading rather than by a tab that no longer exists.
         await wait(1200);
-        const panel = document.querySelector('[role=tabpanel]:not([hidden])') ?? document.querySelector('main');
+        const heading = [...document.querySelectorAll('h2')].find(
+          e => /^walkthrough/i.test(e.innerText.trim())
+        );
+        const panel = heading?.closest('section') ?? document.querySelector('main');
         return {
           act: panel.querySelector('b')?.innerText ?? '',
           note: [...panel.querySelectorAll('[aria-live=polite]')].pop()?.innerText ?? '',
@@ -779,13 +784,24 @@ describe(
 
     test("prose stays inside a readable measure (U7)", async () => {
       await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
-      const ch = await page.run(`
-        const p = [...document.querySelectorAll('main p')]
+      // Reports WHICH paragraph is too wide, not just that one is: the
+      // first version of this test cost an afternoon of hunting because a
+      // bare number says nothing about where to look.
+      const worst = await page.run(`
+        const rows = [...document.querySelectorAll('main p')]
           .filter(e => e.textContent.trim().length > 120)
-          .map(e => Math.round(e.getBoundingClientRect().width / (parseFloat(getComputedStyle(e).fontSize) * 0.5)));
-        return Math.max(...p);
+          .map(e => ({
+            ch: Math.round(e.getBoundingClientRect().width / (parseFloat(getComputedStyle(e).fontSize) * 0.5)),
+            cls: e.className.toString().slice(0, 70),
+            text: e.textContent.trim().slice(0, 40),
+          }))
+          .sort((a, b) => b.ch - a.ch);
+        return rows[0] ?? { ch: 0, cls: '', text: '' };
       `)
-      assert.ok(ch <= 80, `longest measure is ${ch}ch, want <= 80`)
+      assert.ok(
+        worst.ch <= 80,
+        `longest measure is ${worst.ch}ch, want <= 80 — "${worst.text}…" [${worst.cls}]`
+      )
     })
 
     test("the narration stays on screen even on a long panel (U1)", async () => {

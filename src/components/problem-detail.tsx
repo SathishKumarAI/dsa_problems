@@ -178,7 +178,7 @@ function ApproachLadder({
           </div>
         ))}
         {capped && journey && (
-          <p className="text-ui text-muted-foreground">
+          <p className="text-ui max-w-[35em] text-muted-foreground">
             {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
             still ahead of you.{" "}
             <a

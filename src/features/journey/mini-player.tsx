@@ -112,7 +112,7 @@ export function MiniPlayer({ journey }: { journey: AnyJourney }) {
       </div>
 
       {capped && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-ui max-w-[35em] text-muted-foreground">
           This is the best approach you have earned so far. The journey has more
           — each one opens when the previous one runs out of road.
         </p>
