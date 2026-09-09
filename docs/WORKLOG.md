@@ -95,6 +95,66 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (ten items) — the small backlog, cleared, and what measuring found in it
+
+Eleven PRs, #71–#81. Ten backlog items closed plus one bug of my own. The pattern across all of
+them: **four of the five on-screen fixes were found by measuring, and would have been wrong if
+reasoned about.**
+
+| # | Item | What it actually was |
+|---|---|---|
+| #71 | B61 | A decision, not code: KEEP the static player. Deleting it would make "a problem without a journey" unrenderable and turn every content batch into a journey batch. |
+| #72 | B62 | `shape: "class"` in a vector set — a case is the constructor's arguments plus the stream of calls, the answer is the row of results. `NOT_YET_RUNNABLE` is empty. |
+| #73 | B58 | Five raw font sizes, and the reason they existed: `cn()` was deleting the named type steps. |
+| #74 | B59 | The test-case drawer floats now; the stage is 876px open and shut, not 862 → 574. |
+| #75 | B45 | The leak was not the ladder — it was the pattern NAME, twice on the page. |
+| #76 | B18 | 19 store tests, including storage that throws on read and on write. |
+| #77 | B19 | Restart holds its ledger for five seconds and offers it back. |
+| #78 | B60 | The panel audit asserts, and runs inside `test:ui`. |
+| #79 | B36 | 62 qualified names across 12 files, gone and gated. |
+| #80 | — | My own unsound cast, which a COLD `tsc -b` rejected and the incremental one had waved through. |
+| #81 | F5 | The Play button counts down the wait it is holding. |
+
+### The one worth remembering
+
+B58 read as "raise four font sizes". Raising them changed nothing: the browser said **16px**.
+
+`cn()` is `twMerge(clsx(...))`, and tailwind-merge cannot tell a named font size from a named
+colour — both are `text-<word>`. It files `text-meta` under colour, so `cn("text-meta",
+"text-muted-foreground")` returns the colour alone and the size is **silently deleted**. No build
+error, no warning, nothing on screen but "that looks a bit big". It is also exactly why the
+sub-scale literals existed: `text-[10px]` is a recognised arbitrary size and survives.
+
+Teaching the merger the six names repaired every such call at once — including `cn("text-display",
+…)` on the answer panel, whose 32px had never once applied. Two lessons, both already in the
+house rules and both re-learned: measure the rendered thing, and when a rule "looks right and
+renders wrong", suspect the machinery between them.
+
+### The other three that measuring changed
+
+- **B45** named the wrong culprit. The ladder was already capped by the ledger and a journeyed
+  problem never draws from `alternatives` at all. What leaked was the pattern name — 2 problems of
+  87 with the ledger at act 2, and the fix was to use the mask the catalogue has used since B8.
+- **B58's bar labels** needed a rule rather than a size: 12px makes a two-digit label 14.4px, and
+  past 16 bars a phone gives each bar ~10px. They drop below `sm` at that count.
+- **B36** was verified by RUNNING, not compiling: `using namespace std;` makes a bare `max` a real
+  ambiguity, and only a compiler settles it. 412 blocks compile, 2123 comparisons agree.
+
+### Evidence
+
+| Gate | Start of session | End |
+|---|---|---|
+| `npm run check` | 646 tests | **675** tests, tsc 0, eslint 0 |
+| `npm run test:ui` | 132 checks | **151** checks, 0 failed |
+| `npm run verify:code` | 412 blocks, 0 failed | 412 blocks, 0 failed |
+| `npm run verify:run` | 1676 comparisons, 14 not marshalled | **2128** comparisons, 0 disagreed, **0** not marshalled |
+| `npm run verify:vectors` | 380 mutants, 92% | **404** mutants, 92%, 0 survived |
+
+The panel audit is inside `test:ui` now, so those 151 checks include the fourteen panel kinds
+measured at their largest presets, every run.
+
+---
+
 ## 2026-09-09 (B30) — the gate stops being blind, and immediately finds something
 
 One PR. `verify:run` executed every Java and C++ block against the repo's own Python — except that
