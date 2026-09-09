@@ -108,53 +108,6 @@ int findCircleNum(const vector<vector<int>>& matrix) {
     }
     return groups;
 }`,
-  walkthrough: [
-    {
-      text: `cities   0  1  2  3
-parent   0  1  2  3
-
-edges: 0-1, 1-2`,
-      caption:
-        "Everyone starts as their own representative — four cities, four groups.",
-    },
-    {
-      text: `edge 0-1
-
-parent   1  1  2  3
-groups: {0,1} {2} {3}`,
-      caption: "Merge 0 into 1. Three groups remain.",
-    },
-    {
-      text: `edge 1-2
-
-parent   1  2  2  3
-groups: {0,1,2} {3}`,
-      caption:
-        "Merge 1 into 2. Note city 0 was never touched — but it now reaches 2 THROUGH 1. Transitivity for free.",
-    },
-    {
-      text: `find(0):  0 → 1 → 2
-          parent[0] = 2   (path flattened)
-
-parent   2  2  2  3`,
-      caption:
-        "The first lookup of 0 walks the chain and rewrites it, so the next lookup is one step.",
-    },
-    {
-      text: `representatives:
-  find(0)=2  find(1)=2  find(2)=2  find(3)=3
-
-self-representing: 2, 3  →  2 provinces`,
-      caption:
-        "Count the cities that are still their own representative. That count is the number of groups.",
-    },
-    {
-      text: `a chain a—b—c—d collapses to one
-group without anyone walking it`,
-      caption:
-        "That is the difference from a flood fill: merging maintains the answer as edges arrive, instead of re-traversing to discover it.",
-    },
-  ],
   alternatives: [
     {
       name: "Flood fill from each city",

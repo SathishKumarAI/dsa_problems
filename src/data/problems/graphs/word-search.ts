@@ -108,61 +108,6 @@ bool exist(vector<string> board, const string& word) {
     }
     return false;
 }`,
-  walkthrough: [
-    {
-      text: `a b c e
-s f c s
-a d e e
-
-word = "abcced"`,
-      caption:
-        "Every cell holding an 'a' is a candidate start. The scan finds (0,0) first.",
-    },
-    {
-      text: `# b c e
-s f c s
-a d e e
-
-matched "a"`,
-      caption:
-        "(0,0) matches. It is blanked to '#' so the path cannot come back through it.",
-    },
-    {
-      text: `# # # e
-s f c s
-a d e e
-
-matched "abc"`,
-      caption:
-        "Right twice: b then c. Each step only had to match the next letter.",
-    },
-    {
-      text: `# # # e
-s f # s
-a d e e
-
-matched "abcc"`,
-      caption: "Down to the second c. Note the path has turned a corner.",
-    },
-    {
-      text: `# # # e
-s # # s
-a d e e
-
-matched "abcce"  ← wrong turn`,
-      caption:
-        "Left to f? No — f is not 'e'. That branch fails immediately and unwinds, RESTORING f's cell.",
-    },
-    {
-      text: `# # # e
-s f # s
-a # e e
-
-matched "abcced"  →  true`,
-      caption:
-        "Down to e, then d. Every failed branch put its letter back — without that undo, the second attempt would find a board full of '#'.",
-    },
-  ],
   alternatives: [
     {
       name: "Mark used cells and never unmark",

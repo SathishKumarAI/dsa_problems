@@ -45,6 +45,10 @@ import { longestAfterFlips, maxOnesAfterFlips } from "./max-ones-after-flips.ts"
 import { cycleDetect, loops } from "./cycle-detect.ts"
 import { kthLargestOf, kthLargestStream } from "./kth-largest-stream.ts"
 import { levelOrder, levelValues } from "./level-order.ts"
+import { biggestIsland, maxIslandArea } from "./max-island-area.ts"
+import { minutesToRot, rottingFruit } from "./rotting-fruit.ts"
+import { canSpell, canSpellGreedy, wordSearch } from "./word-search.ts"
+import { countProvinces, provinces } from "./count-provinces.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -625,6 +629,71 @@ const TABLE: {
     },
   },
   {
+    journey: maxIslandArea as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => biggestIsland(d.nums as number[], d.cols as number),
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      return {
+        nums: Array.from({ length: cols * rows }, () => rand(2)),
+        cols,
+      }
+    },
+  },
+  {
+    journey: rottingFruit as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => minutesToRot(d.nums as number[], d.cols as number),
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      return {
+        nums: Array.from({ length: cols * rows }, () => rand(3)),
+        cols,
+      }
+    },
+  },
+  {
+    journey: wordSearch as unknown as AnyJourney,
+    // the greedy rung is DELIBERATELY wrong — it never gives a failed path's
+    // cells back, which is the lesson and is pinned by its own test below
+    skip: ["story", "greedy"],
+    reference: (d) => canSpell(d.nums as string[], d.word as string),
+    input: (rand) => {
+      const letters = "abc"
+      const cols = 1 + rand(3)
+      const rows = 1 + rand(3)
+      return {
+        nums: Array.from({ length: rows }, () =>
+          Array.from({ length: cols }, () => letters[rand(3)]).join("")
+        ),
+        word: Array.from({ length: 1 + rand(4) }, () => letters[rand(3)]).join(
+          ""
+        ),
+      }
+    },
+  },
+  {
+    journey: countProvinces as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => provinces(d.nums as number[], d.cols as number),
+    // a symmetric 0/1 matrix with a 1 diagonal, which is what classify demands
+    input: (rand) => {
+      const n = 1 + rand(5)
+      const m = Array.from({ length: n * n }, () => 0)
+      for (let i = 0; i < n; i++) {
+        m[i * n + i] = 1
+        for (let j = i + 1; j < n; j++) {
+          const v = rand(3) ? 0 : 1
+          m[i * n + j] = v
+          m[j * n + i] = v
+        }
+      }
+      return { nums: m, cols: n }
+    },
+  },
+  {
     journey: maxDepth as unknown as AnyJourney,
     skip: ["story"],
     reference: (d) => depthOfTree(d.nums as string[]),
@@ -684,6 +753,19 @@ const TABLE: {
     }),
   },
 ]
+
+test("word-search: the rung that never restores a cell is wrong where the journey says it is", () => {
+  // the board the journey ships for exactly this: a path has to be given back
+  const board = ["aaa", "aba"]
+  assert.equal(canSpell(board, "aaaaa"), true)
+  assert.equal(canSpellGreedy(board, "aaaaa"), false)
+  // and it agrees on a board where nothing has to back off, which is what
+  // makes the bug survive casual testing
+  assert.equal(
+    canSpell(["abce", "sfcs", "adee"], "abcced"),
+    canSpellGreedy(["abce", "sfcs", "adee"], "abcced")
+  )
+})
 
 test("fewest-coins: the greedy rung is wrong where the journey says it is", () => {
   // the second act teaches by failing. If greedy ever starts agreeing here,

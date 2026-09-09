@@ -130,24 +130,6 @@ def minutes_to_rot(grid: list[list[int]]) -> int:
     return fresh == 0 ? minutes : -1;
 }
 `,
-  walkthrough: [
-    {
-      text: "2 1 1\n1 1 0\n0 1 1\n\nqueue: [(0,0)]   fresh = 6",
-      caption: "One rotten source; six fresh cells.",
-    },
-    {
-      text: "minute 1:\n2 2 1\n2 1 0\n0 1 1\n\nfresh = 4",
-      caption: "Level 1 of BFS: both neighbours of the source rot.",
-    },
-    {
-      text: "minute 2:\n2 2 2\n2 2 0\n0 1 1\n\nfresh = 2",
-      caption: "The frontier advances one ring per minute.",
-    },
-    {
-      text: "minute 3:\n2 2 2\n2 2 0\n0 2 1\n\nminute 4:\n2 2 2\n2 2 0\n0 2 2\n\nfresh = 0 → answer 4",
-      caption: "Queue drains with fresh = 0: everything rotted in 4 minutes.",
-    },
-  ],
   alternatives: [
     {
       name: "Simulate whole grid",
@@ -174,6 +156,54 @@ def minutes_to_rot(grid: list[list[int]]) -> int:
         minutes += 1
     fresh_left = any(1 in row for row in grid)
     return -1 if fresh_left else minutes`,
+      java: `public int orangesRotting(int[][] grid) {
+    int rows = grid.length, cols = grid[0].length;
+    int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    int minutes = 0;
+    while (true) {
+        List<int[]> toRot = new ArrayList<>();
+        for (int r = 0; r < rows; r++)
+            for (int c = 0; c < cols; c++) {
+                if (grid[r][c] != 1) continue;
+                for (int[] d : dirs) {
+                    int nr = r + d[0], nc = c + d[1];
+                    if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+                    if (grid[nr][nc] == 2) { toRot.add(new int[] {r, c}); break; }
+                }
+            }
+        if (toRot.isEmpty()) break;
+        for (int[] cell : toRot) grid[cell[0]][cell[1]] = 2;
+        minutes++;
+    }
+    for (int[] row : grid)
+        for (int v : row)
+            if (v == 1) return -1;
+    return minutes;
+}`,
+      cpp: `int orangesRotting(vector<vector<int>>& grid) {
+    int rows = grid.size(), cols = grid[0].size();
+    const int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    int minutes = 0;
+    while (true) {
+        vector<pair<int, int>> toRot;
+        for (int r = 0; r < rows; ++r)
+            for (int c = 0; c < cols; ++c) {
+                if (grid[r][c] != 1) continue;
+                for (auto& d : dirs) {
+                    int nr = r + d[0], nc = c + d[1];
+                    if (nr < 0 || nc < 0 || nr >= rows || nc >= cols) continue;
+                    if (grid[nr][nc] == 2) { toRot.push_back({r, c}); break; }
+                }
+            }
+        if (toRot.empty()) break;
+        for (auto& cell : toRot) grid[cell.first][cell.second] = 2;
+        ++minutes;
+    }
+    for (auto& row : grid)
+        for (int v : row)
+            if (v == 1) return -1;
+    return minutes;
+}`,
     },
   ],
 }
