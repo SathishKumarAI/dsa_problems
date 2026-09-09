@@ -77,55 +77,6 @@ export const problem: Problem = {
     }
     return reachable[target] != 0;
 }`,
-  walkthrough: [
-    {
-      text: `nums = [1, 5, 11, 5]
-total = 22  →  target = 11
-
-reachable  0 . . . . . . . . . . .
-index      0 1 2 3 4 5 6 7 8 9 10 11`,
-      caption:
-        "Sum 0 is reachable by taking nothing. Every other sum starts unknown.",
-    },
-    {
-      text: `add 1
-
-reachable  ✓ ✓ . . . . . . . . .  .
-index      0 1 2 3 4 5 6 7 8 9 10 11`,
-      caption: "Sweeping downward, 0 + 1 marks sum 1.",
-    },
-    {
-      text: `add 5
-
-reachable  ✓ ✓ . . . ✓ ✓ . . . .  .
-index      0 1 2 3 4 5 6 7 8 9 10 11`,
-      caption:
-        "5 and 6 become reachable. Downward means the new 5 is not immediately reused to reach 10.",
-    },
-    {
-      text: `add 11
-
-reachable  ✓ ✓ . . . ✓ ✓ . . . .  ✓
-index      0 1 2 3 4 5 6 7 8 9 10 11`,
-      caption: "11 alone hits the target — [11] against the rest.",
-    },
-    {
-      text: `add 5 (the second one)
-
-reachable  ✓ ✓ . . . ✓ ✓ . . . ✓  ✓
-index      0 1 2 3 4 5 6 7 8 9 10 11`,
-      caption:
-        "10 appears now, from 5 + 5. Two DIFFERENT fives — which is exactly what the downward sweep protects.",
-    },
-    {
-      text: `reachable[11] = ✓  →  true
-
-upward instead of downward would have
-marked 10 from the FIRST five twice`,
-      caption:
-        "The answer is one lookup. The direction of the inner loop is the whole correctness argument.",
-    },
-  ],
   alternatives: [
     {
       name: "Try every subset",

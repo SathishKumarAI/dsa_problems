@@ -75,68 +75,6 @@ export const problem: Problem = {
     }
     return best[n][m];
 }`,
-  walkthrough: [
-    {
-      text: `a = "abcde"   b = "ace"
-
-      ""  a  c  e
-  ""   0  0  0  0
-  a     .  .  .
-  b     .  .  .
-  c     .  .  .
-  d     .  .  .
-  e     .  .  .`,
-      caption:
-        "Row 0 and column 0 are zero: an empty string shares nothing with anything.",
-    },
-    {
-      text: `      ""  a  c  e
-  ""   0  0  0  0
-  a    0  1  1  1
-  b     .  .  .`,
-      caption:
-        'Row "a": a matches a → diagonal + 1 = 1. Against c and e there is no match, so the 1 carries sideways.',
-    },
-    {
-      text: `      ""  a  c  e
-  ""   0  0  0  0
-  a    0  1  1  1
-  b    0  1  1  1
-  c    0  1  2  2`,
-      caption:
-        'Row "b" changes nothing — b is in neither. Row "c": c matches c, so 1 (diagonal) + 1 = 2.',
-    },
-    {
-      text: `      ""  a  c  e
-  ""   0  0  0  0
-  a    0  1  1  1
-  b    0  1  1  1
-  c    0  1  2  2
-  d    0  1  2  2`,
-      caption:
-        'Row "d": another character in neither. The mismatch rule copies the better neighbour.',
-    },
-    {
-      text: `      ""  a  c  e
-  ""   0  0  0  0
-  a    0  1  1  1
-  b    0  1  1  1
-  c    0  1  2  2
-  d    0  1  2  2
-  e    0  1  2  3   ←`,
-      caption:
-        'Row "e": e matches e → 2 + 1 = 3. The bottom-right cell is the answer.',
-    },
-    {
-      text: `answer 3  —  "ace"
-
-every cell asked once; the recursion
-would have asked some of them dozens
-of times`,
-      caption:
-        "Each cell needed only the one above, the one to the left, and the diagonal — which is why a row at a time is enough.",
-    },
-  ],
   alternatives: [
     {
       name: "Branch on every mismatch",

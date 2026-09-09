@@ -95,6 +95,92 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (batch 5, part two) — the other fifteen, and the pool is empty
+
+One PR (#63), fifteen journeys. **53 → 68**, and **every problem carrying all three languages now
+has a journey.**
+
+| shape | journeys |
+|---|---|
+| grid | max-island-area, rotting-fruit, word-search, count-provinces |
+| DP table | longest-common-subsequence, partition-equal-subset |
+| row + structure | balanced-brackets, top-k-frequent, task-cooldown, k-closest-points, min-cover-substring |
+| a range, not a row | koko-bananas |
+| tables over nodes | course-order, network-delay |
+| no input at all | generate-parens |
+
+### Five shapes proved without a new view
+
+Every one of these renders on `GridView`, and none needed a change to it:
+
+- **A DP table being filled.** `longest-common-subsequence` draws best[i][j] with the three cells
+  the current one reads marked; `partition-equal-subset` draws the row of reachable sums.
+- **An adjacency matrix** (`count-provinces`) — the graph written as the table it arrives as.
+- **An in-degree table** (`course-order`) — one column per course, watching the counts drain.
+- **A distance table** (`network-delay`) — ∞ until a route is found, with settled nodes dimmed.
+- **A listing of the answers themselves** (`generate-parens`), which has no input sequence at all:
+  its row holds one number. That answers half of B52 — the shape works.
+
+### Two rungs that are deliberately wrong
+
+`word-search`'s middle rung never gives a failed path's cells back. It reads almost identically to
+the correct version, and a pinning test holds the board where they disagree — `["aaa", "aba"]` with
+`"aaaaa"` is **true**, and **false** without the restore, while the textbook example agrees either
+way. Finding that board took a search: the first three candidates all agreed, which is exactly why
+the bug survives casual testing.
+
+`partition-equal-subset` does the same with a direction rather than a line: sweeping the sums upward
+spends one number twice. `[1, 3]` cannot be split and an upward sweep says it can; `[4, 4]` agrees
+either way.
+
+### Ladders that climb in something other than cost
+
+Three of these have rungs of equal or better asymptotic cost that are still the wrong rung, and each
+says so in its recap rather than pretending otherwise:
+
+- `task-cooldown`: the formula is O(1) and the simulation is not. The simulation wins because it
+  produces the schedule, which the formula cannot.
+- `count-provinces`: flood fill and union-find are both linear here, and the flood fill is shorter.
+  Union-find earns its place when the edges arrive over time.
+- `k-closest-points`: quickselect is expected linear and the bounded heap is not. The heap wins on
+  the things asymptotics do not measure — it streams, and it does not reorder the caller's data.
+
+That framing is only honest because of V8: the ladder heading says "each answering the one before
+it" rather than "worst to best".
+
+### What the gates caught, again
+
+Four unused declarations, one `accept` callback with its arguments the wrong way round, two pinning
+tests asserting a divergence that did not exist on the board I picked, and **seven corner cases
+declared and never explained on their preset**. One disclosure leak: `count-provinces`'s third hint
+names union-find, which the story act may not show, so that act carries its own third hint.
+
+One problem needed code before it could have a journey at all: `rotting-fruit`'s alternative was
+Python-only, and `problems.test.ts` requires every approach of a journeyed problem to carry all
+three languages.
+
+### B54 is nearly paid off
+
+**31 ASCII walkthroughs → 11**, and all eleven belong to the problems that carry Python only. A
+translation pass plus their journeys closes the item completely.
+
+### Gates
+
+`npm run check` exit 0 (tsc 0, eslint 0, **512 tests**) · `npm run test:ui` exit 0, **110 checks**.
+
+### What this batch teaches
+
+1. **A view earns its keep by carrying shapes it was not designed for.** Five different pictures,
+   one `GridView`, no changes to it. The abstraction was right because a grid of labelled cells is
+   what all five of those things ARE.
+2. **A deliberately wrong rung needs a witness, and the witness has to be hunted.** Both wrong rungs
+   here agree with the correct one on the obvious inputs. Neither lesson survives without a specific
+   input where they diverge, pinned by a test.
+3. **When a ladder does not climb in cost, say what it climbs in.** Three of these would read as
+   nonsense under "worst to best".
+
+---
+
 ## 2026-09-09 (batch 5) — the first five journeys for problems that are not rows
 
 One PR (#62). **48 → 53 journeys**, and the pool they came from is the 31 problems whose

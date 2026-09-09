@@ -93,49 +93,6 @@ int maxAreaOfIsland(vector<vector<int>> grid) {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      text: `1 1 0
-1 0 0
-0 0 1`,
-      caption:
-        "Two islands: a three-cell one at the top left and a single cell at the bottom right.",
-    },
-    {
-      text: `* 1 0
-1 0 0
-0 0 1`,
-      caption:
-        "The scan finds land at (0,0). The flood fill claims it — area 1 — and looks at its four neighbours.",
-    },
-    {
-      text: `* * 0
-1 0 0
-0 0 1`,
-      caption:
-        "(0,1) is land → claimed, area 2. Its own neighbours are water or already claimed.",
-    },
-    {
-      text: `* * 0
-* 0 0
-0 0 1`,
-      caption:
-        "(1,0) is land → claimed, area 3. The frontier is now empty, so this island is finished at 3.",
-    },
-    {
-      text: `* * 0
-* 0 0
-0 0 *`,
-      caption:
-        "The scan continues and finds the lone cell at (2,2): a second island of area 1. Note it does NOT join the first — diagonal contact is not connection.",
-    },
-    {
-      text: `* * 0
-* 0 0
-0 0 *`,
-      caption: "Largest area seen: 3. Every cell was visited exactly once.",
-    },
-  ],
   alternatives: [
     {
       name: "Grow by rescanning",

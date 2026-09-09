@@ -119,56 +119,6 @@ def network_delay_time(times: list[list[int]], n: int, k: int) -> int:
     }
     return slowest;
 }`,
-  walkthrough: [
-    {
-      text: `edges: 2→1 (1), 2→3 (1), 3→4 (1)
-source k = 2
-
-best   1:∞   2:0   3:∞   4:∞
-heap   (0,2)`,
-      caption:
-        "Everything is unreachable until proven otherwise. Only the source starts at zero.",
-    },
-    {
-      text: `settle 2 (cost 0)
-  relax 2→1 : best[1] = 1
-  relax 2→3 : best[3] = 1
-
-best   1:1   2:0   3:1   4:∞
-heap   (1,1) (1,3)`,
-      caption:
-        "Node 2 is settled — nothing can reach it more cheaply than 0. Its edges are relaxed once.",
-    },
-    {
-      text: `settle 1 (cost 1)
-  no outgoing edges
-
-best   1:1   2:0   3:1   4:∞
-heap   (1,3)`,
-      caption: "Node 1 is a dead end. Settled and done.",
-    },
-    {
-      text: `settle 3 (cost 1)
-  relax 3→4 : best[4] = 2
-
-best   1:1   2:0   3:1   4:2
-heap   (2,4)`,
-      caption: "Node 3 opens the last hop.",
-    },
-    {
-      text: `settle 4 (cost 2)
-heap empty`,
-      caption:
-        "Every node has a finite distance, so the signal reached all of them.",
-    },
-    {
-      text: `answer = max(1, 0, 1, 2) = 2
-
-if any best[i] were still ∞ → -1`,
-      caption:
-        "The answer is the LAST arrival, not the sum. An unreached node leaves infinity behind, which is the −1 case.",
-    },
-  ],
   alternatives: [
     {
       name: "Relax every edge, n − 1 times",

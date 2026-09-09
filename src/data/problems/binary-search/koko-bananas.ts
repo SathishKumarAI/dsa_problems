@@ -68,28 +68,6 @@ def min_eating_speed(piles: list[int], h: int) -> int:
     return lo;
 }
 `,
-  walkthrough: [
-    {
-      text: "piles = [3, 6, 7, 11]   h = 8\nspeed k range: 1 .. 11\n\nfeasible(k) is monotonic:\nno no no YES YES YES ...\n         ^ find this boundary",
-      caption: "The answer space, not the array, is what we search.",
-    },
-    {
-      text: "k = 6  →  ceil(3/6)+ceil(6/6)+ceil(7/6)+ceil(11/6)\n       =  1 + 1 + 2 + 2 = 6 hours ≤ 8   ✓\n\nrange: 1 .. 6",
-      caption: "mid = 6 works — try slower speeds, keep 6 in range.",
-    },
-    {
-      text: "k = 3  →  1 + 2 + 3 + 4 = 10 hours > 8   ✗\n\nrange: 4 .. 6",
-      caption: "mid = 3 too slow — go right: lo = 4.",
-    },
-    {
-      text: "k = 5  →  1 + 2 + 2 + 3 = 8 hours ≤ 8   ✓\nrange: 4 .. 5\n\nk = 4  →  1 + 2 + 2 + 3 = 8 hours ≤ 8   ✓\nrange: 4 .. 4",
-      caption: "5 works, then 4 works. Range closes.",
-    },
-    {
-      text: "answer: k = 4\n\nno  no  no  YES YES ...\n 1   2   3   4   5\n             ^ leftmost yes",
-      caption: "Smallest feasible speed found in O(log 11) checks.",
-    },
-  ],
   alternatives: [
     {
       name: "Try every speed",

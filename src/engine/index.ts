@@ -50,6 +50,21 @@ import { singleInSorted } from "../data/journeys/single-in-sorted.ts"
 import { cycleDetect } from "../data/journeys/cycle-detect.ts"
 import { kthLargestStream } from "../data/journeys/kth-largest-stream.ts"
 import { levelOrder } from "../data/journeys/level-order.ts"
+import { maxIslandArea } from "../data/journeys/max-island-area.ts"
+import { rottingFruit } from "../data/journeys/rotting-fruit.ts"
+import { wordSearch } from "../data/journeys/word-search.ts"
+import { countProvinces } from "../data/journeys/count-provinces.ts"
+import { longestCommonSubsequence } from "../data/journeys/longest-common-subsequence.ts"
+import { partitionEqualSubset } from "../data/journeys/partition-equal-subset.ts"
+import { balancedBrackets } from "../data/journeys/balanced-brackets.ts"
+import { kokoBananas } from "../data/journeys/koko-bananas.ts"
+import { topKFrequent } from "../data/journeys/top-k-frequent.ts"
+import { taskCooldown } from "../data/journeys/task-cooldown.ts"
+import { courseOrderJourney } from "../data/journeys/course-order.ts"
+import { networkDelayJourney } from "../data/journeys/network-delay.ts"
+import { kClosestPoints } from "../data/journeys/k-closest-points.ts"
+import { generateParens } from "../data/journeys/generate-parens.ts"
+import { minCoverSubstring } from "../data/journeys/min-cover-substring.ts"
 import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
@@ -106,6 +121,21 @@ export const JOURNEYS: AnyJourney[] = [
   cycleDetect as unknown as AnyJourney,
   kthLargestStream as unknown as AnyJourney,
   levelOrder as unknown as AnyJourney,
+  maxIslandArea as unknown as AnyJourney,
+  rottingFruit as unknown as AnyJourney,
+  wordSearch as unknown as AnyJourney,
+  countProvinces as unknown as AnyJourney,
+  longestCommonSubsequence as unknown as AnyJourney,
+  partitionEqualSubset as unknown as AnyJourney,
+  balancedBrackets as unknown as AnyJourney,
+  kokoBananas as unknown as AnyJourney,
+  topKFrequent as unknown as AnyJourney,
+  taskCooldown as unknown as AnyJourney,
+  courseOrderJourney as unknown as AnyJourney,
+  networkDelayJourney as unknown as AnyJourney,
+  kClosestPoints as unknown as AnyJourney,
+  generateParens as unknown as AnyJourney,
+  minCoverSubstring as unknown as AnyJourney,
   maxDepth as unknown as AnyJourney,
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,

@@ -45,6 +45,28 @@ import { longestAfterFlips, maxOnesAfterFlips } from "./max-ones-after-flips.ts"
 import { cycleDetect, loops } from "./cycle-detect.ts"
 import { kthLargestOf, kthLargestStream } from "./kth-largest-stream.ts"
 import { levelOrder, levelValues } from "./level-order.ts"
+import { biggestIsland, maxIslandArea } from "./max-island-area.ts"
+import { minutesToRot, rottingFruit } from "./rotting-fruit.ts"
+import { canSpell, canSpellGreedy, wordSearch } from "./word-search.ts"
+import { countProvinces, provinces } from "./count-provinces.ts"
+import {
+  lcsLength,
+  longestCommonSubsequence,
+} from "./longest-common-subsequence.ts"
+import {
+  canPartition,
+  canPartitionUpward,
+  partitionEqualSubset,
+} from "./partition-equal-subset.ts"
+import { balancedBrackets, isBalanced } from "./balanced-brackets.ts"
+import { kokoBananas, slowestSpeed } from "./koko-bananas.ts"
+import { topK, topKFrequent } from "./top-k-frequent.ts"
+import { shortestSchedule, taskCooldown } from "./task-cooldown.ts"
+import { courseOrder, courseOrderJourney, edgesOf } from "./course-order.ts"
+import { networkDelay, networkDelayJourney } from "./network-delay.ts"
+import { kClosest, kClosestPoints, pointsOf } from "./k-closest-points.ts"
+import { allParens, generateParens } from "./generate-parens.ts"
+import { minCoverSubstring, minWindow } from "./min-cover-substring.ts"
 import { depthOfTree, maxDepth } from "./max-depth.ts"
 import { merged, mergeTwoSorted } from "./merge-two-sorted.ts"
 import { isBst, validateBst } from "./validate-bst.ts"
@@ -625,6 +647,222 @@ const TABLE: {
     },
   },
   {
+    journey: maxIslandArea as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => biggestIsland(d.nums as number[], d.cols as number),
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      return {
+        nums: Array.from({ length: cols * rows }, () => rand(2)),
+        cols,
+      }
+    },
+  },
+  {
+    journey: rottingFruit as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => minutesToRot(d.nums as number[], d.cols as number),
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      return {
+        nums: Array.from({ length: cols * rows }, () => rand(3)),
+        cols,
+      }
+    },
+  },
+  {
+    journey: wordSearch as unknown as AnyJourney,
+    // the greedy rung is DELIBERATELY wrong — it never gives a failed path's
+    // cells back, which is the lesson and is pinned by its own test below
+    skip: ["story", "greedy"],
+    reference: (d) => canSpell(d.nums as string[], d.word as string),
+    input: (rand) => {
+      const letters = "abc"
+      const cols = 1 + rand(3)
+      const rows = 1 + rand(3)
+      return {
+        nums: Array.from({ length: rows }, () =>
+          Array.from({ length: cols }, () => letters[rand(3)]).join("")
+        ),
+        word: Array.from({ length: 1 + rand(4) }, () => letters[rand(3)]).join(
+          ""
+        ),
+      }
+    },
+  },
+  {
+    journey: countProvinces as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => provinces(d.nums as number[], d.cols as number),
+    // a symmetric 0/1 matrix with a 1 diagonal, which is what classify demands
+    input: (rand) => {
+      const n = 1 + rand(5)
+      const m = Array.from({ length: n * n }, () => 0)
+      for (let i = 0; i < n; i++) {
+        m[i * n + i] = 1
+        for (let j = i + 1; j < n; j++) {
+          const v = rand(3) ? 0 : 1
+          m[i * n + j] = v
+          m[j * n + i] = v
+        }
+      }
+      return { nums: m, cols: n }
+    },
+  },
+  {
+    journey: longestCommonSubsequence as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => lcsLength(d.nums as string[]),
+    input: (rand) => {
+      const word = () =>
+        Array.from({ length: 1 + rand(5) }, () => "abc"[rand(3)]).join("")
+      return { nums: [word(), word()] }
+    },
+  },
+  {
+    journey: partitionEqualSubset as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => canPartition(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(6) }, () => 1 + rand(9)),
+    }),
+  },
+  {
+    journey: balancedBrackets as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isBalanced(d.nums as string[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(8) }, () => "()[]{}"[rand(6)]),
+    }),
+  },
+  {
+    journey: kokoBananas as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => slowestSpeed(d.nums as number[], d.h as number),
+    // h must be at least the pile count, which is what classify demands
+    input: (rand) => {
+      const n = 1 + rand(5)
+      return {
+        nums: Array.from({ length: n }, () => 1 + rand(12)),
+        h: n + rand(10),
+      }
+    },
+  },
+  {
+    journey: topKFrequent as unknown as AnyJourney,
+    skip: ["story"],
+    // the answer is a SET — every rung returns it sorted so the comparison is
+    // about membership, which is what the problem actually asks for
+    reference: (d) => topK(d.nums as number[], d.k as number),
+    input: (rand) => {
+      const nums = Array.from({ length: 1 + rand(9) }, () => rand(5))
+      const distinct = new Set(nums).size
+      return { nums, k: 1 + rand(distinct) }
+    },
+  },
+  {
+    journey: taskCooldown as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => shortestSchedule(d.nums as string[], d.n as number),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => "ABCD"[rand(4)]),
+      n: rand(4),
+    }),
+  },
+  {
+    journey: courseOrderJourney as unknown as AnyJourney,
+    skip: ["story"],
+    // any valid order is correct, so compare what the rungs mean rather than
+    // the exact list: a full topological order, or the empty list on a cycle
+    reference: (d) => courseOrder(d.nums as number[], d.courses as number),
+    accept: (d, got) => {
+      const nums = d.nums as number[]
+      const courses = d.courses as number
+      const order = got as number[]
+      const truth = courseOrder(nums, courses)
+      if (!truth.length) return Array.isArray(order) && order.length === 0
+      if (!Array.isArray(order) || order.length !== courses) return false
+      const at = new Map(order.map((c, i) => [c, i]))
+      if (at.size !== courses) return false
+      return edgesOf(nums).every(([a, b]) => at.get(b)! < at.get(a)!)
+    },
+    input: (rand) => {
+      const courses = 1 + rand(5)
+      const pairs: number[] = []
+      for (let i = rand(5); i > 0; i--) {
+        const a = rand(courses)
+        const b = rand(courses)
+        if (a !== b) pairs.push(a, b)
+      }
+      return { nums: pairs, courses }
+    },
+  },
+  {
+    journey: networkDelayJourney as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) =>
+      networkDelay(d.nums as number[], d.nodes as number, d.source as number),
+    input: (rand) => {
+      const nodes = 1 + rand(5)
+      const triples: number[] = []
+      for (let i = rand(6); i > 0; i--) {
+        const u = 1 + rand(nodes)
+        const v = 1 + rand(nodes)
+        if (u !== v) triples.push(u, v, 1 + rand(5))
+      }
+      return { nums: triples, nodes, source: 1 + rand(nodes) }
+    },
+  },
+  {
+    journey: kClosestPoints as unknown as AnyJourney,
+    skip: ["story"],
+    // any valid set of k is accepted, so a rung is judged on the DISTANCES it
+    // kept, not on which of two tied points it happened to pick
+    reference: (d) => kClosest(d.nums as number[], d.k as number),
+    accept: (d, got) => {
+      const nums = d.nums as number[]
+      const k = d.k as number
+      const list = got as string[]
+      if (!Array.isArray(list) || list.length !== k) return false
+      const dist = (s: string) => {
+        const [x, y] = s.split(",").map(Number)
+        return x * x + y * y
+      }
+      const all = pointsOf(nums).map(([x, y]) => `${x},${y}`)
+      if (!list.every((p) => all.includes(p))) return false
+      const mine = list.map(dist).sort((a, b) => a - b)
+      const best = kClosest(nums, k)
+        .map(dist)
+        .sort((a, b) => a - b)
+      return mine.every((v, i) => v === best[i])
+    },
+    input: (rand) => {
+      const n = 1 + rand(5)
+      return {
+        nums: Array.from({ length: n * 2 }, () => rand(9) - 4),
+        k: 1 + rand(n),
+      }
+    },
+  },
+  {
+    journey: generateParens as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => allParens((d.nums as number[])[0]),
+    input: (rand) => ({ nums: [1 + rand(4)] }),
+  },
+  {
+    journey: minCoverSubstring as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => minWindow(d.nums as string[]),
+    input: (rand) => {
+      const word = (len: number) =>
+        Array.from({ length: len }, () => "abc"[rand(3)]).join("")
+      return { nums: [word(1 + rand(9)), word(1 + rand(3))] }
+    },
+  },
+  {
     journey: maxDepth as unknown as AnyJourney,
     skip: ["story"],
     reference: (d) => depthOfTree(d.nums as string[]),
@@ -684,6 +922,33 @@ const TABLE: {
     }),
   },
 ]
+
+test("word-search: the rung that never restores a cell is wrong where the journey says it is", () => {
+  // the board the journey ships for exactly this: a path has to be given back
+  const board = ["aaa", "aba"]
+  assert.equal(canSpell(board, "aaaaa"), true)
+  assert.equal(canSpellGreedy(board, "aaaaa"), false)
+  // and it agrees on a board where nothing has to back off, which is what
+  // makes the bug survive casual testing
+  assert.equal(
+    canSpell(["abce", "sfcs", "adee"], "abcced"),
+    canSpellGreedy(["abce", "sfcs", "adee"], "abcced")
+  )
+})
+
+test("partition-equal-subset: the sweep direction is the whole difference", () => {
+  // sweeping upward lets one number be spent twice: 4 alone would "reach" 8
+  // [4, 4] splits, and both directions agree — which is why the bug survives
+  assert.equal(canPartition([4, 4]), true)
+  assert.equal(canPartitionUpward([4, 4]), true)
+  // [1, 3] cannot: the halves would be 2, and no subset makes 2. An upward
+  // sweep spends the 1 twice and claims it can.
+  assert.equal(canPartition([1, 3]), false)
+  assert.equal(canPartitionUpward([1, 3]), true)
+  // same shape with a bigger gap
+  assert.equal(canPartition([2, 6]), false)
+  assert.equal(canPartitionUpward([2, 6]), true)
+})
 
 test("fewest-coins: the greedy rung is wrong where the journey says it is", () => {
   // the second act teaches by failing. If greedy ever starts agreeing here,

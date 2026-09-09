@@ -97,28 +97,6 @@ def min_window(s: str, t: str) -> str:
     }
     return bestLen==INT_MAX? "": s.substr(bestStart, bestEnd-bestStart+1);
 }`,
-  walkthrough: [
-    {
-      text: "s = ADOBECODEBANC   t = ABC\n\nneed: {A:1, B:1, C:1}   missing = 3",
-      caption: "Count what t requires.",
-    },
-    {
-      text: "A D O B E C O D E B A N C\n└────────┘\nADOBEC — first covering window\n\nmissing = 0, length 6",
-      caption: "Grow right until every requirement is met.",
-    },
-    {
-      text: "A D O B E C O D E B A N C\n  └──────┘? shrink test:\ndrop A → missing = 1 → stop\n\nbest so far: ADOBEC (6)",
-      caption: "Shrink left while still covered; first break stops it.",
-    },
-    {
-      text: "continue right ... reach second B, then A:\n\nA D O B E C O D E B A N C\n          └───────┘\nCODEBA covers again — shrink → ODEBA? no C...\nshrink stops at C O D E B A (6)",
-      caption: "Window re-covers as later duplicates arrive; keep tightening.",
-    },
-    {
-      text: 'reach final C:\n\nA D O B E C O D E B A N C\n                  └─────┘\nBANC — length 4. Shrink breaks at B.\n\nanswer: "BANC"',
-      caption: "Best window found: 4. Each index enters/leaves once — O(n).",
-    },
-  ],
   alternatives: [
     {
       name: "Brute force",
