@@ -1,11 +1,14 @@
-// The approach ladder: every way into a problem, worst to best, each rung
+// The approach ladder: every way into a problem, in build order, each rung
 // carrying the weakness in the one before it (docs/PROBLEMS.md §P1).
 //
 // One builder, two sources, so the reasoning is never written twice (the B1
 // rule). A problem WITH a journey draws its rungs from the journey's acts —
 // `insight` is already "the weakness the previous act had" — and is capped by
 // the ledger exactly as the embedded walkthrough is. A problem without one
-// draws them from `alternatives` (worst → best) plus the optimal at the top.
+// draws them from `alternatives` (in build order) plus the optimal at the top.
+// NOT necessarily a monotone climb — a rung is sometimes a generalisation the
+// next one argues against. The page says "each answering the one before it"
+// rather than "worst to best" for that reason (V8).
 //
 // Owns the shape and the picking. Owns no markup: problem-detail.tsx renders it.
 

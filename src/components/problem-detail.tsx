@@ -1,5 +1,5 @@
 // One problem's page, read top to bottom: statement, constraints and examples,
-// then the hint ladder, the walkthrough, and every approach worst → best, each
+// then the hint ladder, the walkthrough, and every approach in build order, each
 // rung carrying the weakness in the one before it (R1). The primary action is
 // solving it on LeetCode, because this page explains and does not host an editor.
 //
@@ -107,7 +107,7 @@ function RungCode({ code }: { code: Code }) {
   return <CodeBlock code={code[lang] ?? code.python} />
 }
 
-// The ladder. Rungs read worst → best; the "why now" line sits BETWEEN them,
+// The ladder. Rungs read in build order; the "why now" line sits BETWEEN them,
 // because it belongs to the step from one to the next, not to either rung.
 function ApproachLadder({
   problem,
@@ -129,7 +129,11 @@ function ApproachLadder({
   return (
     <Section
       label="approaches"
-      count={`${rungs.length} ${rungs.length === 1 ? "way" : "ways"} in, worst to best`}
+      // "worst to best" promised a monotone climb the data does not always make:
+      // on island-count the middle rung is a generalisation the prose then argues
+      // is overkill, not a step up. What IS true of every pair is that each rung
+      // answers the one before it, which is exactly what `whyNow` says (V8).
+      count={`${rungs.length} ${rungs.length === 1 ? "way" : "ways"} in, each answering the one before it`}
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <LanguageStrip langs={langs} />
