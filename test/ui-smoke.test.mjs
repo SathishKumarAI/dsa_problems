@@ -1256,6 +1256,73 @@ describe(
 
     // ---------- 5. phone width ----------
 
+    test("the densest panel does not overlap, overflow or shrink below 12px", async () => {
+      // 79 journeys share eight panel kinds, and every one was designed against
+      // small presets. The DP table at its largest is the densest thing the
+      // stage ever draws — 80 cells — so it is the one worth pinning.
+      // `node test/panel-audit.mjs` walks all eight and prints the numbers.
+      await page.goto(`${server.base}/#/`)
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:same-order-gaps-allowed', '9'); return 1`
+      )
+      await page.goto(`${server.base}/#/journey/same-order-gaps-allowed`)
+      await page.waitFor(`!!document.querySelector('[aria-label=stage]')`)
+      // the preset first: applying one restarts the act
+      await page.run(`
+        const s = document.querySelector('select[aria-label="input preset"]');
+        const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+        set.call(s, 'long');
+        s.dispatchEvent(new Event('change', { bubbles: true }));
+        return 1;
+      `)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 900))`)
+      await page.run(`
+        const btns = [...document.querySelectorAll('button')]
+          .filter(b => /^[0-9][0-9]/.test(b.textContent.trim()) && b.closest('[data-sidebar]') === null);
+        btns[btns.length - 1]?.click();
+        return 1;
+      `)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 700))`)
+      await page.run(`
+        const t = document.querySelector('input[aria-label=timeline]');
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        set.call(t, String(Math.max(1, Math.floor(Number(t.max) * 0.6))));
+        t.dispatchEvent(new Event('change', { bubbles: true }));
+        return 1;
+      `)
+      const out = await page.run(`
+        const stage = document.querySelector('[aria-label=stage]');
+        const cells = [...stage.querySelectorAll('[data-k]')];
+        const boxes = cells.map(c => c.getBoundingClientRect());
+        let overlaps = 0;
+        for (let i = 0; i < boxes.length; i++)
+          for (let j = i + 1; j < boxes.length; j++) {
+            const a = boxes[i], b = boxes[j];
+            if (a.left < b.right - 1 && b.left < a.right - 1 &&
+                a.top < b.bottom - 1 && b.top < a.bottom - 1) overlaps++;
+          }
+        const sb = stage.getBoundingClientRect();
+        const fonts = [...stage.querySelectorAll('*')]
+          .filter(e => e.children.length === 0 && (e.textContent || '').trim())
+          .map(e => parseFloat(getComputedStyle(e).fontSize));
+        return {
+          cells: cells.length,
+          overlaps,
+          outside: boxes.filter(b => b.right > sb.right + 1 || b.left < sb.left - 1).length,
+          minFont: Math.min(...fonts),
+          act: stage.innerText.split('\\n')[0],
+        };
+      `)
+      assert.ok(out.cells >= 40, `the dense preset drew only ${out.cells} cells (${out.act})`)
+      assert.equal(out.overlaps, 0, `${out.overlaps} pairs of panel cells overlap`)
+      assert.equal(out.outside, 0, `${out.outside} cells are drawn outside the stage`)
+      assert.ok(
+        out.minFont >= 12,
+        `the smallest text on the stage is ${out.minFont}px`
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("390 px wide: the walkthrough legend has a key, not a gap (V9)", async () => {
       // The legend was `hidden sm:flex`, so a phone got four load-bearing
       // colours and no key at all. It wraps now. Checked on a problem WITHOUT a

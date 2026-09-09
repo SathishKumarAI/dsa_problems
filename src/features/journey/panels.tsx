@@ -298,7 +298,7 @@ function Bars({ p }: { p: Extract<PanelModel, { kind: "bars" }> }) {
                 {showValues && (
                   <span
                     className={cn(
-                      "z-10 font-mono text-[10px] tabular-nums",
+                      "z-10 font-mono text-meta tabular-nums",
                       r.length ? "text-foreground" : "text-muted-foreground"
                     )}
                   >

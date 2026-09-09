@@ -75,7 +75,7 @@ export function HashMapView({ map }: { map: HashModel }) {
                       : "border-border/60 bg-background/40"
                 )}
               >
-                <span className="font-mono text-[10px] text-muted-foreground">
+                <span className="font-mono text-meta text-muted-foreground">
                   {b}
                 </span>
                 {chain.length === 0 && (
@@ -99,7 +99,10 @@ export function HashMapView({ map }: { map: HashModel }) {
                         {fmt(map, e)}
                       </span>
                       {k < chain.length - 1 && (
-                        <span className="text-[10px] leading-none text-muted-foreground/60">
+                        <span
+                          aria-hidden="true"
+                          className="text-meta leading-none text-muted-foreground/60"
+                        >
                           ↓
                         </span>
                       )}
@@ -117,7 +120,7 @@ export function HashMapView({ map }: { map: HashModel }) {
           35em measure like any other prose (U6, U7). They were invisible to
           the UI suite until the walkthrough stopped living behind a closed
           tab — a reminder that a rule only holds where something looks. */}
-      <div className="text-ui flex max-w-[35em] flex-col gap-1.5 text-muted-foreground">
+      <div className="flex max-w-[35em] flex-col gap-1.5 text-ui text-muted-foreground">
         {probing && (
           <div>
             lookup:{" "}

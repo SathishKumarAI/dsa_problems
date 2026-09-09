@@ -327,6 +327,63 @@ None of this changes the pedagogy, the engine or the API. It is all frame.
 
 ---
 
+# Third pass, 2026-09-09 — the panels, at 79 journeys
+
+The first two audits looked at chrome and content. This one looks at the **panels**, because the
+situation changed underneath them: eight panel kinds were designed against a handful of small
+presets, and there are now 79 journeys pushing real data through them — an 80-cell DP table, a
+15-node tree, a 25-cell grid, a 36-column adjacency matrix.
+
+`node test/panel-audit.mjs` is the tool. It walks every panel kind on a real Chrome at 1536×864,
+selects the **largest preset each journey offers**, jumps to the **last act** (where the real
+structure is drawn) and scrubs to 60% of it, then measures. It asserts nothing — it prints.
+
+## What it found
+
+```
+panel                      preset     act      cells  overlap  outside  minW  minFont  stage
+heap on the tree view      long       act 04   5      0        0        40    12       860x722
+tree                       long       act 03   15     0        0        40    12       860x722
+list                       long       act 04   12     0        0        44    12       860x706
+grid                       long       act 03   25     0        0        44    12       860x722
+DP table                   long       act 03   80     0        0        44    12       860x706
+distance table             long       act 03   12     0        0        44    12       860x722
+adjacency matrix           long       act 03   36     0        0        44    12       860x722
+bars                       big        act 05   20     0        0        56    12       860x706
+```
+
+**P1 — the panels hold.** No overlapping cells anywhere, nothing drawn outside the stage, no inner
+sideways scroller, and a smallest cell of 40px even on the 80-cell table. The tree's arithmetic
+layout (`centre(i) = ((i − 2^d + 1 + 0.5) / 2^d) × 100`) does not collide at four levels, and the
+grid views wrap without clipping. That is a negative result and it is the main finding: **the shapes
+scale to the content that now exists.**
+
+**P2 — four raw font sizes below the scale, and DESIGN.md forbids exactly this.** FIXED. The bars'
+value label was `text-[10px]`, the chip's index subscript `text-[11px]`, and two more in the hash-map
+view. The smallest step in the scale is `text-meta` at 12px, and the U6 finding set 12px as the floor
+for anything read as text. All four are `text-meta` now; the chained-bucket arrow, which is
+decoration rather than text, is `aria-hidden` as well. Re-measured after: **smallest text on every
+panel is 12px.**
+
+**P3 — the same violation survives in four places outside the panels**: `rail-token.tsx` (11px, in a
+48px rail where 12px may not fit), `step-player.tsx` (13px narration), `flashcards-view.tsx` (10px
+tag), `algorithms/views.tsx` (10px). Not fixed here: each needs a look at whether the layout still
+holds at 12px, which is a different job from a panel audit. Filed as **B58**.
+
+**P4 — the test-case drawer costs the stage a third of its width.** Measured: stage **862px** with the
+drawer closed, **574px** with it open, on a 1536px viewport. It is opt-in and remembered, and the
+default is closed, so this is a trade rather than a bug — but on the densest panels it is the
+difference between a comfortable table and a cramped one, and a drawer that opened BELOW the stage
+would not cost width at all. Filed as **B59** with the measurement, because it is a design call.
+
+## What became a gate
+
+The audit is a tool, and a tool nobody runs is a tool that stops being true. The densest panel — the
+DP table at its largest preset — is now pinned in `test:ui`: at least 40 cells drawn, **0** overlapping
+pairs, **0** cells outside the stage, and nothing under 12px. That check fails if any future panel
+change lets cells collide or shrink.
+
+
 # Second pass, 2026-09-08 — after 45 journeys and 87 problems
 
 The first audit (U1–U14) was written when the set held 31 problems and five journeys, and every one

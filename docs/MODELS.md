@@ -78,6 +78,23 @@ about 13% — higher than the 5% first measured, and still counted apart from re
 rather than hidden in them. `sort-by-frequency` took three attempts before all four of its blocks
 launched. None of those refusals was ever a compile error; `verify:code` had already built all 366.
 
+## The third translation pass, 2026-09-09: Claude again, and why the choice stopped being interesting
+
+The eleven Python-only problems (44 blocks) were translated by Claude in the main session, the same
+way as the second pass and for the same reason: the tier boundary below already decided it, and the
+measured rework on the first local-model batch has not been revisited because nothing changed about
+the task.
+
+What DID change is how far the gates see. `verify:code` compiled all 44. `verify:run` could only
+check **four of the eleven** — the other seven take a linked list or a binary tree, which the
+differential runner cannot marshal (B30). Those seven are listed in `NOT_YET_RUNNABLE` with their
+reason rather than being absent from `VECTORS`, because a problem the gate cannot see reads as a
+problem the gate approved.
+
+**That is the number to carry into any future decision about who writes these.** A translation
+checked by a compiler alone is a weaker artefact than one checked against the Python, whoever wrote
+it — and 14 of 87 problems are currently in that state.
+
 ## The tier boundary — the rule that decides who writes what
 
 > **A local model gets the work where a machine can prove it wrong. Everything else is judgement.**

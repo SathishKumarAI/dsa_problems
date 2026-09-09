@@ -1,13 +1,14 @@
 # dsa.patterns — learn the insight, then the name
 
-One app: a pattern-organised interview practice set (10 patterns × 3 problems, SQL drills, stats
-flashcards) plus **learning journeys** — problems built all the way down, Brilliant/Khan style:
+One app: a pattern-organised interview practice set (**87 problems** across 10 patterns, SQL drills,
+stats flashcards) plus **learning journeys** — problems built all the way down, Brilliant/Khan style:
 the need first, approaches unlocked one at a time by the previous one's weakness, predictions
 mid-playback, quiz gates, your own code driving the animation, and the pattern named only at the
-reveal. Three journeys today: **Two Sum**, **Single Number** and **Triplets Summing to Zero**. Plus a sorting / search / graph
-visualizer whose bars morph instead of teleporting.
+reveal. **79 of the 87 problems have a journey**, drawn as a chip row, a grid, a tree (heaps reuse
+it), a linked list, a DP table or a bar chart — whichever the problem actually is. Plus a sorting /
+search / graph visualizer whose bars morph instead of teleporting.
 
-Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha, forced dark.
+Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha and Latte — dark, light or system, switchable in settings.
 Node 24 (runs the API and the tests without a build step).
 
 ```
