@@ -592,6 +592,101 @@ ${body}
 `
 }
 
+// ---------- a rung that is a CLASS, not a function (B62) ----------
+//
+// Some problems are a constructor plus a stream of calls, and this driver calls
+// ONE entry point with a row of literals. The shape that fits both: a case is
+// the constructor's arguments followed by the stream, and the ANSWER is the row
+// of results — so a stateful rung still prints exactly one line per case and
+// every comparison below works unchanged.
+//
+//   cases: [[3, [4, 5, 8, 2], [3, 5, 10, 9, 4]]]
+//           ^ ctor args        ^ the stream       -> "[4,5,5,8,8]"
+
+export function pythonClassDriver(src, spec, cases) {
+  const body = cases
+    .map((c) => {
+      const args = spec.ctor.map((t, i) => lit.python(c[i], t)).join(", ")
+      const stream = JSON.stringify(c[spec.ctor.length])
+      return [
+        `try:`,
+        `    __o = ${spec.klass}(${args})`,
+        `    print(__canon([__o.${spec.method}(__x) for __x in ${stream}]))`,
+        `except BaseException as __e:`,
+        `    print("!ERROR " + str(__e).replace("\\n", " "))`,
+      ].join("\n")
+    })
+    .join("\n")
+  return `${PY_NODES}\n${src}\n${PY_CANON}\n${body}\n`
+}
+
+export function javaClassDriver(nodes, block, spec, cases) {
+  // a `public class` cannot share a file with `public class Solution`, and a
+  // plain member class cannot be built from a static main — so it is nested
+  // static. The block on screen is untouched; this is the driver's business.
+  const nested = block.replace(/\bpublic\s+class\b/, "static class")
+  const body = cases
+    .map((c, k) => {
+      const args = spec.ctor
+        .map((v, i) => lit.java(c[i], v, "ListNode"))
+        .join(", ")
+      const stream = c[spec.ctor.length]
+      return [
+        `        try {`,
+        `            ${spec.klass} o${k} = new ${spec.klass}(${args});`,
+        `            int[] s${k} = new int[]{${stream.join(",")}};`,
+        `            StringBuilder b${k} = new StringBuilder("[");`,
+        `            for (int i = 0; i < s${k}.length; i++) { if (i > 0) b${k}.append(","); b${k}.append(o${k}.${spec.method}(s${k}[i])); }`,
+        `            System.out.println(b${k}.append("]").toString());`,
+        `        } catch (Throwable __t) { System.out.println("!ERROR " + String.valueOf(__t)); }`,
+      ].join("\n")
+    })
+    .join("\n")
+  return `import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
+${nodes}
+public class Solution {
+${nested
+  .split("\n")
+  .map((l) => (l.trim() ? "    " + l : l))
+  .join("\n")}
+    public static void main(String[] a) {
+${body}
+    }
+}
+`
+}
+
+export function cppClassDriver(headers, nodes, block, spec, cases) {
+  const body = cases
+    .map((c, k) => {
+      const args = spec.ctor.map((v, i) => lit.cpp(c[i], v, "ListNode")).join(", ")
+      const stream = c[spec.ctor.length]
+      return [
+        `    {`,
+        `        try {`,
+        `            ${spec.klass} o(${args});`,
+        `            vector<int> s = {${stream.join(",")}};`,
+        `            string out = "[";`,
+        `            for (size_t i = 0; i < s.size(); i++) { if (i) out += ","; out += to_string(o.${spec.method}(s[i])); }`,
+        `            cout << out + "]" << endl;`,
+        `        } catch (...) { cout << "!ERROR c++ threw" << endl; }`,
+        `    }`,
+      ].join("\n")
+    })
+    .join("\n")
+  return `${headers}
+${nodes}
+${block}
+int main() {
+${body}
+    return 0;
+}
+`
+}
+
 // ---------- comparison ----------
 
 /** sort the elements of a one- or two-level list so order stops mattering */
@@ -665,6 +760,9 @@ using namespace std;`
   const only = arg("--id")
   const failures = []
   const unrunnable = []
+  // a rung the driver could not find a way into. It used to `continue` in
+  // silence, which reads exactly like a rung that passed.
+  const noEntry = []
   let seq = 0
   let ran = 0
   let compared = 0
@@ -679,15 +777,26 @@ using namespace std;`
       ...(p.alternatives ?? []).map((a) => ({ key: a.name, code: a })),
     ]
     for (const r of rungs) {
-      const pyFn = pyEntry(r.code.python)
-      if (!pyFn) continue
+      const isClass = spec.shape === "class"
+      const pyFn = isClass ? spec.klass : pyEntry(r.code.python)
+      if (!pyFn) {
+        // silence here used to hide a whole rung: a Python block that declares
+        // a class and no top-level def has no entry point this driver can call
+        noEntry.push(`${p.id}/${r.key} [python] — no top-level def to call`)
+        continue
+      }
       const cases = spec.cases
       // one process now runs every case, so the budget has to grow with them
       const timeout = 20000 + 5000 * cases.length
 
       // 1. the oracle, once for the whole rung
       const f = join(dir, `oracle${seq++}.py`)
-      writeFileSync(f, pythonDriver(r.code.python, pyFn, cases, spec.params))
+      writeFileSync(
+        f,
+        isClass
+          ? pythonClassDriver(r.code.python, spec, cases)
+          : pythonDriver(r.code.python, pyFn, cases, spec.params)
+      )
       const oracle = caseLines(
         () => execFileSync(python, [f], { stdio: "pipe", timeout }),
         cases.length
@@ -705,15 +814,20 @@ using namespace std;`
       for (const lang of ["java", "cpp"]) {
         const block = r.code[lang]
         if (!block || !tools[lang]) continue
-        const fn = cEntry(block)
-        if (!fn) continue
+        const fn = isClass ? spec.klass : cEntry(block)
+        if (!fn) {
+          noEntry.push(`${p.id}/${r.key} [${lang}] — no function to call`)
+          continue
+        }
         let got
         try {
           if (lang === "java") {
             const src = join(dir, "Solution.java")
             writeFileSync(
               src,
-              javaDriver(NODE_JAVA, block, fn, cases, spec.params)
+              isClass
+                ? javaClassDriver(NODE_JAVA, block, spec, cases)
+                : javaDriver(NODE_JAVA, block, fn, cases, spec.params)
             )
             execFileSync(tools.java, ["-nowarn", "-d", dir, src], {
               stdio: "pipe",
@@ -737,7 +851,9 @@ using namespace std;`
             const exe = join(dir, `${stem}.exe`)
             writeFileSync(
               src,
-              cppDriver(headers, NODE_CPP, block, fn, cases, spec.params)
+              isClass
+                ? cppClassDriver(headers, NODE_CPP, block, spec, cases)
+                : cppDriver(headers, NODE_CPP, block, fn, cases, spec.params)
             )
             execFileSync(tools.cpp, ["-std=c++17", "-w", "-o", exe, src], {
               stdio: "pipe",
@@ -803,7 +919,18 @@ using namespace std;`
         `freshly built exe; these say nothing about the code):`
     )
   for (const u of unrunnable) console.log(`  · ${u}`)
-  console.log(`${skipped} problems not yet runnable this way:`)
+  if (noEntry.length) {
+    console.log(
+      `${noEntry.length} rungs had no entry point the driver could call ` +
+        `(reported, not skipped in silence):`
+    )
+    for (const n of noEntry) console.log(`  · ${n}`)
+  }
+  console.log(
+    skipped
+      ? `${skipped} problems not yet runnable this way:`
+      : `every problem in VECTORS is runnable — NOT_YET_RUNNABLE is empty`
+  )
   for (const [id, why] of Object.entries(NOT_YET_RUNNABLE))
     console.log(`  · ${id} — ${why}`)
   for (const f of failures) console.log(`  ✗ ${f}`)

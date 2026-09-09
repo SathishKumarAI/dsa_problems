@@ -11,7 +11,15 @@
 import { execFileSync } from "node:child_process"
 import test from "node:test"
 import assert from "node:assert/strict"
-import { caseLines, cppDriver, javaDriver, pythonDriver } from "./run.mjs"
+import {
+  caseLines,
+  cppClassDriver,
+  cppDriver,
+  javaClassDriver,
+  javaDriver,
+  pythonClassDriver,
+  pythonDriver,
+} from "./run.mjs"
 import { NOT_YET_RUNNABLE, VECTORS } from "./vectors.mjs"
 
 test("a driver that dies mid-run keeps the lines it printed and blames the rest", () => {
@@ -128,6 +136,35 @@ test("a cycle is part of the SHAPE, not a second argument", () => {
   const py = pythonDriver("def f(h):\n    return h\n", "f", [[{ list: [1, 2, 3], cycle: 1 }]], ["list"])
   // one argument still, and the tail points back at index 1
   assert.ok(py.includes("f(__mklist([1,2,3], 1))"), py)
+})
+
+// B62. A stateful problem is a constructor plus a stream of calls, and the
+// driver calls ONE entry point. The shape that fits both: a case is the ctor's
+// arguments followed by the stream, and the answer is the row of results — so
+// it still prints one line per case and every comparison works unchanged.
+test("a class-shaped rung is driven as a constructor plus a stream", () => {
+  const spec = {
+    shape: "class",
+    klass: "Counter",
+    method: "add",
+    ctor: ["int", "int[]"],
+  }
+  const cases = [[3, [4, 5], [1, 2]]]
+
+  const py = pythonClassDriver("class Counter:\n    pass\n", spec, cases)
+  assert.ok(py.includes("__o = Counter(3, [4,5])"), py)
+  assert.ok(py.includes("__o.add(__x) for __x in [1,2]"), py)
+
+  // `public class` cannot share a file with `public class Solution`, and a
+  // plain member class cannot be built from a static main
+  const java = javaClassDriver("", "public class Counter { }", spec, cases)
+  assert.ok(java.includes("static class Counter"), java)
+  assert.ok(!/public\s+class\s+Counter/.test(java), java)
+  assert.ok(java.includes("new Counter(3, new int[]{4,5})"), java)
+
+  const cpp = cppClassDriver("", "", "class Counter { };", spec, cases)
+  assert.ok(cpp.includes("Counter o(3, {4,5})"), cpp)
+  assert.ok(cpp.includes("o.add(s[i])"), cpp)
 })
 
 test("an absent child is spelled the way each language spells it", () => {

@@ -96,16 +96,35 @@ public:
         self.nums.append(x)
         self.nums.sort()
         return self.nums[-self.k]`,
-      java: `public int kthLargest(int k, List<Integer> nums, int x) {
-    nums.add(x);
-    Collections.sort(nums);
-    return nums.get(nums.size() - k);
+      java: `public class KthLargest {
+    private int k;
+    private List<Integer> nums;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        this.nums = new ArrayList<>();
+        for (int num : nums) this.nums.add(num);
+    }
+
+    public int add(int x) {
+        nums.add(x);
+        Collections.sort(nums);
+        return nums.get(nums.size() - k);
+    }
 }`,
-      cpp: `int kthLargest(vector<int>& nums, int k, int x) {
-    nums.push_back(x);
-    sort(nums.begin(), nums.end());
-    return nums[nums.size() - k];
-}`,
+      cpp: `class KthLargest {
+public:
+    int k;
+    std::vector<int> nums;
+
+    KthLargest(int k, const std::vector<int>& nums): k(k), nums(nums) {}
+
+    int add(int x) {
+        nums.push_back(x);
+        std::sort(nums.begin(), nums.end());
+        return nums[nums.size() - k];
+    }
+};`,
     },
     {
       name: "Sorted insert (bisect)",
@@ -124,17 +143,39 @@ class KthLargest:
     def add(self, x: int) -> int:
         bisect.insort(self.nums, x)
         return self.nums[-self.k]`,
-      java: `public int add(List<Integer> nums, int k, int x) {
-    int idx = Collections.binarySearch(nums, x);
-    if (idx < 0) idx = -idx - 1;
-    nums.add(idx, x);
-    return nums.get(nums.size() - k);
+      java: `public class KthLargest {
+    private int k;
+    private List<Integer> nums;
+
+    public KthLargest(int k, int[] nums) {
+        this.k = k;
+        this.nums = new ArrayList<>();
+        for (int num : nums) this.nums.add(num);
+        Collections.sort(this.nums);
+    }
+
+    public int add(int x) {
+        int idx = Collections.binarySearch(nums, x);
+        if (idx < 0) idx = -idx - 1;
+        nums.add(idx, x);
+        return nums.get(nums.size() - k);
+    }
 }`,
-      cpp: `int add(vector<int>& nums, int k, int x) {
-    auto it = lower_bound(nums.begin(), nums.end(), x);
-    nums.insert(it, x);
-    return nums[nums.size() - k];
-}`,
+      cpp: `class KthLargest {
+public:
+    int k;
+    std::vector<int> nums;
+
+    KthLargest(int k, std::vector<int> nums): k(k), nums(nums) {
+        std::sort(this->nums.begin(), this->nums.end());
+    }
+
+    int add(int x) {
+        auto it = std::lower_bound(nums.begin(), nums.end(), x);
+        nums.insert(it, x);
+        return nums[nums.size() - k];
+    }
+};`,
     },
   ],
 }
