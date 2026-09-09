@@ -1,6 +1,6 @@
 # STATUS — read this when you return
 
-Last session: 2026-09-09. Journeys went **5 → 48**, the practice set's Java/C++ hole was closed,
+Last session: 2026-09-09. Journeys went **5 → 79**, the practice set's Java/C++ hole was closed,
 the UI got the pass it had been owed since the set tripled in size, and the tree and list panels
 finally have something rendering them.
 
@@ -13,13 +13,13 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#66. Nothing is open. The last two are **batch 5**: five
+`master` is clean and holds everything: #49–#67. Nothing is open. The last two are **batch 5**: five
 tree/list journeys (#62), then the remaining fifteen three-language problems (#63).
 
 | Gate | Command | State |
 |---|---|---|
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **589 tests** |
-| The interface, in a real browser | `npm run test:ui` | **123 checks**, 0 failed |
+| The interface, in a real browser | `npm run test:ui` | **124 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **412 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **1694 comparisons**, 0 disagreed — and **14 problems it cannot marshal**, named in `NOT_YET_RUNNABLE` (B30) |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
@@ -43,24 +43,52 @@ tree/list journeys (#62), then the remaining fifteen three-language problems (#6
    slot, since `Cell` has no null. The same PR moved the transport into the top bar and gave the
    stage the width the reading column was holding.
 
-## The next action
+## The next action — pick from the top
 
-**79 journeys of 87 problems, and zero ASCII walkthroughs.** B54 is closed by deletion: the `text`
-fallback and the `Frame.text` field are gone, because nothing produces those frames any more.
+**79 journeys of 87 problems. Zero ASCII walkthroughs. Every panel kind measured and pinned.**
+Nothing on this list is blocked; they are in the order I would take them.
 
-The eight problems still without a journey are all array-shaped and none of them is blocked:
+### 1. B51 — six array-shaped journeys (M)
+valid-anagram, group-anagrams, isomorphic-strings, permutation-in-string, rpn-eval,
+sort-by-frequency. All three languages present, all shapes proved. This is pure writing at the
+measured ~330 lines each, and it is what takes the set to 85 of 87.
 
-1. **B51** — valid-anagram, group-anagrams, isomorphic-strings, permutation-in-string, rpn-eval,
-   sort-by-frequency.
-2. **B52** — `stair-ways` and `counting-bits`, whose input is one number. Both shape questions are
-   answered now: `generate-parens` and `unique-paths` take numbers rather than rows, and the
-   DP-table stage exists.
-3. **B30 is the honest gap in the gates.** `verify:run` cannot marshal a linked list or a tree, so
-   **14 problems** are compile-checked and nothing more. They are named in `NOT_YET_RUNNABLE`
-   rather than being absent, but the check itself is still missing.
-4. **B53** — a hundred journeys needs 13 new problems first.
+### 2. B52 — stair-ways and counting-bits (S)
+Both take a single number rather than a row. That shape is now proved twice — `generate-parens`
+and `above-plus-left` both do it — and the DP-table stage exists. **These two finish the set: 87
+journeys for 87 problems.**
+
+### 3. B30 — the honest gap in the gates (L)
+`verify:run` cannot marshal a linked list or a binary tree, so **14 problems** are checked by a
+compiler and nothing else. They are named in `NOT_YET_RUNNABLE` rather than being absent, which is
+the difference between a known gap and an invisible one — but the check is still missing. Needs a
+`tree` and a `list` param shape in `run.mjs`: a node type and a builder in each of the three
+languages, plus a serialiser for the ones that RETURN a structure.
+
+### 4. B58, B59 — the two audit follow-ups (S each)
+Four raw font sizes below the scale outside the panels, and the design call on whether the
+test-case drawer should stop taking 288px from the stage.
+
+### 5. B53 — thirteen new problems, for a hundred journeys (XL)
+Only worth starting once 1 and 2 are done, because "a hundred journeys" needs a hundred problems
+and the set holds 87.
+
+### Also open, unchanged
+B42 (trace frames out of the Python — measured and demoted), B43 (Java/C++ tabs on derived acts),
+B45 (the problem page spoils the ladder), B60 (run the panel audit on a schedule), and the older
+F-items.
 
 ## Traps this session added to the list
+
+- **The store caches per key, so writing `localStorage` while a page is mounted is undone.** Every
+  attempt to unlock acts from the console failed silently until the write happened on a DIFFERENT
+  route, followed by a real navigation — which is exactly what `test/ui-smoke.test.mjs` has always
+  done. Read the harness before fighting the app.
+- **Applying a preset restarts the act.** An audit script that picked the act and then the preset
+  measured the story act fourteen times and reported "0 cells" without failing.
+- **A backslash in a template literal that is sent to the page is consumed twice.** `/^\d\d/`
+  written in a test file arrives as `/^dd/`. Use a character class — `/^[0-9][0-9]/` — and the
+  question stops being one about escaping.
 
 - **`git add -A` while agents are running sweeps their half-written files into your commit.** Use
   explicit paths. Recovered here with `reset --soft`, but only because it was noticed immediately.
@@ -97,7 +125,7 @@ The eight problems still without a journey are all array-shaped and none of them
 
 ## What is on screen
 
-79 journeys, a practice set of 87 problems (Python everywhere; Java and C++ on 75), a
+79 journeys, a practice set of 87 problems (**all three languages on all 87**), a
 sorting/search/graph visualizer, SQL drills and stats flashcards. The shell has collapsible rails,
 a settings dialog and a keyboard map. The pattern list filters and searches, difficulty is visible,
 the sidebar and home lead with what is in play rather than all 79 journeys, the problem page is

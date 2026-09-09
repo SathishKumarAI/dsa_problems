@@ -43,7 +43,7 @@ export function Chip({ chip, index }: { chip: ChipModel; index?: number }) {
       >
         {chip.value}
         {chip.sub && (
-          <span className="absolute -right-1 -bottom-1 rounded bg-background px-0.5 font-mono text-[11px] leading-none text-muted-foreground">
+          <span className="absolute -right-1 -bottom-1 rounded bg-background px-0.5 font-mono text-meta leading-none text-muted-foreground">
             {chip.sub}
           </span>
         )}

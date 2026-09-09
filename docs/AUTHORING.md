@@ -121,6 +121,9 @@ Rules the test cannot check — review by hand:
 | `bits` | bit rows with flipped bits ringed | `{ tag, value, flip, bits }` |
 | `bars` | heights as columns, with the water between two of them filled to the shorter wall — a bar taller than the water sticks out of it. Roles are the chip roles, so the grammar is the same one the array row uses. `best` prints a line under the chart. Set `chips: null`: the bars ARE the stage | `{ bars: [{ key, value, roles }], water?: { from, to, height, label, best }, best? }` |
 | `terms` | `a + b + c = sum` vs target (or `need` for an unknown last term), the distinct answers found so far (newest ringed, a dropped repeat struck through), optional hash map | `{ terms, target, need?, hit?, dup?, found, map? }` |
+| `grid` | a row-major table of chips; marks keyed `"r,c"`. Carries the DP tables, the adjacency matrix, the in-degree and distance tables and the game boards | `{ cells: Cell[][], marks?, label? }` |
+| `tree` | LEVEL-ORDER SLOTS — node `i` has children `2i+1` / `2i+2`, absent slots omitted. A binary heap uses it unchanged. Layout is arithmetic, never measured | `{ slots: (Cell|null)[], marks?, labels?, label? }` |
+| `list` | nodes left to right with `→` between and `∅` at the tail; `cycleTo` draws a back-edge | `{ values: Cell[], marks?, labels?, cycleTo?, label? }` |
 | `recap` | table + note + links | — |
 | `challenge` | the editor (the page injects it) | — |
 
@@ -128,7 +131,21 @@ Chips: `chipRow(values, { anchor, focus, dim, answer, subs })` → roles: anchor
 pointer (▲), focus = current / right pointer (ring), answer (✓), dim = eliminated.
 
 **Need a new kind?** Add a member to `PanelModel` in `src/engine/types.ts`, a case in
-`src/features/journey/panels.tsx`, and a row above. Known gaps: linked list, tree, stack, grid.
+`src/features/journey/panels.tsx`, and a row above. **There are no known gaps left**: 79 journeys
+are drawn by the kinds above, and the last four shapes anyone wanted — a DP table, an adjacency
+matrix, a table over nodes, and a listing of the answers themselves — all turned out to be `grid`.
+Before adding a kind, check it is not a `grid` with a different label.
+
+**How a structure arrives.** A tree and a list both travel as level-order `cells: "words"` tokens
+with `.` for an absent slot, because `Cell` has no null and the API guard measures size rather than
+meaning (`data/journeys/tree-slots.ts` holds the vocabulary and the walks). A grid arrives flattened
+with a `cols` param. TWO structures travel in one row with `|` between them — merge-two-sorted and
+same-tree both do this, so the test-case drawer stays a single text field. An input that is just a
+number or two is a row of one or two values (`generate-parens`, `above-plus-left`).
+
+**Panel geometry is measured, not assumed.** `node test/panel-audit.mjs` walks every kind at its
+largest preset and prints cells, overlaps, overflow and the smallest text; the densest case is
+pinned in `test:ui`. Run it after touching a view.
 A kind that owns the whole stage returns `chips: null`; the empty-stage placeholder is drawn
 only under the `story` kind, so a panel-only act shows no stray "the need comes first" line.
 

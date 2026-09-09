@@ -11,15 +11,22 @@ own code as the animation, the hash map drawn as a hash map — is what transfer
 on two problems and authorable from one content file, breadth is a content problem, not an
 engineering one.
 
-## Now (this branch, shipped 2026-09-04)
+## Now (2026-09-09)
 
-One repo. Two journeys. A React stage over a typed, tested, DOM-free engine. An HTTP API in front
-of the same engine. Docs that let the next session start from fact.
+One repo. **87 problems, 79 journeys.** A React stage over a typed, tested, DOM-free engine, with
+eight panel kinds — chip row, bars, hash map, grid, tree (heaps reuse it), linked list, DP table,
+recap. An HTTP API in front of the same engine. Five gates, all green. Docs that let the next
+session start from fact.
+
+The depth-before-breadth bet above was settled: the machinery proved out on two journeys, and
+`engine/derive.ts` then turned breadth into a content problem, at roughly 330 lines per journey
+against 1075 hand-written.
 
 ## The pipeline — one problem at a time
 
-`PROBLEMS.md` lists all 31 practice-set problems in three waves ordered by how much of the stage
-already exists, plus the SQL track. One problem per branch; the definition of done is in that file.
+`PROBLEMS.md` describes what "done" means for one problem. The three-wave ordering below is history:
+every panel kind it was waiting on now exists, and the eight problems still without a journey are
+all array-shaped. One problem per branch; the definition of done is in that file.
 Wave 1 (arrays, two pointers, windows) needs no new panel kind until Widest Container; waves 2–3
 each bring one structural kind (stack, heap, list, tree, grid, dp strip) with the problem that
 proves it. The front-end proposals that support the waves are the F-items in `BACKLOG.md`.

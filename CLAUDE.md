@@ -15,7 +15,8 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | How to add a journey without spoiling it | `docs/AUTHORING.md` |
 | The API contract | `docs/API.md` |
 | Where the last session stopped | `STATUS.md` |
-| Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (items U1–U14 in the backlog) |
+| Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (U1–U14 chrome, V1–V10 content, P1–P4 panels) |
+| Whether a panel still fits its biggest input | `node test/panel-audit.mjs` — measures, asserts nothing |
 | Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
 | How the animations work, and how to build one in Python / for an LLM | `docs/VISUALIZING.md` |
 | Which model wrote what, and what it cost in tokens | `docs/MODELS.md` |
@@ -33,6 +34,9 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   be tagged on its own preset.
 - **The content test is the gate.** `src/engine/journeys.test.ts` enforces schema, drain, notes,
   line-for-line code tabs and the disclosure rule. Don't weaken it; extend it.
+- **Every corner case must be TAGGED by a frame on its own preset**, and every tag must name a
+  declared edge. Six of the eight journeys written on 2026-09-09 failed one of those two on the
+  first run; the gate caught all six.
 
 ## Working agreements
 
@@ -52,6 +56,11 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## Traps
 
+- **`localStorage` written while a page is mounted is undone** — the store caches per key. Write it
+  on another route, then navigate for real (that is what `test/ui-smoke.test.mjs` does).
+- **Applying a preset restarts the act**, so a script that picks the act first measures the story act.
+- **A backslash in a template literal sent to the page is consumed twice** (`/^\d\d/` arrives as
+  `/^dd/`). Use a character class.
 - `-x` on a zero is `-0` and fails `deepEqual`; write `0 - x` when a value can be zero (three-sum hash act).
 
 - **React Compiler lint rules** (`react-hooks` v7): no sync `setState` in effects, no ref reads in

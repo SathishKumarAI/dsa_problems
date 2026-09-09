@@ -95,6 +95,62 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (the panels) — an audit that found the panels were fine, and one rule they broke
+
+One PR (#67). Asked for: update the docs and the memories, find the next session's tasks, and audit
+the panels.
+
+### The audit
+
+Eight panel kinds were designed against a handful of small presets, and 79 journeys now push real
+data through them. `test/panel-audit.mjs` walks every kind on a real Chrome at 1536×864, picks each
+journey's **largest preset** and its **last act**, scrubs to 60%, and measures.
+
+**The main finding is a negative one: the shapes hold.** No overlapping cells anywhere — including
+an 80-cell DP table and a 15-node tree — nothing drawn outside the stage, no inner sideways
+scroller, smallest cell 40px. The tree's arithmetic layout does not collide at four levels.
+
+**What it did find: four raw font sizes below the type scale**, inside the panels — the bars' value
+label at `text-[10px]`, the chip's index subscript at 11px, two more in the hash-map view.
+`docs/DESIGN.md` names this exact violation, the smallest role is `text-meta` at 12px, and U6 set
+12px as the floor. Fixed, and re-measured: **smallest text on every panel is now 12px**. The chained
+bucket arrow is `aria-hidden` too — it was never text.
+
+Four more of the same violation survive OUTSIDE the panels (B58), and the test-case drawer takes
+**288px of the stage's 862** when open, which is a design call rather than a bug (B59).
+
+### The audit became a gate
+
+A tool nobody runs is a tool that stops being true, so the densest panel — the DP table at its
+largest preset — is pinned in `test:ui`: ≥ 40 cells, **0** overlapping pairs, **0** outside the
+stage, nothing under 12px.
+
+### Three traps, all from the same afternoon
+
+Getting the audit to measure the right thing took four wrong runs, and each was a fact worth
+keeping:
+
+1. **The store caches per key**, so writing `localStorage` while a page is mounted is silently
+   undone. The write has to happen on a different route, followed by a real navigation — which is
+   what `ui-smoke.test.mjs` has always done. Read the harness before fighting the app.
+2. **Applying a preset restarts the act.** Picking the act and then the preset measured the story
+   act fourteen times and reported "0 cells" without failing.
+3. **A backslash in a template literal sent to the page is consumed twice**: `/^\d\d/` in a test
+   file arrives as `/^dd/`. A character class sidesteps the question.
+
+### Docs
+
+README and ROADMAP still described "10 patterns × 3 problems" and "two journeys"; AUTHORING still
+listed linked list, tree, stack and grid as "known gaps" and now records that the last four shapes
+anyone wanted all turned out to be a `grid` with a different label. MODELS records that 14 of 87
+problems are compile-checked only. STATUS carries a ranked next-session plan.
+
+### Gates
+
+`npm run check` exit 0 (**589 tests**) · `npm run test:ui` exit 0 (**124 checks**, one new).
+
+---
+
 ## 2026-09-09 (the last eleven) — a translation pass, eleven journeys, and B54 finally deleted
 
 Two PRs (#65, #66). The eleven problems that carried Python only were the last ones that could not
