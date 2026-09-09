@@ -334,7 +334,7 @@ situation changed underneath them: eight panel kinds were designed against a han
 presets, and there are now 79 journeys pushing real data through them — an 80-cell DP table, a
 15-node tree, a 25-cell grid, a 36-column adjacency matrix.
 
-`node test/panel-audit.mjs` is the tool. It walks every panel kind on a real Chrome at 1536×864,
+`test/panel-audit.test.mjs` is the tool (a gate since B60, run by `npm run test:ui`). It walks every panel kind on a real Chrome at 1536×864,
 selects the **largest preset each journey offers**, jumps to the **last act** (where the real
 structure is drawn) and scrubs to 60% of it, then measures. It asserts nothing — it prints.
 
