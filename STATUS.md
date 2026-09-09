@@ -1,8 +1,9 @@
 # STATUS — read this when you return
 
 Last session: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
-the UI got the pass it had been owed since the set tripled in size, and the tree and list panels
-finally have something rendering them.
+the UI got the pass it had been owed since the set tripled in size, the tree and list panels
+finally have something rendering them — and the differential gate stopped being blind to 14 of the
+87 problems (B30), which caught a real Java bug on its first run.
 
 ## The spec checklist
 
@@ -21,11 +22,11 @@ and the final eight that closed the set (#68).
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **646 tests** |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **649 tests** |
 | The interface, in a real browser | `npm run test:ui` | **132 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **412 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **1676 comparisons**, 0 disagreed — and **14 problems it cannot marshal**, named in `NOT_YET_RUNNABLE` (B30) |
-| …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
+| …and agrees with the Python | `npm run verify:run` | **2084 comparisons**, 0 disagreed — and **one** problem it cannot marshal, `kth-largest-stream`, named in `NOT_YET_RUNNABLE` (B62) |
+| …on cases strong enough to notice | `npm run verify:vectors` | **402 mutants, 92% caught**, 0 survived |
 
 ## What happened, in the order it happened
 
@@ -66,26 +67,34 @@ and the final eight that closed the set (#68).
 
 **87 journeys for 87 problems.** Every problem in the set is built all the way down: a story act,
 an approach ladder earned one rung at a time, corner cases taught in play, and three languages.
-Zero static walkthroughs remain. So the next work is not more content — it is the gate that never
-looked at 14 of the translations, and one decision that blocks the next content batch.
+Zero static walkthroughs remain, and every translation but one is now RUN rather than merely
+compiled. So the next work is a decision that blocks the next content batch, then the small stuff.
 
-`docs/BACKLOG.md` P0 now opens on these in the same order (B30, B61, B58, B59, B60, then B53), so
-"pick the top unchecked P0" and this list agree.
+`docs/BACKLOG.md` P0 opens on these in the same order, so "pick the top unchecked P0" and this
+list agree.
 
 | Order | Item | Branch | Done when |
 |---|---|---|---|
-| 1 | **B30** — marshal lists and trees in `verify:run` | `feat/localsmith-structural-args` | `NOT_YET_RUNNABLE` holds **1** entry (`kth-largest-stream`), not 14; `npm run verify:run` green with the 13 counted in the comparisons |
-| 2 | **B61** — keep or delete `step-player.tsx` | `refactor/decide-static-player` (or a docs-only commit if the answer is "keep") | The backlog row is checked with the decision and its reason; if deleted, `Problem.walkthrough`, the `Frame` type and the `test:ui` pin go with it in the same commit |
-| 3 | **B58** — four raw font sizes outside the panels | `fix/type-scale-outside-panels` | Each of the four re-measured at `text-meta`, no clipping in the 48px rail; `npm run test:ui` green |
-| 4 | **B59** — the drawer's 288px | `feat/testcase-drawer-placement` | A design call written down, then built or dropped — measured stage width quoted either way |
+| 1 | **B61** — keep or delete `step-player.tsx` | `refactor/decide-static-player` (or a docs-only commit if the answer is "keep") | The backlog row is checked with the decision and its reason; if deleted, `Problem.walkthrough`, the `Frame` type and the `test:ui` pin go with it in the same commit |
+| 2 | **B58** — four raw font sizes outside the panels | `fix/type-scale-outside-panels` | Each of the four re-measured at `text-meta`, no clipping in the 48px rail; `npm run test:ui` green |
+| 3 | **B59** — the drawer's 288px | `feat/testcase-drawer-placement` | A design call written down, then built or dropped — measured stage width quoted either way |
+| 4 | **B62** — the one problem that is not a function | `feat/localsmith-stateful-class` | `NOT_YET_RUNNABLE` is **empty**; `kth-largest-stream` driven as a script of calls |
 | 5 | **B53** — thirteen new problems | `feat/problems-batch-6` | Only after B61 answers who owns a problem authored without a journey |
 
-Gates for any of them: `npm run check`, plus `npm run test:ui` for 3 and 4, plus
-`npm run verify:code` / `verify:run` / `verify:vectors` for 1 and 5.
+**B30 is done** (2026-09-09). What it bought, and what it cost, is the entry below.
 
-### 1. B30 — the honest gap in the gates (L) — the design, already done
-The biggest real hole, and **the reconnaissance is already done** — start from this, not from
-reading the runner again. `verify:run` executes every Java and C++ block against the repo's own
+Gates for any of them: `npm run check`, plus `npm run test:ui` for 1, 2 and 3, plus
+`npm run verify:code` / `verify:run` / `verify:vectors` for 4 and 5.
+
+### B30 — shipped, and what it found
+
+**1676 → 2084 comparisons, 0 disagreed. `NOT_YET_RUNNABLE` went 14 → 1.** The one real finding:
+**invert-tree's iterative Java rung threw `NullPointerException` on every case, including the empty
+tree** — `ArrayDeque` refuses `null` and the Python it mirrors pushes `None` deliberately. It had
+compiled cleanly since the day it was written. Fixed by `new LinkedList<>()`, which keeps the block
+line-for-line with the Python. The design, for the record:
+
+ `verify:run` executes every Java and C++ block against the repo's own
 Python; it cannot marshal a linked list or a binary tree, so **14 problems are checked by a compiler
 and nothing else**. They are LISTED in `NOT_YET_RUNNABLE` rather than absent, which is the
 difference between a known gap and an invisible one.
@@ -125,19 +134,19 @@ balanced-tree        is_balanced(root)                      tree  -> bool
 bst-ancestor         lowest_common_ancestor(root, p, q)     tree, int, int -> int
 ```
 
-### 2. B61 — decide about the static player (S)
+### B61 — decide about the static player (S)
 `step-player.tsx` is unreachable: 0 of 87 problems carry a `walkthrough`. It is the fallback for a
 problem authored before its journey, so deleting it means every new problem must ship with a journey
 on the same branch. A `test:ui` check pins the fact and fails the moment that changes. Decide it
 before B53 adds problem 88 — not after.
 
-### 3. B53 — thirteen new problems, for a hundred journeys (XL)
+### B53 — thirteen new problems, for a hundred journeys (XL)
 The set holds 87 and every one has a journey, so "a hundred journeys" is now exactly "thirteen more
 problems". Each needs statement, constraints, hints, the ladder, the Python oracle, Java and C++,
 and vectors strong enough for `verify:vectors` — roughly three times the cost of a journey. Answer
 B61 first.
 
-### 4. B58, B59 — the panel-audit follow-ups (S each)
+### B58, B59 — the panel-audit follow-ups (S each)
 Four raw font sizes below the scale outside the panels, and the design call on whether the
 test-case drawer should stop taking 288px from the stage.
 
@@ -147,6 +156,15 @@ B45 (the problem page spoils the ladder), B60 (run the panel audit on a schedule
 F-items.
 
 ## Traps this session added to the list
+
+- **`ArrayDeque` refuses `null`, and a tree walk pushes nulls on purpose.** invert-tree's iterative
+  Java rung mirrored its Python line for line — `stack.push(node.left)` with a null check on the way
+  out — and threw `NullPointerException` on every input, including the empty tree, from the day it
+  was written. It compiled cleanly for as long as it existed. `LinkedList` takes nulls; use it
+  wherever a translation pushes a child that may be absent.
+- **A gate that lists what it cannot see is worth ten times one that omits it.** The 14 problems
+  were named in `NOT_YET_RUNNABLE`, so closing the gap was a morning's work against a known list
+  rather than an audit of 87 problems looking for the ones nobody had run.
 
 - **The store caches per key, so writing `localStorage` while a page is mounted is undone.** Every
   attempt to unlock acts from the console failed silently until the write happened on a DIFFERENT

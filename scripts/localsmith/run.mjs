@@ -37,7 +37,7 @@ import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { PROBLEMS } from "../../src/data/index.ts"
 import { NOT_YET_RUNNABLE, VECTORS } from "./vectors.mjs"
-import { toolchain } from "./verify.mjs"
+import { NODES, toolchain } from "./verify.mjs"
 
 const arg = (k, d) => {
   const i = process.argv.indexOf(k)
@@ -153,9 +153,42 @@ const cEntry = (src) => {
 
 // ---------- literals ----------
 
+/** a `list` argument is a row of ints, or `{list, cycle}` when the tail has to
+ *  point back at index `cycle`. cycle-detect's input is a SHAPE rather than a
+ *  value — the function takes one argument and the cycle is how it was built,
+ *  so the construction detail rides along with the row instead of pretending
+ *  to be a second parameter. */
+const listOf = (v) =>
+  Array.isArray(v)
+    ? { cells: v, cycle: -1 }
+    : { cells: v.list, cycle: v.cycle ?? -1 }
+
+/** the node class the block's OWN signature names. This repo's Python calls a
+ *  linked-list node `Node` and LeetCode calls it `ListNode`; both are declared
+ *  (verify.mjs `NODES`) and different rungs of the same problem use different
+ *  ones — reverse-list says Node, cycle-detect says ListNode. */
+const nodeClass = (declared, fallback) =>
+  /\b(Node|ListNode|TreeNode)\b/.exec(declared ?? "")?.[1] ?? fallback
+
+/** level order, with an absent child spelled the way each language spells it */
+const treeLit = {
+  python: (a) => a.map((x) => (x === null ? "None" : String(x))).join(","),
+  java: (a) => a.map((x) => (x === null ? "null" : String(x))).join(","),
+  // C++ cannot put a null in a vector<int>, so an absent child is INT_MIN —
+  // no problem in the set carries it as a value
+  cpp: (a) => a.map((x) => (x === null ? "INT_MIN" : String(x))).join(","),
+}
+
 const lit = {
-  python: (v) => JSON.stringify(v),
-  java: (v, t) => {
+  python: (v, t) => {
+    if (t === "list") {
+      const { cells, cycle } = listOf(v)
+      return `__mklist(${JSON.stringify(cells)}, ${cycle})`
+    }
+    if (t === "tree") return `__mktree([${treeLit.python(v)}])`
+    return JSON.stringify(v)
+  },
+  java: (v, t, cls) => {
     if (t === "int") return String(v)
     if (t === "string") return JSON.stringify(v)
     if (t === "int[]") return `new int[]{${v.join(",")}}`
@@ -163,9 +196,14 @@ const lit = {
       return `new int[][]{${v.map((r) => `{${r.join(",")}}`).join(",")}}`
     if (t === "string[]")
       return `new String[]{${v.map((s) => JSON.stringify(s)).join(",")}}`
+    if (t === "list") {
+      const { cells, cycle } = listOf(v)
+      return `__mk${cls}(new int[]{${cells.join(",")}}, ${cycle})`
+    }
+    if (t === "tree") return `__mkTree(new Integer[]{${treeLit.java(v)}})`
     throw new Error(`java literal for ${t}`)
   },
-  cpp: (v, t) => {
+  cpp: (v, t, cls) => {
     if (t === "int") return String(v)
     if (t === "string") return JSON.stringify(v)
     if (t === "int[]") return `{${v.join(",")}}`
@@ -173,11 +211,18 @@ const lit = {
       return `{${v.map((r) => `{${r.join(",")}}`).join(",")}}`
     if (t === "string[]")
       return `{${v.map((s) => JSON.stringify(s)).join(",")}}`
+    if (t === "list") {
+      const { cells, cycle } = listOf(v)
+      return `__mklist<${cls}>({${cells.join(",")}}, ${cycle})`
+    }
+    if (t === "tree") return `__mktree<${cls}>({${treeLit.cpp(v)}})`
     throw new Error(`cpp literal for ${t}`)
   },
 }
 
-// C++ argument types must be spelled out, because a literal alone is ambiguous
+// C++ argument types must be spelled out, because a literal alone is ambiguous.
+// A structural argument is a pointer to whatever the block called its node, so
+// it is resolved per block (`cppDecl`) rather than looked up here.
 const CPP_TYPE = {
   int: "int",
   string: "string",
@@ -186,24 +231,106 @@ const CPP_TYPE = {
   "string[]": "vector<string>",
 }
 
+/** the parameter types the block actually declares, e.g. `int[][]` against
+ *  `List<List<Integer>>`, or `const TreeNode*` against `TreeNode*` */
+function paramTypes(block, fn) {
+  const sig = block.match(new RegExp(`\\b${fn}\\s*\\(([^)]*)\\)`))
+  if (!sig) return null
+  return sig[1]
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.replace(/\s+\w+$/, "").trim())
+}
+
 // ---------- drivers ----------
 
-const PY_PRINT = `
+const PY_NODES = `
+# A block is free to declare its own node class and most do; the three that
+# CONSTRUCT one without declaring it (reverse-list's array rung, two merge
+# rungs) would raise NameError with no scaffolding at all. Declared only when
+# absent, so a block's own class always wins.
+try: Node
+except NameError:
+    class Node:
+        def __init__(self, val=0, next=None): self.val, self.next = val, next
+try: ListNode
+except NameError:
+    class ListNode:
+        def __init__(self, val=0, next=None): self.val, self.next = val, next
+try: TreeNode
+except NameError:
+    class TreeNode:
+        def __init__(self, val=0, left=None, right=None):
+            self.val, self.left, self.right = val, left, right
+
+# What the driver BUILDS with is private, because Python is duck-typed: every
+# block walks .val/.next or .val/.left/.right and none of them checks a type.
+class __LN:
+    def __init__(self, v): self.val, self.next = v, None
+
+class __TN:
+    def __init__(self, v): self.val, self.left, self.right = v, None, None
+
+def __mklist(vals, cyc=-1):
+    if not vals: return None
+    ns = [__LN(v) for v in vals]
+    for a, b in zip(ns, ns[1:]): a.next = b
+    if cyc >= 0: ns[-1].next = ns[cyc]
+    return ns[0]
+
+def __mktree(vals):
+    if not vals or vals[0] is None: return None
+    root = __TN(vals[0]); q = [root]; i = 0; k = 1
+    while i < len(q) and k < len(vals):
+        node = q[i]; i += 1
+        if k < len(vals):
+            x = vals[k]; k += 1
+            if x is not None: node.left = __TN(x); q.append(node.left)
+        if k < len(vals):
+            x = vals[k]; k += 1
+            if x is not None: node.right = __TN(x); q.append(node.right)
+    return root
+`
+
+const PY_CANON = `
+def __canon_list(h):
+    out = []
+    while h is not None:
+        if len(out) > 10000: return "!CYCLE"
+        out.append(str(h.val)); h = h.next
+    return "[" + ",".join(out) + "]"
+
+def __canon_tree(t):
+    out = []; q = [t]; i = 0
+    while i < len(q) and len(q) < 4096:
+        n = q[i]; i += 1
+        if n is None:
+            out.append("null"); continue
+        out.append(str(n.val)); q.append(n.left); q.append(n.right)
+    while out and out[-1] == "null": out.pop()
+    return "[" + ",".join(out) + "]"
+
 def __canon(v):
     if isinstance(v, bool): return "true" if v else "false"
     if isinstance(v, str): return v
     if v is None: return "null"
     if isinstance(v, (list, tuple)):
         return "[" + ",".join(__canon(x) for x in v) + "]"
+    # a tree first: a TreeNode has no .next, but a node with .left is never a list
+    if hasattr(v, "left") or hasattr(v, "right"): return __canon_tree(v)
+    if hasattr(v, "next"): return __canon_list(v)
     return str(v)
 `
 
 /** one line per case. The try/except is what per-process isolation used to buy:
  *  a case that raises still lets the next one run, and names itself. */
-export function pythonDriver(src, fn, cases) {
+export function pythonDriver(src, fn, cases, params = []) {
   const body = cases
     .map((args) => {
-      const call = `${fn}(${args.map(lit.python).join(", ")})`
+      const call = `${fn}(${args
+        .map((v, i) => lit.python(v, params[i]))
+        .join(", ")})`
       return [
         `try:`,
         `    print(__canon(${call}).replace("\\n", "\\\\n"))`,
@@ -212,7 +339,7 @@ export function pythonDriver(src, fn, cases) {
       ].join("\n")
     })
     .join("\n")
-  return `${src}\n${PY_PRINT}\n${body}\n`
+  return `${PY_NODES}\n${src}\n${PY_CANON}\n${body}\n`
 }
 
 const JAVA_PRINT = `
@@ -239,20 +366,74 @@ const JAVA_PRINT = `
             for (Object x : c) { if (!first) b.append(","); first = false; b.append(canon(x)); }
             return b.append("]").toString();
         }
+        if (o instanceof Node n) {
+            StringBuilder b = new StringBuilder("[");
+            int guard = 0;
+            for (Node c = n; c != null; c = c.next) {
+                if (++guard > 10000) return "!CYCLE";
+                if (guard > 1) b.append(",");
+                b.append(c.val);
+            }
+            return b.append("]").toString();
+        }
+        if (o instanceof ListNode n) {
+            StringBuilder b = new StringBuilder("[");
+            int guard = 0;
+            for (ListNode c = n; c != null; c = c.next) {
+                if (++guard > 10000) return "!CYCLE";
+                if (guard > 1) b.append(",");
+                b.append(c.val);
+            }
+            return b.append("]").toString();
+        }
+        if (o instanceof TreeNode t) {
+            // level order with the absent children spelled out, trailing nulls
+            // trimmed — the same shape the vectors are written in
+            java.util.List<TreeNode> q = new java.util.LinkedList<>();
+            java.util.List<String> out = new java.util.ArrayList<>();
+            q.add(t);
+            for (int i = 0; i < q.size() && q.size() < 4096; i++) {
+                TreeNode n = q.get(i);
+                if (n == null) { out.add("null"); continue; }
+                out.add(String.valueOf(n.val));
+                q.add(n.left); q.add(n.right);
+            }
+            while (!out.isEmpty() && out.get(out.size() - 1).equals("null")) out.remove(out.size() - 1);
+            return "[" + String.join(",", out) + "]";
+        }
         return String.valueOf(o);
     }
 `
 
-/** the parameter types the block actually declares, e.g. int[][] vs List<List<Integer>> */
-function javaParamTypes(block, fn) {
-  const sig = block.match(new RegExp(`\\b${fn}\\s*\\(([^)]*)\\)`))
-  if (!sig) return null
-  return sig[1]
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((s) => s.replace(/\s+\w+$/, "").trim())
-}
+/** Java has no template, so a builder per list class. Node and ListNode carry
+ *  the same two fields and different rungs of the same problem name different
+ *  ones, so both are emitted and the block's own signature picks. */
+const javaList = (cls) => `
+    static ${cls} __mk${cls}(int[] v, int cyc) {
+        if (v.length == 0) return null;
+        ${cls}[] n = new ${cls}[v.length];
+        for (int i = 0; i < v.length; i++) n[i] = new ${cls}(v[i]);
+        for (int i = 0; i + 1 < v.length; i++) n[i].next = n[i + 1];
+        if (cyc >= 0) n[v.length - 1].next = n[cyc];
+        return n[0];
+    }
+`
+
+const JAVA_BUILD = `${javaList("Node")}${javaList("ListNode")}
+    static TreeNode __mkTree(Integer[] v) {
+        if (v.length == 0 || v[0] == null) return null;
+        TreeNode root = new TreeNode(v[0]);
+        java.util.List<TreeNode> q = new java.util.ArrayList<>();
+        q.add(root);
+        int k = 1;
+        for (int i = 0; i < q.size() && k < v.length; i++) {
+            TreeNode node = q.get(i);
+            if (k < v.length) { Integer x = v[k++]; if (x != null) { node.left = new TreeNode(x); q.add(node.left); } }
+            if (k < v.length) { Integer x = v[k++]; if (x != null) { node.right = new TreeNode(x); q.add(node.right); } }
+        }
+        return root;
+    }
+`
 
 /** a literal in whatever shape the block asked for */
 function javaArg(v, want, declared) {
@@ -261,12 +442,12 @@ function javaArg(v, want, declared) {
       .map((r) => `List.of(${r.join(",")})`)
       .join(",")}))`
   if (/List</.test(declared)) return `new ArrayList<>(List.of(${v.join(",")}))`
-  return lit.java(v, want)
+  return lit.java(v, want, nodeClass(declared, want === "tree" ? "TreeNode" : "ListNode"))
 }
 
 export function javaDriver(nodes, block, fn, cases, params) {
   const isStatic = new RegExp(`static\\s[^;{]*\\b${fn}\\s*\\(`).test(block)
-  const declared = javaParamTypes(block, fn) ?? []
+  const declared = paramTypes(block, fn) ?? []
   // Throwable, not Exception: the flood fill B27 caught blew the stack on a
   // 1x1 grid, and a StackOverflowError is an Error.
   const body = cases
@@ -290,8 +471,7 @@ ${block
   .split("\n")
   .map((l) => (l.trim() ? "    " + l : l))
   .join("\n")}
-${JAVA_PRINT}
-    public static void main(String[] a) {
+${JAVA_PRINT}${JAVA_BUILD}    public static void main(String[] a) {
 ${body}
     }
 }
@@ -308,6 +488,37 @@ template <class T> static string canon(const vector<T>& v) {
     for (size_t i = 0; i < v.size(); i++) { if (i) s += ","; s += canon(v[i]); }
     return s + "]";
 }
+template <class N> static string __canonList(const N* h) {
+    if (!h) return "null";
+    string s = "[";
+    int guard = 0;
+    for (const N* c = h; c; c = c->next) {
+        if (++guard > 10000) return "!CYCLE";
+        if (guard > 1) s += ",";
+        s += to_string(c->val);
+    }
+    return s + "]";
+}
+static string canon(const Node* h) { return __canonList(h); }
+static string canon(const ListNode* h) { return __canonList(h); }
+/** level order with the absent children spelled out and trailing nulls
+ *  trimmed — the same shape the vectors are written in */
+static string canon(const TreeNode* t) {
+    if (!t) return "null";
+    vector<const TreeNode*> q{t};
+    vector<string> out;
+    for (size_t i = 0; i < q.size() && q.size() < 4096; i++) {
+        const TreeNode* n = q[i];
+        if (!n) { out.push_back("null"); continue; }
+        out.push_back(to_string(n->val));
+        q.push_back(n->left);
+        q.push_back(n->right);
+    }
+    while (!out.empty() && out.back() == "null") out.pop_back();
+    string s = "[";
+    for (size_t i = 0; i < out.size(); i++) { if (i) s += ","; s += out[i]; }
+    return s + "]";
+}
 /** a value carrying a newline would silently shift every later case up a line */
 static string __esc(const string& s) {
     string o;
@@ -316,13 +527,48 @@ static string __esc(const string& s) {
 }
 `
 
+// C++ has templates, so one builder covers Node and ListNode both. `cyc` is the
+// index the tail points back at, or -1 for a list that ends.
+const CPP_BUILD = `
+template <class N> static N* __mklist(const vector<int>& v, int cyc) {
+    if (v.empty()) return nullptr;
+    vector<N*> n;
+    for (int x : v) n.push_back(new N(x));
+    for (size_t i = 0; i + 1 < n.size(); i++) n[i]->next = n[i + 1];
+    if (cyc >= 0) n.back()->next = n[cyc];
+    return n[0];
+}
+
+template <class N> static N* __mktree(const vector<int>& v) {
+    if (v.empty() || v[0] == INT_MIN) return nullptr;
+    N* root = new N(v[0]);
+    vector<N*> q{root};
+    size_t k = 1;
+    for (size_t i = 0; i < q.size() && k < v.size(); i++) {
+        N* node = q[i];
+        if (k < v.size()) { int x = v[k++]; if (x != INT_MIN) { node->left = new N(x); q.push_back(node->left); } }
+        if (k < v.size()) { int x = v[k++]; if (x != INT_MIN) { node->right = new N(x); q.push_back(node->right); } }
+    }
+    return root;
+}
+`
+
 export function cppDriver(headers, nodes, block, fn, cases, params) {
+  const declared = paramTypes(block, fn) ?? []
+  const cls = (i) =>
+    nodeClass(declared[i], params[i] === "tree" ? "TreeNode" : "ListNode")
+  // a structural argument is a pointer to the block's own node type; everything
+  // else has one spelling, which is what CPP_TYPE holds
+  const cType = (i) =>
+    params[i] === "list" || params[i] === "tree"
+      ? `${cls(i)}*`
+      : CPP_TYPE[params[i]]
   // each case gets its own scope, so nothing a block mutates leaks sideways
   const body = cases
     .map((args, k) => {
       const decls = args.map(
         (v, i) =>
-          `        ${CPP_TYPE[params[i]]} a${k}_${i} = ${lit.cpp(v, params[i])};`
+          `        ${cType(i)} a${k}_${i} = ${lit.cpp(v, params[i], cls(i))};`
       )
       const call = `${fn}(${args.map((_, i) => `a${k}_${i}`).join(", ")})`
       return [
@@ -336,6 +582,7 @@ export function cppDriver(headers, nodes, block, fn, cases, params) {
     .join("\n")
   return `${headers}
 ${nodes}
+${CPP_BUILD}
 ${block}
 ${CPP_PRINT}
 int main() {
@@ -440,7 +687,7 @@ using namespace std;`
 
       // 1. the oracle, once for the whole rung
       const f = join(dir, `oracle${seq++}.py`)
-      writeFileSync(f, pythonDriver(r.code.python, pyFn, cases))
+      writeFileSync(f, pythonDriver(r.code.python, pyFn, cases, spec.params))
       const oracle = caseLines(
         () => execFileSync(python, [f], { stdio: "pipe", timeout }),
         cases.length
@@ -563,7 +810,11 @@ using namespace std;`
   process.exitCode = failures.length ? 1 : 0
 }
 
-const NODE_JAVA = ""
-const NODE_CPP = ""
+// The same declarations verify.mjs compiles against, so the two gates agree on
+// what a bare block may assume. Unconditional: canon carries a branch per node
+// type, and those branches have to compile in every driver, not only the
+// structural ones.
+const NODE_JAVA = NODES.java
+const NODE_CPP = NODES.cpp
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) main()

@@ -69,6 +69,8 @@ const MUTATIONS = [
 // A mutation that provably cannot change the answer. Each entry is a reason,
 // not a shrug — an unexplained entry here is how a gate stops biting.
 export const KNOWN_EQUIVALENT = {
+  "merge-two-sorted/<= becomes <":
+    "a tie takes b first instead of a, and the two nodes hold the same value — the merged list is compared as values, so which of two equal nodes went first is not observable",
   "classic-binary-search/< becomes <=":
     "the loop guard is `lo <= hi` already; the other `<` sits on a midpoint that cannot equal its bound",
   "sorted-pair-sum/< becomes <=":
@@ -234,7 +236,7 @@ function main() {
 
     const run = (src, over = cases) => {
       const f = join(dir, `m${seq++}.py`)
-      writeFileSync(f, pythonDriver(src, fn, over))
+      writeFileSync(f, pythonDriver(src, fn, over, spec.params))
       return caseLines(
         () =>
           execFileSync(python, [f], {

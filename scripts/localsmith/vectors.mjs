@@ -1152,28 +1152,178 @@ export const VECTORS = {
       [[1, 2, 5], 11],
     ],
   },
+  // ---- structural inputs (B30). A `list` case is a row of ints, or
+  // `{list, cycle}` when the tail has to point back; a `tree` case is level
+  // order with `null` for an absent child, the shape LeetCode prints. ----
+  "reverse-list": {
+    params: ["list"],
+    ret: "list",
+    exercises:
+      "the pointer flip that must not lose the rest — [1,2] is the smallest list where prev, curr and next are three different nodes, and [] has no first node to flip",
+    cases: [[[1, 2, 3, 4, 5]], [[1, 2]], [[1]], [[]], [[1, 2, 3]]],
+  },
+  "cycle-detect": {
+    params: ["list"],
+    ret: "bool",
+    exercises:
+      "fast outrunning slow — a one-node self-loop catches a fast pointer that steps before it checks, and [1,2,3] with no cycle is the walk that must reach the end",
+    cases: [
+      [{ list: [3, 2, 0, -4], cycle: 1 }],
+      [{ list: [1, 2], cycle: 0 }],
+      [{ list: [1], cycle: 0 }],
+      [[1]],
+      [[1, 2, 3]],
+      [[]],
+    ],
+  },
+  "merge-two-sorted": {
+    params: ["list", "list"],
+    ret: "list",
+    exercises:
+      "the tail left over when one list runs out first — [5] against [1,2,3] drains b entirely before a moves, and two empties have no dummy to return",
+    cases: [
+      [[1, 2, 4], [1, 3, 4]],
+      [[], []],
+      [[], [0]],
+      [[5], [1, 2, 3]],
+      [[1, 1], [1, 1]],
+    ],
+  },
+  "middle-of-list": {
+    params: ["list"],
+    ret: "node",
+    exercises:
+      "which middle an even list gets — [1,2,3,4] must answer the SECOND of the two, which is the difference between checking fast and checking fast.next",
+    cases: [[[1, 2, 3, 4, 5]], [[1, 2, 3, 4]], [[1]], [[1, 2]], [[]]],
+  },
+  "palindrome-list": {
+    params: ["list"],
+    ret: "bool",
+    exercises:
+      "the odd-length middle that belongs to neither half — [1,2,1] must ignore it, and [1,2,2,3] fails only on the last comparison",
+    cases: [
+      [[1, 2, 2, 1]],
+      [[1, 2]],
+      [[1]],
+      [[1, 2, 3, 2, 1]],
+      [[1, 2, 2, 3]],
+      [[]],
+    ],
+  },
+  "remove-nth-from-end": {
+    params: ["list", "int"],
+    ret: "list",
+    exercises:
+      "removing the HEAD, which is the only case with no previous node — [1,2],2 and [1],1 both hit it, and [1,2],1 removes the tail instead",
+    cases: [
+      [[1, 2, 3, 4, 5], 2],
+      [[1], 1],
+      [[1, 2], 1],
+      [[1, 2], 2],
+      [[1, 2, 3], 3],
+    ],
+  },
+  "max-depth": {
+    params: ["tree"],
+    ret: "int",
+    exercises:
+      "the deeper side winning — [1,2,null,3,null,4] is a left-leaning chain of 4, so a max/min slip or a depth counted from 0 shows up immediately",
+    cases: [
+      [[3, 9, 20, null, null, 15, 7]],
+      [[]],
+      [[1]],
+      [[1, 2, null, 3, null, 4]],
+      [[1, null, 2, null, 3]],
+    ],
+  },
+  "validate-bst": {
+    params: ["tree"],
+    ret: "bool",
+    exercises:
+      "the grandchild that breaks the rule while its parent looks fine — [5,1,4,null,null,3,6] passes every local check and is not a BST; [2,1,2] repeats the root on the RIGHT, which is the only place a loosened lower bound shows",
+    cases: [
+      [[2, 1, 3]],
+      [[5, 1, 4, null, null, 3, 6]],
+      [[]],
+      [[1]],
+      [[10, 5, 15, null, null, 6, 20]],
+      [[2, 2]],
+      [[2, 1, 2]],
+    ],
+  },
+  "level-order": {
+    params: ["tree"],
+    ret: "int[][]",
+    exercises:
+      "the level boundary — [1,2,3,4,null,null,5] has a ragged last row, so a queue read live instead of snapshotted merges two levels into one",
+    cases: [
+      [[3, 9, 20, null, null, 15, 7]],
+      [[]],
+      [[1]],
+      [[1, 2, 3, 4, null, null, 5]],
+      [[1, null, 2]],
+    ],
+  },
+  "same-tree": {
+    params: ["tree", "tree"],
+    ret: "bool",
+    exercises:
+      "same values, different shape — [1,2] against [1,null,2] holds the same two numbers and is not the same tree; [1,2,3] against [1,2,4] differs on ONE side only, which is what separates `and` from `or`",
+    cases: [
+      [[1, 2, 3], [1, 2, 3]],
+      [[1, 2], [1, null, 2]],
+      [[1, 2, 1], [1, 1, 2]],
+      [[], []],
+      [[1], []],
+      [[1, 2, 3], [1, 2, 4]],
+    ],
+  },
+  "invert-tree": {
+    params: ["tree"],
+    ret: "tree",
+    exercises:
+      "the swap happening at every level, not only the root — [4,2,7,1,3,6,9] is symmetric in shape, so only the leaf order proves the recursion went all the way down",
+    cases: [[[4, 2, 7, 1, 3, 6, 9]], [[2, 1, 3]], [[]], [[1, 2]], [[1, null, 2]]],
+  },
+  "balanced-tree": {
+    params: ["tree"],
+    ret: "bool",
+    exercises:
+      "a difference of exactly 2, which is the first unbalanced one — [1,2,null,3] fails and [1,2,3,4] does not, so an off-by-one in the comparison flips the answer",
+    cases: [
+      [[3, 9, 20, null, null, 15, 7]],
+      [[1, 2, 2, 3, 3, null, null, 4, 4]],
+      [[]],
+      [[1, 2, null, 3]],
+      [[1]],
+    ],
+  },
+  "bst-ancestor": {
+    params: ["tree", "int", "int"],
+    ret: "int",
+    exercises:
+      "the split point — [6,2,8,…] with 2 and 4 answers 2 itself, the case that separates 'a node can be its own ancestor' from 'walk past it'; (2,0), (8,9) and (9,8) stand ON the node with the other key to one side, which is where a loosened `<` or `>` walks one step too far",
+    cases: [
+      [[6, 2, 8, 0, 4, 7, 9], 2, 8],
+      [[6, 2, 8, 0, 4, 7, 9], 2, 4],
+      [[2, 1], 1, 2],
+      [[6, 2, 8, 0, 4, 7, 9, null, null, 3, 5], 3, 5],
+      [[6, 2, 8, 0, 4, 7, 9], 7, 9],
+      [[6, 2, 8, 0, 4, 7, 9], 2, 0],
+      [[6, 2, 8, 0, 4, 7, 9], 8, 9],
+      [[6, 2, 8, 0, 4, 7, 9], 9, 8],
+    ],
+  },
 }
 
-// Linked-list, tree and stateful-class problems need node builders in three
-// languages before they can be driven this way. Named here rather than left
-// silent, so the runner can report what it is NOT covering.
+// Linked lists and trees ARE driven now (B30): `params` may say `list` or
+// `tree`, and run.mjs builds one in each language from the literal. What is
+// left is the problem that is not a function at all.
 /* Problems whose ARGUMENTS this runner cannot marshal yet (B30). Listing them
    is the point: a problem that is simply absent from VECTORS is invisible to
    this gate, and an invisible gap reads as a pass. Every entry here is a
    translation checked by `verify:code` (it compiles) and by nothing else. */
 export const NOT_YET_RUNNABLE = {
-  "reverse-list": "linked list in, linked list out",
-  "cycle-detect": "needs a list with a deliberate cycle",
-  "merge-two-sorted": "two lists in, one list out",
-  "middle-of-list": "linked list in, a node out",
-  "palindrome-list": "linked list in",
-  "remove-nth-from-end": "linked list in, linked list out",
-  "max-depth": "binary tree in",
-  "validate-bst": "binary tree in",
-  "level-order": "binary tree in",
-  "same-tree": "two binary trees in",
-  "invert-tree": "binary tree in, binary tree out",
-  "balanced-tree": "binary tree in",
-  "bst-ancestor": "binary tree in",
-  "kth-largest-stream": "a stateful class, not a function",
+  "kth-largest-stream":
+    "a stateful class, not a function — the driver calls one entry point, and this one is a constructor plus a stream of add() calls",
 }
