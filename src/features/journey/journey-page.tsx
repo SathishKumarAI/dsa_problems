@@ -65,7 +65,14 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
   const problem = PROBLEMS.find((p) => p.id === journey.problemId)
   const pattern = problem && PATTERNS.find((p) => p.id === problem.pattern)
   const { act, model, frame } = j
-  const { reading, drawer } = usePrefs()
+  const { reading, drawer, motion } = usePrefs()
+  // F5. The real wait for the frame on screen, so the bar under Play counts
+  // down the actual hold rather than a guess. Nothing to count when paused,
+  // and nothing at all when the learner has asked for no motion.
+  const holdMs =
+    j.player.playing && motion !== "off"
+      ? j.delay * (j.frames[j.player.pos]?.hold ?? 1)
+      : 0
   const edge = frame?.corner
     ? journey.edgeCases.find((e) => e.key === frame.corner)
     : undefined
@@ -159,6 +166,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               onSeek={j.seek}
               speed={j.speed}
               onSpeed={j.setSpeed}
+              holdMs={holdMs}
             />
           </div>
           <Button
@@ -425,6 +433,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                 onSeek={j.seek}
                 speed={j.speed}
                 onSpeed={j.setSpeed}
+                holdMs={holdMs}
               />
               {/* below lg there is no room to push anything aside, so the
                 controls stay where they have always been */}
