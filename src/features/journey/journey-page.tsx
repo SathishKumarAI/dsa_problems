@@ -185,6 +185,39 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             <span className="hidden sm:inline">restart journey</span>
           </Button>
         </div>
+        {/* B19. Restart re-locks every act, and a confirm dialog in front of it
+          would tax the clicks that meant it to protect the one that did not.
+          The click goes through; the ledger it destroyed is held for five
+          seconds and this offers it back. `role=status` so a screen reader is
+          told without having focus stolen. */}
+        {j.undoRestart && (
+          <div
+            role="status"
+            className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 px-3 py-2 text-ui"
+            aria-label="restart undo"
+          >
+            <span className="text-muted-foreground">
+              Every act is locked again.
+            </span>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="min-h-8"
+              onClick={j.undoRestart}
+            >
+              undo
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="ml-auto min-h-8 text-muted-foreground"
+              onClick={j.dismissUndo}
+              aria-label="dismiss undo"
+            >
+              dismiss
+            </Button>
+          </div>
+        )}
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 lg:hidden">
           <h1 className="font-heading text-title font-semibold tracking-tight">
             {journey.title}
