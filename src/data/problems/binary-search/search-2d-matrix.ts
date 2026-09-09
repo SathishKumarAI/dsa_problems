@@ -78,60 +78,6 @@ export const problem: Problem = {
     }
     return false;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [1, 3, 5, 7, 10, 11, 16, 20, 23, 30, 34, 60] },
-      caption:
-        "The 3 × 4 grid, read as one sorted sequence of 12 values. Looking for 16.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 7, 10, 11, 16, 20, 23, 30, 34, 60],
-        marks: { 5: "focus" },
-        labels: { 0: "lo", 5: "mid", 11: "hi" },
-      },
-      caption:
-        "mid = 5 → row 1, column 1 → value 11. Too small, so everything at or before it goes.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 7, 10, 11, 16, 20, 23, 30, 34, 60],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-          8: "focus",
-        },
-        labels: { 6: "lo", 8: "mid", 11: "hi" },
-      },
-      caption:
-        "mid = 8 → row 2, column 0 → value 23. Too big; discard from there up.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 7, 10, 11, 16, 20, 23, 30, 34, 60],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-          6: "focus",
-          8: "done",
-          9: "done",
-          10: "done",
-          11: "done",
-        },
-        labels: { 6: "mid" },
-      },
-      caption:
-        "mid = 6 → row 1, column 2 → value 16. Found it, in three comparisons.",
-    },
-  ],
   alternatives: [
     {
       name: "Scan every cell",

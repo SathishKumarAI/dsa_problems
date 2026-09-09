@@ -42,43 +42,24 @@ export const problem: Problem = {
         else:
             hi = mid - 1
     return lo`,
-  walkthrough: [
-    {
-      cells: { values: [1, 3, 5, 6], labels: { 0: "lo", 3: "hi" } },
-      caption: "Looking for 2 — absent, so the answer is where it would go.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 6],
-        marks: { 1: "focus" },
-        labels: { 1: "mid" },
-      },
-      caption:
-        "mid = 3, which is not smaller than 2 → keep the left side, hi drops below it.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 6],
-        marks: { 0: "focus", 2: "done", 3: "done" },
-        labels: { 0: "mid" },
-      },
-      caption: "mid = 1, smaller than 2 → lo moves past it.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 6],
-        marks: { 1: "done" },
-        labels: { 1: "lo" },
-      },
-      caption:
-        "The range is empty and lo sits at index 1 — exactly where 2 belongs.",
-    },
-    {
-      cells: { values: [1, 2, 3, 5, 6], marks: { 1: "done" } },
-      caption:
-        "Inserting there keeps the array sorted. The same loop returns 2 for target 5.",
-    },
-  ],
+  java: `public int searchInsert(int[] nums, int target) {
+    int lo = 0, hi = nums.length - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return lo;
+}`,
+  cpp: `int searchInsert(const vector<int>& nums, int target) {
+    int lo = 0, hi = (int)nums.size() - 1;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return lo;
+}`,
   alternatives: [
     {
       name: "Walk until it fits",
@@ -90,6 +71,18 @@ export const problem: Problem = {
         if nums[i] >= target:
             return i
     return len(nums)`,
+      java: `public int searchInsert(int[] nums, int target) {
+    for (int i = 0; i < nums.length; i++) {
+        if (nums[i] >= target) return i;
+    }
+    return nums.length;
+}`,
+      cpp: `int searchInsert(const vector<int>& nums, int target) {
+    for (int i = 0; i < (int)nums.size(); i++) {
+        if (nums[i] >= target) return i;
+    }
+    return (int)nums.size();
+}`,
     },
   ],
 }

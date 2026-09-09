@@ -78,63 +78,6 @@ export const problem: Problem = {
     }
     return best;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["A", "A", "B", "A", "B", "B", "A"] },
-      caption:
-        's = "AABABBA", k = 1. The window starts empty at the left edge.',
-    },
-    {
-      cells: {
-        values: ["A", "A", "B", "A", "B", "B", "A"],
-        marks: { 0: "window", 1: "window", 2: "focus" },
-        labels: { 0: "L", 2: "R" },
-      },
-      caption:
-        "Window AAB: length 3, most common A appears twice → 1 rewrite needed. That fits k = 1. Best = 3.",
-    },
-    {
-      cells: {
-        values: ["A", "A", "B", "A", "B", "B", "A"],
-        marks: { 0: "window", 1: "window", 2: "window", 3: "focus" },
-        labels: { 0: "L", 3: "R" },
-      },
-      caption:
-        "Window AABA: length 4, A appears 3 times → still 1 rewrite. Best = 4.",
-    },
-    {
-      cells: {
-        values: ["A", "A", "B", "A", "B", "B", "A"],
-        marks: {
-          0: "compare",
-          1: "window",
-          2: "window",
-          3: "window",
-          4: "focus",
-        },
-        labels: { 0: "L", 4: "R" },
-      },
-      caption:
-        "Adding the next B makes length 5 with only 3 A's → 2 rewrites, over budget. The left edge must move.",
-    },
-    {
-      cells: {
-        values: ["A", "A", "B", "A", "B", "B", "A"],
-        marks: { 1: "window", 2: "window", 3: "window", 4: "window" },
-        labels: { 1: "L", 4: "R" },
-      },
-      caption:
-        "Shrunk back to length 4 and valid again. The record of 4 already stands.",
-    },
-    {
-      cells: {
-        values: ["A", "A", "B", "A", "B", "B", "A"],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
-      },
-      caption:
-        "Answer 4. Nothing later beats it — each character entered and left the window at most once.",
-    },
-  ],
   alternatives: [
     {
       name: "Every substring",

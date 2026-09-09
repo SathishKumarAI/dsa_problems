@@ -13,7 +13,12 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { drain } from "../../engine/index.ts"
 import type { AnyJourney, BaseFrame } from "../../engine/types.ts"
+import { asteroidCollision, survivors } from "./asteroid-collision.ts"
 import { bestProfit, bestTrade } from "./best-trade.ts"
+import {
+  charReplacement,
+  longestAfterRewrites,
+} from "./char-replacement.ts"
 import { classicBinarySearch, indexOfTarget } from "./classic-binary-search.ts"
 import {
   coinChangeMin,
@@ -21,6 +26,7 @@ import {
   greedyCoins,
 } from "./coin-change-min.ts"
 import { containsDuplicate, firstRepeat } from "./contains-duplicate.ts"
+import { findPeakElement, isPeak, peaks } from "./find-peak-element.ts"
 import { firstLastPosition, rangeOf } from "./first-last-position.ts"
 import {
   longestConsecutiveRun,
@@ -42,8 +48,21 @@ import {
   longestIncreasing,
   longestIncreasingRun,
 } from "./longest-increasing-run.ts"
+import { lastStone, lastStoneWeight } from "./last-stone-weight.ts"
 import { maxSubarray } from "./max-subarray.ts"
 import { rotatedMin, rotatedMinimum } from "./rotated-minimum.ts"
+import { holdsTarget, search2dMatrix } from "./search-2d-matrix.ts"
+import { findRotated, rotatedSearch } from "./rotated-search.ts"
+import {
+  insertAt,
+  searchInsertPosition,
+} from "./search-insert-position.ts"
+import { colorsSorted, sortColors } from "./sort-colors.ts"
+import { isPalindrome, validPalindrome } from "./valid-palindrome.ts"
+import {
+  balances,
+  validParenthesisString,
+} from "./valid-parenthesis-string.ts"
 import { trapRainWater, waterHeld } from "./trap-rain-water.ts"
 import { windowMaxima, windowMaximum } from "./window-maximum.ts"
 import { moveZeroes, zeroesLast } from "./move-zeroes.ts"
@@ -76,6 +95,10 @@ const TABLE: {
   journey: AnyJourney
   skip: string[] // acts that narrate rather than solve
   reference: (d: Row) => unknown
+  // Some problems accept several correct answers (any peak). When a journey
+  // is one of those, `accept` replaces equality: every rung's answer is
+  // checked for legality instead of against one another's.
+  accept?: (d: Row, got: unknown) => boolean
   // a random input to test on beyond the presets; `rand(n)` is a seeded 0..n-1
   input: (rand: (n: number) => number) => Row
 }[] = [
@@ -289,6 +312,132 @@ const TABLE: {
       return { nums, k: 1 + rand(nums.length) }
     },
   },
+  {
+    journey: searchInsertPosition as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => insertAt(d.nums as number[], d.target as number),
+    // ascending and distinct, with the target often outside the row entirely
+    // so both ends of the answer range get exercised
+    input: (rand) => {
+      const nums: number[] = []
+      let v = -6
+      for (let i = 0; i < 1 + rand(9); i++) nums.push((v += 1 + rand(3)))
+      return { nums, target: rand(26) - 10 }
+    },
+  },
+  {
+    journey: findPeakElement as unknown as AnyJourney,
+    skip: ["story"],
+    // ANY peak is correct, so the rungs are allowed to disagree with each
+    // other — each answer is checked for legality instead
+    reference: (d) => peaks(d.nums as number[]),
+    accept: (d, got) => isPeak(d.nums as number[], got as number),
+    input: (rand) => {
+      const nums: number[] = []
+      while (nums.length < 1 + rand(9)) {
+        const v = rand(12)
+        if (!nums.length || nums[nums.length - 1] !== v) nums.push(v)
+      }
+      return { nums }
+    },
+  },
+  {
+    journey: sortColors as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => colorsSorted(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => rand(3)),
+    }),
+  },
+  {
+    journey: asteroidCollision as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => survivors(d.nums as number[]),
+    // small magnitudes so equal-size annihilations are common, and both signs
+    // frequent enough that long fights actually happen
+    input: (rand) => ({
+      nums: Array.from(
+        { length: 2 + rand(8) },
+        () => (1 + rand(4)) * (rand(2) ? 1 : -1)
+      ),
+    }),
+  },
+  {
+    journey: lastStoneWeight as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => lastStone(d.nums as number[]),
+    // duplicates common, so equal-weight annihilation and empty piles occur
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(8) }, () => 1 + rand(6)),
+    }),
+  },
+  {
+    journey: rotatedSearch as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => findRotated(d.nums as number[], d.target as number),
+    // rotate a sorted distinct run so classify accepts it, and aim the target
+    // inside the row about half the time
+    input: (rand) => {
+      const sorted: number[] = []
+      let v = -10
+      for (let i = 0; i < 1 + rand(9); i++) sorted.push((v += 1 + rand(3)))
+      const at = rand(sorted.length)
+      const nums = [...sorted.slice(at), ...sorted.slice(0, at)]
+      return {
+        nums,
+        target: rand(2) ? nums[rand(nums.length)] : rand(40) - 15,
+      }
+    },
+  },
+  {
+    journey: validPalindrome as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => isPalindrome(d.nums as string[]),
+    // a tiny alphabet with punctuation and both cases, so skipping and folding
+    // both happen, and palindromes turn up by chance rather than by design
+    input: (rand) => ({
+      nums: Array.from({ length: rand(9) }, () => "aAb, .1"[rand(7)]),
+    }),
+  },
+  {
+    journey: validParenthesisString as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => balances(d.nums as string[]),
+    // short strings only: the honest rung branches three ways per star
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(7) }, () => "()*"[rand(3)]),
+    }),
+  },
+  {
+    journey: search2dMatrix as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => holdsTarget(d.nums as number[], d.target as number),
+    // build the grid as one ascending sequence, then pick a width that divides
+    // it — classify demands both
+    input: (rand) => {
+      const cols = 1 + rand(4)
+      const rows = 1 + rand(4)
+      const nums: number[] = []
+      let v = 0
+      for (let i = 0; i < cols * rows; i++) nums.push((v += 1 + rand(4)))
+      return {
+        nums,
+        cols,
+        target: rand(2) ? nums[rand(nums.length)] : rand(60),
+      }
+    },
+  },
+  {
+    journey: charReplacement as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) =>
+      longestAfterRewrites(d.nums as string[], d.k as number),
+    // three letters and a small budget, so the window shrinks often
+    input: (rand) => ({
+      nums: Array.from({ length: 1 + rand(9) }, () => "ABC"[rand(3)]),
+      k: rand(4),
+    }),
+  },
 ]
 
 test("fewest-coins: the greedy rung is wrong where the journey says it is", () => {
@@ -300,7 +449,7 @@ test("fewest-coins: the greedy rung is wrong where the journey says it is", () =
   assert.equal(greedyCoins([1, 5, 10], 12), fewestCoins([1, 5, 10], 12))
 })
 
-for (const { journey, skip, reference, input } of TABLE)
+for (const { journey, skip, reference, input, accept } of TABLE)
   test(`${journey.slug}: every rung agrees with the reference, on the presets and on random input`, () => {
     let seed = 11
     const rand = (n: number) => {
@@ -318,11 +467,15 @@ for (const { journey, skip, reference, input } of TABLE)
       // an input it rejects is out of scope, not a disagreement
       if (!journey.classify(d as never).ok) continue
       const want = reference(d)
-      for (const a of acts)
-        assert.deepEqual(
-          lastAnswer(drain(a.run(d as never, {}))),
-          want,
-          `${a.key} on ${JSON.stringify(d)}`
-        )
+      for (const a of acts) {
+        const got = lastAnswer(drain(a.run(d as never, {})))
+        if (accept)
+          assert.ok(
+            accept(d, got),
+            `${a.key} on ${JSON.stringify(d)} answered ${JSON.stringify(got)}`
+          )
+        else
+          assert.deepEqual(got, want, `${a.key} on ${JSON.stringify(d)}`)
+      }
     }
   })

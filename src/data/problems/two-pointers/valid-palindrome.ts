@@ -75,61 +75,6 @@ export const problem: Problem = {
     }
     return true;
 }`,
-  walkthrough: [
-    {
-      cells: { values: ["a", "b", ",", " ", "B", "A"] },
-      caption:
-        'The string "ab, BA". i starts at the front, j at the back, and neither has compared anything yet.',
-    },
-    {
-      cells: {
-        values: ["a", "b", ",", " ", "B", "A"],
-        marks: { 0: "focus", 5: "focus" },
-        labels: { 0: "i", 5: "j" },
-      },
-      caption:
-        "'a' vs 'A' — equal once case is ignored. Both pointers move in.",
-    },
-    {
-      cells: {
-        values: ["a", "b", ",", " ", "B", "A"],
-        marks: { 0: "done", 1: "focus", 4: "focus", 5: "done" },
-        labels: { 1: "i", 4: "j" },
-      },
-      caption: "'b' vs 'B' — equal. Move in again.",
-    },
-    {
-      cells: {
-        values: ["a", "b", ",", " ", "B", "A"],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "compare",
-          3: "compare",
-          4: "done",
-          5: "done",
-        },
-        labels: { 2: "i", 3: "j" },
-      },
-      caption:
-        "Now i sits on ',' and j on ' '. Neither is alphanumeric, so both are skipped — not compared.",
-    },
-    {
-      cells: {
-        values: ["a", "b", ",", " ", "B", "A"],
-        marks: {
-          0: "done",
-          1: "done",
-          2: "done",
-          3: "done",
-          4: "done",
-          5: "done",
-        },
-      },
-      caption:
-        "The pointers have crossed with no disagreement → true. The punctuation never got a vote.",
-    },
-  ],
   alternatives: [
     {
       name: "Clean, then reverse",
