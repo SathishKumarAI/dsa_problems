@@ -17,6 +17,7 @@ export const SHORTCUTS: { scope: string; items: Shortcut[] }[] = [
         does: "focus — close the sidebar and the reading column, or open both again",
       },
       { keys: ["Esc"], does: "close a dialog" },
+      { keys: ["d"], does: "dark / light — same switch as the one in settings" },
     ],
   },
   {

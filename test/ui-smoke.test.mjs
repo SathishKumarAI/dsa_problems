@@ -1145,6 +1145,84 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("the theme switch is on screen, and light is a real palette", async () => {
+      // The provider has offered dark/light/system since the shell was built
+      // and nothing rendered it. Checks the control exists, that it changes
+      // the page, and that light keeps the five chart roles DISTINCT —
+      // colour is load-bearing here, so a grey light theme is a broken one.
+      await page.goto(`${server.base}/#/`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        document.querySelector('[aria-label=settings]')?.click();
+        await wait(500);
+        const dialog = document.querySelector('[role=dialog]');
+        const options = [...dialog.querySelectorAll('button')]
+          .map(b => b.textContent.trim())
+          .filter(t => ['dark', 'light', 'system'].includes(t));
+        const before = getComputedStyle(document.body).backgroundColor;
+        [...dialog.querySelectorAll('button')].find(b => b.textContent.trim() === 'light')?.click();
+        await wait(400);
+        const after = getComputedStyle(document.body).backgroundColor;
+        const role = name => {
+          const probe = document.createElement('div');
+          probe.style.color = 'var(--' + name + ')';
+          document.body.appendChild(probe);
+          const c = getComputedStyle(probe).color;
+          probe.remove();
+          return c;
+        };
+        const charts = ['chart-1','chart-2','chart-3','chart-4','chart-5'].map(role);
+        return {
+          options,
+          before,
+          after,
+          theme: document.documentElement.className,
+          distinctCharts: new Set(charts).size,
+        };
+      `)
+      // put it back so later checks run on the theme they were written for
+      await page.run(
+        `localStorage.removeItem('ui-theme'); document.documentElement.className = 'dark'; return 1`
+      )
+      assert.deepEqual(out.options, ["dark", "light", "system"])
+      assert.equal(out.theme, "light")
+      assert.notEqual(out.before, out.after, "switching theme changed nothing")
+      assert.equal(
+        out.distinctCharts,
+        5,
+        "the light theme collapses the chart roles into fewer colours"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("settings, shortcuts and collapse share one footer row", async () => {
+      await page.goto(`${server.base}/#/`)
+      const out = await page.run(`
+        const box = l => {
+          const el = [...document.querySelectorAll('button,a')]
+            .find(e => (e.getAttribute('aria-label') || '').toLowerCase() === l);
+          return el ? el.getBoundingClientRect() : null;
+        };
+        const s = box('settings'), k = box('keyboard shortcuts'), c = box('collapse sidebar');
+        const footer = document.querySelector('[data-sidebar=footer]');
+        return {
+          ys: [s, k, c].map(b => b && Math.round(b.top)),
+          xs: [s, k, c].map(b => b && Math.round(b.left)),
+          footerH: Math.round(footer.getBoundingClientRect().height),
+        };
+      `)
+      assert.ok(
+        out.ys.every((y) => y !== null && y === out.ys[0]),
+        `the three footer controls are on different rows: ${out.ys.join(", ")}`
+      )
+      assert.ok(
+        new Set(out.xs).size === 3,
+        "the three footer controls overlap horizontally"
+      )
+      assert.ok(out.footerH <= 96, `the footer is ${out.footerH}px tall`)
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("settings writes a preference that survives a reload", async () => {
       await page.goto(`${server.base}/#/`)
       const set = await page.run(`

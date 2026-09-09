@@ -106,6 +106,10 @@ function whereAmI(parts: string[], mask: Mask): string {
   return "home"
 }
 
+// Three footer controls used to be three full-width rows — about 108px of
+// chrome to reach a dialog. They sit side by side now: same three targets,
+// one row, and the label moves into the tooltip. On the collapsed rail there
+// is no width to share, so they stack again.
 function FooterButton({
   icon,
   label,
@@ -118,15 +122,15 @@ function FooterButton({
   ariaLabel?: string
 }) {
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className="group-data-[collapsible=icon]:w-full">
       <SidebarMenuButton
         onClick={onClick}
         tooltip={label}
         aria-label={ariaLabel ?? label}
-        className="text-muted-foreground"
+        className="justify-center text-muted-foreground group-data-[collapsible=icon]:justify-start"
       >
         {icon}
-        <span>{label}</span>
+        <span className="sr-only">{label}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   )
@@ -362,7 +366,7 @@ export function AppSidebar({ view }: { view: string }) {
         >
           {whereAmI(route.parts, mask)}
         </div>
-        <SidebarMenu>
+        <SidebarMenu className="flex-row gap-1 group-data-[collapsible=icon]:flex-col [&>li]:flex-1">
           <FooterButton
             icon={<SettingsIcon />}
             label="settings"

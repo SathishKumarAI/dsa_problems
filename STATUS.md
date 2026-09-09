@@ -13,13 +13,13 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: #49–#63. Nothing is open. The last two are **batch 5**: five
+`master` is clean and holds everything: #49–#64. Nothing is open. The last two are **batch 5**: five
 tree/list journeys (#62), then the remaining fifteen three-language problems (#63).
 
 | Gate | Command | State |
 |---|---|---|
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **512 tests** |
-| The interface, in a real browser | `npm run test:ui` | **110 checks**, 0 failed |
+| The interface, in a real browser | `npm run test:ui` | **112 checks**, 0 failed |
 | Every Java and C++ block compiles | `npm run verify:code` | **366 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **1452 comparisons**, 0 disagreed |
 | …on cases strong enough to notice | `npm run verify:vectors` | **380 mutants, 92% caught**, 0 survived |
@@ -59,6 +59,11 @@ array-shaped ones from B51.
 3. **B52** — `stair-ways` and `counting-bits`, now unblocked: `generate-parens` proved a single
    number works as input, and the two DP-table journeys proved the stage for a table being filled.
 4. **B53** — a hundred journeys needs 13 new problems first.
+
+- **A sweep is only as wide as the thing it swept.** V10 checked every CONTENT field for a render
+  site and found nothing. It did not check components: `theme-provider.tsx` had offered dark, light
+  and system since the shell was built, and no control anywhere exposed it. Same bug class, one
+  directory over.
 
 ## Traps this session added to the list
 

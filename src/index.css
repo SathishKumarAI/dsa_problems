@@ -98,41 +98,48 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Light is Catppuccin LATTE, the counterpart of the Mocha below — not the
+   shadcn grey default it replaced. The greys had every chart role set to a
+   shade of the same colour, and in this product colour is load-bearing: the
+   chip roles (anchor, focus, answer, dim) and the walkthrough legend say what
+   a step is DOING. A light theme that flattens them is a light theme that
+   cannot teach. Same hue for the same role in both themes, so a screenshot of
+   one reads as a screenshot of the other. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --yellow: oklch(0.85 0.12 90);
-  --teal: oklch(0.7 0.1 190);
+  --background: #eff1f5; /* base    */
+  --foreground: #4c4f69; /* text    */
+  --card: #e6e9ef; /* mantle  */
+  --card-foreground: #4c4f69;
+  --popover: #e6e9ef;
+  --popover-foreground: #4c4f69;
+  --primary: #8839ef; /* mauve   */
+  --primary-foreground: #eff1f5;
+  --secondary: #ccd0da; /* surface0 */
+  --secondary-foreground: #4c4f69;
+  --muted: #ccd0da;
+  --muted-foreground: #6c6f85; /* subtext0 */
+  --accent: #ccd0da;
+  --accent-foreground: #4c4f69;
+  --destructive: #d20f39; /* red     */
+  --border: #bcc0cc; /* surface1 */
+  --input: #acb0be; /* surface2 */
+  --ring: #8839ef;
+  --chart-1: #8839ef; /* mauve  — focus   */
+  --chart-2: #1e66f5; /* blue   — window  */
+  --chart-3: #40a02b; /* green  — settled */
+  --chart-4: #fe640b; /* peach  — anchor  */
+  --chart-5: #d20f39; /* red    — wrong   */
+  --yellow: #df8e1d;
+  --teal: #179299;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #e6e9ef;
+  --sidebar-foreground: #4c4f69;
+  --sidebar-primary: #8839ef;
+  --sidebar-primary-foreground: #eff1f5;
+  --sidebar-accent: #ccd0da;
+  --sidebar-accent-foreground: #4c4f69;
+  --sidebar-border: #bcc0cc;
+  --sidebar-ring: #8839ef;
 }
 
 /* Catppuccin Mocha */
