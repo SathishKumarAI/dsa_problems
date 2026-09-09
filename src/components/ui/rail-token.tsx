@@ -55,7 +55,7 @@ export function RailToken({
     <span
       aria-hidden="true"
       className={cn(
-        "hidden w-full shrink-0 text-center font-mono text-[11px] leading-none font-medium tabular-nums group-data-[collapsible=icon]:block",
+        "hidden w-full shrink-0 text-center font-mono text-meta leading-none font-medium tabular-nums group-data-[collapsible=icon]:block",
         state,
         className
       )}
