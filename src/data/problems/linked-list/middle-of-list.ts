@@ -46,6 +46,24 @@ def middle_node(head: ListNode | None) -> ListNode | None:
         slow = slow.next
         fast = fast.next.next
     return slow`,
+  java: `public ListNode middleNode(ListNode head) {
+    ListNode slow = head;
+    ListNode fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    return slow;
+}`,
+  cpp: `ListNode* middleNode(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}`,
   walkthrough: [
     {
       text: `1 → 2 → 3 → 4 → 5 → None
@@ -99,6 +117,28 @@ def middle_node(head: ListNode | None) -> ListNode | None:
     for _ in range(count // 2):
         node = node.next
     return node`,
+      java: `public ListNode middleNode(ListNode head) {
+    int count = 0;
+    ListNode node = head;
+    while (node != null) {
+        count++;
+        node = node.next;
+    }
+    node = head;
+    for (int i = 0; i < count / 2; i++) node = node.next;
+    return node;
+}`,
+      cpp: `ListNode* middleNode(ListNode* head) {
+    int count = 0;
+    ListNode* node = head;
+    while (node != nullptr) {
+        count++;
+        node = node->next;
+    }
+    node = head;
+    for (int i = 0; i < count / 2; i++) node = node->next;
+    return node;
+}`,
     },
   ],
 }

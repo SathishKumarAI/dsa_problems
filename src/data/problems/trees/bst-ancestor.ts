@@ -50,6 +50,24 @@ def lowest_common_ancestor(root: TreeNode | None, p: int, q: int) -> int:
         else:
             return node.val
     return -1`,
+  java: `public int lowestCommonAncestor(TreeNode root, int p, int q) {
+    TreeNode node = root;
+    while (node != null) {
+        if (p < node.val && q < node.val) node = node.left;
+        else if (p > node.val && q > node.val) node = node.right;
+        else return node.val;
+    }
+    return -1;
+}`,
+  cpp: `int lowestCommonAncestor(const TreeNode* root, int p, int q) {
+    const TreeNode* node = root;
+    while (node != nullptr) {
+        if (p < node->val && q < node->val) node = node->left;
+        else if (p > node->val && q > node->val) node = node->right;
+        else return node->val;
+    }
+    return -1;
+}`,
   walkthrough: [
     {
       text: `       6
@@ -113,6 +131,32 @@ def walk(node: TreeNode | None, p: int, q: int) -> TreeNode | None:
 def lowest_common_ancestor(root: TreeNode | None, p: int, q: int) -> int:
     found = walk(root, p, q)
     return found.val if found is not None else -1`,
+      java: `public TreeNode walk(TreeNode node, int p, int q) {
+    if (node == null) return null;
+    if (node.val == p || node.val == q) return node;
+    TreeNode left = walk(node.left, p, q);
+    TreeNode right = walk(node.right, p, q);
+    if (left != null && right != null) return node;
+    return left != null ? left : right;
+}
+
+public int lowestCommonAncestor(TreeNode root, int p, int q) {
+    TreeNode found = walk(root, p, q);
+    return found != null ? found.val : -1;
+}`,
+      cpp: `const TreeNode* walk(const TreeNode* node, int p, int q) {
+    if (node == nullptr) return nullptr;
+    if (node->val == p || node->val == q) return node;
+    const TreeNode* left = walk(node->left, p, q);
+    const TreeNode* right = walk(node->right, p, q);
+    if (left != nullptr && right != nullptr) return node;
+    return left != nullptr ? left : right;
+}
+
+int lowestCommonAncestor(const TreeNode* root, int p, int q) {
+    const TreeNode* found = walk(root, p, q);
+    return found != nullptr ? found->val : -1;
+}`,
     },
   ],
 }

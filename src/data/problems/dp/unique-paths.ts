@@ -35,6 +35,19 @@ export const problem: Problem = {
         for c in range(1, n):
             row[c] += row[c - 1]
     return row[n - 1]`,
+  java: `public int uniquePaths(int m, int n) {
+    int[] row = new int[n];
+    Arrays.fill(row, 1);
+    for (int r = 1; r < m; r++)
+        for (int c = 1; c < n; c++) row[c] += row[c - 1];
+    return row[n - 1];
+}`,
+  cpp: `int uniquePaths(int m, int n) {
+    vector<int> row(n, 1);
+    for (int r = 1; r < m; r++)
+        for (int c = 1; c < n; c++) row[c] += row[c - 1];
+    return row[n - 1];
+}`,
   walkthrough: [
     {
       text: `m = 3, n = 3
@@ -84,6 +97,22 @@ row   1  3  6   ←`,
 
 def unique_paths(m: int, n: int) -> int:
     return walk(m, n, 0, 0)`,
+      java: `public int walk(int m, int n, int r, int c) {
+    if (r == m - 1 || c == n - 1) return 1;
+    return walk(m, n, r + 1, c) + walk(m, n, r, c + 1);
+}
+
+public int uniquePaths(int m, int n) {
+    return walk(m, n, 0, 0);
+}`,
+      cpp: `int walk(int m, int n, int r, int c) {
+    if (r == m - 1 || c == n - 1) return 1;
+    return walk(m, n, r + 1, c) + walk(m, n, r, c + 1);
+}
+
+int uniquePaths(int m, int n) {
+    return walk(m, n, 0, 0);
+}`,
     },
   ],
 }

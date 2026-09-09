@@ -48,6 +48,30 @@ export const problem: Problem = {
                 reachable[i] = True
                 break
     return reachable[len(s)]`,
+  java: `public boolean wordBreak(String s, String[] words) {
+    Set<String> allowed = new HashSet<>(Arrays.asList(words));
+    boolean[] reachable = new boolean[s.length() + 1];
+    reachable[0] = true;
+    for (int i = 1; i <= s.length(); i++)
+        for (int j = 0; j < i; j++)
+            if (reachable[j] && allowed.contains(s.substring(j, i))) {
+                reachable[i] = true;
+                break;
+            }
+    return reachable[s.length()];
+}`,
+  cpp: `bool wordBreak(const string& s, const vector<string>& words) {
+    set<string> allowed(words.begin(), words.end());
+    vector<bool> reachable(s.size() + 1, false);
+    reachable[0] = true;
+    for (int i = 1; i <= (int)s.size(); i++)
+        for (int j = 0; j < i; j++)
+            if (reachable[j] && allowed.count(s.substr(j, i - j))) {
+                reachable[i] = true;
+                break;
+            }
+    return reachable[s.size()];
+}`,
   walkthrough: [
     {
       text: `s = "leetcode"   words = ["leet", "code"]
@@ -102,6 +126,27 @@ s[4:8] = "code", and 4 was reachable`,
 
 def word_break(s: str, words: list[str]) -> bool:
     return walk(s, 0, set(words))`,
+      java: `public boolean walk(String s, int at, Set<String> allowed) {
+    if (at == s.length()) return true;
+    for (int end = at + 1; end <= s.length(); end++)
+        if (allowed.contains(s.substring(at, end)) && walk(s, end, allowed)) return true;
+    return false;
+}
+
+public boolean wordBreak(String s, String[] words) {
+    return walk(s, 0, new HashSet<>(Arrays.asList(words)));
+}`,
+      cpp: `bool walk(const string& s, int at, const set<string>& allowed) {
+    if (at == (int)s.size()) return true;
+    for (int end = at + 1; end <= (int)s.size(); end++)
+        if (allowed.count(s.substr(at, end - at)) && walk(s, end, allowed)) return true;
+    return false;
+}
+
+bool wordBreak(const string& s, const vector<string>& words) {
+    set<string> allowed(words.begin(), words.end());
+    return walk(s, 0, allowed);
+}`,
     },
   ],
 }

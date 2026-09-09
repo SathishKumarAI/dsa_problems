@@ -56,6 +56,32 @@ def height(node: TreeNode | None) -> int:
 
 def is_balanced(root: TreeNode | None) -> bool:
     return height(root) != -1`,
+  java: `public int height(TreeNode node) {
+    if (node == null) return 0;
+    int left = height(node.left);
+    if (left == -1) return -1;
+    int right = height(node.right);
+    if (right == -1) return -1;
+    if (Math.abs(left - right) > 1) return -1;
+    return 1 + Math.max(left, right);
+}
+
+public boolean isBalanced(TreeNode root) {
+    return height(root) != -1;
+}`,
+  cpp: `int height(const TreeNode* node) {
+    if (node == nullptr) return 0;
+    int left = height(node->left);
+    if (left == -1) return -1;
+    int right = height(node->right);
+    if (right == -1) return -1;
+    if (abs(left - right) > 1) return -1;
+    return 1 + max(left, right);
+}
+
+bool isBalanced(const TreeNode* root) {
+    return height(root) != -1;
+}`,
   walkthrough: [
     {
       text: `      3
@@ -113,6 +139,26 @@ def is_balanced(root: TreeNode | None) -> bool:
     if abs(height(root.left) - height(root.right)) > 1:
         return False
     return is_balanced(root.left) and is_balanced(root.right)`,
+      java: `public int height(TreeNode node) {
+    if (node == null) return 0;
+    return 1 + Math.max(height(node.left), height(node.right));
+}
+
+public boolean isBalanced(TreeNode root) {
+    if (root == null) return true;
+    if (Math.abs(height(root.left) - height(root.right)) > 1) return false;
+    return isBalanced(root.left) && isBalanced(root.right);
+}`,
+      cpp: `int height(const TreeNode* node) {
+    if (node == nullptr) return 0;
+    return 1 + max(height(node->left), height(node->right));
+}
+
+bool isBalanced(const TreeNode* root) {
+    if (root == nullptr) return true;
+    if (abs(height(root->left) - height(root->right)) > 1) return false;
+    return isBalanced(root->left) && isBalanced(root->right);
+}`,
     },
   ],
 }
