@@ -25,6 +25,11 @@ import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import type { AnyJourney } from "@/engine"
+import {
+  MASKED_GLYPH,
+  MASKED_NAME,
+  usePatternMask,
+} from "@/lib/disclosure"
 import { ladderOf, leetcodeUrl } from "@/lib/ladder"
 import type { Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
@@ -203,6 +208,14 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
   const solved = useSolved()
   const journey = journeyForProblem(problem.id)
   const steps = journey ? undefined : problem.walkthrough?.length
+  // B45. The ladder was already capped by the ledger, but the page names its
+  // PATTERN twice — in the back link and in the glyph strip — and a pattern
+  // name is exactly what a journey mid-flight has not handed over yet. The
+  // catalogue has masked it since B8; this page was the hole. Measured
+  // 2026-09-09: two problems (sorted-pair-sum, container-water) showed
+  // "Two Pointers" while the journey teaching it was unfinished.
+  const mask = usePatternMask()
+  const hidden = mask.hidden.has(pattern.id)
 
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-8">
@@ -214,7 +227,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           className="-ml-2 text-muted-foreground"
         >
           <ArrowLeftIcon data-icon="inline-start" />
-          {pattern.name}
+          {hidden ? MASKED_NAME : pattern.name}
         </Button>
       </div>
 
@@ -247,7 +260,9 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           </a>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ui text-muted-foreground">
-          <span className="font-mono">{pattern.glyph}</span>
+          <span className="font-mono">
+            {hidden ? MASKED_GLYPH : pattern.glyph}
+          </span>
           <span className="font-mono">time {problem.complexity.time}</span>
           <span className="font-mono">space {problem.complexity.space}</span>
           <label className="ml-auto flex items-center gap-2">
