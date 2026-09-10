@@ -95,6 +95,83 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-09 (batch 6) — a hundred problems, and what the gates said about content nobody had run
+
+PR #83 closed B43 first: a derived act's Java and C++ tabs were being DROPPED whenever the
+translation did not line up with the pseudocode row for row, which is most of the time. 36 of 304
+acts had a Java tab. `CodeTabs.unsynced` names the languages whose rows do not correspond — they
+render, the highlight is off for those tabs alone, and the panel says why. **208 of 304** now.
+
+Then PR #84, the batch: **87 → 107 problems**.
+
+### What was built
+
+Twenty problems across arrays-hashing, two-pointers and linked-list, each with **five** approaches
+worst → best rather than the usual two or three. 100 rungs, **300 code blocks**, Python + Java + C++
+on every rung.
+
+| Pattern | Problems |
+|---|---|
+| arrays-hashing | rotate-array, missing-number, find-all-duplicates, plus-one, first-missing-positive, summary-ranges, intersection-of-arrays |
+| two-pointers | remove-element, reverse-string, merge-sorted-array, three-sum-closest, backspace-compare, boats-to-save, next-permutation |
+| linked-list | add-two-numbers, odd-even-list, remove-list-elements, swap-pairs, rotate-list, reorder-list |
+
+Six agents wrote them in parallel, each kept OUT of the three shared files — the pattern barrels,
+`data/index.ts` and `vectors.mjs` — because that is precisely where six writers collide.
+`scripts/wire-batch.mjs` does the wiring once, reading what is on disk rather than what anyone
+expected to be there, and it is idempotent, so it ran after each batch landed instead of only at
+the end.
+
+### What the gates found
+
+Every block compiled and agreed with its Python on the first run: the agents had verified their own
+work before reporting. The mutation gate is where the content actually got tested — **23 survivors**,
+mutants no vector could tell apart from a deliberate bug.
+
+- **13 were missing cases.** `--suggest` names the input that separates the real code from the
+  mutant; those are vectors now.
+- **10 were genuine equivalences**, each recorded with an argument: a self-swap at `lo == hi`, a
+  comparison the line above already returned on, a bound that can only matter when the array is a
+  permutation and therefore already correct.
+
+Two things about the tooling itself, both worth carrying:
+
+- **`--suggest` will propose an input the constraints forbid.** Its case for merge-sorted-array had
+  `a` unsorted; for find-all-duplicates it used a `0` where the values are 1..n. Adding either
+  would have asserted on undefined behaviour. A survivor whose only distinguishing input is illegal
+  is an equivalence, not a gap.
+- **The mutation engine does not skip comments.** Two next-permutation survivors were edits to a `#`
+  line.
+
+### B61, cashed the same day
+
+These twenty are the first problems in the repo with no journey, so they are the first to reach
+`step-player.tsx` since it was written — exactly the case B61 decided to keep it for that morning.
+Had the decision gone the other way, this batch would have had to carry twenty journeys as well, or
+ship twenty pages with nothing to draw. `test:ui` now drives four of those pages and asserts the
+static player renders with real narration, and walks all twenty for a clean console and five rungs
+each. Journeys for them are **B63**, the next content run.
+
+### Evidence
+
+| Gate | Before | After |
+|---|---|---|
+| `npm run check` | 675 tests | 675 tests, tsc 0, eslint 0 |
+| `npm run verify:code` | 412 blocks | **612**, 0 failed |
+| `npm run verify:run` | 2128 comparisons | **3393**, 0 disagreed |
+| `npm run verify:vectors` | 404 mutants | **501**, 91% caught, 0 survived |
+| `npm run test:ui` | 152 checks | **154**, 0 failed |
+
+One Windows exe-launch flake in the differential run (`remove-duplicates-sorted`); re-run per
+problem, clean.
+
+Also shipped: `docs/RESOURCES.md` — the six array ideas and the five linked-list moves, each with
+the tell that says "use this", the repo problem that teaches it and the classic mistake; the
+complexities worth deriving on the spot; and external resources annotated with what each one is BAD
+for, which is the only part of a reading list that saves anybody time.
+
+---
+
 ## 2026-09-09 (ten items) — the small backlog, cleared, and what measuring found in it
 
 Eleven PRs, #71–#81. Ten backlog items closed plus one bug of my own. The pattern across all of

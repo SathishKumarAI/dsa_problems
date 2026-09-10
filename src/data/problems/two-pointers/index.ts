@@ -9,6 +9,13 @@ import { problem as moveZeroes } from "./move-zeroes.ts"
 import { problem as sortedSquares } from "./sorted-squares.ts"
 import { problem as removeDuplicatesSorted } from "./remove-duplicates-sorted.ts"
 import { problem as isSubsequence } from "./is-subsequence.ts"
+import { problem as mergeSortedArray } from "./merge-sorted-array.ts"
+import { problem as removeElement } from "./remove-element.ts"
+import { problem as reverseString } from "./reverse-string.ts"
+import { problem as threeSumClosest } from "./three-sum-closest.ts"
+import { problem as backspaceCompare } from "./backspace-compare.ts"
+import { problem as boatsToSave } from "./boats-to-save.ts"
+import { problem as nextPermutation } from "./next-permutation.ts"
 
 export const twoPointers: Problem[] = [
   sortedPairSum,
@@ -21,4 +28,11 @@ export const twoPointers: Problem[] = [
   sortedSquares,
   removeDuplicatesSorted,
   isSubsequence,
+  mergeSortedArray,
+  removeElement,
+  reverseString,
+  threeSumClosest,
+  backspaceCompare,
+  boatsToSave,
+  nextPermutation,
 ]

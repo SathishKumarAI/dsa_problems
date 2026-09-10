@@ -93,7 +93,9 @@ problem the gate approved.
 
 **That is the number to carry into any future decision about who writes these.** A translation
 checked by a compiler alone is a weaker artefact than one checked against the Python, whoever wrote
-it — and 14 of 87 problems are currently in that state.
+it. That was true of 14 of 87 problems when this was written; it is true of **none** of the 107 now
+(B30, B62), which is the strongest form the argument can take: the gate has no blind spots left to
+hide a weak artefact in.
 
 ## The tier boundary — the rule that decides who writes what
 

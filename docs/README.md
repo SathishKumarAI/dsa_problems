@@ -18,6 +18,7 @@ into the file that owns the nearest question, never into a new file.
 | How do I add a journey / act / render kind without regressing the pedagogy? | [`AUTHORING.md`](AUTHORING.md) | contributing.md, content-guide.md | P0 |
 | What shipped, when, in which PR? | [`WORKLOG.md`](WORKLOG.md) | changelog.md, history.md, log.md | P1 |
 | Why does each backlog item exist — which platform taught us what? | [`RESEARCH.md`](RESEARCH.md) | references.md, inspiration.md | P2 |
+| What should I read *outside* this repo, and how do I drill a pattern? | [`RESOURCES.md`](RESOURCES.md) | links.md, reading-list.md, study-guide.md | P2 |
 | What did we decide and why, before building? | [`superpowers/specs/`](superpowers/specs/) | decisions.md, adr/ | P1 |
 
 Repo-level maps live outside this folder: [`../README.md`](../README.md) (change → file),
