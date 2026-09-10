@@ -66,17 +66,39 @@ for (const j of JOURNEYS) {
     assert.equal(new Set(keys).size, keys.length, "act keys unique")
   })
 
-  test(`${j.slug}: code tabs match pseudocode line-for-line`, () => {
+  test(`${j.slug}: code tabs match pseudocode line-for-line, or say they do not`, () => {
     for (const a of j.acts) {
       const n = a.code.pseudo.length
+      const unsynced = a.code.unsynced ?? []
       for (const lang of ["python", "java", "cpp"] as const) {
         const lines = a.code[lang]
-        if (lines)
-          assert.equal(
-            lines.length,
-            n,
-            `${a.key}.${lang} has ${lines.length} lines, pseudocode has ${n}`
+        if (!lines) continue
+        // B43: a language may opt out of the highlight, and then it is only
+        // required to BE there. Python never may — it is the pseudocode.
+        if (unsynced.includes(lang as "java" | "cpp")) {
+          assert.notEqual(
+            lang,
+            "python",
+            `${a.key}: python is the pseudocode and cannot be unsynced`
           )
+          assert.ok(lines.length > 0, `${a.key}.${lang} is empty`)
+          continue
+        }
+        assert.equal(
+          lines.length,
+          n,
+          `${a.key}.${lang} has ${lines.length} lines, pseudocode has ${n}`
+        )
+      }
+      // the escape is for tabs that really do not line up: claiming it for one
+      // that does would turn the highlight off for no reason
+      for (const lang of unsynced) {
+        assert.ok(a.code[lang], `${a.key}: ${lang} is unsynced but absent`)
+        assert.notEqual(
+          a.code[lang]?.length,
+          n,
+          `${a.key}.${lang} is marked unsynced and yet matches the pseudocode`
+        )
       }
     }
   })

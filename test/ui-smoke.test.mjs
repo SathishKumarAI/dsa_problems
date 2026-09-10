@@ -307,6 +307,56 @@ describe(
     // cost the stage 862px → 574px at 1536px — a third of its width, to show a
     // short list of preset names. The stage is the product and the drawer is a
     // control, so the control floats now and the stage keeps its width.
+    // B43. A derived act's Java and C++ are faithful translations of the same
+    // rung and rarely the same LENGTH, so they used to be dropped: 36 of 304
+    // acts had a Java tab. They render now with the highlight off and a line
+    // saying so — 208 of 304.
+    test("a derived act shows Java and C++, and says when no row is lit (B43)", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.clear();
+        localStorage.setItem('dsa:unlocked:best-contiguous-run', '9');
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/journey/best-contiguous-run?act=brute`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        // two tablists on this page — the reading column's, and the code
+        // panel's. Pick the one that carries the pseudocode tab.
+        const strip = () => [...document.querySelectorAll('[role=tablist]')]
+          .find(s => /pseudocode/i.test(s.textContent || ''));
+        const names = () => [...strip().querySelectorAll('[role=tab]')]
+          .map(b => b.textContent.trim().toLowerCase());
+        const before = names();
+        const java = [...strip().querySelectorAll('[role=tab]')]
+          .find(b => /java/i.test(b.textContent));
+        java.click();
+        await wait(400);
+        const pre = document.querySelector('pre');
+        const lit = [...pre.children].filter(d => /shadow-chart-1|bg-chart-1/.test(d.className)).length;
+        return {
+          before,
+          javaSelected: java.getAttribute('aria-selected'),
+          says: document.body.innerText.includes('not the same lines'),
+          lit,
+          codeLines: pre.children.length,
+        };
+      `)
+      assert.ok(out.before.includes("java"), `no Java tab: ${out.before}`)
+      assert.ok(out.before.includes("c++"), `no C++ tab: ${out.before}`)
+      assert.ok(
+        !out.before.includes("unsynced"),
+        "`unsynced` leaked into the tab strip"
+      )
+      assert.equal(out.javaSelected, "true", "the Java tab did not select")
+      assert.ok(out.codeLines > 3, "the Java tab rendered no code")
+      assert.equal(out.says, true, "nothing explains why no row is lit")
+      assert.equal(out.lit, 0, "a row was lit on a tab that does not line up")
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      assert.deepEqual(page.errors(), [])
+    })
+
     // F5. Autoplay on a narrative frame waits `hold` times the usual delay with
     // nothing moving, and a still screen reads as a broken one. The bar under
     // Play counts the real wait down.
