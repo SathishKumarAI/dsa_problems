@@ -307,6 +307,74 @@ describe(
     // cost the stage 862px → 574px at 1536px — a third of its width, to show a
     // short list of preset names. The stage is the product and the drawer is a
     // control, so the control floats now and the stage keeps its width.
+    // B61 said KEEP the static walkthrough player, on the grounds that a
+    // problem must be allowed to ship without a journey. Batch 6 is the first
+    // batch to actually do it — 20 problems, no journeys — so this is the
+    // first run in which `step-player.tsx` is reachable at all. If the
+    // decision was wrong, it is wrong here.
+    test("a problem with no journey draws its static walkthrough (B61, batch 6)", async () => {
+      const unjourneyed = [
+        ["arrays-hashing", "rotate-array"],
+        ["arrays-hashing", "first-missing-positive"],
+        ["two-pointers", "backspace-compare"],
+        ["linked-list", "reorder-list"],
+      ]
+      for (const [pattern, id] of unjourneyed) {
+        await page.goto(`${server.base}/#/p/${pattern}/${id}`)
+        const out = await page.run(`
+          const player = document.querySelector('[aria-label^="walkthrough,"]');
+          const heading = [...document.querySelectorAll('h1')][0];
+          return {
+            title: heading ? heading.textContent.trim() : '',
+            hasPlayer: !!player,
+            // the player narrates each frame; an empty caption is the failure
+            // that renders as a blank strip rather than an error
+            caption: player ? player.innerText.trim().length : 0,
+            rungs: document.body.innerText.match(/ways in/) ? true : false,
+          };
+        `)
+        assert.ok(out.title.length > 3, `${id}: no title rendered`)
+        assert.ok(out.hasPlayer, `${id}: no static walkthrough player`)
+        assert.ok(out.caption > 20, `${id}: the player rendered nothing`)
+        assert.ok(out.rungs, `${id}: the approach ladder is missing`)
+        assert.deepEqual(page.errors(), [], `${id} logged console errors`)
+      }
+    })
+
+    // Every new problem page must at least render with a clean console. Twenty
+    // pages arrived in one batch and the cheapest way to be wrong about all of
+    // them at once is to check none of them.
+    test("every problem page in batch 6 renders cleanly", async () => {
+      const ids = [
+        ["arrays-hashing", "missing-number"],
+        ["arrays-hashing", "find-all-duplicates"],
+        ["arrays-hashing", "plus-one"],
+        ["arrays-hashing", "summary-ranges"],
+        ["arrays-hashing", "intersection-of-arrays"],
+        ["two-pointers", "remove-element"],
+        ["two-pointers", "reverse-string"],
+        ["two-pointers", "merge-sorted-array"],
+        ["two-pointers", "three-sum-closest"],
+        ["two-pointers", "boats-to-save"],
+        ["two-pointers", "next-permutation"],
+        ["linked-list", "add-two-numbers"],
+        ["linked-list", "odd-even-list"],
+        ["linked-list", "remove-list-elements"],
+        ["linked-list", "swap-pairs"],
+        ["linked-list", "rotate-list"],
+      ]
+      for (const [pattern, id] of ids) {
+        await page.goto(`${server.base}/#/p/${pattern}/${id}`)
+        const text = await page.eval("document.body.innerText")
+        assert.ok(text.length > 200, `${id}: rendered almost nothing`)
+        assert.ok(
+          /5 ways in/.test(text),
+          `${id}: the ladder does not show five rungs — ${text.slice(0, 80)}`
+        )
+        assert.deepEqual(page.errors(), [], `${id} logged console errors`)
+      }
+    })
+
     // B43. A derived act's Java and C++ are faithful translations of the same
     // rung and rarely the same LENGTH, so they used to be dropped: 36 of 304
     // acts had a Java tab. They render now with the highlight off and a line
@@ -625,7 +693,11 @@ describe(
       `)
       assert.ok(esc.opened > 200, "the drawer did not open")
       assert.equal(esc.closedOpacity, "0", "Esc did not close the drawer")
-      assert.equal(esc.closedPointer, "none", "a closed drawer still takes clicks")
+      assert.equal(
+        esc.closedPointer,
+        "none",
+        "a closed drawer still takes clicks"
+      )
       assert.equal(
         esc.focusBack,
         "test cases",
@@ -1521,9 +1593,20 @@ describe(
           act: stage.innerText.split('\\n')[0],
         };
       `)
-      assert.ok(out.cells >= 40, `the dense preset drew only ${out.cells} cells (${out.act})`)
-      assert.equal(out.overlaps, 0, `${out.overlaps} pairs of panel cells overlap`)
-      assert.equal(out.outside, 0, `${out.outside} cells are drawn outside the stage`)
+      assert.ok(
+        out.cells >= 40,
+        `the dense preset drew only ${out.cells} cells (${out.act})`
+      )
+      assert.equal(
+        out.overlaps,
+        0,
+        `${out.overlaps} pairs of panel cells overlap`
+      )
+      assert.equal(
+        out.outside,
+        0,
+        `${out.outside} cells are drawn outside the stage`
+      )
       assert.ok(
         out.minFont >= 12,
         `the smallest text on the stage is ${out.minFont}px`
@@ -1551,7 +1634,10 @@ describe(
         };
       `)
       assert.ok(out.hasSection, "the walkthrough section is gone entirely")
-      assert.ok(out.engineStage, "the problem page is not drawing the engine stage")
+      assert.ok(
+        out.engineStage,
+        "the problem page is not drawing the engine stage"
+      )
       assert.equal(
         out.staticPlayer,
         false,

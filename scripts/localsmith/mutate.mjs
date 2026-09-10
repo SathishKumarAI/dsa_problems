@@ -36,12 +36,7 @@ import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { PROBLEMS } from "../../src/data/index.ts"
 import { VECTORS } from "./vectors.mjs"
-import {
-  caseLines,
-  pyEntry,
-  pythonClassDriver,
-  pythonDriver,
-} from "./run.mjs"
+import { caseLines, pyEntry, pythonClassDriver, pythonDriver } from "./run.mjs"
 
 const arg = (k, d) => {
   const i = process.argv.indexOf(k)
@@ -74,6 +69,30 @@ const MUTATIONS = [
 // A mutation that provably cannot change the answer. Each entry is a reason,
 // not a shrug — an unexplained entry here is how a gate stops biting.
 export const KNOWN_EQUIVALENT = {
+  // ---- batch 6 (2026-09-09). Each of these was SEARCHED first: `--suggest`
+  // either found no distinguishing input in 240 tries, or found one that the
+  // problem's own constraints forbid. An argument follows in every case,
+  // because "no input found" is weaker than a reason. ----
+  "rotate-array/< becomes <=":
+    "the three reversal loops swap `lo` with `hi`; at `lo == hi` that is an element swapped with itself, and both indices then step past each other",
+  "reverse-string/< becomes <=":
+    "the same shape: at `i == j` the middle character is swapped with itself, which is a no-op on any string of odd length and unreachable on an even one",
+  "next-permutation/< becomes <=":
+    "the tail reversal, again the same shape — `left == right` swaps the middle element with itself",
+  "next-permutation/== becomes !=":
+    "the only `==` on that line is inside a COMMENT explaining what `pivot == -1` means, so the edit cannot reach the interpreter. Worth knowing about the mutation engine, not about this problem",
+  "next-permutation/and becomes or":
+    "the same comment line — `mutants()` does not skip comments",
+  "find-all-duplicates/< becomes <=":
+    "`nums[at] < 0` and `nums[at] <= 0` can differ only on a slot holding exactly 0, and no slot ever does: the values are 1..n by constraint and marking only flips a sign, so every slot holds ±(1..n)",
+  "first-missing-positive/<= becomes <":
+    "the weakened bound stops the placement loop from sending the value n home. That can only change the answer if 1..n-1 are all present and settled — and if they are, the array is a permutation and n is already the one slot left, so it is in place anyway",
+  "intersection-of-arrays/<= becomes <":
+    "`len(a) <= len(b)` and `len(a) < len(b)` differ only when the two lengths are equal, and then the roles of `small` and `large` swap. A multiset intersection is symmetric and the answer is sorted before it is returned, so neither the contents nor the order can move",
+  "merge-sorted-array/> becomes >=":
+    "on a tie the mutant copies from `a` where the original copies from `b`. The VALUE written is the same number either way, and both cursors still drain, so the merged array is identical",
+  "three-sum-closest/< becomes <=":
+    "two sites, both safe. `s < best` under an equal distance assigns `best` to itself; and `s < target` is only reached when `s != target`, because the line above returns on an exact hit",
   "merge-two-sorted/<= becomes <":
     "a tie takes b first instead of a, and the two nodes hold the same value — the merged list is compared as values, so which of two equal nodes went first is not observable",
   "classic-binary-search/< becomes <=":

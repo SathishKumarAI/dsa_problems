@@ -11,6 +11,13 @@ import { problem as subarraySumK } from "./subarray-sum-k.ts"
 import { problem as majorityElement } from "./majority-element.ts"
 import { problem as longestCommonPrefix } from "./longest-common-prefix.ts"
 import { problem as isomorphicStrings } from "./isomorphic-strings.ts"
+import { problem as findAllDuplicates } from "./find-all-duplicates.ts"
+import { problem as firstMissingPositive } from "./first-missing-positive.ts"
+import { problem as intersectionOfArrays } from "./intersection-of-arrays.ts"
+import { problem as missingNumber } from "./missing-number.ts"
+import { problem as plusOne } from "./plus-one.ts"
+import { problem as rotateArray } from "./rotate-array.ts"
+import { problem as summaryRanges } from "./summary-ranges.ts"
 
 export const arraysHashing: Problem[] = [
   pairSum,
@@ -25,4 +32,11 @@ export const arraysHashing: Problem[] = [
   majorityElement,
   longestCommonPrefix,
   isomorphicStrings,
+  findAllDuplicates,
+  firstMissingPositive,
+  intersectionOfArrays,
+  missingNumber,
+  plusOne,
+  rotateArray,
+  summaryRanges,
 ]
