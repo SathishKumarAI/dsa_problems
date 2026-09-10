@@ -197,13 +197,21 @@ export interface Tool {
   role: string
 }
 
-// Every language is written line-for-line against the pseudocode so a
+// A language is normally written line-for-line against the pseudocode, so a
 // frame's `line` highlights the right row in any tab.
+//
+// B43: a DERIVED act's pseudocode is its Python, and a faithful Java or C++
+// translation of the same rung is rarely the same number of lines (7 against 9
+// on max-subarray). Dropping those tabs cost the reference code on 82 problems
+// to protect a highlight. So a language may instead be listed in `unsynced`:
+// it renders, and the highlight is off for that tab only.
 export interface CodeTabs {
   pseudo: string[]
   python?: string[]
   java?: string[]
   cpp?: string[]
+  /** languages whose lines do NOT correspond to the pseudocode rows */
+  unsynced?: ("java" | "cpp")[]
 }
 
 export interface TraceEvent {

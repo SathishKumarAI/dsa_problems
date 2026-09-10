@@ -128,12 +128,15 @@ const chips = (nums: Cell[], marks: Record<number, ChipRole> = {}) =>
     roles: marks[i] ? [marks[i]] : [],
   }))
 
-// Code tabs for one rung. The pseudocode row a frame highlights must exist in
-// every tab, so a language is shown only when it splits to the same number of
-// lines as the pseudocode. Python IS the pseudocode here: it is the one
-// language every problem carries, and it reads as pseudocode by construction.
-// ponytail: costs the Java/C++ tabs on any rung whose translations differ in
-// length — relax journeys.test.ts with a per-act `sync: false` if that bites.
+// Code tabs for one rung. Python IS the pseudocode here: it is the one language
+// every problem carries, and it reads as pseudocode by construction.
+//
+// B43. This used to DROP Java and C++ whenever they split to a different number
+// of lines, which is most of the time — a faithful translation of the same rung
+// is 9 Java lines against 7 of Python on max-subarray. That protected the
+// highlight and cost the reference code on 82 problems. Both tabs are kept now;
+// a language whose rows do not line up is listed in `unsynced`, and the
+// highlight is off for that tab alone.
 function tabsFor(src: {
   python: string
   java?: string
@@ -141,10 +144,14 @@ function tabsFor(src: {
 }): CodeTabs {
   const pseudo = src.python.split("\n")
   const out: CodeTabs = { pseudo }
+  const unsynced: ("java" | "cpp")[] = []
   for (const lang of ["java", "cpp"] as const) {
     const lines = src[lang]?.split("\n")
-    if (lines && lines.length === pseudo.length) out[lang] = lines
+    if (!lines) continue
+    out[lang] = lines
+    if (lines.length !== pseudo.length) unsynced.push(lang)
   }
+  if (unsynced.length) out.unsynced = unsynced
   return out
 }
 
