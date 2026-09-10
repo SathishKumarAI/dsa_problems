@@ -15,19 +15,22 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything: **#49–#68**. Nothing is open, nothing half-done. The set is
-**complete**: 87 journeys for 87 problems, all three languages, no static walkthroughs left.
+`master` is clean and holds everything through **#84**. Nothing is open, nothing half-done.
 
-The last three: the panel audit (#67), the eleven translated problems and their journeys (#65, #66),
-and the final eight that closed the set (#68).
+**107 problems, 87 journeys.** The set passed a hundred on 2026-09-09 (B53): twenty new problems in
+arrays-hashing, two-pointers and linked-list, each with **five** approaches rather than the usual
+two or three — 100 rungs, 300 code blocks, all three languages on every rung. Those twenty are the
+only problems without journeys, which makes them the first in the repo to render the static
+walkthrough player since it was written. That is exactly the case B61 decided to keep it for, hours
+before the batch landed.
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **649 tests** |
-| The interface, in a real browser | `npm run test:ui` | **132 checks**, 0 failed |
-| Every Java and C++ block compiles | `npm run verify:code` | **412 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **2084 comparisons**, 0 disagreed — and **one** problem it cannot marshal, `kth-largest-stream`, named in `NOT_YET_RUNNABLE` (B62) |
-| …on cases strong enough to notice | `npm run verify:vectors` | **402 mutants, 92% caught**, 0 survived |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **675 tests** |
+| The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed — including the panel audit, which asserts now (B60) |
+| Every Java and C++ block compiles | `npm run verify:code` | **612 blocks**, 0 failed |
+| …and agrees with the Python | `npm run verify:run` | **3393 comparisons**, 0 disagreed — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
+| …on cases strong enough to notice | `npm run verify:vectors` | **501 mutants, 91% caught**, 0 survived — 38 allowed as equivalent, each with an argument |
 
 ## What happened, in the order it happened
 
@@ -76,11 +79,17 @@ list agree.
 
 | Order | Item | Branch | Done when |
 |---|---|---|---|
-| 1 | **B43** — a derived act keeps its Java and C++ tabs | `feat/derived-act-code-tabs` | The three tabs render on a derived act; `journeys.test.ts` gets a per-act escape rather than being weakened |
-| 2 | **B53** — thirteen new problems | `feat/problems-batch-6` | 100 problems, each with vectors strong enough for `verify:vectors`. B61 answered who owns a problem with no journey: it may ship without one |
-| 3 | **B12** — command palette | `feat/command-palette` | Ctrl/⌘K reaches any page, act, pattern or problem, and the disclosure rule holds inside it |
-| 4 | **B10** — progress dashboard | `feat/progress-dashboard` | Acts done, quizzes passed, streak, XP — the data already exists in the store |
-| 5 | **B9** — roadmap page | `feat/roadmap` | The DAG replaces the flat home grid for the journey track |
+| 1 | **B63** — journeys for the twenty new problems | `feat/journeys-batch-7` | 107 journeys for 107 problems. Each one DELETES that problem's `walkthrough` in the same commit — `problems.test.ts` forbids carrying both |
+| 2 | **B12** — command palette | `feat/command-palette` | Ctrl/⌘K reaches any page, act, pattern or problem, and the disclosure rule holds inside it |
+| 3 | **B10** — progress dashboard | `feat/progress-dashboard` | Acts done, quizzes passed, streak, XP — the data is already in the store, and `store.test.ts` now covers the reads |
+| 4 | **B9** — roadmap page | `feat/roadmap` | The DAG replaces the flat home grid for the journey track |
+| 5 | **B16** — stall analytics | `feat/stall-analytics` | Seconds per act and quits, local only; it is what makes B10 say something an author can act on |
+
+**Start with B63.** Twenty problems currently teach through a static walkthrough, which is the
+weaker half of this product — no earned ladder, no corner cases in play, no quiz gate. The set is
+also unusually well set up for it right now: those twenty carry FIVE rungs each, so the derived
+journey has more to work with than any previous batch, and every rung is already run against the
+Python in three languages.
 
 Gates: `npm run check` always; `npm run test:ui` for anything on screen (1, 3, 4, 5);
 `verify:code` / `verify:run` / `verify:vectors` for anything touching a code block (1, 2).
@@ -163,6 +172,24 @@ F-items.
 
 ## Traps this session added to the list
 
+- **`mutate.mjs --suggest` will propose an input the problem's own constraints forbid.** Its case
+  for merge-sorted-array had `a` unsorted; for find-all-duplicates it used a `0` where the values are
+  1..n. Adding either would assert on undefined behaviour and pin a bug in place. A survivor whose
+  only distinguishing input is illegal is an EQUIVALENCE — write the argument in
+  `KNOWN_EQUIVALENT` instead.
+- **The mutation engine does not skip comments.** Two next-permutation survivors were edits to a `#`
+  line, which cannot change what runs. Check the line before hunting for a case.
+- **Six writers and one shared file is a guaranteed collision.** The agents that wrote batch 6 were
+  kept out of the barrels, `data/index.ts` and `vectors.mjs` on purpose; `scripts/wire-batch.mjs`
+  does that part once, from what is on disk. It is idempotent, so it can run after each batch lands
+  rather than only at the end.
+- **`prettier --write` on a glob reformats files nobody touched.** It pulled ten unrelated
+  localsmith and test files into the batch-6 diff. Read `git diff --cached --stat` before
+  committing and restore the ones that are pure formatting churn.
+- **A background command that itself backgrounds with `&` does not survive.** The differential
+  re-run wrote an empty file and reported success. The output file having zero lines is what caught
+  it — a gate that reports nothing is not a gate that passed.
+
 - **`cn()` deletes a named type step when a colour follows it.** `cn("text-display", "text-chart-3")`
   returned the colour alone: tailwind-merge cannot tell `text-meta` from `text-muted-foreground`,
   because both are `text-<word>`, so it files the size under colour and keeps the last. That is why
@@ -235,7 +262,8 @@ F-items.
 
 ## What is on screen
 
-87 journeys, a practice set of 87 problems (**all three languages on all 87**), a
+87 journeys, a practice set of **107 problems** (all three languages on all 107; the twenty newest
+carry five approaches each and a static walkthrough until B63 gives them journeys), a
 sorting/search/graph visualizer, SQL drills and stats flashcards. The shell has collapsible rails,
 a settings dialog and a keyboard map. The pattern list filters and searches, difficulty is visible,
 the sidebar and home lead with what is in play rather than all 87 journeys, the problem page is

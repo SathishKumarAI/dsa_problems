@@ -9,6 +9,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
+| What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
 | Change → file | `README.md` |
@@ -25,6 +26,9 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## The pedagogy (do not regress this)
 
+- **107 problems, 87 journeys.** The twenty newest (batch 6) ship a static walkthrough instead, and
+  `problems.test.ts` forbids carrying both — so a journey written for one of them DELETES that
+  problem's `walkthrough` in the same commit (B63).
 - **Progressive disclosure is the product.** No unearned act or pattern name anywhere a learner
   can see: not in the stepper, banners, chart, hints, quiz, URL. Locked acts are one "?" node.
   `unlocked:<slug>` is written only by the reveal click in `use-journey.ts` (and restart).
