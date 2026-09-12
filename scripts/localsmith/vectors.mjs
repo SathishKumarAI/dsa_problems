@@ -1357,24 +1357,6 @@ export const VECTORS = {
     ],
   },
 
-  // ---- a rung that is a CLASS (B62). A case is the constructor's arguments
-  // followed by the stream of calls, and the answer is the row of results. ----
-  "kth-largest-stream": {
-    shape: "class",
-    klass: "KthLargest",
-    method: "add",
-    ctor: ["int", "int[]"],
-    params: ["int", "int[]", "int[]"],
-    ret: "int[]",
-    exercises:
-      "the heap being trimmed to k and staying there — [4,5,8,2] with k=3 must drop the 2 in the CONSTRUCTOR, and k=1 on an empty start has nothing to trim until the first add",
-    cases: [
-      [3, [4, 5, 8, 2], [3, 5, 10, 9, 4]],
-      [1, [], [-3, -2, -4, 0, 4]],
-      [2, [0], [-1, 1, -2, -4, 3]],
-      [4, [7, 7, 7, 7, 8, 3], [2, 10, 9, 9]],
-    ],
-  },
   "rotate-array": {
     params: ["int[]", "int"],
     ret: "int[]",

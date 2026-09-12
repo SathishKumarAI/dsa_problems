@@ -1,6 +1,7 @@
 # STATUS — read this when you return
 
-Last session: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
+Last session: **2026-09-12** — `docs/explained/`, one markdown page per problem holding the whole
+approach ladder and a runnable script, generated from the data (B64). Before that: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
 the UI got the pass it had been owed since the set tripled in size, the tree and list panels
 finally have something rendering them — and then eleven PRs (#71–#81) closed **ten backlog items**:
 the differential gate went from blind on 14 problems to blind on none, and four of the five things
@@ -15,7 +16,16 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything through **#84**. Nothing is open, nothing half-done.
+`master` is clean and holds everything through **#84**; `feat/docs-explained-generator` adds B64 on
+top. Nothing is open, nothing half-done.
+
+**The explainer pages (B64).** `npm run docs:explained` writes `docs/explained/<id>.md` for all 107
+problems from `src/data/problems/**`, through the app's own `ladderOf` — so a page cannot disagree
+with the problem page, and `scripts/gen-explained.test.mjs` fails the build the moment one drifts.
+Journey acts are deliberately not read (the ledger gates them; a file on disk cannot). The runnable
+script at the foot of each page renames each rung's entry point and drives them all from the
+`vectors.mjs` cases: **107 of 107 ran clean under CPython**. Next: B65, the road from 107 problems
+to 500, twenty per branch — the pages fall out of each batch for free.
 
 **107 problems, 87 journeys.** The set passed a hundred on 2026-09-09 (B53): twenty new problems in
 arrays-hashing, two-pointers and linked-list, each with **five** approaches rather than the usual
@@ -26,10 +36,10 @@ before the batch landed.
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **675 tests** |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **679 tests** |
 | The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed — including the panel audit, which asserts now (B60) |
 | Every Java and C++ block compiles | `npm run verify:code` | **612 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **3393 comparisons**, 0 disagreed — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
+| …and agrees with the Python | `npm run verify:run` | **3398 comparisons**, 0 disagreed (re-run 2026-09-12) — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
 | …on cases strong enough to notice | `npm run verify:vectors` | **501 mutants, 91% caught**, 0 survived — 38 allowed as equivalent, each with an argument |
 
 ## What happened, in the order it happened

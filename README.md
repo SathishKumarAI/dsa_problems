@@ -40,6 +40,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
 | Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`) |
+| The per-problem markdown explainer (`npm run docs:explained`) | `scripts/gen-explained.mjs` · output: `docs/explained/**` · drift gate: `scripts/gen-explained.test.mjs` |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |
 | Which model is trusted with what, and the measured token cost | `docs/MODELS.md` |
 | Compile every Java/C++ block (`npm run verify:code`) | `scripts/localsmith/verify.mjs` |
