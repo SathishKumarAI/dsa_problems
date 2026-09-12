@@ -156,6 +156,8 @@ int minEatingSpeed(const vector<int>& piles, int h) {
 
 ## The arc
 
+The problem that names the pattern: binary search on the ANSWER. Nothing is sorted, but the question 'is speed s fast enough' is monotone — false, false, then true forever — so the candidate speeds can be halved even though the piles cannot. The feasibility check is a plain simulation, and keeping it in its own function is what keeps the search honest. Two habits to steal: pick the bounds so every candidate is meaningful, here from one to the largest pile; and remember that the ceiling division inside the check should be done with integer arithmetic rather than floats, because a float rounding error turns a correct algorithm into an intermittent one at large inputs.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Try every speed | O(n · max(piles)) time · O(1) space | the baseline — nothing before it |

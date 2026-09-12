@@ -284,6 +284,8 @@ string reverseString(string s) {
 
 ## The arc
 
+The point of this problem is to see how many plausible solutions are quietly quadratic: building a new string by concatenation, recursion that slices, or anything that copies the tail on every step. In a language with immutable strings, 'append in a loop' is the trap. Once the input is a mutable array, the answer is the smallest possible loop — swap the ends and walk inward, n/2 swaps and no allocation. Take two habits: check whether your language's string concatenation is O(1) or O(n) before using it in a loop, and remember that the two-pointer swap is the base pattern behind reversing a sub-range, which is what rotate-array and next-permutation both lean on.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Recursion | O(n^2) time · O(n) space | the baseline — nothing before it |

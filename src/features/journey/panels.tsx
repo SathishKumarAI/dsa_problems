@@ -19,7 +19,7 @@ function SumEq({
 }) {
   if (need) {
     return (
-      <div className="flex items-baseline justify-center gap-3 font-mono text-2xl">
+      <div className="flex items-baseline justify-center gap-3 font-mono text-title">
         <span className="text-muted-foreground">need</span>
         <b
           className={cn(
@@ -29,7 +29,7 @@ function SumEq({
         >
           {need.need}
         </b>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-ui text-muted-foreground">
           {need.target} − {need.x}
         </span>
       </div>
@@ -38,7 +38,7 @@ function SumEq({
   if (!eq) return null
   const ok = eq.sum === eq.target
   return (
-    <div className="flex items-baseline justify-center gap-2 font-mono text-2xl">
+    <div className="flex items-baseline justify-center gap-2 font-mono text-title">
       <span>{eq.a}</span>
       <span className="text-muted-foreground">+</span>
       <span>{eq.b}</span>
@@ -46,7 +46,7 @@ function SumEq({
       <b className={cn("text-display", ok ? "text-chart-3" : "text-chart-5")}>
         {eq.sum}
       </b>
-      <span className="ml-2 text-sm text-muted-foreground">
+      <span className="ml-2 text-ui text-muted-foreground">
         target {eq.target}
       </span>
     </div>
@@ -62,10 +62,10 @@ function BitRow({ row }: { row: BitRowModel }) {
       <span
         key={b}
         className={cn(
-          "flex size-9 items-center justify-center rounded border font-mono text-base tabular-nums transition-colors",
+          "flex size-9 items-center justify-center rounded border font-mono text-body tabular-nums transition-colors",
           on
             ? "border-chart-2 bg-chart-2/20 text-chart-2"
-            : "border-border/60 text-muted-foreground/50",
+            : "border-border/60 text-dim",
           flip && "ring-2 ring-chart-5/80 ring-offset-1 ring-offset-background"
         )}
       >
@@ -75,11 +75,11 @@ function BitRow({ row }: { row: BitRowModel }) {
   }
   return (
     <div className="flex items-center gap-1.5">
-      <span className="w-10 font-mono text-sm text-muted-foreground">
+      <span className="w-10 font-mono text-ui text-muted-foreground">
         {row.tag}
       </span>
       {cells}
-      <span className="ml-2 font-mono text-base tabular-nums">
+      <span className="ml-2 font-mono text-body tabular-nums">
         = {row.value}
       </span>
     </div>
@@ -96,7 +96,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
   return (
     <div className="flex flex-col gap-4">
       {p.terms.length > 0 && (
-        <div className="flex flex-wrap items-baseline justify-center gap-2 font-mono text-2xl">
+        <div className="flex flex-wrap items-baseline justify-center gap-2 font-mono text-title">
           {p.terms.map((t, i) => (
             <span key={i} className="contents">
               {i > 0 && <span className="text-muted-foreground">+</span>}
@@ -115,7 +115,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
                 {p.need}
               </b>
               <span className="text-muted-foreground">= {p.target}</span>
-              <span className="ml-2 text-sm text-muted-foreground">
+              <span className="ml-2 text-ui text-muted-foreground">
                 need {p.need} — {p.hit ? "seen" : "not seen"}
               </span>
             </>
@@ -130,7 +130,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
               >
                 {sum}
               </b>
-              <span className="ml-2 text-sm text-muted-foreground">
+              <span className="ml-2 text-ui text-muted-foreground">
                 target {p.target}
               </span>
             </>
@@ -143,7 +143,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
         </div>
         <div className="flex flex-wrap gap-2" aria-label="found">
           {p.found.length === 0 && (
-            <span className="font-mono text-sm text-muted-foreground/60">
+            <span className="font-mono text-ui text-dim">
               none yet
             </span>
           )}
@@ -151,7 +151,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
             <span
               key={t.join(",")}
               className={cn(
-                "rounded-md border px-2.5 py-1 font-mono text-sm tabular-nums",
+                "rounded-md border px-2.5 py-1 font-mono text-ui tabular-nums",
                 i === p.found.length - 1 && p.hit && !p.dup
                   ? "border-chart-3 bg-chart-3/15 text-chart-3"
                   : "border-border bg-card"
@@ -161,7 +161,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
             </span>
           ))}
           {p.dup && p.terms.length === 3 && (
-            <span className="rounded-md border border-chart-5/60 px-2.5 py-1 font-mono text-sm text-chart-5 line-through">
+            <span className="rounded-md border border-chart-5/60 px-2.5 py-1 font-mono text-ui text-chart-5 line-through">
               [{[...p.terms].sort((a, b) => a - b).join(", ")}]
             </span>
           )}
@@ -195,7 +195,7 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
               <tr key={r.name} className="border-t border-border/60 align-top">
                 <td className="py-2 pr-3 font-medium">{r.name}</td>
                 <td className="py-2 pr-3 text-chart-1">{r.built}</td>
-                <td className="py-2 pr-3 font-mono text-xs text-muted-foreground">
+                <td className="py-2 pr-3 font-mono text-meta text-muted-foreground">
                   {r.cost}
                 </td>
                 <td className="py-2 text-muted-foreground">{r.insight}</td>
@@ -212,8 +212,8 @@ function Recap({ p }: { p: Extract<PanelModel, { kind: "recap" }> }) {
             href={l.href}
             className="rounded-lg border bg-background/40 p-3 transition-colors hover:border-primary/60"
           >
-            <b className="text-sm">{l.label} ▸</b>
-            <div className="text-xs text-muted-foreground">{l.detail}</div>
+            <b className="text-ui">{l.label} ▸</b>
+            <div className="text-meta text-muted-foreground">{l.detail}</div>
           </a>
         ))}
       </div>
@@ -333,7 +333,7 @@ function Bars({ p }: { p: Extract<PanelModel, { kind: "bars" }> }) {
         )}
       </div>
       {p.water && (
-        <div className="mt-4 text-center font-mono text-lg tabular-nums">
+        <div className="mt-4 text-center font-mono text-narration tabular-nums">
           <span className={p.water.best ? "text-chart-3" : "text-foreground"}>
             {p.water.label}
           </span>
@@ -459,7 +459,7 @@ export function Stage({
           // the data ("the need comes first"), and a panel that IS the whole
           // stage (bars). Only the first one wants a placeholder.
           model.panel.kind === "story" && (
-            <div className="text-sm text-muted-foreground">
+            <div className="text-ui text-muted-foreground">
               the stage is empty on purpose — the need comes first
             </div>
           )

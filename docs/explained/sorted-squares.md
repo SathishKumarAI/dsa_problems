@@ -146,6 +146,8 @@ vector<int> sortedSquares(const vector<int>& nums) {
 
 ## The arc
 
+Squaring destroys the sorted order only in one specific way: the negatives reverse and the positives keep going, so the result is two sorted runs facing each other. Once that is said, the merge is obvious and the only real decision is direction — comparing the two ENDS gives the largest square, so filling the output from the back avoids any shifting. The general lesson is worth more than the trick: when a transformation breaks sortedness, ask what structure it leaves behind, because a merge of two sorted runs is linear while a fresh sort is not. This is also a clean rehearsal for merging in place from the back, which is the merge-sorted-array technique next door.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Square, then sort | O(n log n) time · O(n) space | the baseline — nothing before it |

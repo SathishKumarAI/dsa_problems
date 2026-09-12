@@ -34,6 +34,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Rebuilding a tree makes the nesting explicit, then immediately throws that structure away after one traversal. The stack is that traversal — the operands an operator needs are always the two most recently finished values, which is exactly what a stack holds.",
+  arc:
+    "Postfix exists precisely so that no precedence rules and no parentheses are needed, and the stack is what makes that true: operands wait, an operator consumes the two most recent, and the result takes their place. The lesson to carry is about ORDER for non-commutative operators — the first value popped is the right operand — because subtraction and division silently produce plausible wrong answers when that is reversed. Rehearse integer division truncating toward zero as well, since languages disagree there. Knowing this and the shunting-yard idea that converts infix to postfix covers most expression questions without having to write a parser.",
   approach:
     "Read the tokens left to right. A number is pushed. An operator pops the top two values — the first popped is the RIGHT operand, the second is the left — applies itself, and pushes the result. Because the expression is valid, an operator always finds two values, and the single value left at the end is the answer. Truncation toward zero is the one place the languages disagree, so it is worth writing deliberately rather than relying on the default.",
   complexity: { time: "O(n)", space: "O(n)" },

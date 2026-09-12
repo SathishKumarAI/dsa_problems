@@ -130,6 +130,8 @@ int findPeakElement(const vector<int>& nums) {
 
 ## The arc
 
+The surprise is that a peak can be found in logarithmic time in an UNSORTED array, and the reason is a slope argument rather than an ordering one: if the middle is lower than its right neighbour, the right half must contain a peak, because the sequence either keeps rising to the boundary or turns somewhere. With the ends treated as negative infinity, a peak always exists, so the search never fails. Carry the general form: binary search needs a monotone PREDICATE, not sorted data, and 'the answer is on the rising side' is such a predicate. It is the same idea that makes peak-finding in a bitonic array and several optimisation searches logarithmic.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan for the turn | O(n) time · O(1) space | the baseline — nothing before it |

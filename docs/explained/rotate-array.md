@@ -322,6 +322,8 @@ vector<int> rotateArray(vector<int> nums, int k) {
 
 ## The arc
 
+Three genuinely different ideas share this ladder: copy into place using modular arithmetic, follow the cycles of the rotation permutation, or reverse three times. The reversal trick is the one to memorise — reverse everything, then reverse the first k and the rest — because it is short, constant-space, and easy to argue: reversing puts the tail in front in the wrong internal order, and the two local reversals repair that. The cyclic version teaches something the reversal hides: a rotation decomposes into gcd(n, k) cycles, which is why a naive single-cycle walk misses elements. And reducing k modulo n first is not a detail — without it, k larger than n does pointless full turns or indexes out of range.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | One step at a time | O(n * k) time · O(1) space | the baseline — nothing before it |

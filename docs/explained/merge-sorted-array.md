@@ -342,6 +342,8 @@ vector<int> mergeSorted(vector<int> a, int m, vector<int> b, int n) {
 
 ## The arc
 
+Merging is easy; merging IN PLACE is the exercise. Writing from the front would overwrite values not yet read, so the whole ladder converges on one observation: the end of the first array is spare room, so filling from the BACK writes only into cells already consumed or empty. That is the generalisable move — when in-place writing collides with reading, reverse the direction. Two details pay off: the loop can stop as soon as the second array is exhausted, because the rest of the first array is already where it belongs; and the case where the second array's values are all smaller is the one that exercises the leftover copy, so it belongs in your test list.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Insert one at a time | O(n * (m + n)) time · O(1) space | the baseline — nothing before it |

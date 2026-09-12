@@ -108,7 +108,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
         {/* One bar from lg — the trail and title on the left, the transport in
             the middle, XP and restart on the right (spec 1.1). Stacked below
             lg, where there is no width to put them side by side. */}
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground lg:flex-nowrap">
+        <div className="flex flex-wrap items-center gap-2 text-ui text-muted-foreground lg:flex-nowrap">
           {problem && pattern ? (
             <a
               href={href(`/p/${pattern.id}/${problem.id}`)}
@@ -139,7 +139,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             </span>
           </span>
           <span
-            className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-xs"
+            className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-meta"
             aria-label="experience points"
           >
             <StarIcon className="size-3 text-chart-4" /> {j.xp} XP
@@ -231,7 +231,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
             {journey.title}
           </h1>
           {journey.leetcode && (
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-meta text-muted-foreground">
               LeetCode {journey.leetcode}
             </span>
           )}
@@ -273,7 +273,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               <span className="font-mono text-ui text-muted-foreground">
                 act {String(j.actIndex + 1).padStart(2, "0")}
               </span>
-              <span className="ml-auto font-mono text-xs text-muted-foreground">
+              <span className="ml-auto font-mono text-meta text-muted-foreground">
                 {act.complexity}
               </span>
             </div>
@@ -285,7 +285,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               {(j.warning || j.info) && (
                 <p
                   className={cn(
-                    "border-b px-4 py-2 text-sm",
+                    "border-b px-4 py-2 text-ui",
                     j.warning
                       ? "bg-chart-5/10 text-chart-5"
                       : "bg-chart-2/10 text-chart-2"
@@ -297,7 +297,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
               )}
 
               {j.data && "target" in j.data && (
-                <div className="px-4 pt-4 font-mono text-base text-muted-foreground">
+                <div className="px-4 pt-4 font-mono text-body text-muted-foreground">
                   target ={" "}
                   <b className="text-foreground">{String(j.data.target)}</b>
                 </div>
@@ -321,7 +321,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                     }
                   />
                 ) : (
-                  <div className="py-8 text-center text-xs text-muted-foreground">
+                  <div className="py-8 text-center text-meta text-muted-foreground">
                     loading…
                   </div>
                 )}
@@ -385,7 +385,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                   </div>
                 )}
                 {j.adaptive && (
-                  <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-4/40 bg-chart-4/5 p-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-4/40 bg-chart-4/5 p-3 text-ui">
                     <FlameIcon className="size-4 text-chart-4" /> Flawless — no
                     wrong answers, first-try green.
                     <Button size="sm" variant="outline" onClick={j.adaptive.go}>

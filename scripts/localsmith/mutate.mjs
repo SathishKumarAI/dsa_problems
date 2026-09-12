@@ -69,6 +69,26 @@ const MUTATIONS = [
 // A mutation that provably cannot change the answer. Each entry is a reason,
 // not a shrug — an unexplained entry here is how a gate stops biting.
 export const KNOWN_EQUIVALENT = {
+  // ---- batch 7 (2026-09-12). Same rule: searched first, then argued. Four of
+  // the six are the comment trap again — `mutants()` does not skip comments, so
+  // an `and` or an `==` inside an explanation is a mutation that cannot reach
+  // the interpreter. ----
+  "spiral-order/and becomes or":
+    "the only `and` on that line is in the comment `# and a column to climb`",
+  "pacific-atlantic/== becomes !=":
+    "the only `==` on that line is in the comment `# uphill == flows down here`",
+  "simplify-path/and becomes or":
+    "the only `and` on that line is in the comment `# '//' and '.' change nothing`",
+  "decode-ways/and becomes or":
+    "two sites, both comments — `# ways from just past the end, and one beyond that` and `# no letter is numbered 0, and 0x is never a pair`",
+  "decode-ways/< becomes <=":
+    "`i + 1 < len(s)` becomes `i + 1 <= len(s)`, the same edit as the one below wearing different syntax: it only opens the two-digit branch at the LAST index, where `ahead2` is still 0 and adding it changes nothing",
+  "decode-ways/+ 1 dropped":
+    "`i + 1 < len(s)` becomes `i < len(s)`, which differs only at the LAST index. There the two-digit branch adds `ahead2`, and at the last index `ahead2` is still its initial 0 — so the sum is unchanged whether the branch is taken or not",
+  "ugly-number/< becomes <=":
+    "`while len(seq) < n` becomes `<=`, which generates one extra value and then returns `seq[n - 1]` exactly as before. It costs an iteration, not an answer",
+  "calculator-basic/< becomes <=":
+    "the sign test `(a < 0) == (b < 0)` becomes `(a <= 0) == (b <= 0)`, which differs only when an operand is 0. `b` is a divisor and the expression is valid, so it never is; and when `a` is 0 the quotient is 0, where `q` and `-q` are the same number",
   // ---- batch 6 (2026-09-09). Each of these was SEARCHED first: `--suggest`
   // either found no distinguishing input in 240 tries, or found one that the
   // problem's own constraints forbid. An argument follows in every case,

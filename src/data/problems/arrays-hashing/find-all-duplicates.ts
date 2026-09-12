@@ -33,6 +33,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "The tally array is n + 1 extra slots holding one bit each, when the input already has exactly n slots and every value points at one. Nothing new has to be allocated: the sign of nums[v - 1] carries the flag and the magnitude keeps the value, so the answer costs no memory beyond the list being returned.",
+  arc:
+    "Five rungs and one question underneath all of them: where is the memory for 'have I seen this' going to live? Pairwise comparison uses none and pays quadratically; sorting reuses the array itself but destroys the order; a hash map and a flag table both buy linear time with linear memory. The last rung is the one worth studying — the values are promised to lie in 1..n, so the ARRAY is already a table with exactly the right number of slots, and negating the value at index v-1 records that v was seen. Encoding a bit inside the data is a genuine constant-space technique, and its price is always the same: the data is mutated, so decide whether the caller can tolerate that, and remember how to undo it.",
   approach:
     "Walk the array once. For each value take its magnitude v and look at index v - 1. If the number parked there is already negative, v has been seen before, so it is a duplicate. Otherwise negate it, which records 'v has been seen' without losing anything — the original value is still there in the magnitude, which is why every read takes an absolute value first. Two passes' worth of information in one pass, and the only allocation is the answer itself.",
   complexity: { time: "O(n)", space: "O(1)" },

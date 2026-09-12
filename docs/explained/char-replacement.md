@@ -163,6 +163,8 @@ int characterReplacement(const string& s, int k) {
 
 ## The arc
 
+The trick here is what the window does NOT track. A window is legal when its length minus the count of its most frequent character is at most k, and the surprise is that the most-frequent count never has to be recomputed downward: since the answer is a maximum, letting it go stale can only make the window refuse to grow, never make it grow wrongly. That is why the linear version has no inner maximum scan and looks almost too simple. Understand the argument before you trust it, because it is the same 'the answer is a maximum, so the window need never shrink' reasoning behind the fruit-baskets version, and it is the part interviewers probe.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every substring | O(n² · 26) time · O(1) space | the baseline — nothing before it |

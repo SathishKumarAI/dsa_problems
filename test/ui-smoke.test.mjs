@@ -1083,7 +1083,9 @@ describe(
         await wait(300);
         [...document.querySelectorAll('button')].find(b => /run tests/i.test(b.innerText))?.click();
         await wait(2500);
-        const rows = [...document.querySelectorAll('.font-mono.text-xs > div')]
+        // text-meta, not text-xs: the raw Tailwind sizes became roles on
+        // 2026-09-12 (docs/DESIGN.md), and this selector names a real class
+        const rows = [...document.querySelectorAll('.font-mono.text-meta > div')]
           .map(e => e.innerText);
         return {
           rows: rows.length,

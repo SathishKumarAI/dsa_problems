@@ -35,18 +35,23 @@
        sentence, `text-meta` for a label or a count. The audit found 16
        size/weight pairs on one page and 12px as the most common size in a
        product about reading (U6). */
-  --text-meta: 0.75rem; /* 12 — labels, counts, act keys        */
-  --text-meta--line-height: 1rem;
-  --text-ui: 0.875rem; /* 14 — controls, table cells, chrome   */
-  --text-ui--line-height: 1.25rem;
-  --text-body: 1rem; /* 16 — sentences a learner reads       */
-  --text-body--line-height: 1.625rem;
-  --text-narration: 1.1875rem; /* 19 — the narration line              */
-  --text-narration--line-height: 1.875rem;
-  --text-title: 1.5rem; /* 24 — page and act titles             */
-  --text-title--line-height: 1.875rem;
-  --text-display: 2rem; /* 32 — the equation, the answer        */
-  --text-display--line-height: 2.375rem;
+  /* Raised one step on 2026-09-12 after measuring the real pages: 51 of the
+       121 text nodes on the problem page rendered below 13px and 35 of 55 on
+       the visualizer. Nothing was broken — it was simply small, in a product
+       whose whole job is reading. Every step moved together so the RATIOS are
+       unchanged and no component had to be touched. */
+  --text-meta: 0.8125rem; /* 13 — labels, counts, act keys        */
+  --text-meta--line-height: 1.125rem;
+  --text-ui: 0.9375rem; /* 15 — controls, table cells, chrome   */
+  --text-ui--line-height: 1.375rem;
+  --text-body: 1.0625rem; /* 17 — sentences a learner reads       */
+  --text-body--line-height: 1.75rem;
+  --text-narration: 1.25rem; /* 20 — the narration line              */
+  --text-narration--line-height: 1.9375rem;
+  --text-title: 1.75rem; /* 28 — page and act titles             */
+  --text-title--line-height: 2.125rem;
+  --text-display: 2.5rem; /* 40 — the equation, the answer        */
+  --text-display--line-height: 2.75rem;
 
   /* Motion: 320 ms is the second duration, named only where something
        appears, resizes or slides. The default above covers everything else. */
@@ -71,6 +76,13 @@
   --color-chart-1: var(--chart-1);
   --color-yellow: var(--yellow);
   --color-teal: var(--teal);
+  /* The quiet layer, and the reason it is a COLOUR rather than an opacity:
+       `text-muted-foreground/40` measured at 1.02:1 against the page — the
+       index numbers under the chips were not dim, they were invisible (13
+       nodes below AA on the problem page, 2026-09-12). `text-dim` is the
+       dimmest thing this palette can say and still be read: 5.8:1 in Mocha,
+       5.5:1 in Latte. Anything quieter than this is decoration, not text. */
+  --color-dim: var(--dim);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -118,6 +130,7 @@
   --secondary-foreground: #4c4f69;
   --muted: #ccd0da;
   --muted-foreground: #6c6f85; /* subtext0 */
+  --dim: #5c5f77; /* subtext1 — the quiet layer, still readable */
   --accent: #ccd0da;
   --accent-foreground: #4c4f69;
   --destructive: #d20f39; /* red     */
@@ -156,6 +169,7 @@
   --secondary-foreground: #cdd6f4;
   --muted: #313244;
   --muted-foreground: #a6adc8;
+  --dim: #9399b2; /* overlay2 — the quiet layer, still readable */
   --accent: #313244;
   --accent-foreground: #cdd6f4;
   --destructive: #f38ba8;
@@ -177,6 +191,179 @@
   --sidebar-accent-foreground: #cdd6f4;
   --sidebar-border: #313244;
   --sidebar-ring: #cba6f7;
+}
+
+/* ---------------------------------------------------------------------------
+   The instrument surface (2026-09-12).
+
+   The palette stayed Catppuccin; what changed is the room it is lit in. Three
+   things carry it, and each one is doing a job rather than a style:
+
+   1. The page sits on the CRUST rather than the base, with two very low-alpha
+      washes — mauve top-left, blue bottom-right, the same two hues the chip
+      grammar already uses for focus and window. A flat #1e1e2e reads as a
+      document; a lit one reads as a panel you are working inside.
+   2. A 96px hairline grid, masked so it fades out below the fold. It gives the
+      eye a sense of depth and scale without competing with anything: at 3% of
+      the border colour it is felt more than seen.
+   3. Everything that floats — the sidebar, dialogs, the hover-peek rails, the
+      test-case drawer — blurs what is behind it. That is not decoration here:
+      those surfaces sit ON TOP of a stage that is mid-animation, and an opaque
+      panel would hide it while a transparent one would be unreadable.
+
+   Both layers are `position: fixed` and `pointer-events: none`, so nothing
+   below them moves, scrolls or intercepts a click.
+   --------------------------------------------------------------------------- */
+@layer base {
+  body {
+    position: relative;
+    background-color: var(--sidebar); /* crust in Mocha, mantle in Latte */
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        60rem 40rem at 12% -8%,
+        color-mix(in oklab, var(--chart-1) 26%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        52rem 36rem at 92% 104%,
+        color-mix(in oklab, var(--chart-2) 20%, transparent),
+        transparent 72%
+      ),
+      var(--background);
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in oklab, var(--foreground) 7%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--foreground) 7%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 64px 64px;
+    opacity: 0.45;
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black,
+      transparent 62%
+    );
+    mask-image: linear-gradient(to bottom, black, transparent 62%);
+  }
+
+  /* Depth on the resting surfaces: a hairline of light along the top edge and
+     a shadow that has both an offset and a blur. A zero-offset halo would be
+     decoration; this is the panel sitting a millimetre above the page. */
+  [class*="bg-card"] {
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 7%, transparent),
+      0 12px 28px -22px rgb(0 0 0 / 0.9);
+  }
+
+  /* …and blur on the surfaces that FLOAT over the stage, for the reason in the
+     header above: the thing behind them is usually mid-animation. */
+  [data-slot="sidebar-container"],
+  [data-slot="dialog-content"],
+  [data-slot="popover-content"],
+  [data-testid="reading-peek"],
+  [data-testid="testcase-drawer"] {
+    backdrop-filter: blur(14px) saturate(125%);
+  }
+
+
+
+  /* A resting surface answers the pointer by lifting, not by changing colour —
+     colour in this app is load-bearing (the chip roles), so it cannot be spent
+     on hover. */
+  a[class*="bg-card"],
+  button[class*="bg-card"] {
+    transition:
+      box-shadow var(--default-transition-duration),
+      transform var(--default-transition-duration),
+      border-color var(--default-transition-duration);
+  }
+
+  a[class*="bg-card"]:hover,
+  button[class*="bg-card"]:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 12%, transparent),
+      0 18px 34px -24px rgb(0 0 0 / 0.95);
+  }
+
+  /* Where you are, stated once: a 2px accent edge on the active rail row and a
+     glow small enough to read as light rather than as a filled chip. The rail
+     is the only place in the app that needs a persistent "you are here". */
+  [data-sidebar="menu-button"][data-active="true"] {
+    position: relative;
+    box-shadow:
+      inset 2px 0 0 0 var(--primary),
+      0 0 22px -12px var(--primary);
+  }
+
+  /* The primary action glows faintly — one accent, and only on the control that
+     starts something (Play, Solve, Continue). */
+  [data-slot="button"][data-variant="default"],
+  .btn-glow {
+    box-shadow: 0 6px 24px -14px var(--primary);
+  }
+
+  /* The surfaces nobody draws, which ship with browser defaults that belong to
+     no design system — and are the cheapest tell that a page was assembled
+     rather than built. */
+  ::selection {
+    background-color: color-mix(in oklab, var(--primary) 32%, transparent);
+    color: var(--foreground);
+  }
+
+  html {
+    caret-color: var(--primary);
+  }
+
+  /* Every number on the stage is measurement, so it gets measurement's
+     typography: columns that line up and a zero that cannot be an O. */
+  code,
+  pre,
+  kbd,
+  [class*="font-mono"] {
+    font-variant-numeric: tabular-nums slashed-zero;
+  }
+
+  /* One authored moment, on arrival only: the page settles in from a shallow
+     blur rather than sliding. Exponential ease-out from an already-visible
+     default, so a reader who lands mid-animation still sees the content. */
+  main {
+    animation: surface-in var(--duration-reveal) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes surface-in {
+  from {
+    opacity: 0.55;
+    filter: blur(6px);
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
 }
 
 /* a merge-sort write: the value is replaced in place, so there is no motion

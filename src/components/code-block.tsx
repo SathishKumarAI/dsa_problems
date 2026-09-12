@@ -41,7 +41,7 @@ export function CodeBlock({
       </Button>
       {/* pr-12 keeps the first line clear of the copy button, which floats
           over the block and used to sit on top of it */}
-      <pre className="overflow-x-auto p-4 pr-12 font-mono text-sm leading-relaxed">
+      <pre className="overflow-x-auto p-4 pr-12 font-mono text-ui leading-relaxed">
         <code>{code}</code>
       </pre>
     </div>

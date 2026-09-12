@@ -26,6 +26,8 @@ export const problem: Problem = {
     "Fix the smallest element of the triplet; the rest is exactly the sorted pair-sum problem on the suffix.",
     "Skip repeats at every level: same fixed element, same left value, same right value.",
   ],
+  arc:
+    "Three sum is two sum with a loop around it, and the ladder is mostly about DUPLICATES rather than speed. Fixing an anchor reduces the problem to finding a pair summing to its negation — which the hash rung does with memory and the final rung does with converging pointers on the sorted array, for constant extra space. Sorting also turns deduplication from a set of tuples into two skip rules: skip an anchor equal to the previous anchor, and after a hit, skip repeats of both pointers. The general lesson is that sorting can be worth its cost for reasons other than search, and the k-sum generalisation is simply this pattern recursively: fix an index, solve (k-1)-sum on the rest, and dedupe at every level.",
   approach:
     "Sort the array. For each index k (skipping values equal to the previous one), run the two-pointer pair search on the suffix for target -nums[k]. When a triplet is found, advance both pointers past duplicate values before continuing so no repeated triplet is emitted. A small cutoff: once nums[k] > 0, no triplet can sum to zero.",
   complexity: { time: "O(n²)", space: "O(1) beyond output" },

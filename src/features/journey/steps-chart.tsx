@@ -43,7 +43,7 @@ export function StepsChart({
               <span
                 role="cell"
                 className={cn(
-                  "truncate text-xs",
+                  "truncate text-meta",
                   isActive
                     ? "font-medium text-foreground"
                     : "text-muted-foreground"
@@ -68,7 +68,7 @@ export function StepsChart({
               <span
                 role="cell"
                 className={cn(
-                  "text-right font-mono text-xs tabular-nums",
+                  "text-right font-mono text-meta tabular-nums",
                   isActive ? "text-foreground" : "text-muted-foreground"
                 )}
               >

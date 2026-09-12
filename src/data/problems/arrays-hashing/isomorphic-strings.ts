@@ -35,6 +35,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Encoding both strings into a canonical pattern works and is a neat trick, but it builds two whole new sequences before comparing anything. Two maps decide the answer at the first contradiction, which for most failing inputs is within the first few characters.",
+  arc:
+    "Isomorphism is a pair of consistent mappings, and the trap is that one mapping is not enough: mapping every letter of the first string forward permits two letters collapsing onto one, which is not a bijection. Either keep both directions, or encode each string as the pattern of first-occurrence indices and compare the patterns — two representations of the same idea, and the second generalises to 'word pattern' problems where the tokens are words rather than characters. The habit to take away is to write the definition down formally before coding: 'a bijection preserving position' immediately tells you that one hash map is half an answer.",
   approach:
     "Carry two maps, forward and backward. At each position, if the forward map already sends this character somewhere else, or the backward map already claims this target for a different source, the strings are not isomorphic. Otherwise record both directions and continue. The backward map is the half people forget — without it, two distinct characters can be collapsed onto one, which the definition forbids.",
   complexity: { time: "O(n)", space: "O(1)" },

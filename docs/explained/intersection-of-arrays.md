@@ -384,6 +384,8 @@ vector<int> intersect(vector<int> nums1, vector<int> nums2) {
 
 ## The arc
 
+The ladder is a tour of every way two collections can be compared: cross off in place, sort both and walk cursors, count both sides and take the minimum per value, or count the smaller side and spend from it while scanning the larger. What decides the winner is not the asymptotic form but which input is smaller and whether the data is already sorted — which is exactly the follow-up question this problem is famous for. Carry the counting-with-multiplicity idea: for a multiset intersection, the answer's count for a value is the MINIMUM of the two counts, and 'spend as you go' is that minimum computed lazily. Counting the smaller array is the memory-conscious default.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Cross off with used flags | O(n * m) time · O(m) space | the baseline — nothing before it |

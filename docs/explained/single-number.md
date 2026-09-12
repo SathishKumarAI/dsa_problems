@@ -166,6 +166,8 @@ int singleNumber(const vector<int>& nums) {
 
 ## The arc
 
+Three rungs, three different ideas about what to remember. A hash map remembers everything and throws almost all of it away. Sorting remembers nothing but pays to impose order the question never asked for. XOR remembers exactly one number, because the operation itself cancels pairs: a ^ a is zero, zero ^ x is x, and order does not matter. That is the lesson worth keeping — when duplicates come in pairs and you need the odd one out, reach for an operation with an inverse rather than for a container. Know why XOR is safe here (commutative, associative, self-inverse) because the follow-ups change the pairing to threes, where XOR alone stops working and bit counting takes over.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Hash map | O(n) time · O(n) space | the baseline — nothing before it |

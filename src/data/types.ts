@@ -63,6 +63,13 @@ export interface Problem extends Code {
   hints: string[] // progressive: nudge -> idea -> almost-there
   approach: string
   whyNow?: string // why the optimal rung beats the last alternative (see Solution)
+  // The closing narrative: the ONE idea the whole ladder applies, said in prose,
+  // and which rungs are worth knowing cold. A rung says why it beats the rung
+  // below it; `arc` says what all of them have in common — the part a learner
+  // carries to the next problem. Rendered after the ladder, and only when the
+  // ladder is complete: on a journeyed problem mid-flight it would name an
+  // approach the ledger has not handed over yet.
+  arc?: string
   complexity: { time: string; space: string }
   walkthrough?: Frame[] // stepped visualization of the approach on an example
   alternatives?: Solution[] // other ways in, worst-to-best order; optimal stays top-level

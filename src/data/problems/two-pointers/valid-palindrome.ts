@@ -34,6 +34,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Building a cleaned copy spends O(n) memory to hold a string you read exactly once. Two indices read the original in place and stop the moment they disagree, so a mismatch in the first two characters costs two comparisons instead of a full rebuild.",
+  arc:
+    "The only interesting thing here is how much data you are willing to copy. Cleaning the string first is honest and readable and allocates a second copy; two pointers that skip non-alphanumerics in place answer the same question with two integers. The lesson is that filtering does not have to be a separate pass — a cursor can skip while it walks. The two details worth rehearsing are the ones that make people fail this easy question: the empty or all-punctuation input, where the pointers cross immediately and the answer is true, and case folding, where '0P' shows that comparing characters without normalising both sides is a bug the simple examples never reveal.",
   approach:
     "Put i at the front and j at the back. Advance i past anything that is not alphanumeric, retreat j the same way, then compare the two characters case-insensitively. A disagreement ends it; a match moves both inward. When the pointers cross, every mirrored pair has agreed and the answer is true — including the case where they cross immediately because the string held no letters at all.",
   complexity: { time: "O(n)", space: "O(1)" },

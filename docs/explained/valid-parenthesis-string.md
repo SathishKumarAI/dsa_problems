@@ -188,6 +188,8 @@ bool checkValidString(const string& s) {
 
 ## The arc
 
+Two rungs, two entirely different mental models, and both are worth owning. Trying both meanings of every star is exponential and obviously correct. The linear version tracks a RANGE of possible open counts — a low and a high — where a star pushes the low down and the high up; the answer is valid when the range can still reach zero and the high never goes negative. Clamping the low at zero is the subtle step, because a negative low would mean unmatched closers that the stars cannot undo. That 'carry an interval of possible states instead of enumerating states' idea is the transferable one, and it reappears whenever a wildcard makes the state space branch.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Try both meanings for every star | O(3^n) time · O(n) space | the baseline — nothing before it |

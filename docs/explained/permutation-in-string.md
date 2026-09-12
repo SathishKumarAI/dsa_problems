@@ -253,6 +253,8 @@ bool checkInclusion(const string& s1, const string& s2) {
 
 ## The arc
 
+A fixed-width window, which is the easiest kind: enter one character, leave one character, test. The ladder then argues only about the test — sorting each window, comparing 26 counts, or keeping a running count of how many letters currently match so the test is one integer comparison. Take the general habit: when a check is repeated over sliding data, look for a summary that can be updated incrementally instead of recomputed. And note the difference from find-all-anagrams, which is the same machinery returning every index instead of stopping at the first hit; if you can write one, you can write the other by changing the return.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort every window | O(n · k log k) time · O(k) space | the baseline — nothing before it |

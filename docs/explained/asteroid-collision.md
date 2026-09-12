@@ -205,6 +205,8 @@ vector<int> asteroidCollision(const vector<int>& asteroids) {
 
 ## The arc
 
+The stack is holding survivors, and the whole problem is a case analysis that must be written before any code: a right-moving asteroid always survives for now, a left-moving one fights everything right-moving on the stack, and each fight either destroys the incoming one, the stack top, or both. The trap is the both-destroyed case, which must break out of the loop without pushing anything. Sweeping the array until nothing changes is the honest baseline and shows why the stack is worth it — collisions cascade, and a stack processes the cascade in one pass. The same shape solves 'remove adjacent duplicates' and other neighbour-annihilation problems.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sweep until nothing changes | O(n²) time · O(n) space | the baseline — nothing before it |

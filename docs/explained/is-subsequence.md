@@ -149,6 +149,8 @@ bool isSubsequence(const string& s, const string& t) {
 
 ## The arc
 
+The greedy is the lesson: when scanning the text for the pattern's next character, taking the FIRST match is always safe, because any later match leaves strictly less text for the rest of the pattern. That exchange argument is the same one behind most matching greedies, and it is what makes the one-pass version correct rather than merely plausible. The follow-up is the part worth knowing: if you must answer this for many patterns against one fixed text, the per-query scan becomes the bottleneck and you precompute, for every position and every letter, the next occurrence — turning each query into a walk of the pattern's length with binary search or table lookups.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Search for each character in turn | O(n · m) time · O(1) space | the baseline — nothing before it |

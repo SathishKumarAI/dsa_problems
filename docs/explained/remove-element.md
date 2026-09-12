@@ -327,6 +327,8 @@ vector<int> removeElement(vector<int> nums, int val) {
 
 ## The arc
 
+Five rungs that are really one idea arriving in stages: stop moving data and start choosing where to write it. Deleting with shifts is quadratic for a reason worth naming — each removal rewrites the tail. A copy is linear but allocates. The reader/writer pair is linear, in place, and stable. The final rung is the variant worth knowing for interviews: when ORDER does not matter, a value to remove can be overwritten with the last element instead, which makes the number of writes proportional to the number of removals rather than to the array. Choosing between them is a question about the contract, which is why the first move is to ask whether order is part of the answer.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Delete and shift | O(n^2) time · O(1) space | the baseline — nothing before it |

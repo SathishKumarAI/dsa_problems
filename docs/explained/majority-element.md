@@ -139,6 +139,8 @@ int majorityElement(const vector<int>& nums) {
 
 ## The arc
 
+A count map is linear and obviously right, and the interesting question is what to do when the memory is not available. The Boyer-Moore idea is a pairing argument: hold a candidate and a balance, and let every element that disagrees cancel one that agreed. An element with a strict majority cannot be fully cancelled, so whatever survives is the answer. The lesson is that a promise in the problem statement — here 'a majority exists' — is often the licence for a cheaper algorithm, and removing the promise breaks it. Know the second pass that verifies the candidate, because the majority-may-not-exist variant needs it, and the generalisation to values appearing more than n/3 times keeps two candidates by the same argument.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Count everything | O(n) time · O(n) space | the baseline — nothing before it |

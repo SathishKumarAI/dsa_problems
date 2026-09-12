@@ -45,7 +45,7 @@ function JourneyCard({
       <div className="flex items-center gap-2">
         <RouteIcon className="size-4 text-chart-1" />
         <span className="font-medium">{title}</span>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
+        <span className="ml-auto font-mono text-meta text-muted-foreground">
           {earned.done ? "complete" : `${earned.short} earned`}
         </span>
       </div>
@@ -134,7 +134,7 @@ export function HomeView({
   return (
     <div className="mx-auto flex w-full max-w-page flex-col gap-8">
       <header className="flex flex-col gap-3 pt-4">
-        <h1 className="font-mono text-3xl font-semibold tracking-tight">
+        <h1 className="font-mono text-display font-semibold tracking-tight">
           dsa<span className="text-primary">.patterns</span>
         </h1>
         <p className="max-w-[35em] text-body text-muted-foreground">
@@ -144,7 +144,7 @@ export function HomeView({
           animation, the reveal. The rest of the catalogue has hints, a
           walkthrough and worked code.
         </p>
-        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-4 text-meta text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <FlameIcon className="size-3.5 text-chart-4" /> {streak} day streak
           </span>
@@ -191,7 +191,7 @@ export function HomeView({
           )}
           <a
             href={href("/algorithms")}
-            className="flex items-center gap-3 rounded-xl border border-dashed bg-card/50 p-4 text-sm transition-colors hover:border-primary/60 sm:col-span-2"
+            className="flex items-center gap-3 rounded-xl border border-dashed bg-card/50 p-4 text-ui transition-colors hover:border-primary/60 sm:col-span-2"
           >
             <SlidersHorizontalIcon className="size-4 text-chart-2" />
             <span>
@@ -209,7 +209,7 @@ export function HomeView({
           <span className="text-meta tracking-wide text-muted-foreground uppercase">
             practice set
           </span>
-          <span className="font-mono text-sm tabular-nums">
+          <span className="font-mono text-ui tabular-nums">
             {done}/{total} solved
           </span>
         </div>
@@ -229,11 +229,11 @@ export function HomeView({
               onClick={() => onNavigate(p.id)}
             >
               <CardHeader>
-                <div className="font-mono text-xs text-primary">
+                <div className="font-mono text-meta text-primary">
                   {hidden ? MASKED_GLYPH : p.glyph}
                 </div>
                 <CardTitle
-                  className={hidden ? "text-base italic" : "text-base"}
+                  className={hidden ? "text-body italic" : "text-body"}
                 >
                   {hidden ? MASKED_NAME : p.name}
                 </CardTitle>
@@ -244,7 +244,7 @@ export function HomeView({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                <span className="font-mono text-meta text-muted-foreground tabular-nums">
                   {patternDone}/{problems.length} solved
                 </span>
               </CardContent>

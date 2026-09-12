@@ -161,6 +161,8 @@ int longestConsecutive(const vector<int>& nums) {
 
 ## The arc
 
+Sorting is the obvious way to make neighbours adjacent, and it is also the thing to question: the answer needs to know which values EXIST, not what order they come in. Once every value is in a set, the run starting at v can be walked directly — and the trick that keeps it linear is refusing to start a walk at a value whose predecessor exists, so each run is walked exactly once from its true beginning. Without that guard the same run is re-walked from every member and the whole thing is quadratic. Carry two habits: when a solution sorts, ask whether membership would do instead; and when several starting points share work, find the rule that elects one of them.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort | O(n log n) time · O(1) space | the baseline — nothing before it |

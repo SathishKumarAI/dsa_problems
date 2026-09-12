@@ -231,6 +231,8 @@ vector<int> productExceptSelf(const vector<int>& nums) {
 
 ## The arc
 
+Division is banned, and that ban is the whole teaching device: it forces you to find the structure instead of the shortcut. The answer at position i is 'everything to the left' times 'everything to the right', and both of those are running products that can be swept in one pass each — which is the prefix-sum idea with multiplication swapped in. The final rung removes even the second array by reusing the output as the left pass and carrying the right pass in a single variable. That pattern — compute prefixes forward, then fold suffixes backward into the same array — reappears in trapping rain water and in several interval problems. The corner case to rehearse is a zero, which is exactly what the division shortcut cannot survive.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Product of the others, each time | O(n²) time · O(1) space | the baseline — nothing before it |

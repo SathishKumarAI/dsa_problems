@@ -111,7 +111,7 @@ function Ribbon({
           <div key={a.key} className="flex items-stretch gap-1">
             {i > 0 && (
               <span
-                className="self-center text-muted-foreground/40"
+                className="self-center text-dim"
                 aria-hidden
               >
                 {stacked ? "↓" : "→"}
@@ -132,7 +132,7 @@ function Ribbon({
                 a.key === justDone && "animate-step-done"
               )}
             >
-              <span className="flex items-center gap-1.5 text-sm font-medium">
+              <span className="flex items-center gap-1.5 text-ui font-medium">
                 <span
                   className={cn(
                     "font-mono text-meta",
@@ -152,7 +152,7 @@ function Ribbon({
       })}
       {locked && (
         <div className="flex items-stretch gap-1">
-          <span className="self-center text-muted-foreground/40" aria-hidden>
+          <span className="self-center text-dim" aria-hidden>
             {stacked ? "↓" : "→"}
           </span>
           <div
@@ -162,7 +162,7 @@ function Ribbon({
             )}
             title="finish this act to unlock"
           >
-            <span className="flex items-center gap-1.5 text-sm font-medium">
+            <span className="flex items-center gap-1.5 text-ui font-medium">
               <LockIcon className="size-3" />?
             </span>
             <span className="font-mono text-meta">

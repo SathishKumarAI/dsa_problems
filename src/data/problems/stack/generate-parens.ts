@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Generating all 2^(2n) strings and filtering does exponential work to throw most of it away — at n = 8 that is 65 536 strings for 1430 answers. Checking legality at the moment of the choice means an invalid prefix is never extended, so the recursion visits only the answers and the partial strings that lead to them.",
+  arc:
+    "The move that matters is generating only what can still be valid instead of filtering afterwards. Two counters — openings used and closings used — give two rules: you may open while openings remain, and you may close only while closings trail openings. Those rules prune the tree so hard that the output size, the Catalan number, is the cost. That is backtracking in its purest form: choose, recurse, undo, with the legality test at the choice rather than at the leaf. Carry the habit of pushing constraints as early as possible into the recursion, and note that the undo step here is just truncating the string, which is why the path is built in a mutable buffer rather than by concatenation.",
   approach:
     "Grow a string by recursion, carrying how many opening and closing brackets have been placed. Add an opening bracket while fewer than n are used; add a closing bracket only while closes trail opens, which is exactly the condition that keeps the running balance non-negative. When both counts reach n the string is complete. The stack the pattern names is the call stack here — the balance being tracked is the depth of brackets still waiting to close.",
   complexity: { time: "O(4^n / √n)", space: "O(n)" },

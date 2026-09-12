@@ -26,6 +26,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "XOR-ing the whole array finds the loner in one pass and is beautiful, but it reads every element — and the problem asks for logarithmic time precisely to rule it out. Sortedness means the pairing pattern breaks exactly once, and a broken pattern is a boundary, which is what binary search is for.",
+  arc:
+    "XOR solves it in linear time and is worth mentioning first, because it is the answer to a more general question. The logarithmic version uses the sorted structure instead: before the lone value, pairs start at even indices; after it, they start at odd ones. So checking whether the element at an even index equals its neighbour tells you which side the anomaly is on. That 'pairing parity' idea is the transferable part. The implementation detail that makes it clean is forcing the midpoint to an even index before comparing, which removes a whole family of off-by-one cases and makes the invariant easy to state.",
   approach:
     "Round the midpoint down to an even index. Before the lone value, an even index always holds the first half of a pair, so nums[mid] equals nums[mid + 1]; after it, that equality fails. If they are equal the loner is to the right of the pair, so move low past both; otherwise the loner is at the midpoint or to its left. When the range narrows to one index, it holds the lone value. Rounding to even is what makes the test meaningful — on an odd index the comparison would be against the wrong half of a pair.",
   complexity: { time: "O(log n)", space: "O(1)" },

@@ -210,6 +210,8 @@ int subarraySum(const vector<int>& nums, int k) {
 
 ## The arc
 
+The insight is arithmetic, not cleverness: the sum of a subarray is the difference of two prefix sums, so 'a subarray summing to k ending here' means 'a prefix sum equal to current minus k has been seen before'. That turns a question about ranges into a question about membership, which a hash map answers in one step — and the counting version stores how MANY times each prefix sum occurred, because several earlier positions can all qualify. Carry two details that catch people: the map must start with prefix sum zero counted once, or subarrays beginning at index 0 go missing; and this works with negative numbers, which is exactly why a sliding window does not.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sum every subarray | O(n²) time · O(1) space | the baseline — nothing before it |

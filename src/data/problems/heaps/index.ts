@@ -6,6 +6,8 @@ import { problem as lastStoneWeight } from "./last-stone-weight.ts"
 import { problem as kthLargestElement } from "./kth-largest-element.ts"
 import { problem as sortByFrequency } from "./sort-by-frequency.ts"
 import { problem as kthSmallestMatrix } from "./kth-smallest-matrix.ts"
+import { problem as topKFrequentWords } from "./top-k-frequent-words.ts"
+import { problem as uglyNumber } from "./ugly-number.ts"
 
 export const heaps: Problem[] = [
   kthLargestStream,
@@ -15,4 +17,6 @@ export const heaps: Problem[] = [
   kthLargestElement,
   sortByFrequency,
   kthSmallestMatrix,
+  topKFrequentWords,
+  uglyNumber,
 ]

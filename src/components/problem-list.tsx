@@ -57,14 +57,14 @@ export function ProblemList({ pattern, onOpen }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <div className="font-mono text-sm text-primary">
+        <div className="font-mono text-ui text-primary">
           {hidden ? MASKED_GLYPH : pattern.glyph}
         </div>
-        <h1 className="font-heading text-2xl font-semibold">
+        <h1 className="font-heading text-title font-semibold">
           {hidden ? MASKED_NAME : pattern.name}
         </h1>
         {hidden ? (
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-3 text-sm">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-3 text-ui">
             <span className="text-muted-foreground">
               You are midway through <b>{mask.by.get(pattern.id)}</b>, which
               builds this idea before naming it. The problems are all here — the
@@ -75,7 +75,7 @@ export function ProblemList({ pattern, onOpen }: Props) {
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">{pattern.blurb}</p>
+          <p className="text-ui text-muted-foreground">{pattern.blurb}</p>
         )}
       </header>
 

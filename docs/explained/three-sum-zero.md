@@ -256,6 +256,8 @@ vector<vector<int>> threeSum(vector<int> nums) {
 
 ## The arc
 
+Three sum is two sum with a loop around it, and the ladder is mostly about DUPLICATES rather than speed. Fixing an anchor reduces the problem to finding a pair summing to its negation — which the hash rung does with memory and the final rung does with converging pointers on the sorted array, for constant extra space. Sorting also turns deduplication from a set of tuples into two skip rules: skip an anchor equal to the previous anchor, and after a hit, skip repeats of both pointers. The general lesson is that sorting can be worth its cost for reasons other than search, and the k-sum generalisation is simply this pattern recursively: fix an index, solve (k-1)-sum on the rest, and dedupe at every level.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n³) time · O(n) for dedup space | the baseline — nothing before it |

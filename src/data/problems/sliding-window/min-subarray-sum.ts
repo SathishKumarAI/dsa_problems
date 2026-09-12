@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Prefix sums make each candidate's total a subtraction, but they still ask about every pair of endpoints. Positivity means that once a window qualifies, widening it further cannot give a shorter answer — so the right edge never needs to back up, and both edges move forward only.",
+  arc:
+    "The window works because all values are positive: extending the window can only increase the sum, and shrinking can only decrease it, which is exactly the monotonicity a two-ended window needs. Say that out loud, because the follow-up with negative numbers breaks it and needs prefix sums with a monotonic deque instead. Within the positive world the shape is 'grow until valid, then shrink while still valid, recording the best' — the same skeleton as the covering-window problem, with a sum instead of a count table. The corner case that catches people is no valid window at all, where the answer is zero rather than the array's length.",
   approach:
     "Grow the right edge, adding to a running sum. Whenever the sum reaches the target, record the width and then shrink from the left as long as the window still qualifies — each shrink either finds a shorter qualifying window or ends the streak. Positivity is doing the work: it guarantees the sum falls when the window narrows and rises when it widens, so a single forward sweep of each edge suffices. If the sum never reaches the target, nothing is ever recorded and the answer stays 0.",
   complexity: { time: "O(n)", space: "O(1)" },

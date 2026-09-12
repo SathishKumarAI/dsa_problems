@@ -26,6 +26,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Deleting matched pairs rescans the whole string after every deletion. A stack remembers what is still open as you go, so one pass decides it.",
+  arc:
+    "The canonical stack problem, and the reason it is canonical is the shape of the rule: a closing bracket must match the MOST RECENT unmatched opening one, which is the definition of last-in-first-out. Once seen that way, the repeated-replace rung reads as what it is — an expensive simulation of popping. Three failure modes are the whole test suite: a closer with an empty stack, a closer that mismatches the top, and a non-empty stack at the end. Rehearse all three, because two of them are easy to forget and both make a wrong answer look right on the happy path. Every nesting problem after this one — decode-string, basic calculator with parentheses, valid parenthesis string — is this rule with payload added.",
   approach:
     "Scan once. Push each opening bracket. For each closing bracket, the stack must be non-empty and its top must be the corresponding opener — otherwise the string is invalid. After the scan the stack must be empty, or some opener was never closed.",
   complexity: { time: "O(n)", space: "O(n)" },

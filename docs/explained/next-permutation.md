@@ -477,6 +477,8 @@ vector<int> nextPermutation(vector<int> nums) {
 
 ## The arc
 
+Four observations, in order, and the algorithm is just their consequence: the suffix that is already descending is the largest arrangement of those values, so it cannot be advanced; the first value below its successor is therefore the pivot; the smallest value in the suffix that still exceeds the pivot is its replacement; and once swapped, the suffix must become the SMALLEST arrangement, which — because it is still descending — means reversing it rather than sorting it. That last step is where the linear time comes from and where most attempts pay an unnecessary n log n. Rehearse the fully-descending input, which has no pivot and must wrap to the sorted order, since it is the case that separates a correct implementation from a lucky one.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | List every arrangement in order | O(n! · n log(n!)) time · O(n! · n) space | the baseline — nothing before it |

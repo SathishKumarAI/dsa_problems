@@ -320,6 +320,8 @@ int firstMissingPositive(vector<int> nums) {
 
 ## The arc
 
+The constraint that looks like trivia is the whole solution: among n values, the smallest missing positive is always between 1 and n+1, so only n+1 candidates matter and everything else — negatives, huge values, duplicates — is noise. Each rung then narrows where the bookkeeping lives, from a rescan per candidate, to sorting, to a set, to a flag table, and finally into the array itself by swapping each value into the slot it belongs in. Cyclic placement is worth practising because the loop looks dangerous and is not: every swap puts one value home for good, so the total work is linear despite the inner while. Know the bound argument cold — it is the part an interviewer is actually testing.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Try 1, then 2, then 3 | O(n^2) time · O(1) space | the baseline — nothing before it |

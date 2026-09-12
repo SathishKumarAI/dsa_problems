@@ -153,6 +153,8 @@ bool isBalanced(const string& s) {
 
 ## The arc
 
+The canonical stack problem, and the reason it is canonical is the shape of the rule: a closing bracket must match the MOST RECENT unmatched opening one, which is the definition of last-in-first-out. Once seen that way, the repeated-replace rung reads as what it is — an expensive simulation of popping. Three failure modes are the whole test suite: a closer with an empty stack, a closer that mismatches the top, and a non-empty stack at the end. Rehearse all three, because two of them are easy to forget and both make a wrong answer look right on the happy path. Every nesting problem after this one — decode-string, basic calculator with parentheses, valid parenthesis string — is this rule with payload added.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Repeated replace | O(n²) time · O(n) space | the baseline — nothing before it |

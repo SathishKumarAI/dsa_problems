@@ -30,7 +30,7 @@ const AlgorithmsPage = lazy(() =>
   }))
 )
 const Loading = () => (
-  <div className="py-16 text-center text-sm text-muted-foreground">
+  <div className="py-16 text-center text-ui text-muted-foreground">
     loading…
   </div>
 )
@@ -106,7 +106,7 @@ export default function App() {
         <SidebarInset className={cn(panels && "h-svh overflow-hidden")}>
           <div className="flex items-center gap-2 border-b px-4 py-2 md:hidden">
             <SidebarTrigger />
-            <span className="font-mono text-sm">dsa.patterns</span>
+            <span className="font-mono text-ui">dsa.patterns</span>
             <Button
               size="icon-sm"
               variant="ghost"

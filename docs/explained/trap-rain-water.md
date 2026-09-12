@@ -225,6 +225,8 @@ int trap(const vector<int>& height) {
 
 ## The arc
 
+Water above a column is decided by one number: the smaller of the tallest wall to its left and the tallest to its right. Write that down and the ladder builds itself — recompute both maxima per column and you are quadratic, precompute them into two arrays and you are linear with linear memory, and then the final rung notices you only ever need the SMALLER of the two, so whichever side is currently lower can be advanced safely while its running maximum is already known. That last argument is the one to practise saying, because it is the reason the two-pointer version is correct rather than merely shorter. Know the prefix/suffix-maxima version too: it is easier to derive under pressure and generalises to the two-dimensional variant.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force per column | O(n²) time · O(1) space | the baseline — nothing before it |

@@ -7,6 +7,8 @@ import { problem as permutationInString } from "./permutation-in-string.ts"
 import { problem as windowMaximum } from "./window-maximum.ts"
 import { problem as maxOnesAfterFlips } from "./max-ones-after-flips.ts"
 import { problem as minSubarraySum } from "./min-subarray-sum.ts"
+import { problem as anagramPositions } from "./anagram-positions.ts"
+import { problem as fruitBaskets } from "./fruit-baskets.ts"
 
 export const slidingWindow: Problem[] = [
   bestTrade,
@@ -17,4 +19,6 @@ export const slidingWindow: Problem[] = [
   windowMaximum,
   maxOnesAfterFlips,
   minSubarraySum,
+  anagramPositions,
+  fruitBaskets,
 ]

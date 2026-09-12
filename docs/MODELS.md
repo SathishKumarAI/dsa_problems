@@ -179,6 +179,25 @@ npm run check && npm run verify:code && npm run verify:run
 `--accept-disagreed` on `apply.mjs` writes blocks the two models modelled differently and hands the
 decision to `verify:code` and `verify:run`, which are strictly stronger checks. Use it knowingly.
 
+## Batch 7, 2026-09-12: one session, no subagents
+
+| | This batch |
+|---|---|
+| Problems | **20** (107 → 127) |
+| Rungs | 66 |
+| Code blocks | **140** new Java and C++ (612 → 752 compiled) |
+| Who wrote them | **Claude Opus 5, inline in the main session** — no local model, no fan-out |
+| Failed to compile | 0 |
+| Disagreed with the Python oracle | 0 of 4294 comparisons |
+| Mutation survivors | 3 real holes in the new vectors (all three fixed with the case `--suggest` named), 7 argued equivalences |
+| Rework | one Java bug caught before it landed — an `ArrayDeque` cannot hold the `null` a crossed pair needs, the same shape B30 found in invert-tree |
+
+The difference from batch 6 is the process, not the model: batch 6 fanned six agents out in
+parallel and paid for the wiring with `scripts/wire-batch.mjs`. This one was written straight
+through in a single session because the session was not allowed to spawn agents, and the cost was
+wall-clock rather than quality — the gates report the same numbers either way, which is the point
+of having them.
+
 ## Change → file
 
 | Change | File |

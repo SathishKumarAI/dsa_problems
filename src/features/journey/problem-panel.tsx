@@ -62,7 +62,7 @@ export function ProblemPanel({
               {problem?.statement ?? journey.subtitle}
             </p>
             {problem?.examples.map((e, i) => (
-              <div key={i} className="flex flex-col gap-0.5 font-mono text-sm">
+              <div key={i} className="flex flex-col gap-0.5 font-mono text-ui">
                 <span className="text-muted-foreground">
                   in <span className="text-foreground">{e.input}</span>
                 </span>
@@ -77,7 +77,7 @@ export function ProblemPanel({
               </div>
             ))}
             {input && (
-              <p className="font-mono text-sm text-muted-foreground">
+              <p className="font-mono text-ui text-muted-foreground">
                 on screen now <span className="text-foreground">{input}</span>
               </p>
             )}

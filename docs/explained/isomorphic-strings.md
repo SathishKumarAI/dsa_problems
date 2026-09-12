@@ -169,6 +169,8 @@ bool isIsomorphic(const string& s, const string& t) {
 
 ## The arc
 
+Isomorphism is a pair of consistent mappings, and the trap is that one mapping is not enough: mapping every letter of the first string forward permits two letters collapsing onto one, which is not a bijection. Either keep both directions, or encode each string as the pattern of first-occurrence indices and compare the patterns — two representations of the same idea, and the second generalises to 'word pattern' problems where the tokens are words rather than characters. The habit to take away is to write the definition down formally before coding: 'a bijection preserving position' immediately tells you that one hash map is half an answer.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Encode both as patterns | O(n) time · O(n) space | the baseline — nothing before it |

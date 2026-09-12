@@ -187,7 +187,7 @@ export function HintLadder({
       </div>
       {hints.slice(0, tier).map((h, i) => (
         <p key={i} className="text-body text-muted-foreground">
-          <span className="mr-2 font-mono text-xs text-chart-1">
+          <span className="mr-2 font-mono text-meta text-chart-1">
             {["nudge", "concept", "the line"][i] ?? `hint ${i + 1}`}
           </span>
           {h}
@@ -214,7 +214,7 @@ export function EdgeCaseCard({ edge }: { edge: EdgeCase }) {
       aria-live="polite"
       data-edge={edge.key}
     >
-      <div className="flex flex-wrap items-baseline gap-x-3 text-xs tracking-wide text-teal uppercase">
+      <div className="flex flex-wrap items-baseline gap-x-3 text-meta tracking-wide text-teal uppercase">
         <span>corner case · {edge.name}</span>
         <span className="font-mono tracking-normal text-muted-foreground normal-case">
           {edge.example}
@@ -268,19 +268,19 @@ export function EdgeCaseList({
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <b>{e.name}</b>
-              <span className="font-mono text-sm text-muted-foreground">
+              <span className="font-mono text-ui text-muted-foreground">
                 {e.example}
               </span>
             </div>
             <p className="text-muted-foreground">{e.why}</p>
             {e.constraint && (
               <p className="text-ui text-muted-foreground">
-                <span className="mr-2 font-mono text-xs text-teal">from</span>
+                <span className="mr-2 font-mono text-meta text-teal">from</span>
                 <span className="font-mono">{e.constraint}</span>
               </p>
             )}
             <p className="text-muted-foreground">
-              <span className="mr-2 font-mono text-xs text-teal">think</span>
+              <span className="mr-2 font-mono text-meta text-teal">think</span>
               {e.think}
             </p>
             <div>

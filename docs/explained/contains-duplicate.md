@@ -180,6 +180,8 @@ bool containsDuplicate(const vector<int>& nums) {
 
 ## The arc
 
+The shortest ladder in the set, and a good one to say out loud in an interview: brute force compares every pair, sorting makes duplicates adjacent so one pass finds them, and a hash set answers membership directly. What matters is naming the trade rather than jumping to the set — sorting is O(n log n) but constant extra memory and it leaves the data useful for other questions, while the set is linear time at linear memory and may be the wrong call when memory is the tight resource. The early exit matters too: the answer is decided the moment a repeat appears, so there is no reason to finish the scan. Most 'has a duplicate' variants are this ladder with one extra condition bolted on.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |

@@ -34,6 +34,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Comparing the whole tally at every position is 26 comparisons per step, which is a constant but a real one — and it re-reads counts that did not change. Carrying a single number, how many letters currently agree, means each step touches only the two letters that moved and answers in constant work.",
+  arc:
+    "A fixed-width window, which is the easiest kind: enter one character, leave one character, test. The ladder then argues only about the test — sorting each window, comparing 26 counts, or keeping a running count of how many letters currently match so the test is one integer comparison. Take the general habit: when a check is repeated over sliding data, look for a summary that can be updated incrementally instead of recomputed. And note the difference from find-all-anagrams, which is the same machinery returning every index instead of stopping at the first hit; if you can write one, you can write the other by changing the return.",
   approach:
     "Both windows have the same fixed width, so slide a window of s1's length across s2: add the entering letter, drop the leaving one. Rather than compare 26 counts each time, keep a running count of how many letters are in agreement, and adjust it only for the two letters that changed — a letter can cross into or out of agreement exactly once per move. When all 26 agree, the window is a rearrangement.",
   complexity: { time: "O(n)", space: "O(1)" },

@@ -226,6 +226,8 @@ vector<int> dailyWarmer(const vector<int>& temps) {
 
 ## The arc
 
+The monotonic stack, learned once and reused forever. The stack holds indices whose answer is still unknown, kept in decreasing temperature order, and the moment a warmer day arrives it resolves every index it beats — each index enters and leaves exactly once, which is why an inner while loop is still linear overall. The backward rung is the same information travelling the other way, and comparing the two is the best way to see that this is 'next greater element' in disguise. Learn to recognise the family: next greater, next smaller, previous greater, span problems, and largest rectangle are one technique with the comparison and the direction changed.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |

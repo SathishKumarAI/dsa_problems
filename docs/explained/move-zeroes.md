@@ -145,6 +145,8 @@ vector<int> moveZeroes(vector<int> nums) {
 
 ## The arc
 
+A tiny problem that teaches the reader/writer pair: one cursor reads every position, another marks where the next kept value belongs, and the gap between them is exactly the number of zeros seen. Filtering into a copy is the obvious version and the one to compare against, because it makes the in-place version look like what it is — the same filter with the output aliased onto the input. Two details are worth carrying: writing then zero-filling the tail is easier to argue than swapping, but swapping keeps the total writes down when zeros are rare; and the same skeleton, with the test changed, solves remove-element and remove-duplicates-from-sorted-array.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Filter into a copy | O(n) time · O(n) space | the baseline — nothing before it |

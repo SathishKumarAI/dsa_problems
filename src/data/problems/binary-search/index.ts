@@ -8,6 +8,8 @@ import { problem as firstLastPosition } from "./first-last-position.ts"
 import { problem as searchInsertPosition } from "./search-insert-position.ts"
 import { problem as findPeakElement } from "./find-peak-element.ts"
 import { problem as singleInSorted } from "./single-in-sorted.ts"
+import { problem as kClosestValues } from "./k-closest-values.ts"
+import { problem as shipInDDays } from "./ship-in-d-days.ts"
 
 export const binarySearch: Problem[] = [
   classicBinarySearch,
@@ -19,4 +21,6 @@ export const binarySearch: Problem[] = [
   searchInsertPosition,
   findPeakElement,
   singleInSorted,
+  kClosestValues,
+  shipInDDays,
 ]

@@ -309,6 +309,8 @@ vector<int> findDuplicates(vector<int> nums) {
 
 ## The arc
 
+Five rungs and one question underneath all of them: where is the memory for 'have I seen this' going to live? Pairwise comparison uses none and pays quadratically; sorting reuses the array itself but destroys the order; a hash map and a flag table both buy linear time with linear memory. The last rung is the one worth studying — the values are promised to lie in 1..n, so the ARRAY is already a table with exactly the right number of slots, and negating the value at index v-1 records that v was seen. Encoding a bit inside the data is a genuine constant-space technique, and its price is always the same: the data is mutated, so decide whether the caller can tolerate that, and remember how to undo it.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Compare every pair | O(n^2) time · O(1) space | the baseline — nothing before it |

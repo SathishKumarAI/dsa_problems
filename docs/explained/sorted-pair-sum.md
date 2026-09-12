@@ -188,6 +188,8 @@ vector<int> sortedPairSum(const vector<int>& nums, int target) {
 
 ## The arc
 
+The same question as the unsorted version, with one promise added — and the whole point is what that promise buys. A hash map still works and still costs linear memory; sorted order makes the memory unnecessary, because the sum of the two ends tells you which end is wrong. Too small means the small end must grow, too big means the big end must shrink, and each pointer only ever moves one way, so the scan is linear and constant-space. That is the converging-pointer pattern in its purest form. Learn to spot its precondition — a sorted sequence and a monotone response to moving each end — because it is what unlocks three-sum, container with most water, and every k-sum built on top of them.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |

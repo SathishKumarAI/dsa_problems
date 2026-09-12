@@ -133,6 +133,8 @@ int maxArea(const vector<int>& h) {
 
 ## The arc
 
+One greedy argument carries the whole problem, and it is worth being able to say precisely: the area is limited by the SHORTER wall, so moving the taller one inward can never help — the width shrinks and the height is still capped by the short wall. Moving the shorter one is the only move that can improve anything, so no pair worth checking is ever skipped. That is the shape of every two-pointer proof: show that the pointer you advance cannot be part of a better remaining answer. Brute force is worth writing once to see the quadratic, and the exchange argument is worth rehearsing out loud, because an interviewer asking 'why is that safe?' is asking for exactly this paragraph.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |

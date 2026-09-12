@@ -26,6 +26,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Recursion pays a stack frame per halving and buys nothing. The same loop written iteratively is constant space, and it is the version to write under pressure.",
+  arc:
+    "The base case of a whole pattern, and worth writing until the boundaries are automatic: while low is at most high, probe the middle, and move the side that cannot contain the answer. Two habits prevent most bugs. Compute the midpoint as low plus half the gap rather than by adding the two ends, so nothing overflows in languages with fixed-width integers. And decide the loop's contract before typing — either 'low <= high' with mid plus or minus one, or 'low < high' converging on a single survivor — then keep it consistent, because mixing the two is how the off-by-one and the infinite loop both appear. Every later rung in this pattern is this loop with a different question at the probe.",
   approach:
     "Maintain an inclusive search range [lo, hi] that must contain the target if it exists. Probe the midpoint: equal means done; smaller means the answer lives strictly right of mid; larger means strictly left. Each probe halves the range, giving the logarithmic bound.",
   complexity: { time: "O(log n)", space: "O(1)" },

@@ -12,12 +12,17 @@ import { OUT_DIR, pages, renderProblem, runnableScript } from "./gen-explained.m
 
 const onDisk = readdirSync(OUT_DIR)
 
+// git hands these files back with CRLF on Windows (`core.autocrlf`), and the
+// generator writes LF. Comparing the bytes would call every page stale on a
+// fresh clone, which is a gate that cries wolf — compare the CONTENT.
+const lf = (s) => s.replace(/\r\n/g, "\n")
+
 test("every page on disk matches what the data renders today", () => {
   const want = pages()
   const stale = [...want]
     .filter(([name, text]) => {
       try {
-        return readFileSync(join(OUT_DIR, name), "utf8") !== text
+        return lf(readFileSync(join(OUT_DIR, name), "utf8")) !== lf(text)
       } catch {
         return true
       }

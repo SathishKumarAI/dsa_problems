@@ -147,6 +147,8 @@ string longestCommonPrefix(const vector<string>& words) {
 
 ## The arc
 
+Two ways to slice the same work: compare strings against a shrinking candidate, or compare column by column across all strings and stop at the first disagreement. The second is worth internalising because it needs no accumulator string at all — the answer is a prefix of the first word, so its LENGTH is the only unknown. The general habit: when the answer is a slice of an input, search for its boundary instead of building it. The early exits do the heavy lifting on real inputs, since one short or one very different string settles the answer immediately, and the corner cases to rehearse are an empty string in the list and a list of one word.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Shrink against each string | O(n · k) time · O(k) space | the baseline — nothing before it |

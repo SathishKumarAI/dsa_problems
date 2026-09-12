@@ -26,6 +26,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting pays O(n log n) to put duplicates next to each other, but adjacency was never the question. A set answers 'seen before?' directly, and the early return means a duplicate near the front costs almost nothing.",
+  arc:
+    "The shortest ladder in the set, and a good one to say out loud in an interview: brute force compares every pair, sorting makes duplicates adjacent so one pass finds them, and a hash set answers membership directly. What matters is naming the trade rather than jumping to the set — sorting is O(n log n) but constant extra memory and it leaves the data useful for other questions, while the set is linear time at linear memory and may be the wrong call when memory is the tight resource. The early exit matters too: the answer is decided the moment a repeat appears, so there is no reason to finish the scan. Most 'has a duplicate' variants are this ladder with one extra condition bolted on.",
   approach:
     "Walk the array once carrying a set of the values seen so far. Before adding a value, ask whether it is already there; if it is, the answer is true and the rest of the array is irrelevant. If the walk finishes, every value was distinct. The set costs O(n) memory, which is the price of not having to sort.",
   complexity: { time: "O(n)", space: "O(n)" },

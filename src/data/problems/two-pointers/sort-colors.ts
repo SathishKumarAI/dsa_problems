@@ -26,6 +26,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Counting each colour and rewriting the array is already linear, but it reads every element twice and overwrites values rather than moving them — which the in-place requirement is really asking you to avoid. Three pointers do it in one pass, and the invariant they maintain is the reason it works rather than a trick.",
+  arc:
+    "Counting and rewriting is two passes and completely fine; the reason the one-pass version is famous is the invariant, not the speed. Three regions — settled zeros, settled ones, settled twos — grow from the two ends and the middle, and the loop maintains 'everything before low is 0, everything after high is 2, everything between low and current is 1'. The subtle rule is that a swap with the HIGH side brings in an unexamined value, so the cursor must not advance, while a swap with the low side brings in something already seen. Getting that asymmetry right is the whole exercise, and the Dutch-national-flag partition it teaches is the same routine that makes quicksort robust against many equal keys.",
   approach:
     "Hold three indices and one promise: everything left of `low` is 0, everything right of `high` is 2, and everything between `low` and `mid` is 1. Read `nums[mid]`. A 0 is swapped down to `low` and both advance. A 1 is already where it belongs, so only `mid` advances. A 2 is swapped up to `high`, which then retreats — and `mid` stays put, because the value swapped in from the back has never been examined. When `mid` passes `high` every element has been placed.",
   complexity: { time: "O(n)", space: "O(1)" },

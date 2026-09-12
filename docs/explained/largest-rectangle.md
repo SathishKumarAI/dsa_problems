@@ -232,6 +232,8 @@ int largestRectangle(const vector<int>& heights) {
 
 ## The arc
 
+The hard part is naming the unknown. A rectangle is decided by its SHORTEST bar, so instead of choosing two edges, fix each bar as the height and ask how far it can extend before something shorter stops it — which is a next-smaller-element question on both sides. The monotonic stack answers both at once: when a bar pops, the bar arriving is its right boundary and the new stack top is its left, so the width falls out of two indices with no second pass. The sentinel at the end that forces the stack to drain is the detail most implementations get wrong. This is the ceiling of the monotonic-stack family, and maximal-rectangle-in-a-binary-matrix is literally this routine run once per row.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |
