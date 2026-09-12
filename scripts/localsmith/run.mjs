@@ -245,7 +245,7 @@ function paramTypes(block, fn) {
 
 // ---------- drivers ----------
 
-const PY_NODES = `
+export const PY_NODES = `
 # A block is free to declare its own node class and most do; the three that
 # CONSTRUCT one without declaring it (reverse-list's array rung, two merge
 # rungs) would raise NameError with no scaffolding at all. Declared only when
@@ -293,7 +293,7 @@ def __mktree(vals):
     return root
 `
 
-const PY_CANON = `
+export const PY_CANON = `
 def __canon_list(h):
     out = []
     while h is not None:
@@ -322,6 +322,10 @@ def __canon(v):
     if hasattr(v, "next"): return __canon_list(v)
     return str(v)
 `
+
+/** a python literal for one argument of the named shape — the docs generator
+ *  emits the same cases into its runnable script (scripts/gen-explained.mjs) */
+export const pyLit = (v, t) => lit.python(v, t)
 
 /** one line per case. The try/except is what per-process isolation used to buy:
  *  a case that raises still lets the next one run, and names itself. */

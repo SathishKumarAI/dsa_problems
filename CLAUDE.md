@@ -9,6 +9,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
+| A problem's whole ladder as ONE page, code and a runnable script | `docs/explained/<id>.md` — generated, `npm run docs:explained` |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
