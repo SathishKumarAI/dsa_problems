@@ -447,6 +447,8 @@ int numRescueBoats(vector<int> people, int limit) {
 
 ## The arc
 
+The greedy sits on one sentence: the heaviest person is boarding a boat no matter what, so the only decision is whether the lightest person rides with them. If the lightest cannot, nobody can; if they can, pairing them there never blocks a pairing that mattered, because any other partner is heavier and therefore harder to place. That exchange argument is the proof, and being able to state it is the difference between guessing and knowing. The bucket rung is a good foil — it is linear in the crowd but allocates by the weight LIMIT, which is a reminder that 'linear' means nothing until you say linear in what. Sorting plus two converging pointers is the version to remember.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Exact search over every group | O(2^n · n) time · O(2^n) space | the baseline — nothing before it |

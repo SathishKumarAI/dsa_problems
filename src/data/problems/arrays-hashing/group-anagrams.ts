@@ -33,6 +33,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting each word costs k log k just to make a label, and the label throws away nothing the counts do not already capture. A 26-slot tally is built in one pass over the word — linear in its length instead of linearithmic — and two anagrams produce the same tally by definition.",
+  arc:
+    "One question drives every rung: what is the KEY that makes two words the same? Comparing pairs avoids choosing a key and pays quadratically for it. Sorted letters are a valid key and cost k log k per word. A 26-slot count signature is the same key without sorting, built in k steps. Once the key exists, grouping is a hash map with a list per bucket — the part nobody argues about. The transferable habit is to look for a canonical form: anagram grouping, isomorphic strings, and 'group by shape' problems are all the same shape once the key is chosen. In an interview, name both keys and the trade — sorted strings are shorter to write, count signatures are faster and immune to long words.",
   approach:
     "Give every word a canonical key that is invariant under rearrangement, then let a hash map collect words by that key. The key here is the letter tally rendered as text: twenty-six counts joined by commas, which two anagrams always agree on and two non-anagrams never do. The separator matters — without it, counts of 1,11 and 11,1 would collide. Finally sort inside each group and between groups so the answer has one shape rather than many.",
   complexity: { time: "O(n · k)", space: "O(n · k)" },

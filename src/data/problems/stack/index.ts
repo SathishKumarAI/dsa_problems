@@ -8,6 +8,8 @@ import { problem as asteroidCollision } from "./asteroid-collision.ts"
 import { problem as validParenthesisString } from "./valid-parenthesis-string.ts"
 import { problem as decodeString } from "./decode-string.ts"
 import { problem as removeKDigits } from "./remove-k-digits.ts"
+import { problem as calculatorBasic } from "./calculator-basic.ts"
+import { problem as simplifyPath } from "./simplify-path.ts"
 
 export const stack: Problem[] = [
   balancedBrackets,
@@ -19,4 +21,6 @@ export const stack: Problem[] = [
   validParenthesisString,
   decodeString,
   removeKDigits,
+  calculatorBasic,
+  simplifyPath,
 ]

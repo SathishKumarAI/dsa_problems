@@ -29,6 +29,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Measuring every pair is n squared comparisons for one number. Moving the pointer at the shorter line inward discards only the pairs that line already capped, so a single sweep is enough.",
+  arc:
+    "One greedy argument carries the whole problem, and it is worth being able to say precisely: the area is limited by the SHORTER wall, so moving the taller one inward can never help — the width shrinks and the height is still capped by the short wall. Moving the shorter one is the only move that can improve anything, so no pair worth checking is ever skipped. That is the shape of every two-pointer proof: show that the pointer you advance cannot be part of a better remaining answer. Brute force is worth writing once to see the quadratic, and the exchange argument is worth rehearsing out loud, because an interviewer asking 'why is that safe?' is asking for exactly this paragraph.",
   approach:
     "Two pointers at the extremes. Record the area, then move the pointer at the shorter line inward — keeping it could only pair it with narrower widths while it stays the cap. This greedy discard is safe because every skipped pair is provably no better than one already measured.",
   complexity: { time: "O(n)", space: "O(1)" },

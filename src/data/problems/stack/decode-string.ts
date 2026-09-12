@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Recursion expresses the nesting naturally but re-enters the parser for every group and carries the position awkwardly across returns. A stack makes the suspended state explicit — one entry per open bracket — and the whole decoding is a single left-to-right pass with no backtracking.",
+  arc:
+    "Nested encodings are recursive by nature, so the two rungs are really one algorithm written twice: recursive descent uses the call stack, and the iterative version makes that stack explicit, holding the partial string and the repeat count from the ENCLOSING level. Getting that pair right is the whole exercise — on an opening bracket you push what you have built so far along with the multiplier and start fresh, and on a closing bracket you pop and splice. Carry the general habit: whenever a structure nests, decide deliberately whether to use the language's stack or your own, and remember that multi-digit counts mean the number must be accumulated across characters rather than read one digit at a time.",
   approach:
     "Walk left to right building the current text. A digit accumulates into the pending count, since a count may be several digits. A '[' pushes the current text and count onto stacks and starts a fresh, empty text. A ']' pops them, repeats the just-finished text by its count, and appends it to the resumed text. A letter simply appends. Everything the enclosing group had built is waiting on the stack, which is why nesting needs no special case.",
   complexity: { time: "O(n · k)", space: "O(n)" },

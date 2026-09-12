@@ -230,6 +230,8 @@ bool searchMatrix(const vector<vector<int>>& matrix, int target) {
 
 ## The arc
 
+The matrix is a lie: if every row starts after the previous row ends, it is one sorted array wearing a rectangle, and index i maps to row i divided by the width and column i modulo the width. Once that is said, the answer is a single binary search over the whole cell count. The two-step rung — find the row, then search it — is the version that survives when the rows are sorted but NOT globally ordered, which is a different LeetCode problem and the reason to keep both in your head. The transferable habit is to look for a re-indexing that turns a two-dimensional structure into a one-dimensional one before inventing anything new.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan every cell | O(m · n) time · O(1) space | the baseline — nothing before it |

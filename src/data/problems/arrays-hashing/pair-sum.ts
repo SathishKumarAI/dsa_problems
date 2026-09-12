@@ -28,6 +28,8 @@ export const problem: Problem = {
     'The question is: "have I already seen target - nums[i]?" A hash map answers that in O(1).',
     "Store value → index as you scan. Check for the complement before inserting the current value, so you never pair an element with itself.",
   ],
+  arc:
+    "Every step follows one idea applied twice: do not redo work you do not need to. Brute force re-scans the array for every element, so you reorder it to make the scan directional — sort, then converge two pointers — and the cost drops to the sort. Then you notice the sort itself is wasted, because the question never needed order, only 'have I seen this value before', which a hash map answers in one step without touching order at all. That is the whole progression: unordered scan, imposed order, remembered values. Know brute force, the one-pass hash map and the sort-plus-two-pointer shape cold — those three cover most pair and sum follow-ups, and the two-pointer version is the one that survives when the array arrives already sorted.",
   approach:
     "Walk the array once, keeping a map from value to index. At each element, compute the complement target - nums[i]. If the complement is already in the map, the current index and the stored index are the answer. Otherwise record the current value and move on. One pass, one lookup and one insert per element.",
   complexity: { time: "O(n)", space: "O(n)" },

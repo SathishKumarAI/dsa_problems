@@ -348,6 +348,8 @@ vector<int> plusOne(vector<int> digits) {
 
 ## The arc
 
+A deliberately small problem that teaches carry propagation and, more usefully, when to stop. Building the number is fine in Python and wrong in a language with fixed-width integers, which is the point: the array representation exists precisely because the value may not fit. Walking from the back, a digit below nine ends the work immediately — the early return is not an optimisation, it is the observation that a carry cannot travel past a digit it does not overflow. The only input that needs a longer answer is all nines, and it always becomes 1 followed by zeros, which is why a special case and a general loop end at the same place. Rehearse it as the easy case of add-two-numbers and of string addition.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Build the number, add one, split it back | O(n) time · O(n) space | the baseline — nothing before it |

@@ -417,6 +417,8 @@ bool backspaceCompare(const string& s, const string& t) {
 
 ## The arc
 
+Reading forwards means a character's fate is decided by things that have not happened yet, which is why the stack rung exists — it undoes work it already did. Reading BACKWARDS turns the hash marks into a debt counter, and each character's fate is known on sight, so nothing is ever pushed only to be popped. That reversal is the transferable idea: when a rule refers to what comes after, try walking the other way. The version to know is the constant-space one, with two independent backward cursors that skip their own debts and then compare — the fiddly part is the loop that must consume a full run of hashes before comparing, which is where every off-by-one in this problem lives.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Recursion, one cancel at a time | O((n + m)^2) time · O(n + m) space | the baseline — nothing before it |

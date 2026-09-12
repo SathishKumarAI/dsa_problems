@@ -299,6 +299,8 @@ int missingNumber(const vector<int>& nums) {
 
 ## The arc
 
+Five rungs, and they split into two families: find the gap by imposing order (sort, flags, placing each value at its own index) or compute the gap by arithmetic (subtract the sum, or XOR the indices against the values). The arithmetic family is the lesson — when the input is a permutation with one hole, an invariant of the whole set can name the hole without looking for it. Sum is the easiest to derive on the spot; XOR is the one to prefer when overflow is a concern, since it needs no range assumption at all. Being able to produce both, and to say why XOR is safer for very large n, is what makes this a five-minute question rather than a one-minute one.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort and scan | O(n log n) time · O(n) space | the baseline — nothing before it |

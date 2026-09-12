@@ -18,6 +18,8 @@ import { problem as missingNumber } from "./missing-number.ts"
 import { problem as plusOne } from "./plus-one.ts"
 import { problem as rotateArray } from "./rotate-array.ts"
 import { problem as summaryRanges } from "./summary-ranges.ts"
+import { problem as spiralOrder } from "./spiral-order.ts"
+import { problem as zeroMatrix } from "./zero-matrix.ts"
 
 export const arraysHashing: Problem[] = [
   pairSum,
@@ -39,4 +41,6 @@ export const arraysHashing: Problem[] = [
   plusOne,
   rotateArray,
   summaryRanges,
+  spiralOrder,
+  zeroMatrix,
 ]

@@ -35,6 +35,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Cyclic replacements already run in place, but they need a count of how many values have moved (or a gcd) to know how many chains to start, and that bookkeeping is the part people get wrong. Three reversals reach the same arrangement with one primitive applied three times and nothing to count.",
+  arc:
+    "Three genuinely different ideas share this ladder: copy into place using modular arithmetic, follow the cycles of the rotation permutation, or reverse three times. The reversal trick is the one to memorise — reverse everything, then reverse the first k and the rest — because it is short, constant-space, and easy to argue: reversing puts the tail in front in the wrong internal order, and the two local reversals repair that. The cyclic version teaches something the reversal hides: a rotation decomposes into gcd(n, k) cycles, which is why a naive single-cycle walk misses elements. And reducing k modulo n first is not a detail — without it, k larger than n does pointless full turns or indexes out of range.",
   approach:
     "Reduce k to k % n, because a rotation by a multiple of n changes nothing. Then reverse the whole array: the last k values are now at the front and the first n - k at the back, which is the right arrangement of blocks with each block written backwards. Reverse the first k, then reverse the rest, and both blocks read forwards again. Three passes over the array with a swap loop, no allocation, and no index formula to get the direction wrong.",
   complexity: { time: "O(n)", space: "O(1)" },

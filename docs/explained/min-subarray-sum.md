@@ -171,6 +171,8 @@ int minSubArrayLen(int target, const vector<int>& nums) {
 
 ## The arc
 
+The window works because all values are positive: extending the window can only increase the sum, and shrinking can only decrease it, which is exactly the monotonicity a two-ended window needs. Say that out loud, because the follow-up with negative numbers breaks it and needs prefix sums with a monotonic deque instead. Within the positive world the shape is 'grow until valid, then shrink while still valid, recording the best' — the same skeleton as the covering-window problem, with a sum instead of a count table. The corner case that catches people is no valid window at all, where the answer is zero rather than the array's length.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every subarray | O(n^2) time · O(1) space | the baseline — nothing before it |

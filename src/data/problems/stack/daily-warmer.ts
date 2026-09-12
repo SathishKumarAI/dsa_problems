@@ -27,6 +27,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Those hops still depend on the shape of the data. A stack of days still waiting for something warmer gives every day exactly one push and one pop, whatever the input looks like.",
+  arc:
+    "The monotonic stack, learned once and reused forever. The stack holds indices whose answer is still unknown, kept in decreasing temperature order, and the moment a warmer day arrives it resolves every index it beats — each index enters and leaves exactly once, which is why an inner while loop is still linear overall. The backward rung is the same information travelling the other way, and comparing the two is the best way to see that this is 'next greater element' in disguise. Learn to recognise the family: next greater, next smaller, previous greater, span problems, and largest rectangle are one technique with the comparison and the direction changed.",
   approach:
     "Hold a stack of indices whose warmer day hasn't arrived, always in decreasing temperature order. Each new day pops every index with a colder temperature — the gap in indices is that day's answer — then pushes itself. Every index is pushed and popped at most once, so the pass is linear.",
   complexity: { time: "O(n)", space: "O(n)" },

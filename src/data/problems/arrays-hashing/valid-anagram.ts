@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting proves the claim by rebuilding both strings in a canonical order, which is more work than the question needs. Counting answers it directly in one pass over each string, and the alphabet is fixed so the tally never grows with the input.",
+  arc:
+    "Anagram means the same multiset of letters, so the entire problem is choosing a representation for a multiset. Sorting builds a canonical form by force and pays n log n per string. A tally is the multiset itself, built in one pass, compared in a fixed number of steps. The habit worth taking: before optimising, write down what the data actually IS — here 'a bag of counts' — and the efficient representation usually follows. Two extensions are worth knowing: one shared tally that increments for one string and decrements for the other ends at all zeros, and for Unicode the fixed 26-slot array becomes a hash map, which is the same algorithm with a different container.",
   approach:
     "Reject different lengths immediately. Then keep one tally of 26 counters: add one for each letter of s, subtract one for each letter of t. If t is a rearrangement, every counter returns to zero. A non-zero counter names a letter one string has more of than the other, which is exactly the disagreement.",
   complexity: { time: "O(n)", space: "O(1)" },

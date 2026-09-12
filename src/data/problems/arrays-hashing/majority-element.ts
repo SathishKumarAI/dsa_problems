@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Counting every value spends O(n) memory to answer a question about a single one. Because a majority outnumbers everything else combined, cancelling one occurrence against one of anything else leaves it standing — so a candidate and a counter are enough, in constant space.",
+  arc:
+    "A count map is linear and obviously right, and the interesting question is what to do when the memory is not available. The Boyer-Moore idea is a pairing argument: hold a candidate and a balance, and let every element that disagrees cancel one that agreed. An element with a strict majority cannot be fully cancelled, so whatever survives is the answer. The lesson is that a promise in the problem statement — here 'a majority exists' — is often the licence for a cheaper algorithm, and removing the promise breaks it. Know the second pass that verifies the candidate, because the majority-may-not-exist variant needs it, and the generalisation to values appearing more than n/3 times keeps two candidates by the same argument.",
   approach:
     "Walk once holding a candidate and a count. When the count is zero, adopt the current value as the candidate. Then raise the count if the value matches the candidate and lower it otherwise. Every decrement pairs off one majority occurrence against one non-majority occurrence, and since the majority has more than half the elements it cannot be exhausted — whatever is left standing at the end is it. The guarantee that a majority exists is load-bearing: without it, the survivor would need a verification pass.",
   complexity: { time: "O(n)", space: "O(1)" },

@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Building a filtered copy and padding it is the obvious version and it is already linear, but it allocates a whole second array to hold values it immediately copies back. Two indices do the same compaction inside the original array, and the gap between them is exactly the count of zeroes — no separate bookkeeping needed.",
+  arc:
+    "A tiny problem that teaches the reader/writer pair: one cursor reads every position, another marks where the next kept value belongs, and the gap between them is exactly the number of zeros seen. Filtering into a copy is the obvious version and the one to compare against, because it makes the in-place version look like what it is — the same filter with the output aliased onto the input. Two details are worth carrying: writing then zero-filling the tail is easier to argue than swapping, but swapping keeps the total writes down when zeros are rare; and the same skeleton, with the test changed, solves remove-element and remove-duplicates-from-sorted-array.",
   approach:
     "Walk with a reader and a writer. Every non-zero value the reader finds is written at the writer's position, and only then does the writer advance — so the writer tracks how much of the array is already correct. Order is preserved because values are written in the order they are read. When the reader finishes, the writer marks the boundary: everything from there to the end is zero. Two passes over the array, no extra memory, and no swapping that could disturb the order.",
   complexity: { time: "O(n)", space: "O(1)" },

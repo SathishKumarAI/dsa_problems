@@ -134,6 +134,8 @@ int singleNonDuplicate(const vector<int>& nums) {
 
 ## The arc
 
+XOR solves it in linear time and is worth mentioning first, because it is the answer to a more general question. The logarithmic version uses the sorted structure instead: before the lone value, pairs start at even indices; after it, they start at odd ones. So checking whether the element at an even index equals its neighbour tells you which side the anomaly is on. That 'pairing parity' idea is the transferable part. The implementation detail that makes it clean is forcing the midpoint to an even index before comparing, which removes a whole family of off-by-one cases and makes the invariant easy to state.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | XOR everything | O(n) time · O(1) space | the baseline — nothing before it |

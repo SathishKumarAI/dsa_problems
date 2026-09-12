@@ -28,6 +28,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Divide and conquer degrades to quadratic when the minimum keeps landing at an end. A stack of non-decreasing heights closes each bar's rectangle exactly when the first shorter bar arrives - linear whatever the shape.",
+  arc:
+    "The hard part is naming the unknown. A rectangle is decided by its SHORTEST bar, so instead of choosing two edges, fix each bar as the height and ask how far it can extend before something shorter stops it — which is a next-smaller-element question on both sides. The monotonic stack answers both at once: when a bar pops, the bar arriving is its right boundary and the new stack top is its left, so the width falls out of two indices with no second pass. The sentinel at the end that forces the stack to drain is the detail most implementations get wrong. This is the ceiling of the monotonic-stack family, and maximal-rectangle-in-a-binary-matrix is literally this routine run once per row.",
   approach:
     "Sweep with a stack of indices whose heights are non-decreasing. When the incoming bar is shorter than the stack top, the top bar's rectangle is now bounded: its right edge is the current index, its left edge is the element below it on the stack. Pop, compute area, repeat; then push the current bar. A trailing zero-height sentinel drains the stack. Each bar is pushed and popped exactly once.",
   complexity: { time: "O(n)", space: "O(n)" },

@@ -219,6 +219,8 @@ string minWindow(const string& s, const string& t){
 
 ## The arc
 
+The hardest window in the set, and the structure is what makes it manageable: grow the right edge until the window is valid, then shrink the left edge while it STAYS valid, recording the best as you shrink. Validity is the part to engineer — comparing full count tables per step is correct but wasteful, so the window carries a single number for 'how many required characters are currently satisfied', updated only when a character's own count crosses its requirement. That summary-instead-of-recompute move is the same one that makes the anagram window cheap. Rehearse duplicates in the pattern, which is where a presence-based set silently answers the wrong question.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n² · alphabet) time · O(alphabet) space | the baseline — nothing before it |

@@ -82,6 +82,20 @@ test("problems: the approach ladder is well-formed, worst → best", () => {
   }
 })
 
+// The closing narrative is the part a learner carries to the NEXT problem, so
+// it has to say something the ladder did not: a one-line restatement of the
+// optimal approach is the failure mode worth catching.
+test("problems: an arc, where one exists, is a paragraph and not a restatement", () => {
+  for (const p of PROBLEMS) {
+    if (!p.arc) continue
+    assert.ok(
+      p.arc.length > 200,
+      `${p.id}: the arc is one sentence — it should tie the whole ladder together`
+    )
+    assert.notEqual(p.arc.trim(), p.approach.trim(), `${p.id}: the arc repeats the approach`)
+  }
+})
+
 test("problems: every LeetCode slug is a slug, and unique", () => {
   const slugs = PROBLEMS.map((p) => p.leetcode)
   for (const s of slugs) assert.match(s, /^[a-z0-9-]+$/, `bad slug "${s}"`)

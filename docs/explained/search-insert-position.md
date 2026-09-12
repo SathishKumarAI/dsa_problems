@@ -130,6 +130,8 @@ int searchInsert(const vector<int>& nums, int target) {
 
 ## The arc
 
+This is lower bound with a friendly name, and that is the takeaway: the answer is the first index whose value is at least the target, which is also the insertion point when the target is absent. Writing it with the converging form — low < high, high = mid, low = mid + 1 — leaves low equal to high at exactly that boundary and needs no post-loop adjustment, which is why it is the form worth memorising. The corner cases are a target smaller than everything, larger than everything, and equal to an existing element; all three are handled by the same loop, and checking them is how you confirm the boundary convention rather than guessing it.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Walk until it fits | O(n) time · O(1) space | the baseline — nothing before it |

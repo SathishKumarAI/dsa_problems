@@ -369,6 +369,8 @@ vector<string> summaryRanges(const vector<int>& nums) {
 
 ## The arc
 
+The useful observation arrives before any code: in a sorted array a consecutive run is exactly a maximal block where value minus index is constant. Once that is said, the bucketing rung and the boundary-scan rung are two ways of using the same fact, and the final version does not even need the arithmetic — it simply walks until the next value is not one more than the current, which is the same test written locally. The general habit is to look for an invariant that is constant within a group and changes between groups; it turns grouping problems into scans. The corner cases are the empty array and a single-element run, whose formatting differs — a detail worth writing down first, because it is where the output format bites.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Paint the number line | O(hi - lo) time · O(hi - lo) space | the baseline — nothing before it |

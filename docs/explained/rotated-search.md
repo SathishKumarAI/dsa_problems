@@ -237,6 +237,8 @@ int searchRotated(const vector<int>& nums, int target) {
 
 ## The arc
 
+One probe, three questions: which half is sorted, is the target inside that sorted half, and therefore which half to discard. That is the entire algorithm, and writing it as those three lines is what keeps it from becoming a thicket of conditions. Comparing the middle against the LEFT end to identify the sorted half is the usual formulation, with equality needing care when the window is two elements wide. The version worth practising for interviews is the single pass, not the find-the-pivot-then-search one, because the follow-up is always duplicates — which break the 'which half is sorted' test and reintroduce a linear worst case.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan for it | O(n) time · O(1) space | the baseline — nothing before it |

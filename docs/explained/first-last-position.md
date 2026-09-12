@@ -274,6 +274,8 @@ vector<int> searchRange(const vector<int>& nums, int target) {
 
 ## The arc
 
+Two searches, not one, and the insight is to stop searching for the VALUE and start searching for a boundary: the first index whose value is at least the target, and the first whose value is greater. Those are lower and upper bound, they are the same loop with one comparison changed, and together they give the run and its length. Learning them as primitives pays off far beyond this problem — counting occurrences, insert positions, and most 'range of equal values' questions reduce to a pair of bounds. The rung that finds one occurrence then walks outward is the trap worth seeing: it is logarithmic plus the run length, which is linear when the array is all one value.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan both ends | O(n) time · O(1) space | the baseline — nothing before it |

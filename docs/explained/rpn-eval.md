@@ -197,6 +197,8 @@ int evalRPN(const vector<string>& tokens) {
 
 ## The arc
 
+Postfix exists precisely so that no precedence rules and no parentheses are needed, and the stack is what makes that true: operands wait, an operator consumes the two most recent, and the result takes their place. The lesson to carry is about ORDER for non-commutative operators — the first value popped is the right operand — because subtraction and division silently produce plausible wrong answers when that is reversed. Rehearse integer division truncating toward zero as well, since languages disagree there. Knowing this and the shunting-yard idea that converts infix to postfix covers most expression questions without having to write a parser.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Rewrite in place | O(n²) time · O(n) space | the baseline — nothing before it |

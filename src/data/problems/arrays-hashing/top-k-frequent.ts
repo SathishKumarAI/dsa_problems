@@ -26,6 +26,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "The heap still pays a logarithm on every count. Counts are bounded by n, so they can be array indices: bucket the values by count and read the top k off the end, with no comparison sort anywhere.",
+  arc:
+    "Counting is the easy half; the ladder is entirely about how much ordering the answer really needs. A full sort orders every distinct value to hand back k of them. A heap of size k orders only the candidates, so the logarithm follows k rather than n. Buckets drop comparisons altogether, because a count is a small bounded integer — it can never exceed n — and small bounded integers can be array indices instead of sort keys. That last substitution, comparison becomes placement, is the same move behind counting sort, bucket sort and radix sort. Pick by which quantity is small: tiny k favours the heap, k near n favours sorting, and a tight bound on the key favours buckets.",
   approach:
     "Count occurrences with a hash map. Then bucket-sort by count: index c of a length n+1 array collects all values appearing exactly c times. Scanning buckets from n down to 1 and collecting values until you have k avoids any comparison sort, because a count can never exceed n.",
   complexity: { time: "O(n)", space: "O(n)" },

@@ -169,6 +169,8 @@ vector<int> sortColors(vector<int> nums) {
 
 ## The arc
 
+Counting and rewriting is two passes and completely fine; the reason the one-pass version is famous is the invariant, not the speed. Three regions — settled zeros, settled ones, settled twos — grow from the two ends and the middle, and the loop maintains 'everything before low is 0, everything after high is 2, everything between low and current is 1'. The subtle rule is that a swap with the HIGH side brings in an unexamined value, so the cursor must not advance, while a swap with the low side brings in something already seen. Getting that asymmetry right is the whole exercise, and the Dutch-national-flag partition it teaches is the same routine that makes quicksort robust against many equal keys.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Count, then rewrite | O(n) time · O(1) space | the baseline — nothing before it |

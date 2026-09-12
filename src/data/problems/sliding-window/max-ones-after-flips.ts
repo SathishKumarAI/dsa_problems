@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Checking every window recounts zeroes it has already counted, once per starting position. A window carries that count as its edges move, so each element is added once and removed at most once, and the answer falls out of the largest window ever held.",
+  arc:
+    "Read it as a window question and the flips stop being a story: the answer is the longest run containing at most k zeros. That translation — 'change at most k things' into 'a window whose count of the wrong thing is bounded' — is the reusable part, and it covers the longest-repeating-character variants as well. Once translated, the window grows on the right and its left edge moves only when the zero count exceeds k. The non-shrinking form works here too, for the same reason as elsewhere: the answer is a maximum, so the window never needs to become legal again, only never wider than the widest legal window seen.",
   approach:
     "Slide a window carrying the number of zeroes inside it. The right edge always advances, adding a zero to the count when it swallows one. While the count exceeds k the window is unaffordable, so the left edge advances, releasing a zero when it passes one. The largest width the window ever reaches is the answer. Because the left edge only ever moves forward, the total work is linear even though the inner loop looks nested.",
   complexity: { time: "O(n)", space: "O(1)" },

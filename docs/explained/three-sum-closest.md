@@ -426,6 +426,8 @@ int threeSumClosest(vector<int> nums, int target) {
 
 ## The arc
 
+A variant that punishes pattern-matching. It looks like three-sum, and the two-pointer scan is indeed the right engine, but the STOPPING rule changes: there is no exact hit to skip past, so the pointers move by the sign of the difference and the best answer seen is tracked separately. The pruning rung is worth understanding because it shows where sorting pays a second time — once the array is sorted, the smallest and largest sums reachable from an anchor bound everything below it, so whole anchors can be skipped. Carry the habit of asking, for every optimisation problem, what the update rule for 'best so far' is and whether an exact answer can short-circuit it.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every triple | O(n^3) time · O(1) space | the baseline — nothing before it |

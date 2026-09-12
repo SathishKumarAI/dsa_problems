@@ -233,6 +233,8 @@ string decodeString(const string& s) {
 
 ## The arc
 
+Nested encodings are recursive by nature, so the two rungs are really one algorithm written twice: recursive descent uses the call stack, and the iterative version makes that stack explicit, holding the partial string and the repeat count from the ENCLOSING level. Getting that pair right is the whole exercise — on an opening bracket you push what you have built so far along with the multiplier and start fresh, and on a closing bracket you pop and splice. Carry the general habit: whenever a structure nests, decide deliberately whether to use the language's stack or your own, and remember that multi-digit counts mean the number must be accumulated across characters rather than read one digit at a time.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Recursive descent | O(n · k) time · O(n) space | the baseline — nothing before it |

@@ -197,6 +197,9 @@ export function renderProblem(problem) {
     ``,
     `## The arc`,
     ``,
+    // the closing narrative, when the problem carries one: the idea every rung
+    // shares, which the per-rung "why now" lines cannot say on their own
+    ...(problem.arc ? [problem.arc, ``] : []),
     `| # | Approach | Cost | What it adds |`,
     `|---|---|---|---|`,
     ...rungs.map((r, i) => {
@@ -303,9 +306,12 @@ function main() {
         }
       })()
     )
+    // git checks these out with CRLF on Windows and the generator writes LF:
+    // compare the content, not the bytes, or a fresh clone reads as all-stale
+    const lf = (s) => s.replace(/\r\n/g, "\n")
     const stale = [...want].filter(([name, text]) => {
       try {
-        return readFileSync(join(OUT_DIR, name), "utf8") !== text
+        return lf(readFileSync(join(OUT_DIR, name), "utf8")) !== lf(text)
       } catch {
         return true
       }

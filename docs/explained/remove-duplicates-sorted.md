@@ -142,6 +142,8 @@ vector<int> removeDuplicates(vector<int> nums) {
 
 ## The arc
 
+The reader/writer pair again, with the comparison that matters being 'is this value different from the last one I KEPT', not 'different from the previous element'. On sorted input those coincide, which is exactly why the problem is easy — and why the variant allowing each value twice is a good follow-up: it changes the test to a comparison against the value two slots back in the output, and nothing else. Carry the habit of writing the loop in terms of the output's tail rather than the input's neighbourhood; it survives the variants, and it makes the required return value — the new length — fall out of the writer's position instead of needing a second count.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Build a distinct copy | O(n) time · O(n) space | the baseline — nothing before it |

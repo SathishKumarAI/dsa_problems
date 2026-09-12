@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Searching for each character of s from the start of t re-walks ground already covered, and a long t makes that quadratic. Carrying the position in t means each of its characters is examined once — and taking the earliest match is safe, because an earlier match leaves strictly more of t available for what follows.",
+  arc:
+    "The greedy is the lesson: when scanning the text for the pattern's next character, taking the FIRST match is always safe, because any later match leaves strictly less text for the rest of the pattern. That exchange argument is the same one behind most matching greedies, and it is what makes the one-pass version correct rather than merely plausible. The follow-up is the part worth knowing: if you must answer this for many patterns against one fixed text, the per-query scan becomes the bottleneck and you precompute, for every position and every letter, the next occurrence — turning each query into a walk of the pattern's length with binary search or table lookups.",
   approach:
     "Walk t with one pointer and s with another. Every time the characters agree, the s pointer advances; otherwise only the t pointer does. Taking a match at the first opportunity is never worse than waiting for a later one, since it leaves the longest possible remainder of t — that greedy step is what makes a single pass correct. If the s pointer reaches the end, every character was placed in order.",
   complexity: { time: "O(n)", space: "O(1)" },

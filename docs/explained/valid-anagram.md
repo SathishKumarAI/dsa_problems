@@ -132,6 +132,8 @@ bool isAnagram(const string& s, const string& t) {
 
 ## The arc
 
+Anagram means the same multiset of letters, so the entire problem is choosing a representation for a multiset. Sorting builds a canonical form by force and pays n log n per string. A tally is the multiset itself, built in one pass, compared in a fixed number of steps. The habit worth taking: before optimising, write down what the data actually IS — here 'a bag of counts' — and the efficient representation usually follows. Two extensions are worth knowing: one shared tally that increments for one string and decrements for the other ends at all zeros, and for Unicode the fixed 26-slot array becomes a hash map, which is the same algorithm with a different container.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort both | O(n log n) time · O(n) space | the baseline — nothing before it |

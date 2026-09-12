@@ -181,6 +181,8 @@ int rotatedMin(const vector<int>& nums) {
 
 ## The arc
 
+The array is not sorted, yet binary search still applies, and understanding why is the point: a probe can always tell which HALF is ordered by comparing the middle to an end, and the minimum must lie in the half that is not. Comparing the middle to the RIGHT end is the cleaner formulation because it never needs a special case for a non-rotated array. Rehearse duplicates as the follow-up, since equal values destroy the ability to tell the halves apart and force a linear worst case — knowing that limitation is what separates understanding from memorising. The same reasoning runs the rotated-search problem next door.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Linear scan | O(n) time · O(1) space | the baseline — nothing before it |

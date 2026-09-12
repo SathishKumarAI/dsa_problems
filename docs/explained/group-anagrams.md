@@ -280,6 +280,8 @@ vector<vector<string>> groupAnagrams(const vector<string>& words) {
 
 ## The arc
 
+One question drives every rung: what is the KEY that makes two words the same? Comparing pairs avoids choosing a key and pays quadratically for it. Sorted letters are a valid key and cost k log k per word. A 26-slot count signature is the same key without sorting, built in k steps. Once the key exists, grouping is a hash map with a list per bucket — the part nobody argues about. The transferable habit is to look for a canonical form: anagram grouping, isomorphic strings, and 'group by shape' problems are all the same shape once the key is chosen. In an interview, name both keys and the trade — sorted strings are shorter to write, count signatures are faster and immune to long words.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Compare every pair | O(n² · k) time · O(n · k) space | the baseline — nothing before it |

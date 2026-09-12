@@ -34,6 +34,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Precomputing the two maxima arrays is already linear, but it reads the array three times and holds 2n extra numbers. Walking inward from both ends carries the same two maxima in two variables, because the shorter wall is always the one that decides — and the shorter wall is always the one you can safely move.",
+  arc:
+    "Water above a column is decided by one number: the smaller of the tallest wall to its left and the tallest to its right. Write that down and the ladder builds itself — recompute both maxima per column and you are quadratic, precompute them into two arrays and you are linear with linear memory, and then the final rung notices you only ever need the SMALLER of the two, so whichever side is currently lower can be advanced safely while its running maximum is already known. That last argument is the one to practise saying, because it is the reason the two-pointer version is correct rather than merely shorter. Know the prefix/suffix-maxima version too: it is easier to derive under pressure and generalises to the two-dimensional variant.",
   approach:
     "Put i at the left and j at the right, carrying leftMax and rightMax. Whichever side is shorter is the side whose water level is already fixed: nothing outside it can raise the level, because the other side is taller. So process that side — add its trapped water and step inward — and repeat. Each bar is visited once and the two maxima are only ever updated, never recomputed.",
   complexity: { time: "O(n)", space: "O(1)" },

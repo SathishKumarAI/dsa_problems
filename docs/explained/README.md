@@ -20,7 +20,7 @@ and Python, Java and C++ — and closes with a runnable script holding every run
 A journeyed problem's acts are **not** read here: the journey gates them behind the ledger
 and a file on disk cannot. These pages show only what the problem page already shows.
 
-107 problems.
+127 problems.
 
 ### Arrays & Hashing  `{ k→v }`
 
@@ -45,6 +45,8 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [Add One to a Digit Array](plus-one.md) | easy | 5 |
 | [Rotate the Array by k](rotate-array.md) | medium | 5 |
 | [Collapse the Runs into Ranges](summary-ranges.md) | easy | 5 |
+| [Read the Matrix in a Spiral](spiral-order.md) | medium | 3 |
+| [One Zero Wipes Its Row and Column](zero-matrix.md) | medium | 3 |
 
 ### Two Pointers  `i→ ←j`
 
@@ -80,6 +82,8 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [Maximum of Every Window](window-maximum.md) | hard | 3 |
 | [Longest Run of 1s With k Flips](max-ones-after-flips.md) | medium | 2 |
 | [Shortest Subarray That Reaches the Target](min-subarray-sum.md) | medium | 2 |
+| [Where Every Anagram Hides](anagram-positions.md) | medium | 4 |
+| [The Longest Run of Two Kinds](fruit-baskets.md) | medium | 3 |
 
 ### Stack  `[≡]↕`
 
@@ -94,6 +98,8 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [Brackets With a Wildcard](valid-parenthesis-string.md) | medium | 2 |
 | [Expand a Nested Encoding](decode-string.md) | medium | 2 |
 | [Smallest Number After Removing k Digits](remove-k-digits.md) | medium | 2 |
+| [Evaluate + − × ÷ Without Parentheses](calculator-basic.md) | medium | 3 |
+| [Reduce a Unix Path to Its Canonical Form](simplify-path.md) | medium | 3 |
 
 ### Binary Search  `lo·mid·hi`
 
@@ -108,6 +114,8 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [Where Would This Value Go?](search-insert-position.md) | easy | 2 |
 | [Any Local Peak, in Log Time](find-peak-element.md) | medium | 2 |
 | [The Lone Value Among Pairs](single-in-sorted.md) | medium | 2 |
+| [The k Values Nearest x](k-closest-values.md) | medium | 4 |
+| [The Smallest Ship That Still Makes the Deadline](ship-in-d-days.md) | medium | 3 |
 
 ### Linked List  `•→•→∅`
 
@@ -137,6 +145,10 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [Mirror a Binary Tree](invert-tree.md) | easy | 2 |
 | [Is the Tree Height-Balanced?](balanced-tree.md) | easy | 2 |
 | [Lowest Common Ancestor in a BST](bst-ancestor.md) | medium | 2 |
+| [Read a Tree Left, Node, Right](inorder-walk.md) | easy | 4 |
+| [Is the Tree Its Own Mirror?](mirror-tree.md) | easy | 4 |
+| [What You See Standing to the Right](right-side-view.md) | medium | 4 |
+| [The Longest Path Between Any Two Nodes](tree-diameter.md) | easy | 3 |
 
 ### Heaps  `▲ top`
 
@@ -149,6 +161,8 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [The kth Largest Value](kth-largest-element.md) | medium | 3 |
 | [Sort Characters by How Often They Appear](sort-by-frequency.md) | medium | 2 |
 | [kth Smallest in a Sorted Matrix](kth-smallest-matrix.md) | medium | 2 |
+| [The k Most Common Words, Ties Alphabetical](top-k-frequent-words.md) | medium | 3 |
+| [The nth Number Built Only From 2, 3 and 5](ugly-number.md) | medium | 3 |
 
 ### Graphs  `v—e—v`
 
@@ -162,6 +176,9 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [How Many Connected Groups?](count-provinces.md) | medium | 2 |
 | [When Does the Signal Reach Everyone?](network-delay.md) | medium | 2 |
 | [Capture the Enclosed Regions](surrounded-regions.md) | medium | 2 |
+| [Repaint the Patch You Clicked](flood-fill.md) | easy | 4 |
+| [Rain That Reaches Both Oceans](pacific-atlantic.md) | medium | 3 |
+| [Fewest Cells Across an Open Grid](shortest-path-grid.md) | medium | 4 |
 
 ### Dynamic Programming  `dp[i-1]`
 
@@ -178,3 +195,6 @@ and a file on disk cannot. These pages show only what the problem page already s
 | [Paths Across a Grid](unique-paths.md) | medium | 2 |
 | [Can the Sentence Be Cut Into Words?](word-break.md) | medium | 2 |
 | [Cheapest Way Up the Stairs](min-cost-stairs.md) | easy | 2 |
+| [How Many Ways to Read the Digits](decode-ways.md) | medium | 4 |
+| [Can You Reach the Last Index?](jump-game.md) | medium | 4 |
+| [The Best Product a Run Can Make](max-product-subarray.md) | medium | 4 |

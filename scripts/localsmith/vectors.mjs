@@ -1654,6 +1654,450 @@ export const VECTORS = {
       [[3, 2, 2, 1]],
     ],
   },
+"flood-fill": {
+    params: ["int[][]", "int", "int", "int"],
+    ret: "int[][]",
+    exercises:
+      "the new colour EQUALLING the old one — [[0,0,0],[0,0,0]] with colour 0 is the case where repaint-as-visited-mark marks nothing, plus a diagonal-only neighbour that must keep its colour",
+    cases: [
+      [
+        [
+          [1, 1, 1],
+          [1, 1, 0],
+          [1, 0, 1],
+        ],
+        1,
+        1,
+        2,
+      ],
+      [
+        [
+          [0, 0, 0],
+          [0, 0, 0],
+        ],
+        0,
+        0,
+        0,
+      ],
+      [
+        [
+          [0, 0, 0],
+          [0, 1, 0],
+        ],
+        1,
+        1,
+        2,
+      ],
+      [[[1]], 0, 0, 5],
+      [
+        [
+          [1, 2],
+          [2, 1],
+        ],
+        0,
+        0,
+        3,
+      ],
+    ],
+  },
+  "pacific-atlantic": {
+    params: ["int[][]"],
+    ret: "int[][]",
+    unordered: true,
+    exercises:
+      "the plateau, where equal heights flow BOTH ways — [[2,2],[2,2]] returns every cell and loops forever without a visited mark; the 5 × 5 classic has cells that drain one way only",
+    cases: [
+      [
+        [
+          [1, 2, 2, 3, 5],
+          [3, 2, 3, 4, 4],
+          [2, 4, 5, 3, 1],
+          [6, 7, 1, 4, 5],
+          [5, 1, 1, 2, 4],
+        ],
+      ],
+      [[[1]]],
+      [
+        [
+          [2, 2],
+          [2, 2],
+        ],
+      ],
+      [
+        [
+          [1, 2, 3],
+          [8, 9, 4],
+          [7, 6, 5],
+        ],
+      ],
+      [
+        [
+          [3, 1],
+          [1, 3],
+        ],
+      ],
+    ],
+  },
+  "shortest-path-grid": {
+    params: ["int[][]"],
+    ret: "int",
+    exercises:
+      "the blocked start ([[1,0,0],[1,1,0],[1,1,0]] answers -1 before any ring is expanded), the single open cell that answers 1 rather than 0, and a detour that only a diagonal step keeps short",
+    cases: [
+      [
+        [
+          [0, 1],
+          [1, 0],
+        ],
+      ],
+      [
+        [
+          [0, 0, 0],
+          [1, 1, 0],
+          [1, 1, 0],
+        ],
+      ],
+      [
+        [
+          [1, 0, 0],
+          [1, 1, 0],
+          [1, 1, 0],
+        ],
+      ],
+      [[[0]]],
+      [
+        [
+          [0, 0, 0, 0],
+          [1, 1, 1, 0],
+          [0, 0, 0, 0],
+          [0, 1, 1, 0],
+        ],
+      ],
+      [
+        [
+          [0, 1],
+          [1, 1],
+        ],
+      ],
+      [
+        [
+          [0, 1, 1],
+          [0, 1, 1],
+          [0, 0, 0],
+        ],
+      ],
+      [
+        [
+          [0, 0, 0],
+          [0, 1, 0],
+          [0, 0, 0],
+        ],
+      ],
+    ],
+  },
+"inorder-walk": {
+    params: ["tree"],
+    ret: "int[]",
+    exercises:
+      "the node printed BETWEEN its two subtrees — [1,null,2,3] puts 3 before 2, so a pre-order or post-order slip changes the row, and the left chain forces the stack to hold every ancestor at once",
+    cases: [
+      [[1, null, 2, 3]],
+      [[]],
+      [[1]],
+      [[3, 1, 5, null, 2]],
+      [[1, 2, 3, 4, 5, 6, 7]],
+      [[1, 2, null, 3, null, 4]],
+    ],
+  },
+  "mirror-tree": {
+    params: ["tree"],
+    ret: "bool",
+    exercises:
+      "shape, not values — [1,1,1,1,null,1] has one value throughout so every values-only test passes it, and [1,2,2,null,3,null,3] is the uncrossed pair",
+    cases: [
+      [[1, 2, 2, 3, 4, 4, 3]],
+      [[1, 2, 2, 3, 4, 4, 5]],
+      [[1, 2, 2, null, 3, null, 3]],
+      [[1, 1, 1, 1, null, 1]],
+      [[]],
+      [[1]],
+      [[1, 2, 3]],
+      [[1, 2, 2]],
+    ],
+  },
+  "tree-diameter": {
+    params: ["tree"],
+    ret: "int",
+    exercises:
+      "the bend that is not the root — [1,2,null,3,null,4] is a chain whose longest path never turns, and [4,2,7,1,3,6,9] bends at the top; a single node must answer 0, not 1",
+    cases: [
+      [[1, 2, 3, 4, 5]],
+      [[1, 2]],
+      [[1]],
+      [[1, 2, null, 3, null, 4]],
+      [[4, 2, 7, 1, 3, 6, 9]],
+      [[1, 2, 3, 4, null, null, 5, 6, null, null, 7]],
+    ],
+  },
+  "right-side-view": {
+    params: ["tree"],
+    ret: "int[]",
+    exercises:
+      "a level reached only through left children — [1,2,3,4] shows 4 on the bottom level, so 'follow the right child' fails while 'first arrival at a depth' holds",
+    cases: [
+      [[1, 2, 3, null, 5, null, 4]],
+      [[1, 2, 3, 4]],
+      [[]],
+      [[1]],
+      [[1, null, 3]],
+      [[1, 2, 3, 4, 5, 6, 7]],
+    ],
+  },
+"zero-matrix": {
+    params: ["int[][]"],
+    ret: "int[][]",
+    exercises:
+      "a zero sitting IN the first row or column ([[1,0],[1,1]] and [[0,1,2,0],[3,4,5,2],[1,3,1,5]]), where the marker line and the original zero are the same cell",
+    cases: [
+      [
+        [
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+        ],
+      ],
+      [
+        [
+          [0, 1, 2, 0],
+          [3, 4, 5, 2],
+          [1, 3, 1, 5],
+        ],
+      ],
+      [
+        [
+          [1, 0],
+          [1, 1],
+        ],
+      ],
+      [[[0]]],
+      [[[1, 2, 3]]],
+      [
+        [
+          [1],
+          [0],
+          [3],
+        ],
+      ],
+    ],
+  },
+  "spiral-order": {
+    params: ["int[][]"],
+    ret: "int[]",
+    exercises:
+      "the ring that is a single line — [[1,2,3,4]] and a single column must not be walked back along, and the 3 × 3 ends on a lone centre cell",
+    cases: [
+      [
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+          [7, 8, 9],
+        ],
+      ],
+      [[[1, 2, 3, 4]]],
+      [
+        [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+        ],
+      ],
+      [[[7]]],
+      [
+        [
+          [1, 2, 3, 4],
+          [5, 6, 7, 8],
+          [9, 10, 11, 12],
+        ],
+      ],
+      [
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+        ],
+      ],
+      [
+        [
+          [1, 2],
+          [3, 4],
+          [5, 6],
+          [7, 8],
+        ],
+      ],
+      [
+        [
+          [1],
+          [2],
+          [3],
+        ],
+      ],
+    ],
+  },
+"decode-ways": {
+    params: ["string"],
+    ret: "int",
+    exercises:
+      "the zero that only a pair can absorb — \"10\" answers 1 and \"06\" answers 0, so a solution that decodes digits independently is caught by both",
+    cases: [
+      ["12"],
+      ["226"],
+      ["06"],
+      ["10"],
+      ["0"],
+      ["27"],
+      ["1111"],
+      ["2101"],
+    ],
+  },
+  "jump-game": {
+    params: ["int[]"],
+    ret: "bool",
+    exercises:
+      "the zero that cannot be passed — [3,2,1,0,4] stalls exactly on the reach, and [0] is already at the end so a length-1 array must answer true",
+    cases: [
+      [[2, 3, 1, 1, 4]],
+      [[3, 2, 1, 0, 4]],
+      [[0]],
+      [[2, 0, 0]],
+      [[1, 0, 1, 0]],
+      [[5, 0, 0, 0, 0, 0]],
+    ],
+  },
+  "max-product-subarray": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "the pair of negatives that cancel ([-2,3,-4] is 24 only if the MOST NEGATIVE running product is kept) and the zero that restarts the run ([-2,0,-1] answers 0)",
+    cases: [
+      [[2, 3, -2, 4]],
+      [[-2, 0, -1]],
+      [[-2, 3, -4]],
+      [[-2]],
+      [[0, 2]],
+      [[2, -5, -2, -4, 3]],
+      [[-1, -1]],
+    ],
+  },
+"top-k-frequent-words": {
+    params: ["string[]", "int"],
+    ret: "string[]",
+    exercises:
+      "the two-key ordering — [\"i\",\"love\",\"leetcode\",\"i\",\"love\",\"coding\"] ties two words at count 2 so the alphabetical rule decides, and [\"b\",\"a\"] is all ties",
+    cases: [
+      [["i", "love", "leetcode", "i", "love", "coding"], 2],
+      [["the", "day", "is", "sunny", "the", "the", "the", "sunny", "is", "is"], 4],
+      [["b", "a"], 2],
+      [["aaa"], 1],
+      [["z", "z", "a", "a", "m"], 2],
+      [["one", "two", "two", "three", "three", "three"], 3],
+    ],
+  },
+  "ugly-number": {
+    params: ["int"],
+    ret: "int",
+    exercises:
+      "the value two routes produce — n = 7 lands on 8 only when 6 is emitted ONCE, so advancing a single pointer on a tie shifts every later answer",
+    cases: [[10], [1], [7], [2], [11], [150]],
+  },
+"anagram-positions": {
+    params: ["string", "string"],
+    ret: "int[]",
+    exercises:
+      "overlapping answers (\"abab\" with \"ab\" answers 0, 1 and 2) and a pattern longer than the text (\"aa\" with \"aaa\" answers nothing), which is the window that never opens",
+    cases: [
+      ["cbaebabacd", "abc"],
+      ["abab", "ab"],
+      ["aa", "aaa"],
+      ["aaaa", "aa"],
+      ["abc", "abc"],
+      ["baa", "aa"],
+      ["xyz", "ab"],
+    ],
+  },
+  "fruit-baskets": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "the slide that must drop more than the offending tree — [1,2,3,2,2] answers 4, which needs the left edge past the 1; a single kind ([7,7,7]) is the whole row",
+    cases: [
+      [[1, 2, 1]],
+      [[0, 1, 2, 2]],
+      [[1, 2, 3, 2, 2]],
+      [[7, 7, 7]],
+      [[3]],
+      [[1, 2, 3, 4, 5]],
+      [[0, 1, 6, 6, 4, 4, 6]],
+    ],
+  },
+"simplify-path": {
+    params: ["string"],
+    ret: "string",
+    exercises:
+      "the '..' with nothing to undo — \"/../\" must answer \"/\" rather than an empty string — and \"/a/.../b\", where a three-dot name is ordinary and must survive",
+    cases: [
+      ["/home/"],
+      ["/a/./b/../../c/"],
+      ["/../"],
+      ["/a/.../b"],
+      ["/home//foo/"],
+      ["/a/b/c/../.."],
+      ["/"],
+    ],
+  },
+  "calculator-basic": {
+    params: ["string"],
+    ret: "int",
+    exercises:
+      "precedence and the sign of a truncated division — \"1-5/2\" is -1 only when -5 / 2 truncates toward zero, and \" 3+5 / 2 \" proves spaces are noise",
+    cases: [
+      ["3+2*2"],
+      [" 3/2 "],
+      ["1-5/2"],
+      [" 3+5 / 2 "],
+      ["14-3/2"],
+      ["2*3*4"],
+      ["100"],
+      ["1+1+1"],
+      ["10-2*3+7/2"],
+    ],
+  },
+"ship-in-d-days": {
+    params: ["int[]", "int"],
+    ret: "int",
+    exercises:
+      "the answer pinned to the heaviest package ([1,2,3,1,1] with 4 days answers 3) and the deadline that forces a bigger ship than the average suggests ([1..10] with 5 days answers 15, not 11)",
+    cases: [
+      [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5],
+      [[3, 2, 2, 4, 1, 4], 3],
+      [[1, 2, 3, 1, 1], 4],
+      [[1], 1],
+      [[10, 50, 20], 2],
+      [[5, 5, 5, 5], 1],
+    ],
+  },
+  "k-closest-values": {
+    params: ["int[]", "int", "int"],
+    ret: "int[]",
+    exercises:
+      "the tie that must go LEFT ([1,2,3,4,5], k=4, x=3 keeps 1 over 5 although both are two away) and an x outside the array entirely",
+    cases: [
+      [[1, 2, 3, 4, 5], 4, 3],
+      [[1, 2, 3, 4, 5], 4, -1],
+      [[1, 1, 2, 2, 2, 2, 2, 3, 3], 3, 3],
+      [[1], 1, 1],
+      [[0, 0, 1, 2, 3, 3, 4, 7, 7, 8], 3, 5],
+      [[1, 2, 3, 4, 5], 1, 10],
+    ],
+  },
 }
 
 /* Nothing is excused any more (B30, B62). Every problem in VECTORS is RUN in

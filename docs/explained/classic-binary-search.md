@@ -194,6 +194,8 @@ int binarySearch(const vector<int>& nums, int target) {
 
 ## The arc
 
+The base case of a whole pattern, and worth writing until the boundaries are automatic: while low is at most high, probe the middle, and move the side that cannot contain the answer. Two habits prevent most bugs. Compute the midpoint as low plus half the gap rather than by adding the two ends, so nothing overflows in languages with fixed-width integers. And decide the loop's contract before typing — either 'low <= high' with mid plus or minus one, or 'low < high' converging on a single survivor — then keep it consistent, because mixing the two is how the off-by-one and the infinite loop both appear. Every later rung in this pattern is this loop with a different question at the probe.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Linear scan | O(n) time · O(1) space | the baseline — nothing before it |

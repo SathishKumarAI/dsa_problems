@@ -227,6 +227,8 @@ vector<int> maxSlidingWindow(const vector<int>& nums, int k) {
 
 ## The arc
 
+The queue is the lesson. A heap gives the maximum but cannot cheaply forget the element that just left the window, so it needs lazy eviction and drifts toward n log n. A monotonic deque keeps only the candidates that could still become the maximum — anything smaller than a newer element is dominated forever and can be discarded on arrival — so each index is pushed and popped exactly once and the whole sweep is linear. Two habits: when a structure keeps values that can never win, delete them eagerly; and when the window moves, make sure the structure can EXPIRE from the front, which is exactly what a deque adds over a stack.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan each window | O(n · k) time · O(1) space | the baseline — nothing before it |

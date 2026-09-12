@@ -203,6 +203,8 @@ vector<string> generateParenthesis(int n) {
 
 ## The arc
 
+The move that matters is generating only what can still be valid instead of filtering afterwards. Two counters — openings used and closings used — give two rules: you may open while openings remain, and you may close only while closings trail openings. Those rules prune the tree so hard that the output size, the Catalan number, is the cost. That is backtracking in its purest form: choose, recurse, undo, with the legality test at the choice rather than at the leaf. Carry the habit of pushing constraints as early as possible into the recursion, and note that the undo step here is just truncating the string, which is why the path is built in a mutable buffer rather than by concatenation.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Generate everything, then filter | O(2^(2n) · n) time · O(n) space | the baseline — nothing before it |

@@ -10,6 +10,9 @@ import { problem as partitionEqualSubset } from "./partition-equal-subset.ts"
 import { problem as uniquePaths } from "./unique-paths.ts"
 import { problem as wordBreak } from "./word-break.ts"
 import { problem as minCostStairs } from "./min-cost-stairs.ts"
+import { problem as decodeWays } from "./decode-ways.ts"
+import { problem as jumpGame } from "./jump-game.ts"
+import { problem as maxProductSubarray } from "./max-product-subarray.ts"
 
 export const dp: Problem[] = [
   stairWays,
@@ -23,4 +26,7 @@ export const dp: Problem[] = [
   uniquePaths,
   wordBreak,
   minCostStairs,
+  decodeWays,
+  jumpGame,
+  maxProductSubarray,
 ]

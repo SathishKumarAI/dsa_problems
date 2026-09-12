@@ -35,6 +35,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Searching row by row already exploits half the guarantee — that each row is sorted — but it walks past whole rows to find the right one. The second guarantee makes the entire grid a single sorted sequence, so one binary search over m·n positions replaces both loops, and log(m·n) beats m + log n.",
+  arc:
+    "The matrix is a lie: if every row starts after the previous row ends, it is one sorted array wearing a rectangle, and index i maps to row i divided by the width and column i modulo the width. Once that is said, the answer is a single binary search over the whole cell count. The two-step rung — find the row, then search it — is the version that survives when the rows are sorted but NOT globally ordered, which is a different LeetCode problem and the reason to keep both in your head. The transferable habit is to look for a re-indexing that turns a two-dimensional structure into a one-dimensional one before inventing anything new.",
   approach:
     "Treat the grid as a flat sorted array of length m·n, and translate each midpoint back to a cell with a divide and a remainder. From there it is ordinary binary search: compare, discard the half that cannot hold the target, repeat. The arithmetic is the whole trick — nothing about the search itself changes because the data is drawn as a rectangle.",
   complexity: { time: "O(log (m · n))", space: "O(1)" },

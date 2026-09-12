@@ -41,6 +41,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Every rung so far builds both finished texts in full — up to 400 characters of memory to produce one bit of answer — and none of them can give up early when the very first survivors already disagree. Walking both strings backward at the same time keeps nothing but two indices and two pending-delete counters, compares survivors as they appear, and returns the moment they differ.",
+  arc:
+    "Reading forwards means a character's fate is decided by things that have not happened yet, which is why the stack rung exists — it undoes work it already did. Reading BACKWARDS turns the hash marks into a debt counter, and each character's fate is known on sight, so nothing is ever pushed only to be popped. That reversal is the transferable idea: when a rule refers to what comes after, try walking the other way. The version to know is the constant-space one, with two independent backward cursors that skip their own debts and then compare — the fiddly part is the loop that must consume a full run of hashes before comparing, which is where every off-by-one in this problem lives.",
   approach:
     "Read both strings from the right. On each side, a small loop skips forward to the next surviving character: a '#' bumps that side's pending-delete count, and a letter with deletes pending consumes one and dies. What the loop leaves behind is the next character that actually survives. Compare the two survivors; if only one side still has a survivor, the texts have different lengths and the answer is false. Repeat until both sides are exhausted. Each character is visited once, and nothing is stored but four integers.",
   complexity: { time: "O(n + m)", space: "O(1)" },

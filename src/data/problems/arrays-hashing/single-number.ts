@@ -30,6 +30,8 @@ export const problem: Problem = {
     "x XOR x = 0 and x XOR 0 = x, and XOR is commutative — order never matters.",
     "XOR every element into one accumulator. Pairs annihilate bit by bit; only the loner survives.",
   ],
+  arc:
+    "Three rungs, three different ideas about what to remember. A hash map remembers everything and throws almost all of it away. Sorting remembers nothing but pays to impose order the question never asked for. XOR remembers exactly one number, because the operation itself cancels pairs: a ^ a is zero, zero ^ x is x, and order does not matter. That is the lesson worth keeping — when duplicates come in pairs and you need the odd one out, reach for an operation with an inverse rather than for a container. Know why XOR is safe here (commutative, associative, self-inverse) because the follow-ups change the pairing to threes, where XOR alone stops working and bit counting takes over.",
   approach:
     "Fold the array with XOR. Because x ^ x = 0 and the operation is commutative and associative, every paired value cancels regardless of position, leaving the single value in the accumulator. One pass, one integer of state. The trick leans entirely on the promise that exactly one value is unpaired.",
   complexity: { time: "O(n)", space: "O(1)" },

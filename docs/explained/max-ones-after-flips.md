@@ -159,6 +159,8 @@ int longestOnes(const vector<int>& nums, int k) {
 
 ## The arc
 
+Read it as a window question and the flips stop being a story: the answer is the longest run containing at most k zeros. That translation — 'change at most k things' into 'a window whose count of the wrong thing is bounded' — is the reusable part, and it covers the longest-repeating-character variants as well. Once translated, the window grows on the right and its left edge moves only when the zero count exceeds k. The non-shrinking form works here too, for the same reason as elsewhere: the answer is a maximum, so the window never needs to become legal again, only never wider than the widest legal window seen.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Try every window | O(n^2) time · O(1) space | the baseline — nothing before it |

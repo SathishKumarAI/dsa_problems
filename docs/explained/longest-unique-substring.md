@@ -221,6 +221,8 @@ int longestUnique(const string& s) {
 
 ## The arc
 
+Every rung is a different answer to 'where should the window's left edge go when a repeat appears?' Recomputing from scratch is cubic; a set with a shrinking left edge is linear but steps the edge one at a time; remembering each character's LAST INDEX lets the edge jump straight past the previous occurrence. The jump is what makes it one pass with no inner loop. The detail that bites is that the left edge must never move backwards — a stale last-index from before the current window would drag it back — so the jump is always a maximum against the current edge. That guard is the same one every 'last seen' window needs, and it is the first thing to check when a window solution fails on repeats.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n³) time · O(n) space | the baseline — nothing before it |
