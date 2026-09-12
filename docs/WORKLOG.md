@@ -95,6 +95,121 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-12 — a page per problem, twenty more problems, and text you can actually read
+
+Three things shipped, and the third exists because of the second: writing a paragraph of prose onto
+every problem page made it obvious the prose was too small to read.
+
+### PR #85 — `docs/explained/`, generated (B64)
+
+One markdown page per problem: statement, constraints, examples, hints behind a fold, the approach
+ladder worst → best with each rung's Python, Java and C++, an arc table, and a **runnable script
+holding every rung at once**.
+
+Nothing on those pages is authored. `scripts/gen-explained.mjs` renders them through the app's own
+`ladderOf`, so a page cannot disagree with the problem page, and `gen-explained.test.mjs` fails
+`npm test` the moment one drifts. The runnable script renames each rung's entry point by word
+boundary — a recursive rung calls itself, and a renamed `def` with an unrenamed call is a
+`NameError` nobody sees until they run it — and builds a linked-list argument with a thunk per call,
+because the rung that walks it consumes it.
+
+**Measured: 107 of 107 scripts executed under CPython, 0 errors.** Five print different answers
+between rungs and all five are explained — the deliberately wrong greedy in `coin-change-min`, and
+four order-free answers whose pages now say so.
+
+Found on the way: `vectors.mjs` carried `kth-largest-stream` **twice**, byte-identical. Removed.
+
+The gate caught a flaw in itself on the first run: git checks the pages out as CRLF and the
+generator writes LF, so every page read as stale on a fresh Windows clone. It compares content now,
+not bytes.
+
+### PR #86, part one — batch 7: 107 → 127 problems, and an arc on all 127 (B65)
+
+Twenty problems chosen to fill the thinnest patterns first: four trees (inorder walk, symmetric
+tree, diameter, right-side view), three graphs (flood fill, pacific/atlantic, shortest path in a
+binary matrix), three dp (decode ways, jump game, maximum product subarray), two each of heaps,
+stack, sliding window, binary search and arrays & hashing.
+
+**`Problem.arc`** is the new field: one paragraph naming the single idea the whole ladder applies
+and which rungs to know cold. Every one of the 127 problems carries one. The rungs could not say it
+— each only knows the rung below it — and it is the part a learner takes to the *next* problem. It
+renders under the ladder and at the foot of every explainer page, and never while a journey's
+ladder is capped, because it names where the climb ends.
+
+| Gate | Result |
+|---|---|
+| `npm run check` | tsc 0 · eslint 0 · **680 tests** |
+| `npm run test:ui` | **154 checks**, 0 failed |
+| `npm run verify:code` | **752 blocks**, 0 failed (612 before) |
+| `npm run verify:run` | 2147 oracle runs, **4294 comparisons, 0 disagreed** |
+| `npm run verify:vectors` | **0 unexplained survivors** |
+| CPython, every rung of the 20 | all agree, except the rung built to be wrong |
+
+**The mutation gate was right three times, and they were real holes.** `spiral-order` could not tell
+`top <= bottom` from `top < bottom` until a 2×3 and a 4×2 were added; `mirror-tree` needed a tree
+with one crossed pair matching and one not; `shortest-path-grid` needed a route that only exists
+down column 0. Seven further survivors are genuine equivalences, each recorded **with an argument**
+— four of them the comment trap again (`mutants()` does not skip comments), and one worth keeping:
+in `decode-ways`, weakening `i + 1 < len(s)` only opens the two-digit branch at the last index,
+where `ahead2` is still 0 and adding it changes nothing.
+
+One Java bug was caught before it landed: an `ArrayDeque` cannot hold the `null` a crossed pair
+needs — the same shape B30 found in `invert-tree`.
+
+Written straight through in one session with no subagents, unlike batch 6's fan-out. The cost was
+wall-clock, not quality; the gates report the same numbers either way, which is the argument for
+buying gates rather than reviewers (`docs/MODELS.md`).
+
+### PR #86, part two — the text was too small to read (B66)
+
+Reported as "I am unable to read the text". **Measured before touching anything** — every text node
+on four routes, out of a real browser, with computed size and contrast:
+
+| Route | nodes | below WCAG AA | below 13px |
+|---|---|---|---|
+| problem page | 121 | **13** | **51** |
+| home | 64 | 0 | 28 |
+| journey | 68 | 1 | 23 |
+| visualizer | 55 | 0 | 35 |
+
+Two causes, and neither was the palette. The scale was one step low, and **154 raw Tailwind sizes
+across 39 files** never went through it. The worst offenders were not small but **invisible**:
+`text-muted-foreground/40` measured **1.02:1**. An opacity is not a shade — fading a foreground
+toward the background leaves no contrast at all.
+
+Fixed: the six steps each moved one notch (13/15/17/20/28/40) with their line heights, so every
+ratio between them is unchanged; the raw sizes became roles; the opacity habit became a token,
+`text-dim` (5.8:1 in Mocha, 5.5:1 in Latte).
+
+**A correction, in the open.** After that pass I claimed the leftover 12.8px text was "deliberate
+sub-scale marks". It was not — it was `text-[0.8rem]` in the shadcn button and toggle `sm`
+variants, plus `text-[12.5px]` in the challenge editor and `text-[13.5px]` in the code panel. Those
+literals name no size word, so a word-based sweep never sees them. Fixed, and the two code surfaces
+went **up** to `text-ui`, because code here is read at length rather than glanced at.
+
+**Measured after: 0 nodes below WCAG AA anywhere, 0 below 13px on any route**, worst contrast
+1.02:1 → 6.22:1. The only type left below the scale is the 7px ▲ / ✓ chip legend mark, which sits
+on a swatch beside its own label and is a mark rather than a word (B58).
+
+The surface pass is the second half of the same request ("more futuristic, more modern"). The
+palette did not change; the light did — crust ground washed with the chip grammar's own mauve and
+blue, a 64px hairline grid masked below the fold, top-edge highlight and offset+blur shadow on
+resting panels, backdrop blur **only** where a surface floats over the moving stage, a 2px accent
+edge and glow on the active rail row, hover that lifts rather than recolours (colour is
+load-bearing here), one authored arrival moment, and themed selection, caret, scrollbars, focus
+ring and tabular/slashed-zero numerals. All of it is in `docs/DESIGN.md` §The surface.
+
+One UI test needed a real fix rather than a rerun: it selected `.font-mono.text-xs`, a class this
+change renames.
+
+### Where it leaves the set
+
+**127 problems, 87 journeys** — so **forty** now fall back to the static walkthrough player, which
+doubles B63 and makes it the largest open item. B65's runway to the LeetCode top 500 is roughly
+nineteen more batches, and each one's explainer pages now fall out for free.
+
+---
+
 ## 2026-09-09 (batch 6) — a hundred problems, and what the gates said about content nobody had run
 
 PR #83 closed B43 first: a derived act's Java and C++ tabs were being DROPPED whenever the
