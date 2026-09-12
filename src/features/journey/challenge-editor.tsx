@@ -214,7 +214,7 @@ export function ChallengeEditor({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-lg border bg-background/60 font-mono text-[12.5px]">
+      <div className="overflow-hidden rounded-lg border bg-background/60 font-mono text-ui">
         <div className="border-b px-3 py-1.5 text-muted-foreground">
           {challenge.signature}
         </div>

@@ -32,8 +32,13 @@ touched. The same pass converted the **154 remaining raw Tailwind sizes**
 (`text-xs`, `text-sm`, `text-2xl`, …) to their roles across 39 files: those were
 the real source of the 12px, not the tokens.
 
-Measured after: **0 nodes below 13px** at home, 2 on the problem page (both
-deliberate sub-scale marks), and **0 below WCAG AA** anywhere.
+Measured after: **0 nodes below 13px on any route** and **0 below WCAG AA**
+anywhere. The last three raw sizes went with them — `text-[0.8rem]` in the
+shadcn button and toggle `sm` variants, `text-[12.5px]` in the challenge editor
+and `text-[13.5px]` in the code panel; the two code surfaces went UP to
+`text-ui`, because code here is read at length rather than glanced at. The only
+type left below the scale is the 7px ▲ / ✓ in the chip legend, which sits on a
+swatch beside its own label and is a mark rather than a word (B58).
 
 ## The quiet layer — `text-dim`
 

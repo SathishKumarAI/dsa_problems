@@ -1,7 +1,8 @@
 # STATUS — read this when you return
 
-Last session: **2026-09-12** — `docs/explained/`, one markdown page per problem holding the whole
-approach ladder and a runnable script, generated from the data (B64). Before that: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
+Last session: **2026-09-12**, three things in one sitting — `docs/explained/` (B64), **batch 7**
+(107 → 127 problems, B65) with an **arc** on every one of the 127, and the readability pass the
+arcs exposed (B66). Before that: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
 the UI got the pass it had been owed since the set tripled in size, the tree and list panels
 finally have something rendering them — and then eleven PRs (#71–#81) closed **ten backlog items**:
 the differential gate went from blind on 14 problems to blind on none, and four of the five things
@@ -16,8 +17,24 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` is clean and holds everything through **#84**; `feat/docs-explained-generator` adds B64 on
-top. Nothing is open, nothing half-done.
+`master` holds everything through **#85** (B64). `feat/problems-batch-7` adds batch 7, the arcs and
+the readability pass on top, open as **PR #86** and not yet merged.
+
+**Batch 7 (B65).** Twenty problems filling the thinnest patterns first — four trees, three graphs,
+three dp, two each of heaps, stack, sliding-window, binary-search and arrays-hashing. **127
+problems, 87 journeys**, so forty now fall back to the static walkthrough player (B63, whose
+count this doubled). The mutation gate found three REAL holes in the new vectors and was right
+about all three; seven further survivors are argued equivalences, four of them the comment trap.
+
+**The arc (B65).** `Problem.arc` — one paragraph naming the idea the whole ladder applies and the
+rungs to know cold. All 127 carry one. It renders under the ladder and at the foot of every
+explainer page, and never while a journey's ladder is capped.
+
+**Readability and the surface (B66).** Measured before touching anything: 13 nodes below WCAG AA
+on the problem page (worst **1.02:1** — an opacity is not a shade) and 51 below 13px. The scale
+was one step low and **154 raw Tailwind sizes across 39 files** bypassed it. After: **0 below AA,
+0 below 13px on any route**, and the only sub-scale type left is the 7px legend mark. The palette
+did not change; the light in the room did (`docs/DESIGN.md` §The surface).
 
 **The explainer pages (B64).** `npm run docs:explained` writes `docs/explained/<id>.md` for all 107
 problems from `src/data/problems/**`, through the app's own `ladderOf` — so a page cannot disagree
@@ -36,10 +53,10 @@ before the batch landed.
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **679 tests** |
-| The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed — including the panel audit, which asserts now (B60) |
-| Every Java and C++ block compiles | `npm run verify:code` | **612 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **3398 comparisons**, 0 disagreed (re-run 2026-09-12) — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **680 tests** |
+| The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed (re-run after the type scale moved) — including the panel audit, which asserts now (B60) |
+| Every Java and C++ block compiles | `npm run verify:code` | **752 blocks**, 0 failed |
+| …and agrees with the Python | `npm run verify:run` | **4294 comparisons**, 0 disagreed (2026-09-12, batch 7 included) — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
 | …on cases strong enough to notice | `npm run verify:vectors` | **501 mutants, 91% caught**, 0 survived — 38 allowed as equivalent, each with an argument |
 
 ## What happened, in the order it happened
