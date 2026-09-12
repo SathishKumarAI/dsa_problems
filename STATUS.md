@@ -39,7 +39,7 @@ before the batch landed.
 | Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **679 tests** |
 | The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed — including the panel audit, which asserts now (B60) |
 | Every Java and C++ block compiles | `npm run verify:code` | **612 blocks**, 0 failed |
-| …and agrees with the Python | `npm run verify:run` | **3393 comparisons**, 0 disagreed — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
+| …and agrees with the Python | `npm run verify:run` | **3398 comparisons**, 0 disagreed (re-run 2026-09-12) — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |
 | …on cases strong enough to notice | `npm run verify:vectors` | **501 mutants, 91% caught**, 0 survived — 38 allowed as equivalent, each with an argument |
 
 ## What happened, in the order it happened
