@@ -12,14 +12,14 @@ import { cn } from "@/lib/utils"
 import type { ChipModel } from "@/engine"
 
 const ROLE = {
-  base: "relative flex h-14 min-w-14 items-center justify-center rounded-lg border px-2.5 font-mono text-xl font-medium tabular-nums transition-[background-color,border-color,color,opacity] duration-(--duration-reveal)",
+  base: "relative flex h-14 min-w-14 items-center justify-center rounded-lg border px-2.5 font-mono text-title font-medium tabular-nums transition-[background-color,border-color,color,opacity] duration-(--duration-reveal)",
   neutral: "border-border bg-card text-foreground",
   anchor:
-    "border-chart-4 bg-chart-4/15 text-chart-4 before:absolute before:-top-5 before:text-xs before:text-chart-4 before:content-['▲']",
+    "border-chart-4 bg-chart-4/15 text-chart-4 before:absolute before:-top-5 before:text-meta before:text-chart-4 before:content-['▲']",
   focus:
     "border-foreground bg-[var(--yellow)]/20 text-foreground ring-2 ring-foreground/80 ring-offset-2 ring-offset-background",
   answer:
-    "border-chart-3 bg-chart-3/20 text-chart-3 animate-answer-pulse before:absolute before:-top-5 before:text-xs before:text-chart-3 before:content-['✓']",
+    "border-chart-3 bg-chart-3/20 text-chart-3 animate-answer-pulse before:absolute before:-top-5 before:text-meta before:text-chart-3 before:content-['✓']",
   dim: "opacity-25",
 }
 
@@ -51,10 +51,10 @@ export function Chip({ chip, index }: { chip: ChipModel; index?: number }) {
       {index !== undefined && (
         <span
           className={cn(
-            "font-mono text-xs leading-none",
+            "font-mono text-meta leading-none",
             r.includes("dim")
-              ? "text-muted-foreground/30"
-              : "text-muted-foreground/70"
+              ? "text-dim"
+              : "text-dim"
           )}
         >
           {index}
@@ -90,7 +90,7 @@ export function ChipRow({
 
 export function Legend() {
   const item = (cls: string, marker: string, label: string) => (
-    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <span className="flex items-center gap-1.5 text-meta text-muted-foreground">
       <span
         className={cn(
           "relative inline-flex size-3.5 items-center justify-center rounded border",

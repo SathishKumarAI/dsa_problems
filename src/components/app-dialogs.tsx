@@ -193,7 +193,7 @@ export function ShortcutsDialog() {
 // ---------- settings ----------
 
 const FIELD =
-  "rounded-md border bg-background px-2 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+  "rounded-md border bg-background px-2 py-1.5 text-ui focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 
 // Four values you want to compare read better as segments than as a dropdown,
 // and a dropdown here rendered in the browser's own chrome (UX audit U4).
@@ -228,7 +228,7 @@ function Segmented<T extends string>({
           disabled={disabled}
           onClick={() => onChange(o.value)}
           className={cn(
-            "rounded-md px-2.5 py-1 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            "rounded-md px-2.5 py-1 text-ui transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
             o.value === value
               ? "bg-primary text-[var(--primary-foreground)]"
               : "text-muted-foreground hover:text-foreground"
@@ -252,10 +252,10 @@ function Row({
 }) {
   return (
     <label className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[10rem_1fr]">
-      <span className="text-sm">
+      <span className="text-ui">
         {label}
         {hint && (
-          <span className="block text-xs text-muted-foreground">{hint}</span>
+          <span className="block text-meta text-muted-foreground">{hint}</span>
         )}
       </span>
       {children}
@@ -383,7 +383,7 @@ export function SettingsDialog() {
           />
         </Row>
         <Row label="reading column" hint="on the journey page">
-          <label className="flex items-center gap-2 text-sm">
+          <label className="flex items-center gap-2 text-ui">
             <Checkbox
               checked={prefs.reading}
               onCheckedChange={(v) => setPref("reading", v === true)}
@@ -432,14 +432,14 @@ export function SettingsDialog() {
           </Button>
         </div>
         <textarea
-          className={`${FIELD} min-h-24 font-mono text-xs`}
+          className={`${FIELD} min-h-24 font-mono text-meta`}
           placeholder="paste exported JSON here"
           value={pasted}
           onChange={(e) => setPasted(e.target.value)}
           aria-label="progress JSON"
         />
         {msg && (
-          <p className="text-sm text-muted-foreground" role="status">
+          <p className="text-ui text-muted-foreground" role="status">
             {msg}
           </p>
         )}

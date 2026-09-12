@@ -185,7 +185,7 @@ export function AlgorithmsPage() {
                   onClick={() => setAlgoKey(k)}
                   aria-current={k === algoKey ? "page" : undefined}
                   className={cn(
-                    "rounded-md border px-3 py-1.5 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                    "rounded-md border px-3 py-1.5 text-left text-ui transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                     k === algoKey
                       ? "border-primary bg-primary/10"
                       : "border-border bg-card hover:border-primary/50"
@@ -204,7 +204,7 @@ export function AlgorithmsPage() {
           aria-label="stage"
         >
           <div className="flex items-center gap-3 border-b bg-background/40 px-4 py-2">
-            <span className="text-sm font-medium">{algo.name}</span>
+            <span className="text-ui font-medium">{algo.name}</span>
             <span className="ml-auto font-mono text-meta text-muted-foreground">
               {algo.complexity}
             </span>
@@ -221,7 +221,7 @@ export function AlgorithmsPage() {
             ) : timeline.kind === "array" && frame ? (
               <BarsView frame={frame as ArrayFrame} stepDelay={delay} />
             ) : (
-              <div className="py-16 text-center text-xs text-muted-foreground">
+              <div className="py-16 text-center text-meta text-muted-foreground">
                 loading…
               </div>
             )}
@@ -252,7 +252,7 @@ export function AlgorithmsPage() {
               speed={prefs.speed}
               onSpeed={(v) => setPref("speed", v)}
             />
-            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-3 text-meta text-muted-foreground">
               {algo.kind === "graph" ? (
                 <label className="flex items-center gap-2">
                   nodes{" "}
@@ -283,7 +283,7 @@ export function AlgorithmsPage() {
                   <select
                     value={gen}
                     onChange={(e) => setGen(e.target.value as Gen)}
-                    className="h-7 rounded-md border bg-background px-2 text-xs"
+                    className="h-7 rounded-md border bg-background px-2 text-meta"
                     aria-label="array shape"
                   >
                     {(Object.keys(GENERATORS) as Gen[]).map((k) => (
@@ -299,7 +299,7 @@ export function AlgorithmsPage() {
                         type="number"
                         value={target}
                         onChange={(e) => setTarget(Number(e.target.value))}
-                        className="h-7 w-16 rounded-md border bg-background px-2 font-mono text-xs"
+                        className="h-7 w-16 rounded-md border bg-background px-2 font-mono text-meta"
                       />
                     </label>
                   )}
@@ -325,7 +325,7 @@ export function AlgorithmsPage() {
             code={{ pseudo: algo.pseudocode }}
             line={frame?.line ?? -1}
           />
-          <div className="rounded-xl border bg-card p-4 text-xs text-muted-foreground">
+          <div className="rounded-xl border bg-card p-4 text-meta text-muted-foreground">
             <div className="mb-2 text-meta tracking-wide uppercase">legend</div>
             <div className="flex flex-col gap-1">
               <span>
@@ -354,7 +354,7 @@ export function AlgorithmsPage() {
               </span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-meta text-muted-foreground">
             space play/pause · ← → step · r reset
           </p>
         </aside>

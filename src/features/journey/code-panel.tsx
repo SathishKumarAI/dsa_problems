@@ -45,7 +45,7 @@ export function CodePanel({ code, line }: { code: CodeTabs; line: number }) {
               aria-selected={t === mode}
               onClick={() => setPref("codeTab", t)}
               className={cn(
-                "rounded-t-md px-2.5 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+                "rounded-t-md px-2.5 py-1 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 t === mode
                   ? "bg-background text-foreground"
                   : "text-muted-foreground hover:text-foreground"

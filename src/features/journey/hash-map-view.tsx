@@ -20,7 +20,7 @@ export function HashMapView({ map }: { map: HashModel }) {
       {/* above the waterline: what the code sees */}
       <div className="flex min-h-8 flex-wrap gap-1.5">
         {map.entries.length === 0 && (
-          <span className="font-mono text-xs text-muted-foreground/60">
+          <span className="font-mono text-meta text-dim">
             {"{ }"} empty
           </span>
         )}
@@ -31,7 +31,7 @@ export function HashMapView({ map }: { map: HashModel }) {
               key={e.key}
               data-k={`m${e.key}`}
               className={cn(
-                "rounded-md border px-2.5 py-1 font-mono text-sm tabular-nums transition-colors",
+                "rounded-md border px-2.5 py-1 font-mono text-ui tabular-nums transition-colors",
                 isProbe && map.hit
                   ? "border-chart-3 bg-chart-3/20 text-chart-3"
                   : isProbe
@@ -79,7 +79,7 @@ export function HashMapView({ map }: { map: HashModel }) {
                   {b}
                 </span>
                 {chain.length === 0 && (
-                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-dim">·</span>
                 )}
                 {chain.map((e, k) => {
                   const mark = e.key === map.probe
@@ -88,7 +88,7 @@ export function HashMapView({ map }: { map: HashModel }) {
                       <span
                         data-k={`b${e.key}`}
                         className={cn(
-                          "rounded border px-1.5 font-mono text-xs tabular-nums",
+                          "rounded border px-1.5 font-mono text-meta tabular-nums",
                           mark && map.hit
                             ? "border-chart-3 bg-chart-3/20 text-chart-3"
                             : mark
@@ -101,7 +101,7 @@ export function HashMapView({ map }: { map: HashModel }) {
                       {k < chain.length - 1 && (
                         <span
                           aria-hidden="true"
-                          className="text-meta leading-none text-muted-foreground/60"
+                          className="text-meta leading-none text-dim"
                         >
                           ↓
                         </span>

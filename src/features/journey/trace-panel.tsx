@@ -60,7 +60,7 @@ export function TracePanel({
                 <span
                   className={cn(
                     "w-6 shrink-0 text-right font-mono tabular-nums",
-                    here ? "text-primary" : "text-muted-foreground/60"
+                    here ? "text-primary" : "text-dim"
                   )}
                 >
                   {i}

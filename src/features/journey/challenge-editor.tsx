@@ -250,7 +250,7 @@ export function ChallengeEditor({
         </Button>
         <span
           className={cn(
-            "text-xs",
+            "text-meta",
             verdict.cls === "ok"
               ? "text-chart-3"
               : verdict.cls === "bad"
@@ -264,7 +264,7 @@ export function ChallengeEditor({
       </div>
 
       {results && (
-        <div className="flex flex-col gap-1 font-mono text-xs">
+        <div className="flex flex-col gap-1 font-mono text-meta">
           {results.map((r, i) => {
             const c = challenge.cases[i]
             const want =
@@ -300,7 +300,7 @@ export function ChallengeEditor({
       )}
 
       {results && (
-        <div className="grid gap-1 rounded-lg border bg-background/40 p-3 text-xs sm:grid-cols-3">
+        <div className="grid gap-1 rounded-lg border bg-background/40 p-3 text-meta sm:grid-cols-3">
           <div className="text-meta tracking-wide text-muted-foreground uppercase sm:col-span-3">
             scorecard — how you solved it
           </div>
@@ -350,7 +350,7 @@ export function ChallengeEditor({
       )}
 
       {allPass && challenge.review.length > 0 && (
-        <div className="flex flex-col gap-1 rounded-lg border bg-background/40 p-3 text-xs">
+        <div className="flex flex-col gap-1 rounded-lg border bg-background/40 p-3 text-meta">
           <div className="text-meta tracking-wide text-muted-foreground uppercase">
             self-review — what a mentor would ask
           </div>
@@ -383,7 +383,7 @@ export function ChallengeEditor({
       )}
 
       {allPass && challenge.big && (
-        <div className="flex flex-col gap-2 rounded-lg border bg-background/40 p-3 text-xs">
+        <div className="flex flex-col gap-2 rounded-lg border bg-background/40 p-3 text-meta">
           {big === null && (
             <div>
               <Button size="sm" variant="outline" onClick={runBig}>

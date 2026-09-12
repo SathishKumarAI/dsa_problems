@@ -66,11 +66,15 @@ function Section({
 }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="flex items-baseline gap-2 text-meta tracking-wide text-muted-foreground uppercase">
+      <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
         {label}
-        {count && (
-          <span className="font-mono normal-case opacity-70">{count}</span>
-        )}
+        {/* the rule is the separator: a filled divider would add a third
+            horizontal line to a page that already has borders and code blocks */}
+        <span
+          aria-hidden
+          className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
+        />
+        {count && <span className="font-mono normal-case text-dim">{count}</span>}
       </h2>
       {children}
     </section>
@@ -186,6 +190,16 @@ function ApproachLadder({
             <RungCode code={r.code} />
           </div>
         ))}
+        {/* The idea the whole ladder shares, after the rungs that earned it.
+            Never while the ladder is capped: it names where the climb ends. */}
+        {problem.arc && !capped && (
+          // a <b> here would join the rung names the UI test reads out of this
+          // container — the label is a span for that reason
+          <p className="max-w-[35em] border-t border-border/60 pt-4 text-body text-muted-foreground">
+            <span className="font-semibold text-foreground">The arc.</span>{" "}
+            {problem.arc}
+          </p>
+        )}
         {capped && journey && (
           <p className="text-ui max-w-[35em] text-muted-foreground">
             {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
@@ -253,7 +267,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
             href={leetcodeUrl(problem.leetcode)}
             target="_blank"
             rel="noopener"
-            className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-ui font-medium text-[var(--primary-foreground)] transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Solve on LeetCode
             <ExternalLinkIcon className="size-4" />
@@ -317,7 +331,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           {problem.examples.map((ex, i) => (
             <div
               key={i}
-              className="overflow-x-auto rounded-lg border bg-card p-3 font-mono text-sm"
+              className="overflow-x-auto rounded-lg border bg-card p-3 font-mono text-ui"
             >
               <div>
                 <span className="text-muted-foreground">in&nbsp;&nbsp;</span>
@@ -344,7 +358,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         <Accordion multiple={false} className="w-full">
           {problem.hints.map((hint, i) => (
             <AccordionItem key={i} value={`hint-${i}`}>
-              <AccordionTrigger className="font-mono text-sm">
+              <AccordionTrigger className="font-mono text-ui">
                 hint {i + 1} of {problem.hints.length}
               </AccordionTrigger>
               <AccordionContent className="max-w-[35em] text-body text-muted-foreground">

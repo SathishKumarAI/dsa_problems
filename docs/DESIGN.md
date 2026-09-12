@@ -15,12 +15,56 @@ Six steps. Line heights ship with them, so `text-body` is a full type setting, n
 
 | Token | px / line-height | Use it for |
 |---|---|---|
-| `text-meta` | 12 / 16 | labels, counts, act keys, eyebrow captions, legend entries |
-| `text-ui` | 14 / 20 | buttons, controls, table cells, breadcrumbs, subtitles |
-| `text-body` | **16 / 26** | anything a learner reads as a sentence: the reading column, dialog prose, quiz and predict questions, corner cases, problem statements, hints |
-| `text-narration` | **19 / 30** | the narration line under the stage (`lg` and up; `text-body` below) |
-| `text-title` | 24 / 30 | page and act titles |
-| `text-display` | 32 / 38 | the equation and the answer on the stage |
+| `text-meta` | 13 / 18 | labels, counts, act keys, eyebrow captions, legend entries |
+| `text-ui` | 15 / 22 | buttons, controls, table cells, breadcrumbs, subtitles |
+| `text-body` | **17 / 28** | anything a learner reads as a sentence: the reading column, dialog prose, quiz and predict questions, corner cases, problem statements, hints |
+| `text-narration` | **20 / 31** | the narration line under the stage (`lg` and up; `text-body` below) |
+| `text-title` | 28 / 34 | page and act titles |
+| `text-display` | 40 / 44 | the equation and the answer on the stage |
+
+**Raised one step on 2026-09-12, and the reason is a measurement rather than a
+taste.** Every text node on four routes was read out of a real browser with its
+computed size and contrast: **51 of the 121 nodes on the problem page rendered
+below 13px**, 35 of 55 on the visualizer, 28 of 64 at home. Nothing was broken —
+it was simply small, in a product whose entire job is reading. Every step moved
+together, so the ratios between them are unchanged and no component had to be
+touched. The same pass converted the **154 remaining raw Tailwind sizes**
+(`text-xs`, `text-sm`, `text-2xl`, …) to their roles across 39 files: those were
+the real source of the 12px, not the tokens.
+
+Measured after: **0 nodes below 13px** at home, 2 on the problem page (both
+deliberate sub-scale marks), and **0 below WCAG AA** anywhere.
+
+## The quiet layer — `text-dim`
+
+`text-muted-foreground` at 7.4:1 is the secondary voice. Below it there was an
+OPACITY habit: `text-muted-foreground/40` for an index under a chip, `/50` for a
+disabled label. Measured against the real page those render at **1.02:1 to
+1.14:1** — not dim, invisible: 13 of the nodes on the problem page.
+
+So the quiet layer is a colour now, not an alpha. `text-dim` is Mocha `overlay2`
+(**5.8:1**) and Latte `subtext1` (**5.5:1**) — the dimmest this palette can say
+and still be read. Anything quieter than `text-dim` is not text, it is
+decoration, and it should be drawn rather than typed.
+
+## The surface — what the room looks like
+
+The palette did not change on 2026-09-12; the light in the room did.
+
+| Layer | What it is | Why |
+|---|---|---|
+| Page ground | `crust`, with a mauve wash top-left and a blue one bottom-right | A flat fill reads as a document. The two hues are the ones the chip grammar already uses for *focus* and *window*, so the room is lit by the product's own colours |
+| Grid | 64px hairlines at 7% of the foreground, masked out below 62% | Depth and scale without competing for attention — felt more than seen |
+| Resting surfaces | A 1px highlight along the top edge, and a shadow with both an offset and a blur | A panel a millimetre above the page. A zero-offset halo would be decoration |
+| Floating surfaces | `backdrop-filter: blur(14px)` — sidebar, dialogs, hover-peek rails, the test-case drawer | These sit ON TOP of a stage that is usually mid-animation: opaque would hide it, transparent would be unreadable |
+| Where you are | A 2px accent edge on the active rail row plus a 22px glow | The rail is the only place that needs a persistent "you are here" |
+| Hover | A 1px lift and a deeper shadow — never a colour change | Colour is load-bearing here (the chip roles); it cannot be spent on hover |
+| Arrival | `main` settles in from a 6px blur over 320ms, exponential ease-out | One authored moment, from an already-visible default, so a reader who lands mid-animation still sees the page |
+
+Selection, caret, scrollbars and the focus ring are themed from the palette as
+well: they ship with browser defaults that belong to no design system, and they
+are the cheapest tell that a page was assembled rather than built. Mono numerals
+carry `tabular-nums slashed-zero` — every number on the stage is measurement.
 
 ## The two faces
 

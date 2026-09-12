@@ -173,13 +173,13 @@ export function AppSidebar({ view }: { view: string }) {
       <SidebarHeader className="px-3 py-3 group-data-[collapsible=icon]:px-2">
         <div className="flex items-start gap-2">
           <a href={href("/")} className="min-w-0 flex-1">
-            <div className="font-mono text-sm font-semibold text-sidebar-primary">
+            <div className="font-mono text-ui font-semibold text-sidebar-primary">
               <span className={WIDE}>dsa.patterns</span>
               <span className="hidden text-center group-data-[collapsible=icon]:block">
                 d.
               </span>
             </div>
-            <div className={`text-xs text-muted-foreground ${WIDE}`}>
+            <div className={`text-meta text-muted-foreground ${WIDE}`}>
               earn the insight, then the name
             </div>
           </a>
@@ -291,7 +291,7 @@ export function AppSidebar({ view }: { view: string }) {
                       />
                       <LayersIcon className={cn(RAIL_ICON, "hidden")} />
                       <span
-                        className={`w-16 shrink-0 font-mono text-xs text-muted-foreground ${WIDE}`}
+                        className={`w-16 shrink-0 font-mono text-meta text-muted-foreground ${WIDE}`}
                       >
                         {hidden ? MASKED_GLYPH : p.glyph}
                       </span>
@@ -325,7 +325,7 @@ export function AppSidebar({ view }: { view: string }) {
                 >
                   <DatabaseIcon className={RAIL_ICON} />
                   <span
-                    className={`w-16 shrink-0 font-mono text-xs text-muted-foreground ${WIDE}`}
+                    className={`w-16 shrink-0 font-mono text-meta text-muted-foreground ${WIDE}`}
                   >
                     OVER()
                   </span>
@@ -347,7 +347,7 @@ export function AppSidebar({ view }: { view: string }) {
                 >
                   <SigmaIcon className={RAIL_ICON} />
                   <span
-                    className={`w-16 shrink-0 font-mono text-xs text-muted-foreground ${WIDE}`}
+                    className={`w-16 shrink-0 font-mono text-meta text-muted-foreground ${WIDE}`}
                   >
                     P(A|B)
                   </span>

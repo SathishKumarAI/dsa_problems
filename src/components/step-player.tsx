@@ -40,7 +40,7 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
         <div key={i} className="flex flex-col items-center gap-1.5">
           <div
             className={cn(
-              "flex size-12 items-center justify-center rounded-lg border font-mono text-base tabular-nums transition-all duration-300",
+              "flex size-12 items-center justify-center rounded-lg border font-mono text-body tabular-nums transition-all duration-300",
               frame.marks?.[i]
                 ? roleClass[frame.marks[i]]
                 : "border-border/60 bg-background/60 text-foreground/80"
@@ -51,7 +51,7 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
           <span
             className={cn(
               "flex h-4 items-center font-mono text-meta transition-colors",
-              frame.labels?.[i] ? "text-primary" : "text-muted-foreground/40"
+              frame.labels?.[i] ? "text-primary" : "text-dim"
             )}
           >
             {frame.labels?.[i] ?? i}
@@ -104,7 +104,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
         <span className="size-2.5 rounded-full bg-chart-5/60" />
         <span className="size-2.5 rounded-full bg-chart-4/60" />
         <span className="size-2.5 rounded-full bg-chart-3/60" />
-        <span className="ml-2 font-mono text-xs text-muted-foreground">
+        <span className="ml-2 font-mono text-meta text-muted-foreground">
           walkthrough — step {String(step + 1).padStart(2, "0")}/
           {String(frames.length).padStart(2, "0")}
         </span>

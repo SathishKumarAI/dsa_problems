@@ -40,13 +40,13 @@ export function FlashcardsView() {
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <div className="font-mono text-sm text-primary">
+        <div className="font-mono text-ui text-primary">
           P(A|B) = P(B|A)·P(A)/P(B)
         </div>
-        <h1 className="font-heading text-2xl font-semibold">
+        <h1 className="font-heading text-title font-semibold">
           Statistics Flashcards
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-ui text-muted-foreground">
           Click a card to flip it. The answer should come to you before the flip
           does.
         </p>
@@ -97,11 +97,11 @@ export function FlashcardsView() {
                 {card.tag}
               </Badge>
               {isFlipped ? (
-                <p className="animate-in text-sm leading-relaxed text-muted-foreground duration-200 fade-in">
+                <p className="animate-in text-ui leading-relaxed text-muted-foreground duration-200 fade-in">
                   {card.a}
                 </p>
               ) : (
-                <p className="text-sm leading-relaxed font-medium">{card.q}</p>
+                <p className="text-ui leading-relaxed font-medium">{card.q}</p>
               )}
             </button>
           )
