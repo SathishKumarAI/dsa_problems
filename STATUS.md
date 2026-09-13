@@ -17,8 +17,10 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` holds everything through **#85** (B64). `feat/problems-batch-7` adds batch 7, the arcs and
-the readability pass on top, open as **PR #86** and not yet merged.
+`master` holds everything through **#87**. On top of it, uncommitted: the **2030 pass** — a command
+palette and list filters (B69), the home rebuilt as a raised dock plus panels of rows, and the
+first B67 journey (`swap-pairs`). Two subagents wrote the first two of those in parallel with
+strict file ownership; the journey was written in the main session.
 
 **Batch 7 (B65).** Twenty problems filling the thinnest patterns first — four trees, three graphs,
 three dp, two each of heaps, stack, sliding-window, binary-search and arrays-hashing. **127
@@ -53,7 +55,7 @@ before the batch landed.
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **680 tests** |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **686 tests** |
 | The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed (re-run after the type scale moved) — including the panel audit, which asserts now (B60) |
 | Every Java and C++ block compiles | `npm run verify:code` | **752 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **4294 comparisons**, 0 disagreed (2026-09-12, batch 7 included) — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |

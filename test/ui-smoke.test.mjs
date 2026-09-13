@@ -1181,7 +1181,19 @@ describe(
         const badgeEl = row?.querySelector('[data-slot=sidebar-menu-badge]');
         const card = [...document.querySelectorAll('main a')]
           .find(a => has(a, 'two sum') && a.innerText.includes('earned') && !has(a, 'pick up'));
-        const line = (card?.innerText ?? '').split(String.fromCharCode(10)).find(t => t.includes('earned')) ?? '';
+        // the COUNT field, not the first line containing the word: Two Sum's
+        // own subtitle ends "…each earned by the last one's weakness", so a
+        // substring match reads the subtitle whenever the row happens to put
+        // it above the count. Match the field's shape, then assert its value.
+        // (no regex literal: a backslash in this template literal is consumed
+        // twice on the way to the page — see CLAUDE.md)
+        const isCount = t => {
+          const s = t.trim();
+          if (!s.endsWith(' earned')) return false;
+          const n = s.slice(0, -7).split('/');
+          return n.length === 2 && n.every(x => x !== '' && Number.isInteger(Number(x)));
+        };
+        const line = (card?.innerText ?? '').split(String.fromCharCode(10)).find(isCount) ?? '';
         return { badge: badgeEl?.innerText.trim(), cardText: line.trim(), title: badgeEl?.getAttribute('title') };
       `)
       assert.equal(

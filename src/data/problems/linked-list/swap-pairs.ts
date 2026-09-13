@@ -73,39 +73,6 @@ export const problem: Problem = {
     }
     return dummy->next;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [1, 2, 3, 4],
-        marks: { 0: "focus", 1: "compare" },
-        labels: { 0: "first", 1: "second" },
-      },
-      caption:
-        "A dummy sits in front of 1 (not drawn) and prev is on it. The pair to swap is (1,2).",
-    },
-    {
-      cells: {
-        values: [2, 1, 3, 4],
-        marks: { 0: "done", 1: "window" },
-        labels: { 1: "prev" },
-      },
-      caption:
-        "1.next jumps to 3, 2.next takes 1, and the dummy points at 2 — so 2 is the new head. prev moves onto 1, the back of the pair.",
-    },
-    {
-      cells: {
-        values: [2, 1, 3, 4],
-        marks: { 1: "window", 2: "focus", 3: "compare" },
-        labels: { 1: "prev" },
-      },
-      caption: "Two nodes still follow prev, so (3,4) is the next pair.",
-    },
-    {
-      cells: { values: [2, 1, 4, 3], marks: { 2: "done", 3: "done" } },
-      caption:
-        "Same three assignments. prev.next.next is now null, the loop stops, and dummy.next is [2,1,4,3].",
-    },
-  ],
   alternatives: [
     {
       name: "Swap the values",

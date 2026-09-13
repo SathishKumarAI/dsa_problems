@@ -35,6 +35,7 @@ import { decodeString } from "../data/journeys/decode-string.ts"
 import { minCostStairs } from "../data/journeys/min-cost-stairs.ts"
 import { removeKDigits } from "../data/journeys/remove-k-digits.ts"
 import { reverseList } from "../data/journeys/reverse-list.ts"
+import { swapPairs } from "../data/journeys/swap-pairs.ts"
 import { firstLastPosition } from "../data/journeys/first-last-position.ts"
 import { longestConsecutiveRun } from "../data/journeys/longest-consecutive-run.ts"
 import { subarraySumK } from "../data/journeys/subarray-sum-k.ts"
@@ -178,6 +179,7 @@ export const JOURNEYS: AnyJourney[] = [
   mergeTwoSorted as unknown as AnyJourney,
   validateBst as unknown as AnyJourney,
   reverseList as unknown as AnyJourney,
+  swapPairs as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

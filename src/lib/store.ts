@@ -10,7 +10,8 @@
 //   activity-days     string[]   ISO days with any activity (streak source)
 //   scorecard:<slug>  object[]   last 50 challenge runs
 //   prefs             object     speed, code tab, motion, reduced motion, rails,
-//                                problem panel, drawer
+//                                problem panel, drawer, problem-list filters,
+//                                recent palette picks
 //   spoilers          boolean    learner opted out of pattern-name masking
 
 import { useSyncExternalStore } from "react"
@@ -163,6 +164,15 @@ export interface Prefs {
   // learner has never touched it, so the act decides (R3).
   problemSections: string[] | null
   drawer: boolean // journey page (>= lg): the test-case drawer is open (R4)
+  // Problem-list filters. Here rather than in their own key because they are
+  // per-device settings, not progress: `prefs` is the one key export/import
+  // skips. Flat, not nested — usePrefs merges one level deep, so a nested
+  // object stored today would shadow a field added tomorrow.
+  filterQuery: string
+  filterLevel: "all" | "easy" | "medium" | "hard"
+  filterState: "all" | "unsolved" | "solved"
+  // command palette: keys of the last few picks ("p:<id>" | "j:<slug>")
+  recentSearch: string[]
 }
 export const DEFAULT_PREFS: Prefs = {
   speed: 50,
@@ -172,6 +182,10 @@ export const DEFAULT_PREFS: Prefs = {
   reading: true,
   problemSections: null,
   drawer: false,
+  filterQuery: "",
+  filterLevel: "all",
+  filterState: "all",
+  recentSearch: [],
 }
 
 // merged over the defaults so a pref added later reads as its default, not undefined

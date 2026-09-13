@@ -13,11 +13,18 @@ export const SHORTCUTS: { scope: string; items: Shortcut[] }[] = [
     items: [
       { keys: ["?"], does: "this list" },
       {
+        keys: ["Ctrl K", "⌘ K"],
+        does: "search every problem and journey — type, ↑ ↓ to move, ↵ to open (works while you are typing in a filter)",
+      },
+      {
         keys: ["f"],
         does: "focus — close the sidebar and the reading column, or open both again",
       },
       { keys: ["Esc"], does: "close a dialog" },
-      { keys: ["d"], does: "dark / light — same switch as the one in settings" },
+      {
+        keys: ["d"],
+        does: "dark / light — same switch as the one in settings",
+      },
     ],
   },
   {
