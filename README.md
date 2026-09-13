@@ -1,13 +1,20 @@
 # dsa.patterns — learn the insight, then the name
 
-One app: a pattern-organised interview practice set (**107 problems** across 10 patterns, SQL drills,
+One app: a pattern-organised interview practice set (**127 problems** across 10 patterns, SQL drills,
 stats flashcards) plus **learning journeys** — problems built all the way down, Brilliant/Khan style:
 the need first, approaches unlocked one at a time by the previous one's weakness, predictions
 mid-playback, quiz gates, your own code driving the animation, and the pattern named only at the
-reveal. **87 of the 107 problems have a journey**, drawn as a chip row, a grid, a tree (heaps reuse
-it), a linked list, a DP table or a bar chart — whichever the problem actually is. The twenty newest
-carry five approaches each and a static walkthrough until their journeys are written (B63). Plus a sorting /
-search / graph visualizer whose bars morph instead of teleporting.
+reveal. **93 of the 127 problems have a journey**, drawn as a chip row, a grid, a tree (heaps reuse
+it), a linked list, a DP table or a bar chart — whichever the problem actually is. The other 34 carry
+a static walkthrough until their journeys are written (B63). Plus a sorting / search / graph
+visualizer whose bars morph instead of teleporting.
+
+Every problem also carries an **approach ladder** — each way in, worst to best, with the weakness in
+the rung below it, in Python, Java and C++ — and an **arc**: one paragraph naming the single idea the
+whole ladder applies. Two written forms fall out of that: `docs/explained/` is generated from the
+data (one page per problem, with a runnable script driving every rung), and `docs/deep/` is authored
+long-form teaching — worked traces, mental models, the bug you are about to write, and what any of it
+is worth in an interview.
 
 Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha and Latte — dark, light or system, switchable in settings.
 Node 24 (runs the API and the tests without a build step).
