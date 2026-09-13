@@ -65,6 +65,109 @@ the inner pair search a converging-pointer walk (O(n) instead of a hash table), 
 deduplication two neighbour comparisons instead of a set of tuples. Sorting is destructive to the
 original positions — which would be fatal if the answer were indices. It is not; the answer is
 values. That is the licence to sort.
+---
+
+## Reading the Calculations
+
+This problem is the previous one wearing a hat. If you can read `sorted-pair-sum`, the only new
+things here are **one subtraction** and **three duplicate skips** — and the skips are where almost
+everyone's first attempt goes wrong.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `s = sorted(nums)` | a sorted **copy** | Sorting buys two separate things, below. A copy, because the caller's array is not yours to reorder | Sorting in place silently reorders the caller's data |
+| `i` | the **anchor** — the position of the first member of the triple | Fixing one value turns a three-way search into a two-way one | — |
+| `need = -s[i]` | what the **other two** must add up to | If `a + b + c == 0` then `b + c == -a`. One subtraction, and the problem becomes the previous problem | `+s[i]` searches for a triple summing to `2·s[i]`, which is a different question |
+| `lo`, `hi` | the converging pair, searching **only to the right of the anchor** | Starting `lo` at `i + 1` is what stops a triple being found twice in two different orders | `lo = 0` re-finds every earlier triple, permuted |
+| `s[i] == s[i - 1]` | "this anchor is a repeat of the last one" | Sorted, so equal values are neighbours. Its triples were all recorded on the previous pass | Without it, `[-1, -1, …]` reports `(-1, 0, 1)` twice |
+| `s[lo] == s[lo - 1]` after a hit | "this partner is a repeat" | Same reason, one level in | `[-2, 0, 0, 2, 2]` reports `(-2, 0, 2)` twice |
+
+### The one subtraction
+
+```
+   a + b + c == 0          three unknowns
+   b + c == -a             fix a, and the rest is a two-sum with target -a
+```
+
+That is the whole reframing. Fix each value in turn as the anchor, and what is left is exactly the
+problem solved in `sorted-pair-sum`: find two values in a sorted range that hit a target, by walking
+one pointer in from each end.
+
+### Why sorting is worth it twice
+
+Sorting costs `O(n log n)`, and it is easy to read that as the price of admission. It is not — it
+buys **two** separate things, and the second is the one people forget:
+
+| Sorting gives you | Which makes possible |
+|---|---|
+| an order | the two-pointer walk: comparing the ends tells you which end to retire |
+| **equal values side by side** | duplicate skipping in `O(1)` — "is this the same as the one before?" |
+
+Without the second, the natural fix for duplicates is a `set` of triples you have already emitted,
+which costs memory and hashes every triple. With it, the check is one comparison with the neighbour.
+
+Measured on the running example — every line printed by the script:
+
+```
+combinations that sum to zero, unsorted input: [(-1, 0, 1), (-1, 2, -1), (0, 1, -1)]
+distinct as sets:                              [(-1, -1, 2), (-1, 0, 1)]
+```
+
+Three raw triples, two real answers. The array holds `-1` twice, so the same triple is reachable by
+two different routes — and after sorting, those two routes become adjacent positions, which is why
+one comparison removes it.
+
+### The trace, in full
+
+`nums = [-1, 0, 1, 2, -1, -4]`, sorted to `[-4, -1, -1, 0, 1, 2]`:
+
+| `i` | anchor | `need = -s[i]` | The pair walk over the rest |
+|---|---|---|---|
+| `0` | `-4` | `4` | `-1+2=1 <4` → `-1+2=1 <4` → `0+2=2 <4` → `1+2=3 <4` → pointers meet, nothing |
+| `1` | `-1` | `1` | `-1+2=1` **hit** → `(-1, -1, 2)`; then `0+1=1` **hit** → `(-1, 0, 1)` |
+| `2` | `-1` | — | **skipped**: same as the previous anchor, its triples are already recorded |
+| `3` | `0` | `0` | `1+2=3 > 0` → `hi--` → pointers meet, nothing |
+
+Answer: `[(-1, -1, 2), (-1, 0, 1)]`.
+
+Row `2` is the duplicate skip earning its place. Without it the anchor `-1` runs again and finds
+`(-1, 0, 1)` a second time.
+
+### How to trace it by hand
+
+```
+  i   anchor   need   lo   hi   s[lo]+s[hi]   vs need   action
+```
+
+1. Sort first, and write the sorted array above the table. Every index below refers to it.
+2. For each anchor: skip it if it equals the one before, or you will re-find its triples.
+3. Inside, run `sorted-pair-sum` over `s[i+1 …]` with target `-s[i]`.
+4. **On a hit, move both pointers**, then skip any partner equal to the one just used. Moving only
+   one pointer after a hit re-finds the same pair.
+5. Stop the inner walk when the pointers meet, and move to the next anchor.
+
+### Reading a complexity out loud
+
+The outer loop is `O(n)` anchors and the inner walk is `O(n)`, so the search is `O(n²)`. The sort is
+`O(n log n)`, which is **smaller**, so it disappears into the total — the step that looks like the
+expensive one is the cheap one.
+
+What `O(n²)` buys, counted rather than argued:
+
+| `n` | Triples that exist | Inner steps taken |
+|---|---|---|
+| `6` | `20` | `10` |
+| `50` | `19 600` | `1 112` |
+| `200` | `1 313 400` | `18 440` |
+| `800` | `85 013 600` | `299 301` |
+
+At `n = 800` there are eighty-five million triples and the walk looks at under three hundred
+thousand steps. That gap is the anchor-plus-two-pointers idea, in numbers.
+
+---
+
 
 ---
 
@@ -243,6 +346,19 @@ you just used. One more freebie falls out of sortedness: once the anchor's own v
 every remaining element is positive too, three positives cannot sum to zero, and the whole loop can
 stop.
 
+> **Under the hood.** `sorted()` is Timsort, and it is worth knowing what that means here rather
+> than filing it as "`O(n log n)`". Timsort looks for runs that are already ordered and merges them,
+> so on input that is partly sorted it does far less than the bound suggests — on already-sorted
+> input it is a single `O(n)` scan. It also allocates: `sorted()` returns a new list, which is the
+> `O(n)` space this rung spends and the reason it does not disturb the caller's array.
+>
+> The practical point is the ordering of costs. The sort *looks* like the expensive step and it is
+> the cheap one: `O(n log n)` against the `O(n²)` search that follows, so at any size where this
+> problem is interesting the sort is a rounding error. Optimising it is the classic wrong instinct —
+> the step to attack is the one whose exponent is larger, and it is never the one that has a
+> library call attached to it.
+
+
 ### Worked example
 
 Input: `nums = [-1, 0, 1, 2, -1, -4]`, sorted to `[-4, -1, -1, 0, 1, 2]`.
@@ -410,6 +526,32 @@ as for speed. But given a sorted array, it is strictly dominated, and writing it
 answer invites the question "why are you carrying that set?"
 
 ---
+
+## How to Get Fluent
+
+1. **Say the reframing before writing anything.** *"Fix one value as the anchor; the other two have
+   to sum to minus that value, which is two-sum on a sorted array."* **Done when** you can say it
+   cold — it is the entire solution, and the code is transcription.
+
+2. **Hand-trace `[-1, 0, 1, 2, -1, -4]`.** Four anchors, one of them skipped. **Done when** your
+   table matches the one above row for row, including the skipped anchor and the reason for it.
+
+3. **Delete the duplicate skips and run it.** Both of them, one at a time, and see which input each
+   one was protecting against — the anchor skip fails on `[-1, -1, 0, 1]`, the partner skip on
+   `[-2, 0, 0, 2, 2]`. **Done when** you can name the input that breaks each skip, rather than
+   remembering that two skips exist.
+
+4. **Move only one pointer after a hit** and watch it loop on the same pair. **Done when** you can
+   say why both must move: the pair that just matched is used up, and leaving either end in place
+   re-finds it.
+
+5. **Do the siblings.** *Three Sum Closest* is this loop keeping the best distance instead of
+   testing for zero — and it needs **no** duplicate skipping, because it returns a number rather
+   than a set. *Four Sum* is one more anchor loop around this one. *Two Sum II* is the inner walk on
+   its own. **Done when** you can say which of the three needs duplicate handling and why.
+
+6. **A month later, the one sentence that should come back:** *fix one value and the rest is
+   two-sum; sort first, because sorting buys both the pointer walk and cheap duplicate skipping.*
 
 
 ---
@@ -778,6 +920,130 @@ def run_case(label: str, nums: list[int]) -> bool:
     return agree
 
 
+
+
+# ------------------------------------ the arithmetic, printed rather than told
+# Everything "Reading the Calculations" quotes is produced here: the anchor
+# trace with its skips, the duplicate argument, and the work count.
+def show_anchors(nums: list[int]) -> None:
+    """One line per anchor and per inner step, skips included."""
+    s = sorted(nums)
+    print(f"\n=== anchors and the pair walk, nums={nums} ===")
+    print(f"  sorted: {s}")
+    n = len(s)
+    found: list[tuple[int, int, int]] = []
+    for i in range(n - 2):
+        if i > 0 and s[i] == s[i - 1]:
+            print(f"  i={i} anchor {s[i]:>3}  SKIPPED: repeat of the previous anchor")
+            continue
+        need = -s[i]
+        lo, hi = i + 1, n - 1
+        print(f"  i={i} anchor {s[i]:>3}  need {need:>3} from s[{lo}..{hi}] = {s[lo:hi + 1]}")
+        while lo < hi:
+            total = s[lo] + s[hi]
+            if total == need:
+                print(f"      {s[lo]:>3} + {s[hi]:>3} = {total:>3}  == {need}  -> ({s[i]}, {s[lo]}, {s[hi]})")
+                found.append((s[i], s[lo], s[hi]))
+                lo += 1
+                hi -= 1
+                while lo < hi and s[lo] == s[lo - 1]:
+                    print(f"      skip the repeated partner {s[lo]}")
+                    lo += 1
+            elif total < need:
+                print(f"      {s[lo]:>3} + {s[hi]:>3} = {total:>3}  <  {need}  -> lo += 1")
+                lo += 1
+            else:
+                print(f"      {s[lo]:>3} + {s[hi]:>3} = {total:>3}  >  {need}  -> hi -= 1")
+                hi -= 1
+    print(f"  answer: {found}")
+
+
+def show_duplicates(nums: list[int]) -> None:
+    """Why sorting pays twice: equal values become neighbours."""
+    from itertools import combinations
+
+    raw = [c for c in combinations(nums, 3) if sum(c) == 0]
+    distinct = sorted({tuple(sorted(c)) for c in raw})
+    print("\n=== the same triple, reachable by two routes ===")
+    print(f"  combinations that sum to zero, unsorted input: {raw}")
+    print(f"  distinct as sets:                              {distinct}")
+    print("  the array holds a repeated value, so one triple is reachable twice.")
+    print("  sorted, those routes are ADJACENT, so one comparison removes the repeat")
+    print("  instead of a set of every triple already emitted.")
+
+
+def count_work() -> None:
+    """Inner steps taken, against triples that exist."""
+    import random
+
+    def steps(a: list[int]) -> int:
+        b = sorted(a)
+        n = len(b)
+        seen = 0
+        for i in range(n - 2):
+            if i > 0 and b[i] == b[i - 1]:
+                continue
+            lo, hi = i + 1, n - 1
+            while lo < hi:
+                seen += 1
+                total = b[lo] + b[hi]
+                if total == -b[i]:
+                    lo += 1
+                    hi -= 1
+                    while lo < hi and b[lo] == b[lo - 1]:
+                        lo += 1
+                elif total < -b[i]:
+                    lo += 1
+                else:
+                    hi -= 1
+        return seen
+
+    rng = random.Random(4)
+    print("\n=== inner steps, against the triples that exist ===")
+    print(f"  {'n':>6} {'triples that exist':>20} {'inner steps':>13}")
+    for size in (6, 50, 200, 800):
+        a = rng.sample(range(-size * 2, size * 2), size)
+        print(f"  {size:>6} {size * (size - 1) * (size - 2) // 6:>20,} {steps(a):>13,}")
+
+
+def measure_sort_share() -> None:
+    """The step that looks expensive is the cheap one."""
+    import random
+    import time
+
+    def timed(fn, repeat=3):
+        best = float("inf")
+        for _ in range(repeat):
+            start = time.perf_counter()
+            fn()
+            best = min(best, time.perf_counter() - start)
+        return best
+
+    rng = random.Random(11)
+    print("\n=== where the time actually goes ===")
+    print(f"  {'n':>6} {'sorting':>12} {'the O(n^2) search':>20}")
+    for size in (400, 1200):
+        a = rng.sample(range(-size * 2, size * 2), size)
+        sort_time = timed(lambda: sorted(a))
+
+        def search() -> None:
+            b = sorted(a)
+            n = len(b)
+            for i in range(n - 2):
+                lo, hi = i + 1, n - 1
+                while lo < hi:
+                    total = b[lo] + b[hi]
+                    if total == -b[i]:
+                        lo += 1
+                        hi -= 1
+                    elif total < -b[i]:
+                        lo += 1
+                    else:
+                        hi -= 1
+
+        print(f"  {size:>6} {sort_time * 1e6:>9.0f} us {timed(search) * 1e6:>17.0f} us")
+    print("  the sort is the rounding error; the search is the problem")
+
 def main() -> None:
     ok = True
 
@@ -810,6 +1076,11 @@ def main() -> None:
     print("stress: 600 random arrays cross-checked, all three approaches, canonicalised triples")
 
     print()
+    show_anchors([-1, 0, 1, 2, -1, -4])
+    show_duplicates([-1, 0, 1, 2, -1, -4])
+    count_work()
+    measure_sort_share()
+
     print("ALL APPROACHES AGREED ON EVERY CASE." if ok else "APPROACHES DISAGREED — see above.")
 
 

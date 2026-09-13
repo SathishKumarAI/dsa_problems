@@ -12,9 +12,9 @@ document in `docs/deep/`, and the sections [its spec](deep/README.md) requires.
 
 | Section | Have it | Missing | What a reader loses without it |
 |---|---|---|---|
-| Reading the Calculations | 3 | **124** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
-| How to Get Fluent | 3 | **124** | no drills: the page can be read and still not be practised |
-| Under the hood | 3 | **124** | a cost is taken on faith — what the language actually does is never shown |
+| Reading the Calculations | 4 | **123** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
+| How to Get Fluent | 4 | **123** | no drills: the page can be read and still not be practised |
+| Under the hood | 4 | **123** | a cost is taken on faith — what the language actually does is never shown |
 | Interview Priority | 81 | **46** | no guidance on which approaches to know cold |
 | The Overall Arc | 81 | **46** | the rungs never join into one story |
 | Comparison | 81 | **46** | no side-by-side of the trade-offs |
@@ -65,7 +65,7 @@ None.
 | [zero-matrix](learn/zero-matrix.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [sorted-pair-sum](learn/sorted-pair-sum.md) | two-pointers | yes | · | · | · | · | · | · |
 | [container-water](learn/container-water.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
-| [three-sum-zero](learn/three-sum-zero.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
+| [three-sum-zero](learn/three-sum-zero.md) | two-pointers | yes | · | · | · | · | · | · |
 | [valid-palindrome](learn/valid-palindrome.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [trap-rain-water](learn/trap-rain-water.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [sort-colors](learn/sort-colors.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
