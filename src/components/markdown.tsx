@@ -28,6 +28,21 @@ function Inline({ text }: { text: string }) {
               {span.text}
             </code>
           )
+        if (span.kind === "link")
+          return (
+            <a
+              key={i}
+              href={span.href}
+              // an outside link opens away; an in-repo one (../RESOURCES.md,
+              // sibling.md) would 404 in the app, so it is not a link there
+              {...(/^https?:/.test(span.href)
+                ? { target: "_blank", rel: "noreferrer" }
+                : {})}
+              className="text-chart-1 underline-offset-2 hover:underline"
+            >
+              <Inline text={span.text} />
+            </a>
+          )
         // Bold and italic re-enter, because the corpus nests code inside them
         // — "**Time — `O(n)`.**" is how every complexity bullet is written.
         // Without this the inner backticks render as literal characters.
@@ -172,6 +187,24 @@ export function Markdown({ blocks }: { blocks: Block[] }) {
                   </li>
                 ))}
               </ul>
+            )
+
+          // The hints fold, and the Java/C++ blocks. Closed by default is the
+          // point: the generated page puts the hints behind one so a reader
+          // chooses when to be nudged — the gate belongs to the learner.
+          case "details":
+            return (
+              <details
+                key={i}
+                className="max-w-[35em] rounded-lg border bg-card/40 px-4 py-3 [&[open]]:max-w-full"
+              >
+                <summary className="cursor-pointer text-body font-medium text-foreground marker:text-muted-foreground">
+                  <Inline text={block.summary} />
+                </summary>
+                <div className="pt-3">
+                  <Markdown blocks={block.blocks} />
+                </div>
+              </details>
             )
 
           case "rule":

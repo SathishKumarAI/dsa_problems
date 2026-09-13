@@ -1,11 +1,17 @@
-// A markdown parser for ONE corpus: `docs/deep/*_explained.md`.
+// A markdown parser for ONE corpus: `docs/learn/*.md`.
 //
-// It is deliberately not a markdown implementation. The corpus was measured
-// before this file was written — 80 documents, 3 322 headings (levels 1-3 only,
-// no `####`), 4 255 quote lines, 633 tables, 648 code fences, 146 bullets, and
-// ZERO links, images, nested lists, numbered lists or inline HTML. So those are
-// not supported, and adding a dependency to parse constructs the corpus does
-// not contain would have been the expensive way to get the same page.
+// It is deliberately not a markdown implementation. The corpus is measured,
+// and re-measured when it changes — which has already happened once. Written
+// against the 80 authored documents (headings levels 1-3 only, quote callouts,
+// tables, fences, bullets, and ZERO links or HTML), it then had to grow when
+// docs/learn merged those documents with the generated pages: that corpus has
+// 2 003 links, 879 `<details>` folds and an HTML comment banner on every one of
+// the 127 pages. Still no images, nested lists or numbered lists, so those are
+// still unsupported.
+//
+// The lesson, since it cost a rendering bug on a live page: a measurement is
+// true of the corpus you measured. Re-run it when the corpus changes:
+//   grep -ho '\[[^]]*\]([^)]*)' docs/learn/*.md | wc -l
 //
 // Two rules that came out of the measurement rather than out of taste:
 //
@@ -24,6 +30,7 @@ export type Span =
   | { kind: "code"; text: string }
   | { kind: "bold"; text: string }
   | { kind: "italic"; text: string }
+  | { kind: "link"; text: string; href: string }
 
 export type Block =
   | { kind: "heading"; level: 1 | 2 | 3; text: string }
@@ -32,17 +39,23 @@ export type Block =
   | { kind: "quote"; label?: string; paragraphs: string[] }
   | { kind: "table"; head: string[]; rows: string[][] }
   | { kind: "list"; items: string[] }
+  | { kind: "details"; summary: string; blocks: Block[] }
   | { kind: "rule" }
 
-// `**bold**` before `*italic*` so the longer marker wins; code first of all.
-const INLINE = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*\n]+\*)/g
+// Code first of all, so nothing inside a span is re-parsed; then links, whose
+// brackets would otherwise survive as literal text; then `**bold**` before
+// `*italic*`, so the longer marker wins.
+const INLINE = /(`[^`]+`|\[[^\]\n]+\]\([^)\s]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*)/g
 
 export function inlineSpans(text: string): Span[] {
   const out: Span[] = []
   for (const piece of text.split(INLINE)) {
     if (!piece) continue
+    const link = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(piece)
     if (piece.length > 1 && piece.startsWith("`") && piece.endsWith("`")) {
       out.push({ kind: "code", text: piece.slice(1, -1) })
+    } else if (link) {
+      out.push({ kind: "link", text: link[1], href: link[2] })
     } else if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
       out.push({ kind: "bold", text: piece.slice(2, -2) })
     } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
@@ -69,7 +82,15 @@ export function parseMarkdown(source: string): Block[] {
   // CRLF: git checks these files out with Windows endings, and a parser that
   // splits on "\n" alone leaves a trailing \r on every line — which turns a
   // fence into "```python\r" and matches nothing (CLAUDE.md, the CRLF trap).
-  const lines = source.replace(/\r\n/g, "\n").split("\n")
+  //
+  // HTML comments go first and whole: every generated page opens with a "do
+  // not edit this, edit the data" banner meant for whoever opens the file, not
+  // for a reader. Stripped before anything else, so a comment spanning several
+  // lines cannot leave half of itself behind as a paragraph.
+  const lines = source
+    .replace(/\r\n/g, "\n")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .split("\n")
   const blocks: Block[] = []
   let i = 0
 
@@ -89,6 +110,37 @@ export function parseMarkdown(source: string): Block[] {
       while (i < lines.length && !/^```\s*$/.test(lines[i])) body.push(lines[i++])
       i++ // the closing fence
       blocks.push({ kind: "code", lang: fence[1] || "text", code: body.join("\n") })
+      continue
+    }
+
+    // <details><summary>…</summary> … </details> — how the generated pages fold
+    // the hints and the Java/C++ blocks away. The inner markdown is parsed by
+    // the same function, so a fold can hold code, tables, anything.
+    if (/^<details>\s*$/.test(line)) {
+      i++
+      let summary = ""
+      const inner: string[] = []
+      let depth = 1
+      while (i < lines.length) {
+        const l = lines[i]
+        if (/^<details>\s*$/.test(l)) depth++
+        if (/^<\/details>\s*$/.test(l)) {
+          depth--
+          if (depth === 0) {
+            i++
+            break
+          }
+        }
+        const sum = /^<summary>(.*)<\/summary>\s*$/.exec(l)
+        if (sum && !summary) summary = sum[1]
+        else inner.push(l)
+        i++
+      }
+      blocks.push({
+        kind: "details",
+        summary: summary || "Show more",
+        blocks: parseMarkdown(inner.join("\n")),
+      })
       continue
     }
 
@@ -171,6 +223,7 @@ export function parseMarkdown(source: string): Block[] {
       !lines[i].startsWith("```") &&
       !/^-{3,}\s*$/.test(lines[i]) &&
       !/^[-*]\s+/.test(lines[i]) &&
+      !/^<\/?details>\s*$/.test(lines[i]) &&
       !(lines[i].trimStart().startsWith("|") && isSeparator(lines[i + 1] ?? ""))
     ) {
       paragraph.push(lines[i].trim())

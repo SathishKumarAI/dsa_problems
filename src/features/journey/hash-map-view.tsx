@@ -4,7 +4,7 @@
 
 import { cn } from "@/lib/utils"
 import type { HashModel } from "@/engine"
-import { HASH_LOAD } from "@/engine/hashmap"
+import { HASH_LOAD, HASH_MIN_BUCKETS } from "@/engine/hashmap"
 
 const fmt = (m: HashModel, e: { key: number; value: number }) =>
   m.fmt === "times" ? `${e.key} ×${e.value}` : `${e.key} @ ${e.value}`
@@ -182,6 +182,19 @@ export function HashMapView({ map }: { map: HashModel }) {
             {map.entries.length} key{map.entries.length === 1 ? "" : "s"} in{" "}
             {map.buckets} buckets — load{" "}
             <b className="font-mono text-foreground">{map.load.toFixed(2)}</b>
+            {/* "Why 8?" was a real question from a reader, and the panel had no
+                answer on it anywhere. The number is not arbitrary and the
+                reason is worth one clause. */}
+            {/* not text-meta: this is a sentence, and the UI suite holds every
+                sentence at the ui step or above (U6, U7) */}
+            {map.buckets === HASH_MIN_BUCKETS && (
+              <span>
+                {" "}
+                — it starts at {HASH_MIN_BUCKETS} because a table needs slots
+                before the first key arrives, and a power of two makes{" "}
+                <span className="font-mono">mod</span> a bit-mask
+              </span>
+            )}
           </span>
           <span
             className="relative h-1.5 w-24 overflow-hidden rounded-full bg-muted"

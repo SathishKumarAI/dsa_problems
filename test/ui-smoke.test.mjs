@@ -1710,6 +1710,14 @@ describe(
           // how nested code inside bold ("**Time — \`O(n)\`.**") showed up
           backticks: prose.filter(line => line.includes('\`')).slice(0, 3),
           rawFence: prose.some(line => line.includes('\`\`\`')),
+          // the merged page brought three constructs the parser had never
+          // seen: an edit-me comment on every page, 2003 links and 879 folds
+          rawComment: document.body.innerText.includes('<!--'),
+          folds: document.querySelectorAll('details').length,
+          links: document.querySelectorAll('article a[href]').length,
+          // includes(), not a regex: this script is sent as a template literal
+          // and backslashes do not survive it (it has bitten this file twice)
+          rawBrackets: prose.filter(l => l.includes('](http')).length,
           scrollW: document.documentElement.scrollWidth,
           clientW: document.documentElement.clientWidth,
         };
@@ -1725,6 +1733,10 @@ describe(
         "markdown syntax reached the screen"
       )
       assert.equal(out.rawFence, false, "a code fence marker reached the screen")
+      assert.equal(out.rawComment, false, "the edit-me banner reached the screen")
+      assert.ok(out.folds >= 1, "the hints fold did not render as a <details>")
+      assert.ok(out.links >= 1, "no link rendered — markdown links reached the screen raw")
+      assert.equal(out.rawBrackets, 0, "an unparsed markdown link is on screen")
       assert.deepEqual(
         out.backticks,
         [],
