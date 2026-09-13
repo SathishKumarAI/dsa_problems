@@ -2,45 +2,57 @@
 
 ## Understanding the Problem
 
-You are handed a number that has been taken apart. Instead of one value, you get a list with one
-decimal digit per slot, written the way you would write it on paper — most significant digit first,
-so `[1, 9, 9]` is the number one hundred and ninety-nine. Add one to that number and hand back the
-answer in the same taken-apart form.
+Someone has taken a number apart. Instead of a single value you get a list holding one decimal digit
+per slot, written the way you would write it on paper — most significant first — so `[1, 9, 9]` is
+one hundred and ninety-nine. Add one to that number and hand the answer back in the same taken-apart
+form.
 
 **The core question:** which digits actually change when you add one, and does the answer need more
-room than the input had? The naive approach — glue the digits back into a single number, add one,
-and take it apart again — is not slow, it is *unsafe*: the number is allowed to have a hundred
-digits, and no fixed-width integer type in Java, C++, Go or Rust holds a hundred-digit number. The
-whole reason this problem hands you an array instead of an `int` is that the value may not fit in
-an `int`.
+room than the input had? The obvious move is to glue the digits back into a number, add one, and
+take it apart again. That is not slow. It is **unsafe** — the number may have a hundred digits, and
+no fixed-width integer type in Java, C++, Go or Rust holds a hundred-digit number.
 
-That is worth saying plainly, because it is the one place this problem is usually misread. In
-Python the naive approach is *correct* — Python integers grow without limit — so a Python solver
-can pass every test with it and never learn what the problem is about. The ladder below is
-therefore not primarily a ladder of speed. It is a ladder of **not depending on a width you were
-never promised**, and then of doing the addition with less state and fewer passes.
+That is where this problem is usually misread, so it is worth naming the misconception outright.
+
+> **Watch out.** The thought you are about to have is *"the array is just an awkward way of writing
+> an `int`, so my first job is to turn it back into one."* It is the other way round. The **array**
+> is the real representation, and the `int` is the thing that cannot hold it. In Python the naive
+> version is genuinely correct — Python integers grow without limit — so a Python solver can pass
+> every test and never discover what the problem is about.
+
+The ladder below is therefore not mainly a ladder of speed. It is a ladder of **width independence**
+first, and then of doing the addition with less state and fewer passes.
 
 ### The constraints, and what each one unlocks
 
-| Constraint | What it means for you |
+| Constraint | What it unlocks, or forbids |
 |---|---|
-| `1 <= digits.length <= 100` | Never empty, so `digits[len - 1]` is always a real slot and no approach needs an empty-input branch. But a hundred digits is about a 333-bit number. **This is the constraint that kills Approach 1 outside Python**: the largest unsigned 64-bit integer is 20 digits long, so from 20 digits on a `long long` accumulator silently wraps. Measured below. |
-| `0 <= digits[i] <= 9` | Every slot holds exactly one decimal digit. Adding one to a digit gives at most 10, so **the carry out of any position is 0 or 1 and never more.** That is what lets every approach carry a single flag instead of an arbitrary number, and why `total // 10` is always 0 or 1. |
-| no leading zeros, except that `[0]` is a legal way to write zero | The input is a canonical spelling of the number, and the output must be one too — `[0, 1, 0, 0]` is not an acceptable way to write one hundred. This is why the growing case prepends exactly one `1` rather than padding. |
-| a carry out of the leading digit makes the answer exactly one digit longer | **This unlocks the last two rungs.** Growth is not arbitrary: the answer is either the same length or one longer, it is one longer only when every digit was a 9, and in that case it is always a `1` followed by that many zeros. Knowing the shape of the only growing case in advance is what lets Approach 4 decide it before the loop and Approach 5 recognise it by falling off the front. |
-| we add one to a **non-negative** number | There is no borrow, no sign, and no subtraction anywhere. The whole problem is one direction of carry. |
+| `1 <= digits.length <= 100` | Never empty, so `digits[-1]` is always a real slot and no rung needs an empty-input branch. But a hundred digits is roughly a 333-bit number, and the largest unsigned 64-bit integer is 20 digits. **This is what kills Approach 1 outside Python** — measured below, nineteen nines already overflows a signed 64-bit accumulator. |
+| `0 <= digits[i] <= 9` | One decimal digit per slot, so a digit plus one is at most 10 and **the carry out of any column is 0 or 1, never more**. That is why every rung can hold a single flag instead of an arbitrary number, and why `total // 10` is always 0 or 1. |
+| no leading zeros, except that `[0]` is a legal way to write zero | The input is a canonical spelling and the output must be one too. `[0, 1, 0, 0]` is not an acceptable way to write one hundred, which is why the growing case prepends exactly one `1` rather than padding. |
+| a carry out of the leading digit makes the answer exactly one digit longer | **This unlocks the last two rungs.** Growth is not arbitrary: the answer is the same length or one longer; it is longer only when every digit was a 9; and in that case it is always a `1` followed by that many zeros. Knowing the only growing case in closed form is what lets Approach 4 decide it before the loop and Approach 5 recognise it by falling off the front. |
+| we add one to a **non-negative** number | No borrow, no sign, no subtraction. The entire problem is one direction of carry. |
 
-The worked example used in every section below is the statement's third example — chosen because it
-is the only one that exercises a carry that *travels and then stops*, which is the behaviour the
-later rungs are built around:
+The worked example below is the statement's third — chosen because it is the only one that exercises
+a carry that **travels and then stops**, which is the behaviour the later rungs are built around:
 
 ```
 digits = [1, 9, 9]        answer: [2, 0, 0]   (199 + 1 = 200)
 ```
 
-The all-nines input `[9, 9, 9] -> [1, 0, 0, 0]` is the other shape worth holding in your head, and
-it appears in the "Common mistake" sections because it is where four of the five rungs break when
-they break.
+`[9, 9, 9] -> [1, 0, 0, 0]` is the other shape to hold in your head. It appears in the "Common
+mistake" sections because it is where four of the five rungs break when they break.
+
+### Shared scaffolding
+
+One decision recurs in three rungs: what the answer looks like when the carry escapes the front. It
+is lifted to a single named helper so there is exactly one place to change it.
+
+```python
+def all_nines_answer(length: int) -> list[int]:
+    """The answer when every digit was a 9: a leading 1 and `length` zeros."""
+    return [1] + [0] * length
+```
 
 ---
 
@@ -48,44 +60,38 @@ they break.
 
 ### The idea
 
-*What does "add one to this number" mean?* Literally that: fold the digits into the number they
-spell, add one, and peel the digits back off with repeated division by ten. It reads like the
-definition of the problem, which is exactly why it is the first thing almost everyone writes.
+*What does "add one to this number" mean?* Literally that — fold the digits into the value they
+spell, add one, peel the digits back off with repeated division by ten. It reads like the definition
+of the problem, which is exactly why nearly everyone writes it first.
 
 ### How to think about it
 
-Think of the digit array as a number in a box with the lid off, and this approach as closing the
-lid, doing ordinary arithmetic, and opening it again. Folding is Horner's rule — start at zero and
-for each digit do "times ten, plus the digit" — which is just the reading you do in your head when
-you see `199`. Unfolding is the reverse: `% 10` shakes the last digit loose, `// 10` throws it
-away, repeat until nothing is left. The two halves are mirror images, and the peeling half produces
-digits in the *wrong order*, least significant first, so the last act is to flip them. Everything
-about this is honest arithmetic; the danger is entirely in the box, because the box in most
-languages has a fixed size.
+> **Intuition.** The digit array is a number in a **box** with the lid off. This approach closes the
+> lid, does ordinary arithmetic, and opens it again. Folding is the reading you already do in your
+> head — "times ten, plus the next digit" — and unfolding is its mirror: `% 10` shakes the last
+> digit loose, `// 10` throws it away. The peeling half produces digits least significant first, so
+> the final act is a flip. The arithmetic is honest; the danger is the box, because in most
+> languages the box has a fixed size.
 
 ### Worked example
 
-`digits = [1, 9, 9]`.
-
-Fold, one digit at a time:
+`digits = [1, 9, 9]`. Folding, one column at a time:
 
 | digit read | `value` before | `value * 10 + digit` |
 |---|---|---|
-| 1 | 0 | 1 |
-| 9 | 1 | 19 |
-| 9 | 19 | **199** |
+| `1` | `0` | `1` |
+| `9` | `1` | `19` |
+| `9` | `19` | `199` |
 
-Add one: `value = 200`.
+Add one: `value = 200`. Peeling, least significant first:
 
-Peel, least significant first:
-
-| step | `value` | `value % 10` | `out` so far | `value // 10` |
+| step | `value` | `value % 10` | `out` after | `value // 10` |
 |---|---|---|---|---|
-| 1 | 200 | 0 | `[0]` | 20 |
-| 2 | 20 | 0 | `[0, 0]` | 2 |
-| 3 | 2 | 2 | `[0, 0, 2]` | 0 |
+| 1 | `200` | `0` | `[0]` | `20` |
+| 2 | `20` | `0` | `[0, 0]` | `2` |
+| 3 | `2` | `2` | `[0, 0, 2]` | `0` |
 
-`value` is now 0, so the loop stops. `out` is `[0, 0, 2]`, backwards. Reverse it: `[2, 0, 0]`.
+`value` is 0, so the loop stops. `out` is `[0, 0, 2]` — backwards. Reverse: `[2, 0, 0]`.
 
 ### Code
 
@@ -105,46 +111,39 @@ def plus_one_build_integer(digits: list[int]) -> list[int]:
 
 ### Common mistake
 
-Forgetting `out.reverse()`. The peeling loop necessarily produces digits from the right-hand end,
-so the list it builds is the answer written backwards, and nothing about the code looks wrong.
-Running the version without that line on `[1, 9, 9]` returns:
+> **Watch out.** The misconception is that the peeling loop produces the answer. It produces the
+> answer **backwards**, necessarily — division always hands you the rightmost digit — and nothing in
+> the code looks wrong without the flip.
 
-```
-[0, 0, 2]
-```
+Running the version without `out.reverse()` on `[1, 9, 9]` returns `[0, 0, 2]`. Two, not two
+hundred. It survives any palindromic test — `[1, 2, 1]` becomes `[1, 2, 2]` either way — which is how
+it reaches a hidden test alive.
 
-Two, not two hundred. It passes any palindromic test input — `[1, 2, 1]` becomes `[1, 2, 2]` and
-reversing changes nothing visible on a short glance — which is what lets it survive to a hidden
-test.
+The larger mistake is not a Python mistake at all, and it is why this rung is in the document:
+**writing it in a language with fixed-width integers.** Simulating a wrapping 64-bit signed
+accumulator gives, measured:
 
-The much larger mistake is not a Python mistake at all, and it is the reason this rung exists in
-the document: **writing this in a language with fixed-width integers.** Simulating a C++
-`long long` accumulator (64 bits, wrapping) gives, measured:
-
-| input | what the accumulator holds after folding + 1 | digits it then peels off |
+| input | accumulator after folding and `+ 1` | digits it then peels off |
 |---|---|---|
-| nineteen 9s | −8446744073709551616 | `[]` — the peel loop's `while value > 0` never runs |
-| twenty 9s | 7766279631452241920 | `[7, 7, 6, 6, 2, 7, 9, 6, 3, 1, 4, 5, …]` |
-| one hundred 9s | 0 | `[]` |
+| nineteen `9`s | `-8446744073709551616` | `[]` — `while value > 0` never runs |
+| twenty `9`s | `7766279631452241920` | `[7, 7, 6, 6, 2, 7, 9, 6, 3, 1, 4, 5, …]` |
+| one hundred `9`s | `0` | `[]` |
 
 Nineteen nines is already past the end: the accumulator has gone negative, the peel loop does not
-execute once, and the function returns an empty array. Twenty nines wraps to a positive value and
-returns twenty digits of confident nonsense. A hundred nines lands exactly on zero. None of these
-throw; all of them are wrong; and the constraints permit all three.
+execute once, and the function returns an empty array. Twenty nines wraps positive and returns twenty
+digits of confident nonsense. A hundred nines lands exactly on zero. None throw; all are wrong; the
+constraints permit all three.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(n)** *in Python*. Time is one pass to fold and one pass to peel, both linear in
-the digit count — though with Python's unbounded integers, arithmetic on an n-digit number is not
-truly constant-time, so the honest bound is closer to O(n²) for the multiply-accumulate on very
-large n. Space is the output list plus, again in Python, the big integer itself, which is
-proportional to n.
+**Time `O(n)`, space `O(n)`** in Python. Time is one folding pass and one peeling pass, both linear in
+the digit count — though with unbounded integers the multiply-accumulate on an n-digit value is not
+truly constant-time, so the honest bound approaches `O(n²)` for large `n`. Space is the output list
+plus the big integer itself, both proportional to `n`.
 
-Use it only when you know the value fits and you want the shortest possible code — for example
-inside a script where the input is a three-digit product code. Name it in an interview and then
-reject it out loud on the width argument: "in Python this works, but the array representation only
-exists because the number might not fit a machine word, so I will not depend on it." Rejecting it
-for the right reason scores better than never mentioning it.
+Use it when the value is known to fit and you want the shortest code — a three-digit product code in
+a script, say. In an interview, name it and reject it on the width argument; rejecting a technique
+for the right reason reads better than never having considered it.
 
 ---
 
@@ -152,41 +151,38 @@ for the right reason scores better than never mentioning it.
 
 ### The idea
 
-*If the number might not fit in a machine word, can we add one without ever forming the number?*
-Yes — do the addition the way you were taught on paper, one column at a time, carrying. A loop
-naturally runs left to right while addition naturally runs right to left, so flip the digits first,
-carry forward, and flip back.
+*If the number might not fit a machine word, can we add one without ever forming the number?* Yes —
+do it the way you were taught on paper, one column at a time, carrying. Addition runs right to left
+and a `for` loop runs left to right, so flip the digits, carry forward, flip back.
 
-This fixes Approach 1's fatal weakness: **it depends on an integer type wide enough to hold the
-whole value, and no fixed-width type is wide enough for a hundred digits.** Carrying one digit at a
-time has no width at all.
+This fixes Approach 1's fatal weakness: **it depends on an integer type wide enough for the whole
+value**, and no fixed-width type is wide enough for a hundred digits. Carrying one column at a time
+has no width at all.
 
 ### How to think about it
 
-Picture the column addition you did as a child: the digits stacked, the little carried 1 written
-above the next column, working right to left. This approach is exactly that, with one simplification
-— the bottom row is all zeros except a single 1 in the units column, so instead of adding two digits
-you add one digit and a carry that starts at 1. The reversal is pure ergonomics: the arithmetic
-wants to start at the units and a `for` loop wants to start at index 0, so reversing makes those the
-same place. When the columns run out and the carry is still alive, there is one more column — the
-one you would have written to the left of everything — and that is the digit you append.
+> **Intuition.** Column addition, exactly as you did it at school: digits stacked, the little carried
+> `1` written above the next column, working right to left. The only simplification is that the
+> bottom row is all zeros except a single `1` in the units column — so instead of adding two digits
+> you add one digit and a **carry** that starts at 1. The reversal is pure ergonomics: the arithmetic
+> wants to start at the units and a loop wants to start at index 0, so reversing makes those the same
+> place. When the columns run out with the carry still alive, there is one more column — the one you
+> would have written to the left of everything.
 
 ### Worked example
 
-`digits = [1, 9, 9]`.
+`digits = [1, 9, 9]`. Reverse first: `rev = [9, 9, 1]`, so index 0 is now the units.
 
-Reverse first: `rev = [9, 9, 1]` — now index 0 is the units.
-
-| `i` | `rev[i]` | `carry` in | `total` | `rev[i]` becomes `total % 10` | `carry` out | `rev` after |
+| `i` | `rev[i]` | `carry` in | `total` | `rev[i]` becomes | `carry` out | `rev` after |
 |---|---|---|---|---|---|---|
-| 0 | 9 | 1 | 10 | 0 | 1 | `[0, 9, 1]` |
-| 1 | 9 | 1 | 10 | 0 | 1 | `[0, 0, 1]` |
-| 2 | 1 | 1 | 2 | 2 | 0 | `[0, 0, 2]` |
+| 0 | `9` | `1` | `10` | `0` | `1` | `[0, 9, 1]` |
+| 1 | `9` | `1` | `10` | `0` | `1` | `[0, 0, 1]` |
+| 2 | `1` | `1` | `2` | `2` | `0` | `[0, 0, 2]` |
 
 The loop ends with `carry = 0`, so nothing is appended. Reverse back: `[2, 0, 0]`.
 
-Contrast with `[9, 9, 9]`: every column produces a carry, the loop ends with `carry = 1`, the append
-fires, `rev` becomes `[0, 0, 0, 1]`, and reversing gives `[1, 0, 0, 0]`.
+Contrast `[9, 9, 9]`: every column carries, the loop ends with `carry = 1`, the append fires, `rev`
+becomes `[0, 0, 0, 1]`, and reversing gives `[1, 0, 0, 0]`.
 
 ### Code
 
@@ -206,31 +202,32 @@ def plus_one_reverse_carry(digits: list[int]) -> list[int]:
 
 ### Common mistake
 
-Dropping the `if carry: rev.append(carry)` line. It is the only statement outside the loop, it looks
-like tidying-up, and on most inputs it does nothing — so it gets deleted or never written. Running
-the version without it:
+> **Watch out.** The misconception is that the loop finishes the job. It finishes the **columns**. A
+> carry still in flight after the last column is not leftover state to tidy up — it is a digit of the
+> answer that has not been written yet.
 
-| input | what it returns | correct answer |
+Dropping `if carry: rev.append(carry)` is easy: it is the only statement outside the loop, it looks
+like housekeeping, and on most inputs it does nothing. Measured:
+
+| input | without the append | correct |
 |---|---|---|
 | `[1, 9, 9]` | `[2, 0, 0]` | `[2, 0, 0]` — passes |
 | `[9, 9, 9]` | `[0, 0, 0]` | `[1, 0, 0, 0]` |
 
-`[9, 9, 9]` comes back as `[0, 0, 0]`: the carry that should have become the new leading digit was
-computed, stored in a variable, and then thrown away when the function returned. The bug is invisible
-on every input that is not all nines, which is why "run it on all nines" is the first test to write
-for this problem, not the last.
+`[9, 9, 9]` comes back as `[0, 0, 0]` — the new leading digit was computed, stored in a variable, and
+thrown away on return. Invisible on every input that is not all nines, which is why "run it on all
+nines" is the first test to write for this problem, not the last.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(n).** Time is three linear passes — reverse, carry, reverse — and each column
-does a fixed amount of arithmetic, so the constant is small but the pass count is three. Space is
-O(n) because `digits[::-1]` allocates a full copy; nothing here writes into the caller's array.
+**Time `O(n)`, space `O(n)`.** Time is three linear passes — reverse, carry, reverse — each column
+doing fixed arithmetic, so the constant is small but the pass count is three. Space is `O(n)` because
+`digits[::-1]` allocates a full copy; nothing here writes into the caller's array.
 
 Use it when the input must not be mutated and you would rather copy than reason about aliasing, or
-when you are writing the general "add two arbitrary-length numbers" routine — there the reversed
-layout genuinely pays, because you are aligning two arrays of different lengths at their units
-digits and index 0 being the units makes that alignment free. For adding exactly one, the next rung
-gets the same answer without the copies.
+when writing general **multi-digit addition** — there the reversed layout genuinely pays, because
+aligning two arrays of different lengths at their units digits is free when index 0 is the units. For
+adding exactly one, the next rung gets the same answer without the copies.
 
 ---
 
@@ -238,23 +235,21 @@ gets the same answer without the copies.
 
 ### The idea
 
-*Why physically turn the digits around when an index can just count downwards?* Leave the array
-alone and run `i` from the last slot to the first. While you are at it, notice that once the carry
-becomes 0 nothing further can change, so the loop can stop early instead of marching through digits
-it will not touch.
+*Why physically turn the digits around when an index can count downwards?* Leave the array alone and
+run `i` from the last slot to the first. And once the carry becomes 0, nothing further can change, so
+the loop can stop early rather than marching through digits it will not touch.
 
-This fixes Approach 2's weakness: **it pays two extra passes and a full-size copy purely to face the
-digits the other way**, which a decrementing index does for free.
+This fixes Approach 2's weakness: **two extra passes and a full-size copy purely to face the digits
+the other way**, which a decrementing index does for nothing.
 
 ### How to think about it
 
-Same paper addition, but instead of rotating the sheet you read it right to left. The carry is a
-message being passed leftwards, and the loop condition says two things at once: keep going while
-there are still columns (`i >= 0`) **and** while there is still a message to deliver (`carry`). The
-moment a column absorbs the carry without producing one, the message is spent and every digit
-further left is already correct — so the loop exits and you are done. If instead the columns run out
-while a message is still in flight, that message has nowhere to go but a brand-new column at the
-front, and that is the one case where the array grows.
+> **Intuition.** Same paper addition, but instead of rotating the sheet you read it right to left.
+> The carry is a **message** being passed leftwards, and the loop condition says two things at once:
+> keep going while there are columns (`i >= 0`) *and* while there is still a message to deliver
+> (`carry`). The moment a column absorbs the carry without producing one, the message is spent and
+> every digit further left is already correct. If the columns run out with a message still in flight,
+> it has nowhere to go but a brand-new column at the front.
 
 ### Worked example
 
@@ -262,15 +257,12 @@ front, and that is the one case where the array grows.
 
 | `i` | `digits[i]` | `carry` in | `total` | `digits[i]` becomes | `carry` out | `digits` after | loop continues? |
 |---|---|---|---|---|---|---|---|
-| 2 | 9 | 1 | 10 | 0 | 1 | `[1, 9, 0]` | yes — `i = 1`, carry alive |
-| 1 | 9 | 1 | 10 | 0 | 1 | `[1, 0, 0]` | yes — `i = 0`, carry alive |
-| 0 | 1 | 1 | 2 | 2 | 0 | `[2, 0, 0]` | **no — carry is now 0** |
+| 2 | `9` | `1` | `10` | `0` | `1` | `[1, 9, 0]` | yes — `i = 1`, carry alive |
+| 1 | `9` | `1` | `10` | `0` | `1` | `[1, 0, 0]` | yes — `i = 0`, carry alive |
+| 0 | `1` | `1` | `2` | `2` | `0` | `[2, 0, 0]` | **no** — carry is 0 |
 
-The loop exits on the carry, not on the index. `carry` is 0, so the array is returned as it stands:
-`[2, 0, 0]`.
-
-Note what the early exit buys on a different input: `[1, 2, 3]` does exactly one iteration and stops,
-never reading the 1 or the 2 at all.
+The loop exits on the carry, not on the index, and `[2, 0, 0]` is returned as it stands. On `[1, 2, 3]`
+the same loop does exactly one iteration and never reads the `1` or the `2`.
 
 ### Code
 
@@ -284,39 +276,40 @@ def plus_one_carry_back(digits: list[int]) -> list[int]:
         carry = total // 10
         i -= 1
     if carry:
-        return [1] + digits
+        return all_nines_answer(len(digits))
     return digits
 ```
 
 ### Common mistake
 
-Writing the loop as `while carry:` and leaving out `i >= 0`. The reasoning feels airtight — "keep
-going while there is a carry, and there cannot be a carry once a digit absorbs it" — and it is
-airtight everywhere except all nines, where the carry survives past the front of the array. In a
-language with bounds checking you get a crash, which is at least loud. **In Python you get a silent
-wrong answer**, because `digits[-1]` is not an error: it wraps around to the last element. Measured
-on `[9, 9, 9]`:
+> **Watch out.** The misconception is *"there cannot be a carry once a digit absorbs it, so `while
+> carry` is enough"*. True — and irrelevant, because on all nines **no digit ever absorbs it**. The
+> index guard is not redundancy, it is the only thing standing between the loop and the front of the
+> array.
+
+In a bounds-checked language you get a crash, which is at least loud. In Python you get a silent
+wrong answer, because `digits[-1]` is not an error — it wraps to the last element. Measured on
+`[9, 9, 9]` with `while carry:` alone:
 
 ```
 [0, 0, 1]
 ```
 
-Trace it: the three nines become zeros, `i` reaches −1, the loop runs once more, `digits[-1]` reads
-the final 0, adds the carry, and writes 1 into the *last* slot. The carry is now spent, so the
-`if carry` branch never fires and the function returns a three-digit array whose value is 1 — the
-answer should be 1000. Python's negative indexing turned an out-of-bounds bug into a plausible-looking
-number, which is strictly worse than a crash.
+Trace it: the three nines become zeros, `i` reaches `-1`, the loop runs once more, `digits[-1]` reads
+the final `0`, adds the carry, and writes `1` into the **last** slot. The carry is now spent, so the
+growing branch never fires, and a three-digit array worth 1 is returned where 1000 was wanted.
+Negative indexing turned an out-of-bounds bug into a plausible number, which is strictly worse than a
+crash.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1).** Time is one backward pass that stops as soon as the carry dies — worst
-case (all nines) it visits every digit, best case (last digit below 9) it visits exactly one, and the
-average over uniformly random digits is about 1.1 columns. Space is constant: two scalars, and the
-array is edited in place. The only allocation is `[1] + digits` in the growing case, which happens
-for exactly one input shape.
+**Time `O(n)`, space `O(1)`.** Time is one backward pass that stops when the carry dies — worst case
+all nines visits every digit, best case one digit, and on uniformly random digits the expected count
+is about 1.11 columns, because a step continues only when it lands on a 9. Space is two scalars plus
+in-place edits; the only allocation is the growing branch, reached by one input shape.
 
-Use it when you want one routine that generalises — replace `carry = 1` with a second number's digits
-and this is the body of add-two-numbers and of string addition without changing its structure. For
+Use it when you want a routine that **generalises**: replace `carry = 1` with a second number's
+digits and this is the body of add-two-numbers and of string addition, structure unchanged. For
 adding literally one, Approach 5 says the same thing with less state.
 
 ---
@@ -326,53 +319,49 @@ adding literally one, Approach 5 says the same thing with less state.
 ### The idea
 
 *The carry variable is the part that keeps going wrong — can the problem be arranged so there is no
-carry to get wrong?* Only one input ever grows, and its answer is completely known in advance: all
-nines becomes a 1 followed by that many zeros. Test for it up front and return that directly;
-everything else can then zero out its trailing nines and bump the first digit that is not one,
-with no carry state at all.
+carry?* Only one input ever grows, and its answer is known in advance. Test for it up front and
+return it directly; everything else can zero its trailing nines and bump the first digit that is not
+one, with no carry state at all.
 
-This fixes Approach 3's weakness: **the carry is state that must be read correctly *after* the loop
-ends, and the after-the-loop read is exactly where people forget it** — the `[9, 9, 9] -> [0, 0, 0]`
-failure from Approach 2 is the same wound in a different place. Deciding the growing case before the
-loop starts removes the variable and the boundary together.
+This fixes Approach 3's weakness: **the carry must be read correctly *after* the loop ends**, and
+that after-the-loop read is precisely where it gets forgotten — the `[9, 9, 9] -> [0, 0, 0]` failure
+from Approach 2 is the same wound in a different place.
 
 ### How to think about it
 
-Split the world in two before doing any work. Either the number is all nines — in which case you
-already know the answer and there is nothing to compute — or it is not, in which case there is
-guaranteed to be at least one digit below 9, and the rightmost such digit is where the increment
-lands. Everything to the right of that digit is a nine and becomes a zero; everything to its left is
-untouched. The all-nines test is not an optimization, it is a *precondition*: it is what makes the
-inner `while digits[i] == 9` loop safe to write without an index guard, because a non-nine is
-guaranteed to exist and the loop is guaranteed to stop before falling off the front.
+> **Intuition.** Split the world in two before doing any work. Either the number is all nines, in
+> which case you already know the answer and compute nothing — or it is not, in which case there is
+> **guaranteed** to be a digit below 9, and the rightmost such digit is where the increment lands.
+> Everything to its right is a nine and becomes a zero; everything to its left is untouched. The
+> all-nines test is not an optimization, it is a **precondition**: it is what makes the inner
+> `while digits[i] == 9` loop safe to write with no index guard.
 
 ### Worked example
 
 `digits = [1, 9, 9]`.
 
-**Step 1 — the guard.** Are all digits 9? `1` is not, so no. Fall through to the general case.
+**Step 1 — the guard.** All nines? `1` is not. Fall through.
 
-**Step 2 — zero out the trailing nines.** `i` starts at 2.
+**Step 2 — zero the trailing nines,** `i` starting at 2:
 
 | `i` | `digits[i]` | is it 9? | action | `digits` after |
 |---|---|---|---|---|
-| 2 | 9 | yes | write 0, step left | `[1, 9, 0]` |
-| 1 | 9 | yes | write 0, step left | `[1, 0, 0]` |
-| 0 | 1 | **no** | stop | `[1, 0, 0]` |
+| 2 | `9` | yes | write 0, step left | `[1, 9, 0]` |
+| 1 | `9` | yes | write 0, step left | `[1, 0, 0]` |
+| 0 | `1` | **no** | stop | `[1, 0, 0]` |
 
 **Step 3 — bump.** `digits[0] += 1` gives `[2, 0, 0]`.
 
-On `[9, 9, 9]` the guard fires at step 1 and returns `[1] + [0, 0, 0]` = `[1, 0, 0, 0]` without
-entering any loop.
+On `[9, 9, 9]` the guard fires at step 1 and returns `[1, 0, 0, 0]` without entering any loop.
 
 ### Code
 
 ```python
 def plus_one_special_case_nines(digits: list[int]) -> list[int]:
     if all(d == 9 for d in digits):
-        return [1] + [0] * len(digits)
+        return all_nines_answer(len(digits))
     i = len(digits) - 1
-    while digits[i] == 9:  # safe because the guard above ruled out running off the front
+    while digits[i] == 9:  # safe: the guard above ruled out running off the front
         digits[i] = 0
         i -= 1
     digits[i] += 1
@@ -381,30 +370,33 @@ def plus_one_special_case_nines(digits: list[int]) -> list[int]:
 
 ### Common mistake
 
-Getting the length of the special case wrong: writing `[1] + [0] * (len(digits) - 1)`. The instinct
-is that the leading 1 replaces something, so the zeros should be one fewer. They should not — the 1
-is an *extra* column, and all n original nines become zeros. Measured on `[9, 9, 9]`:
+> **Watch out.** The misconception is that the leading `1` **replaces** something, so the zeros
+> should be one fewer. It replaces nothing — it is an extra column, and all `n` original nines become
+> zeros.
+
+Writing `[1] + [0] * (len(digits) - 1)` instead of `all_nines_answer(len(digits))` returns, measured
+on `[9, 9, 9]`:
 
 ```
 [1, 0, 0]
 ```
 
-That is 100. The answer is 1000. The mistake is arithmetically silent — the output is a perfectly
-well-formed digit array with no leading zeros — and it is off by a factor of ten on every all-nines
-input, which is the only input that reaches the branch. The sanity check that catches it in one
-second: the answer must be `len(digits) + 1` long, so there are `len(digits)` zeros.
+That is 100 where 1000 was wanted. The output is a perfectly well-formed digit array with no leading
+zeros, so nothing about it looks broken, and it is off by a factor of ten on every input that reaches
+the branch. The one-second check: the answer must be `len(digits) + 1` long, so there are
+`len(digits)` zeros. Lifting it into `all_nines_answer` is what makes that check a single place.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1).** Time is up to two passes: the `all(d == 9 ...)` scan, which short-circuits
-at the first non-nine and so is usually one comparison, plus the zeroing walk. On the one input where
-the scan runs to the end — all nines — the zeroing walk does not run at all, so no input pays for
-both in full. Space is constant apart from the single allocation in the growing branch.
+**Time `O(n)`, space `O(1)`.** Time is up to two passes: the `all(...)` scan short-circuits at the
+first non-nine, so it is usually one comparison; on the one input where it runs to the end, the
+zeroing walk does not run at all — no input pays both in full. Space is constant apart from the
+allocation in the growing branch.
 
-Use it when the special case is genuinely special in your domain and you want it stated at the top of
-the function where a reader will see it — that readability argument is real. But notice what the next
-rung notices: the guard scans forward looking for a non-nine, and the loop then walks backward
-looking for the same non-nine. The same question is being asked twice.
+Use it when the special case is worth stating at the top of the function where a reader meets it
+first; that readability argument is real. But notice what the next rung notices: the guard scans
+forward for a non-nine and the loop then walks backward to the same non-nine. **The same question is
+asked twice.**
 
 ---
 
@@ -412,43 +404,41 @@ looking for the same non-nine. The same question is being asked twice.
 
 ### The idea
 
-*If the all-nines test and the increment are both looking for the first digit below 9, why run them
-as two separate walks?* Walk backwards once. The first digit below 9 absorbs the increment and you
-return on the spot. If you never find one, you ran off the front — and running off the front *is*
-the all-nines case, already fully zeroed on the way past.
+*If the all-nines test and the increment are both hunting for the first digit below 9, why run two
+walks?* Walk backwards once. The first digit below 9 absorbs the increment and you return on the
+spot. Never find one and you ran off the front — and running off the front **is** the all-nines case,
+already fully zeroed on the way past.
 
-This fixes Approach 4's weakness: **checking for all nines up front costs a full pass before any work
-begins, and then the real work walks the digits a second time.** One backward pass decides both
-questions, and the decision costs nothing extra because it is simply where the loop ended.
+This fixes Approach 4's weakness: **a full pass before any work begins**, followed by a second pass
+to do it. One backward walk answers both questions, and the answer costs nothing extra because it is
+simply where the loop ended.
 
 ### How to think about it
 
-You are walking left along a row of digits with one unit to deliver. At each digit you ask a single
-question: *can this digit take it?* A digit below 9 can — it becomes one larger, the delivery is
-complete, and every digit further left is none of your business, so you leave immediately. A 9
-cannot — it rolls over to 0 and the delivery moves one place left. If you walk past the first digit
-still carrying the unit, there were no takers anywhere: every digit was a 9 and every one is now a 0,
-and the unit becomes a brand-new leading digit. The early return is not a speed trick, it is the
-observation that **a carry cannot travel past a digit it does not overflow** — the loop has nothing
-left to do, not merely nothing useful.
+> **Intuition.** You are walking left along a row of digits carrying one unit to deliver, asking each
+> digit a single question: *can you take it?* A digit below 9 can — it becomes one larger, the
+> delivery is complete, and every digit further left is none of your business, so you leave. A 9
+> cannot — it rolls over to 0 and the delivery moves one place left. Walk past the first digit still
+> carrying the unit and there were no takers anywhere: every digit was a 9, every one is now a 0, and
+> the unit becomes a new leading digit. The early return is not a speed trick — **a carry cannot
+> travel past a digit it does not overflow**, so there is genuinely nothing left to do.
 
 ### Worked example
 
 `digits = [1, 9, 9]`.
 
-| `i` | `digits[i]` | is it below 9? | action | `digits` after |
+| `i` | `digits[i]` | below 9? | action | `digits` after |
 |---|---|---|---|---|
-| 2 | 9 | no | write 0, step left | `[1, 9, 0]` |
-| 1 | 9 | no | write 0, step left | `[1, 0, 0]` |
-| 0 | 1 | **yes** | `digits[0] += 1`, **return** | `[2, 0, 0]` |
+| 2 | `9` | no | write 0, step left | `[1, 9, 0]` |
+| 1 | `9` | no | write 0, step left | `[1, 0, 0]` |
+| 0 | `1` | **yes** | `digits[0] += 1`, **return** | `[2, 0, 0]` |
 
-Three iterations, no carry variable, no post-loop branch taken. Two other shapes worth holding
-beside it:
+Three iterations, no carry variable, no post-loop branch taken. Two shapes to hold beside it:
 
-- `[1, 2, 3]`: `i = 2`, `3 < 9`, becomes 4, return. **One iteration**, and the 1 and the 2 are never
-  read.
-- `[9, 9, 9]`: all three become 0, the loop ends by exhausting `range`, and the final line returns
-  `[1] + [0, 0, 0]` = `[1, 0, 0, 0]`.
+| input | what happens | result |
+|---|---|---|
+| `[1, 2, 3]` | `i = 2`, `3 < 9`, becomes `4`, return — **one** iteration; the `1` and `2` are never read | `[1, 2, 4]` |
+| `[9, 9, 9]` | all three become `0`, the loop exhausts `range`, the final line runs | `[1, 0, 0, 0]` |
 
 ### Code
 
@@ -457,81 +447,81 @@ def plus_one_early_return(digits: list[int]) -> list[int]:
     for i in range(len(digits) - 1, -1, -1):
         if digits[i] < 9:
             digits[i] += 1
-            return digits  # nothing to the left of a digit below 9 can change
+            return digits  # nothing left of a digit below 9 can change
         digits[i] = 0
-    return [1] + digits  # ran off the front: every digit was a 9
+    return all_nines_answer(len(digits))  # ran off the front: every digit was a 9
 ```
 
 ### Common mistake
 
-Writing `break` where the `return` belongs, and then falling through into the growing branch:
+> **Watch out.** The misconception is that the last line is a general **epilogue**. It is the *else*
+> branch of the loop — reachable only when the loop found no taker. `return` inside the loop is what
+> expresses that, and `break` destroys it.
 
 ```python
 for i in range(len(digits) - 1, -1, -1):
     if digits[i] < 9:
         digits[i] += 1
-        break            # WRONG — leaves the loop, but the function keeps going
+        break                          # WRONG — leaves the loop, not the function
     digits[i] = 0
-return [1] + digits      # now runs on EVERY input, not just all nines
+return all_nines_answer(len(digits))   # now runs on EVERY input
 ```
 
-The array is incremented correctly and then a leading 1 is glued onto it unconditionally. Measured:
+Measured:
 
-| input | what it returns | correct answer |
+| input | with `break` | correct |
 |---|---|---|
-| `[1, 2, 3]` | `[1, 1, 2, 4]` | `[1, 2, 4]` |
-| `[1, 9, 9]` | `[1, 2, 0, 0]` | `[2, 0, 0]` |
+| `[1, 2, 3]` | `[1, 0, 0, 0]` | `[1, 2, 4]` |
+| `[1, 9, 9]` | `[1, 0, 0, 0]` | `[2, 0, 0]` |
+| `[9, 9, 9]` | `[1, 0, 0, 0]` | `[1, 0, 0, 0]` — passes |
 
-Every answer is a thousand-and-something. The structural point is that the final line is not a
-general epilogue — it is the *else* branch of the loop, reachable only when the loop found no taker.
-`return` inside the loop is what expresses that, and `break` destroys it. If you prefer `break`, the
-honest spelling is Python's `for ... else`, where the trailing block runs only when the loop was
-never broken out of.
+The function now returns `1000` for every three-digit input, because the increment it carefully
+performed is discarded and the all-nines answer is returned unconditionally. Note which row passes:
+the only input the bug gets right is the one it was written for. If you prefer `break`, the honest
+spelling is Python's `for ... else`, whose trailing block runs only when the loop was never broken
+out of.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1).** Time is one backward pass with an early exit, so the worst case is n
-iterations (all nines, the only input that reaches the last digit) and the common case is one — on
-uniformly random digits the expected number of iterations is `1/(1 - 1/10)` ≈ 1.11, because each
-step continues only when it lands on a 9. Space is constant: the loop holds one index, the array is
-edited in place, and the single allocation happens only in the growing branch, which is the only case
-where a new array is genuinely required. That is as tight as this problem gets — you must at minimum
-read the last digit, and you must at minimum write a new array when the length changes.
+**Time `O(n)` worst case, space `O(1)`.** Time is one backward pass with an early exit: `n` iterations
+on all nines — the only input that reaches the first digit — and one iteration in the common case,
+with an expected 1.11 iterations on uniformly random digits, since a step continues only on a 9.
+Space is constant: one index, in-place edits, and a single allocation confined to the growing branch,
+which is the one case where a new array is genuinely required. That is as tight as the problem gets —
+you must read the last digit, and you must allocate when the length changes.
 
-**This is the one to memorize.** It is the shortest correct solution, it has no carry variable to
-mishandle, its growing case and its loop termination are the same event rather than two conditions
-kept in sync, and it generalises directly into add-two-numbers, add-binary and string addition by
-replacing the implicit `+1` with a second operand.
+This is the rung to memorize. It has no carry variable to mishandle, its growing case and its loop
+termination are the **same event** rather than two conditions kept in sync, and it generalises
+directly into add-two-numbers, add-binary and string addition by replacing the implicit `+ 1` with a
+second operand.
 
 ---
 
 ## The Overall Arc
 
-Every step on this ladder is chasing one principle: **do the arithmetic where the data actually
-lives, and stop the moment nothing more can change.** The first instinct is to reassemble the
-number, and in Python that instinct is even correct — which is precisely the trap, because the array
-representation exists for exactly one reason, that the value may not fit in a machine word, and a
-solution that folds a hundred digits into a `long long` is not slightly wrong but catastrophically
-wrong in a way that returns a plausible number instead of an error. So the first real move is to
-stop forming the number at all and do paper-column addition instead, carrying a single digit's worth
-of state; reversing the array makes the units digit land at index 0, which is what a forward loop
-wants, and that works, at the price of two flips and a full copy purely to change which way the
-digits face. A decrementing index faces them the other way for nothing, so the copies go, and with
-the copies gone a second observation becomes visible: the loop does not need to run to the end at
-all, because once a digit absorbs the carry the message is spent and every digit to its left is
-already the answer. That leaves only one variable, the carry, and one boundary, the moment the loop
-ends with the carry still alive — and that boundary is where the classic wrong answer lives, all
-nines silently returning all zeros. One way to kill the boundary is to decide it first, testing for
-all nines before touching anything, which is genuinely clearer to read but asks the same question
-twice: the guard scans forward for a digit below nine and the loop then walks backward to the same
-digit. The last rung fuses them. Walk backward once, and the first digit below nine takes the
-increment and ends the function on the spot; run off the front and you have *proved* it was all
-nines, with every digit already zeroed on the way past, so the special case is not tested for, it is
-what remains when the loop finds nothing. Reassemble, carry with copies, carry in place, decide the
-special case, and finally let the special case fall out of where the walk stopped — and the two
-worth carrying into an interview are the last one, which you write, and the first one, which you
-name and then reject out loud on the width argument, because naming why the digit array exists is
-the answer to the question the problem is really asking.
+Every step on this ladder chases one principle: **do the arithmetic where the data lives, and stop
+the moment nothing more can change.** The first instinct is to reassemble the number, and in Python
+that instinct is even correct — which is the trap, because the array representation exists for
+exactly one reason, that the value may not fit a machine word, and folding a hundred digits into a
+`long long` is not slightly wrong but catastrophically wrong in a way that returns a plausible number
+instead of an error. So the first real move is to stop forming the number at all and do paper-column
+addition, carrying one digit's worth of state; reversing the array puts the units at index 0 where a
+forward loop wants it, and that works, at the price of two flips and a full copy purely to change
+which way the digits face. A decrementing index faces them the other way for nothing, so the copies
+go — and with them gone, a second observation surfaces: the loop need not run to the end at all,
+because once a digit absorbs the carry the message is spent and every digit to its left is already
+the answer. That leaves one variable and one boundary, the moment the loop ends with the carry still
+alive, and that boundary is where the classic wrong answer lives, all nines silently returning all
+zeros. One way to kill a boundary is to decide it first, testing for all nines before touching
+anything, which reads beautifully and asks the same question twice: the guard scans forward for a
+digit below nine and the loop then walks backward to that same digit. The last rung fuses them — walk
+backward once, and the first digit below nine takes the increment and ends the function on the spot;
+run off the front and you have *proved* it was all nines, every digit already zeroed on the way past,
+so the special case is not tested for, it is what remains when the walk finds nothing. Reassemble,
+carry with copies, carry in place, decide the special case, and finally let the special case fall out
+of where the walk stopped — and the two worth carrying into an interview are the last one, which you
+write, and the first one, which you name and reject out loud, because saying why the digit array
+exists is the answer to the question the problem is really asking.
 
 ---
 
@@ -539,50 +529,50 @@ the answer to the question the problem is really asking.
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Build the number, add one, split it back | O(n) | O(n) | Shortest possible code, bought by depending on an integer type wide enough for the whole value — which no fixed-width type is | The value is known to fit and you want a one-liner; otherwise, only as the rung you name and reject |
-| Reverse, carry, reverse back | O(n) | O(n) | Removes the width dependency; pays two extra passes and a full copy to put the units digit at index 0 | The input must not be mutated, or you are writing general multi-digit addition where index 0 = units aligns two operands for free |
-| Carry from the back | O(n) | O(1) | Same carry logic with a decrementing index, so no copies — but the carry must be read correctly after the loop | You want one routine that generalises to adding two arbitrary-length numbers |
-| Special-case all nines | O(n) | O(1) | Removes the carry variable and its after-the-loop boundary; pays a second scan to do it | The special case is worth stating at the top of the function for a reader |
-| **Walk from the back, return early** | **O(n)** worst, **O(1)** typical | **O(1)** | **One pass answers both questions; the growing case is where the loop ended, not a thing tested for** | **The default answer for this problem** |
+| Build the number, add one, split it back | `O(n)` | `O(n)` | Shortest code, bought by depending on an integer type wide enough for the whole value — which no fixed-width type is | The value is known to fit; otherwise only as the rung you name and reject |
+| Reverse, carry, reverse back | `O(n)` | `O(n)` | Removes the width dependency; pays two extra passes and a copy to put the units at index 0 | The input must not be mutated, or you are writing general multi-digit addition |
+| Carry from the back | `O(n)` | `O(1)` | Same carry logic with a decrementing index, so no copies — but the carry must be read after the loop | You want one routine that generalises to adding two arbitrary-length numbers |
+| Special-case all nines | `O(n)` | `O(1)` | Removes the carry variable and its boundary; pays a second scan to do it | The special case is worth stating at the top of the function for a reader |
+| **Walk from the back, return early** | `O(n)` worst, ~`O(1)` typical | `O(1)` | One pass answers both questions; the growing case is where the loop ended, not a thing tested for | The default answer for this problem |
 
 ---
 
 ## Interview Priority
 
-**Memorize cold — walk from the back with an early return.** Five lines, no carry variable, no
-post-loop condition to keep in sync with the loop. Be ready for the follow-up, which is almost always
-"what happens on `[9, 9, 9]`?" — the answer is that the loop exhausts, every digit is already 0, and
-the final line prepends the 1. Be equally ready for "why an array and not an `int`?", because that
-is the question the problem is actually about.
+**Know cold — walk from the back with an early return.** Five lines, no carry variable, no post-loop
+condition to keep in sync with the loop.
 
-**Memorize cold — the general carry loop (Approach 3).** Not for this problem, where Approach 5 beats
-it, but because it is the body of add-two-numbers, add-binary, add-strings and multiply-strings with
-only the operands changed. If you know only the early-return trick, the moment the interviewer says
-"now add two arbitrary-length numbers" you have nothing to build on, and that follow-up is common.
+> **In an interview.** Say the width argument before you write anything: *"the digits are in an array
+> because the value may not fit an `int`, so I will not rebuild the number."* Then write the walk.
+> The follow-up is always `[9, 9, 9]` — answer it before it is asked: the loop exhausts, every digit
+> is already `0`, and the final line prepends the `1`. The second follow-up is usually "now add two
+> arbitrary-length numbers", which is why the next rung is also worth recall.
 
-**Know how to name and reject — build the integer.** Ten seconds of your answer: "the obvious version
-folds the digits into an integer; in Python that is correct, in Java or C++ it wraps somewhere around
-nineteen digits and the constraints allow a hundred, so I will not use it." Correctly rejecting a
-technique on a constraint is a stronger signal than not having considered it.
+**Know cold — the general carry loop (Approach 3).** Not for this problem, where Approach 5 beats it,
+but because it is the body of add-two-numbers, add-binary, add-strings and multiply-strings with only
+the operands changed. If you know only the early-return trick, that follow-up leaves you with nothing
+to build on.
 
-**Understand but do not memorize — reverse, carry, reverse back.** Worth being able to explain because
-it makes the case for the decrementing index by contrast, and because the reversed layout is the right
-one when you are aligning two operands of different lengths. For this problem it is two passes and a
-copy you do not need.
+**Know how to name and reject — build the integer.** Ten seconds. Correctly rejecting a technique on
+a constraint is a stronger signal than not having considered it.
 
-**Understand but do not memorize — special-case all nines.** Its value is the observation, not the
-code: there is exactly one input shape whose answer is longer than its input, and you know that
-answer in closed form. Carry the observation; write Approach 5.
+**Understand, do not memorize — reverse, carry, reverse back.** Worth explaining because it makes the
+case for the decrementing index by contrast, and because the reversed layout is right when aligning
+two operands of different lengths. Here it is two passes and a copy you do not need.
+
+**Understand, do not memorize — special-case all nines.** Its value is the observation, not the code:
+exactly one input shape has an answer longer than its input, and you know that answer in closed form.
+Carry the observation; write Approach 5.
 
 ---
 
 ## Full Runnable Script
 
-Every approach above, plus a test suite covering the statement's example, the smallest legal input
-`[0]`, the smallest input that grows `[9]`, all nines, a carry that travels and stops, repeated
-digits, a 100-digit input far past any fixed-width integer, and 45 randomised cases — each one
-cross-checked against an independent oracle that does the arithmetic with Python's unbounded
-integers. Every approach mutates its argument, so each is handed its own copy.
+Every approach above, the shared `all_nines_answer` helper, and a test suite covering the statement's
+example, the smallest legal input `[0]`, the smallest input that grows `[9]`, all nines, a carry that
+travels and stops, repeated digits, a 100-digit input far past any fixed-width integer, and 45
+randomised cases — each cross-checked against an independent oracle that does the arithmetic with
+Python's unbounded integers. Every approach mutates its argument, so each is handed its own copy.
 
 ```python
 """Add One to a Digit Array - every approach in one file, plus a self-checking test suite.
@@ -593,6 +583,11 @@ Run: python plus_one_all.py
 from __future__ import annotations
 
 import random
+
+
+def all_nines_answer(length: int) -> list[int]:
+    """The answer when every digit was a 9: a leading 1 and `length` zeros."""
+    return [1] + [0] * length
 
 
 # --- 1. Build the number, add one, split it back -------------------------------
@@ -636,7 +631,7 @@ def plus_one_carry_back(digits: list[int]) -> list[int]:
         carry = total // 10
         i -= 1
     if carry:
-        return [1] + digits
+        return all_nines_answer(len(digits))
     return digits
 
 
@@ -644,9 +639,9 @@ def plus_one_carry_back(digits: list[int]) -> list[int]:
 
 def plus_one_special_case_nines(digits: list[int]) -> list[int]:
     if all(d == 9 for d in digits):
-        return [1] + [0] * len(digits)
+        return all_nines_answer(len(digits))
     i = len(digits) - 1
-    while digits[i] == 9:  # safe because the guard above ruled out running off the front
+    while digits[i] == 9:  # safe: the guard above ruled out running off the front
         digits[i] = 0
         i -= 1
     digits[i] += 1
@@ -659,9 +654,9 @@ def plus_one_early_return(digits: list[int]) -> list[int]:
     for i in range(len(digits) - 1, -1, -1):
         if digits[i] < 9:
             digits[i] += 1
-            return digits  # nothing to the left of a digit below 9 can change
+            return digits  # nothing left of a digit below 9 can change
         digits[i] = 0
-    return [1] + digits  # ran off the front: every digit was a 9
+    return all_nines_answer(len(digits))  # ran off the front: every digit was a 9
 
 
 APPROACHES = [
@@ -673,7 +668,7 @@ APPROACHES = [
 ]
 
 
-# --- test suite ----------------------------------------------------------------
+# --- test scaffolding, not part of any answer ----------------------------------
 
 def plus_one_reference(digits: list[int]) -> list[int]:
     """Independent oracle: Python's unbounded integers do the arithmetic."""
@@ -681,6 +676,7 @@ def plus_one_reference(digits: list[int]) -> list[int]:
 
 
 def random_digits(length: int, rng: random.Random) -> list[int]:
+    """A legal input: no leading zero unless the whole number is one digit."""
     if length == 1:
         return [rng.randint(0, 9)]
     return [rng.randint(1, 9)] + [rng.randint(0, 9) for _ in range(length - 1)]
@@ -692,7 +688,7 @@ def main() -> None:
         ("smallest legal input", [0]),
         ("smallest input that grows", [9]),
         ("all nines - the only shape that grows", [9, 9, 9]),
-        ("carry stops partway", [1, 9, 9]),
+        ("carry travels then stops", [1, 9, 9]),
         ("repeated digits", [2, 2, 2]),
         ("no carry at all", [4, 3, 2, 1]),
         ("100 digits - far past any 64-bit integer", [9] * 100),
@@ -716,7 +712,7 @@ def main() -> None:
         expected = plus_one_reference(digits)
         results = []
         for name, fn in APPROACHES:
-            got = fn(list(digits))  # every approach mutates, so hand each its own copy
+            got = fn(list(digits))  # every approach mutates: hand each its own copy
             results.append(got)
             short = got if len(got) <= 10 else got[:10] + ["..."]
             print(f"  {name:<{width}} -> {short}")

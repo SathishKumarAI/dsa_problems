@@ -2,38 +2,36 @@
 
 ## Understanding the Problem
 
-You are given a list of whole numbers and asked to produce a new list of the same length. The number
-you put in each slot is what you get by multiplying together *all the other* numbers in the original
-list — everything except the one sitting in that slot. Two rules make it interesting: you are not
-allowed to divide, and the whole thing has to run in time proportional to the length of the list, not
-to its square.
+Imagine four price tags on a table and someone asking, of each one in turn, "what do the *other*
+three multiply to?" That is the whole problem: hand back a list of the same length where slot `i`
+holds the product of everything in the original list except the number sitting in slot `i`. Two rules
+make it interesting — you may not divide, and the whole thing must run in time proportional to the
+list's length rather than its square.
 
 **The core question:** for every position, what is the product of the whole list *minus one element*?
-The naive approach is slow because it treats each of the n positions as an unrelated problem and
-recomputes an almost-identical product from scratch each time — when in truth the product for
-position 5 and the product for position 6 share nearly all of their factors.
+The naive approach is slow because it treats each of the `n` positions as an unrelated problem and
+rebuilds an almost-identical product from scratch — when the answer for position 5 and the answer for
+position 6 share all but two of their factors.
 
-The no-division rule looks arbitrary and is not. Division would let you compute the total product
-once and divide it out at each position, which is one line and finished — except that it dies the
-moment a zero appears, because you cannot divide by zero and the total is zero anyway. Banning
-division forces you to find the *structure* in the problem instead of the shortcut, and the structure
-is this: everything except position `i` splits cleanly into **everything to the left of `i`** and
-**everything to the right of `i`**, two questions that never overlap.
+The **no-division** rule looks arbitrary and is not. Division would let you compute the total once
+and divide it out per position — one line, finished — except that it dies the moment a zero appears.
+Banning it forces you to find the *structure*: everything except position `i` splits cleanly into
+**everything to the left of `i`** and **everything to the right of `i`**, two questions that never
+overlap.
 
 ### The constraints, and what each one unlocks
 
 | Constraint | What it means for you |
 |---|---|
-| `2 <= nums.length <= 10^5` | A hundred thousand elements makes the O(n²) version about 10¹⁰ multiplications — hopeless. **This is what rules brute force out.** The lower bound of 2 also means the "product of everything else" is never an empty product, so you never have to argue about what the answer for a single-element list should be. |
-| `-30 <= nums[i] <= 30` | Values are small and may be negative or zero. Small values keep partial products from exploding for short arrays, and the negatives are a reminder that signs matter: an even number of negative factors flips back to positive. This bound does **not** unlock direct indexing, because the values here are never used as lookup keys — nothing is being searched for. |
-| every answer is guaranteed to fit in a 32-bit integer | **This unlocks fixed-width arithmetic**: in Java or C++ you can keep every running product in a plain `int` rather than reaching for `long` or a big-integer type. There is one subtlety, covered in Approach 4: the running variable's *final* update in each pass can exceed 32 bits, but that value is never read. |
-| division is off the table — which matters most precisely because the array may contain zeros | **This is what forces the prefix/suffix structure.** It is not an arbitrary handicap: with a zero in the array, division needs a separate counting-of-zeros special case to be correct at all, while a prefix/suffix sweep treats a zero exactly like any other number. |
+| `2 <= nums.length <= 10^5` | A hundred thousand elements makes the `O(n²)` version about 10¹⁰ multiplications — hopeless. **This is what rules brute force out.** The lower bound of `2` also means the product of everything else is never an empty product, so there is no argument to have about a single-element list. |
+| `-30 <= nums[i] <= 30` | Values are small and may be negative or zero. The negatives are a reminder that **signs** matter: an even number of negative factors flips back to positive. This bound does **not** unlock direct indexing, because the values here are never used as lookup keys — nothing is being searched for. |
+| every answer fits in a 32-bit integer | **This unlocks fixed-width arithmetic**: in Java or C++ every running product can live in a plain `int`. One subtlety, covered in Approach 4 — the running variable's *final* update in each pass can exceed 32 bits, but that value is never read. |
+| division is off the table, and the array may contain zeros | **This is what forces the prefix/suffix structure.** With a zero present, division needs a separate counting-of-zeros special case to be correct at all, while a prefix/suffix sweep treats a zero exactly like any other number. |
 
-One rung of the usual ladder has no analogue here, and it is worth saying why. There is no
-"sort the input and search it" step, because the answer is *indexed by position* — slot `i` of the
-output is about slot `i` of the input — and sorting destroys precisely that correspondence. Nor is
-anything being searched for. This problem's ladder is instead about how much *partial work* you keep
-around and reuse.
+One rung of the usual ladder has no analogue here, and it is worth saying why. There is no "sort the
+input and search it" step, because the answer is *indexed by position* — slot `i` of the output is
+about slot `i` of the input — and sorting destroys precisely that correspondence. This ladder is
+instead about how much **partial work** you keep around and reuse.
 
 The worked example used in every section below is the statement's own:
 
@@ -41,8 +39,15 @@ The worked example used in every section below is the statement's own:
 nums = [1, 2, 3, 4]        answer: [24, 12, 8, 6]
 ```
 
-Check it once by hand: position 0 gets 2·3·4 = 24, position 1 gets 1·3·4 = 12, position 2 gets
-1·2·4 = 8, position 3 gets 1·2·3 = 6.
+Check it by hand once: position `0` gets 2·3·4 = 24, position `1` gets 1·3·4 = 12, position `2` gets
+1·2·4 = 8, position `3` gets 1·2·3 = 6.
+
+One value recurs in every approach below and is worth naming rather than typing four times — the
+**empty product**, the thing a running product starts from before any factor has joined it:
+
+```python
+EMPTY_PRODUCT = 1  # the product of no numbers at all; every accumulator below starts here
+```
 
 ---
 
@@ -51,31 +56,31 @@ Check it once by hand: position 0 gets 2·3·4 = 24, position 1 gets 1·3·4 = 1
 ### The idea
 
 *How do I get the product of everything except one element?* Loop over the whole array and multiply
-in every element whose position is not the one you are excluding. Do that once for each of the n
-positions and you have the whole answer, with no cleverness and no risk of being wrong.
+in every element whose position is not the excluded one. Do that once for each of the `n` positions
+and the whole answer is built, with no cleverness and no risk of being wrong.
 
 ### How to think about it
 
-Think of a shopping receipt and the question "what would the total be without item 3?". With no
-memory of anything, you would re-add every other line from scratch. Then someone asks the same about
-item 4, and you re-add every other line again — including all the same lines you just added, minus a
-different one. That is the shape here, with multiplication instead of addition: n independent
-traversals that each recompute an almost-identical product. The reasoning has no notion that the
-answers are related to each other, and that missing relationship is the entire inefficiency.
+> **Intuition.** A shopping receipt, and the question "what would the total be without item 3?".
+> With no memory of anything you re-add every other line from scratch. Then someone asks the same
+> about item 4, and you re-add every other line again — the same lines you just added, minus a
+> different one. That is the shape here with multiplication instead of addition: `n` independent
+> traversals, each rebuilding an almost-identical product. The reasoning has no notion that the
+> answers are related to one another, and that missing relationship is the entire inefficiency.
 
 ### Worked example
 
 `nums = [1, 2, 3, 4]`.
 
-| excluded `i` | inner walk (`j`, skipping `j == i`) | running product | result |
+| excluded `i` | inner walk (`j`, skipping `j == i`) | `product` after each step | `out` so far |
 |---|---|---|---|
-| 0 | j=1 → ×2, j=2 → ×3, j=3 → ×4 | 1 → 2 → 6 → 24 | 24 |
-| 1 | j=0 → ×1, j=2 → ×3, j=3 → ×4 | 1 → 1 → 3 → 12 | 12 |
-| 2 | j=0 → ×1, j=1 → ×2, j=3 → ×4 | 1 → 1 → 2 → 8 | 8 |
-| 3 | j=0 → ×1, j=1 → ×2, j=2 → ×3 | 1 → 1 → 2 → 6 | 6 |
+| 0 | `j=1` ×2, `j=2` ×3, `j=3` ×4 | 1 → 2 → 6 → **24** | `[24]` |
+| 1 | `j=0` ×1, `j=2` ×3, `j=3` ×4 | 1 → 1 → 3 → **12** | `[24, 12]` |
+| 2 | `j=0` ×1, `j=1` ×2, `j=3` ×4 | 1 → 1 → 2 → **8** | `[24, 12, 8]` |
+| 3 | `j=0` ×1, `j=1` ×2, `j=2` ×3 | 1 → 1 → 2 → **6** | `[24, 12, 8, 6]` |
 
-Sixteen index visits, twelve multiplications, for four answers. Look at rows 0 and 1: both multiply
-by 3 and by 4. Rows 2 and 3 both multiply by 1 and by 2. Every shared factor is computed twice or
+Sixteen index visits, twelve multiplications, for four answers. Rows `0` and `1` both multiply by 3
+and by 4; rows `2` and `3` both multiply by 1 and by 2. Every shared factor is computed twice or
 more, and that redundancy is what the rest of this document removes.
 
 ### Code
@@ -84,7 +89,7 @@ more, and that redundancy is what the rest of this document removes.
 def product_except_self_brute_force(nums: list[int]) -> list[int]:
     out: list[int] = []
     for i in range(len(nums)):
-        product = 1
+        product = EMPTY_PRODUCT
         for j in range(len(nums)):
             if j != i:  # the only position skipped
                 product *= nums[j]
@@ -94,23 +99,26 @@ def product_except_self_brute_force(nums: list[int]) -> list[int]:
 
 ### Common mistake
 
-Initialising `product = 1` once, outside the outer loop, instead of once per position. The variable
-then carries the previous position's product into the next one and every answer after the first is
-garbage — on our example you would get `[24, 288, 2304, ...]`, growing without bound. It is easy to
-write because the line *looks* like setup, and the fix is to see the inner loop as a complete,
-self-contained calculation that must start from a clean slate every time. The multiplicative identity
-is 1, not 0; initialising to 0 is the other version of this mistake and makes every answer zero.
+> **Watch out.** The misconception is that `product = 1` is **setup** — the kind of line that belongs
+> at the top of a function next to the other declarations. It is not setup, it is part of the inner
+> calculation: each position's product is a complete, self-contained computation that must start from
+> a clean slate.
+
+Hoisting it outside the outer loop carries the previous position's product into the next one, and
+every answer after the first is garbage — on `[1, 2, 3, 4]` you get `[24, 288, 2304, …]`, growing
+without bound. Initialising to `0` instead of `1` is the other half of the same misconception and
+makes every answer `0`; the multiplicative identity is `EMPTY_PRODUCT`, not zero.
 
 ### Complexity and when to use this
 
-**Time O(n²), space O(1)** beyond the output. The cost comes from nesting: n positions, each doing a
-full n-element walk, giving n² index visits. No storage is used other than the single `product`
-accumulator, and the output array is not counted because the problem demands it.
+**Time** `O(n²)`, **space** `O(1)` beyond the output. The cost comes from nesting: `n` positions,
+each doing a full `n`-element walk, giving `n²` index visits. The only storage is the single
+`product` accumulator; the output array is not counted because the problem demands it.
 
-Use it when n is a handful of elements, and — more usefully — as the reference implementation that
-proves the fast versions right. That is exactly its job in the test suite below: it is so obviously a
-transcription of the problem statement that if the linear version ever disagrees with it, the linear
-version is what is broken.
+Use it when `n` is a handful of elements, and — more usefully — as the **oracle** the fast versions
+are tested against. That is exactly its job in the test suite below: it is so plainly a transcription
+of the statement that if a linear version ever disagrees with it, the linear version is what is
+broken.
 
 ---
 
@@ -119,52 +127,54 @@ version is what is broken.
 ### The idea
 
 *Every answer is the total product with one factor removed — so why not compute the total once and
-remove that factor?* Multiply everything together in one pass, then produce each answer by dividing
-the total by that position's value. One pass to build, one pass to emit.
+remove that factor?* Multiply everything together in one pass, then emit each answer by dividing the
+total by that position's value.
 
-This fixes brute force's weakness — **it recomputes shared factors n times instead of computing the
-whole product once** — and it is the approach almost everyone reaches for first. It is worth working
-through properly rather than skipping, because *why* it is banned teaches the real lesson.
+This fixes brute force's weakness — **it recomputes shared factors `n` times instead of computing the
+whole product once** — and it is what almost everyone reaches for first. It is worth working through
+properly rather than skipping, because *why* it is banned teaches the real lesson.
 
 ### How to think about it
 
-One shared pot, made once. Everything goes in; to serve position `i`, you take the pot and take
-`nums[i]` back out. The reasoning is a single global aggregate plus a cheap per-position adjustment,
-which is exactly the right instinct — the whole ladder is about reusing shared work. The problem is
-the *mechanism* of removal. Multiplication has an inverse, division, but that inverse has a hole in
-it at zero: you cannot take a zero back out of a pot, because once a zero goes in, the pot tells you
-nothing about what else is in there. So the moment a single zero exists, this idea must be patched
-with a separate counting rule, and the patch is where it stops being a one-liner.
+> **Intuition.** One shared pot, made once. Everything goes in; to serve position `i` you take the
+> pot and take `nums[i]` back out. A single global aggregate plus a cheap per-position adjustment is
+> exactly the right instinct — the whole ladder is about reusing shared work. The problem is the
+> *mechanism* of removal: multiplication's inverse has a hole in it at zero. Once a zero goes into the
+> pot, the pot tells you nothing about what else is in there, so a single zero forces a separate
+> counting rule, and that patch is where the one-liner stops being a one-liner.
 
 ### Worked example
 
-`nums = [1, 2, 3, 4]` — no zeros, so this is the easy path.
+`nums = [1, 2, 3, 4]` — no zeros, so this is the easy path. **Pass one** builds the total, **pass
+two** divides it out:
 
-**Pass one, build the total:**
+| step | `nums[i]` | `product_of_nonzero` | `out` so far |
+|---|---|---|---|
+| start | — | 1 | `[]` |
+| build `i=0` | 1 | 1 | `[]` |
+| build `i=1` | 2 | 2 | `[]` |
+| build `i=2` | 3 | 6 | `[]` |
+| build `i=3` | 4 | **24** | `[]` |
+| emit `i=0` | 1 | 24 | `[24]` |
+| emit `i=1` | 2 | 24 | `[24, 12]` |
+| emit `i=2` | 3 | 24 | `[24, 12, 8]` |
+| emit `i=3` | 4 | 24 | `[24, 12, 8, 6]` |
 
-| step | value | running total |
-|---|---|---|
-| start | — | 1 |
-| `nums[0]` | 1 | 1 |
-| `nums[1]` | 2 | 2 |
-| `nums[2]` | 3 | 6 |
-| `nums[3]` | 4 | **24** |
+Now the case the ban exists for — the statement's second example, `nums = [-1, 1, 0, -3, 3]`. The
+total product is `0`, and `0 / 0` at position `2` is not a number. The approach survives only by
+counting zeros first, and with **exactly one** zero the emit step stops being a division altogether:
 
-**Pass two, divide it out:**
+| `i` | `nums[i]` | is it the zero? | `out[i]` |
+|---|---|---|---|
+| 0 | -1 | no | 0 |
+| 1 | 1 | no | 0 |
+| 2 | 0 | **yes** | **9** (= −1·1·−3·3) |
+| 3 | -3 | no | 0 |
+| 4 | 3 | no | 0 |
 
-| `i` | `nums[i]` | `24 / nums[i]` |
-|---|---|---|
-| 0 | 1 | 24 |
-| 1 | 2 | 12 |
-| 2 | 3 | 8 |
-| 3 | 4 | 6 |
-
-Now the case the ban exists for. Take the statement's second example, `nums = [-1, 1, 0, -3, 3]`.
-The total product is 0, and `0 / 0` at position 2 is not a number. The approach only survives by
-counting zeros first: with **two or more** zeros every answer is 0; with **exactly one** zero, only
-the zero's own slot gets the product of the non-zero values (here `-1 · 1 · -3 · 3 = 9`) and every
-other slot gets 0; with **no** zeros, divide normally. That three-branch structure is the honest cost
-of this approach.
+With **two or more** zeros every answer is `0`; with **exactly one**, only the zero's own slot
+survives, as above; with **none**, divide normally. That three-branch structure is the honest cost of
+this approach.
 
 ### Code
 
@@ -173,7 +183,7 @@ def product_except_self_division(nums: list[int]) -> list[int]:
     zeros = nums.count(0)
     if zeros > 1:  # two zeros leave a zero in every product
         return [0] * len(nums)
-    product_of_nonzero = 1
+    product_of_nonzero = EMPTY_PRODUCT
     for x in nums:
         if x != 0:
             product_of_nonzero *= x
@@ -184,31 +194,34 @@ def product_except_self_division(nums: list[int]) -> list[int]:
 
 ### Common mistake
 
-Writing the obvious two-liner — total product, then `total // nums[i]` — and never handling zeros. It
-passes `[1, 2, 3, 4]`, it passes every hand-written test you are likely to invent, and it raises
-`ZeroDivisionError` (or in Java, throws `ArithmeticException`) on the first input containing a 0.
-Worse is the half-fix of skipping zeros while building the total and then handing the zero's own
-slot that same total: on `[-1, 1, 0, -3, 3]` the non-zero product is 9 and the output comes out
-`[-9, 9, 9, -3, 3]` instead of `[0, 0, 9, 0, 0]` — right in exactly one slot, wrong in the other
-four, and with no exception raised to tell you.
+> **Watch out.** The misconception is that a zero in the input is an **edge case** — the kind of
+> thing you bolt a guard onto once the main line works. It is not an edge case, it is a demolition:
+> the operation the whole approach rests on stops existing, so what you need is a different branch,
+> not a guard.
 
-There is a second, quieter mistake even in the correct version above: using floating-point division
-(`total / x` in Python) instead of integer division. With values that fit comfortably in a float it
-looks fine, but a product of many 30s exceeds 2⁵³ where doubles stop representing every integer
+The obvious two-liner — total product, then `total // nums[i]` — passes `[1, 2, 3, 4]` and every
+hand-written test you are likely to invent, then raises `ZeroDivisionError` (in Java, throws
+`ArithmeticException`) on the first input containing a `0`. Worse is the half-fix of skipping zeros
+while building the total and then handing the zero's own slot that same total: on `[-1, 1, 0, -3, 3]`
+the non-zero product is `9` and the output comes out `[-9, 9, 9, -3, 3]` instead of `[0, 0, 9, 0, 0]`
+— right in exactly one slot, wrong in the other four, and with no exception to tell you.
+
+A second, quieter mistake survives even in the correct version: floating-point division (`total / x`)
+instead of `//`. A product of many 30s exceeds 2⁵³, where doubles stop representing every integer
 exactly, and answers start coming back off by one. The division here is always exact — `x` is
-literally one of the factors of the product — so integer division is both correct and safe.
+literally one of the factors — so integer division is both correct and safe.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1)** beyond the output: two linear passes, one to build the total and one to
-emit. On paper it ties the optimal approach. In practice it is disqualified twice over: the problem
-forbids it outright, and integer division is several times slower than multiplication on real
-hardware, so even where it is allowed it is not obviously faster than Approach 4.
+**Time** `O(n)`, **space** `O(1)` beyond the output: two linear passes. On paper it ties the optimal
+approach. In practice it is disqualified twice over — the problem forbids it outright, and integer
+**division** is several times slower than multiplication on real hardware, so even where it is legal
+it is not obviously faster than Approach 4.
 
 Use it when division is permitted, zeros are impossible by construction, and you want the shortest
-possible code — for instance, running products over a list of known-positive quantities such as
-prices or weights. Name it in an interview, name its zero problem, and then move on; recognising why
-the shortcut fails is what points at the structure the next two approaches exploit.
+possible code — running products over known-positive quantities such as prices or weights. Name it in
+an interview, name its zero problem, then move on; recognising why the shortcut fails is what points
+at the structure the next two approaches exploit.
 
 ---
 
@@ -216,71 +229,69 @@ the shortcut fails is what points at the structure the next two approaches explo
 
 ### The idea
 
-*If division is not available to remove one factor, can the product be built without that factor
-ever going in?* Yes. The product of everything except position `i` is (everything strictly left of
-`i`) × (everything strictly right of `i`). Build both of those as arrays of running products — one
-sweep forward, one sweep backward — then multiply them together position by position.
+*If division is not available to remove a factor, can the product be built without that factor ever
+going in?* Yes. The product of everything except position `i` is (everything strictly left of `i`) ×
+(everything strictly right of `i`). Build both as arrays of running products — one sweep forward, one
+backward — then multiply them position by position.
 
 This fixes Approach 2's weakness — **it needs an inverse operation that does not exist at zero** —
-and it fixes brute force's weakness too, because each running product reuses the one before it
-instead of starting over.
+and brute force's too, because each running product reuses the one before it.
 
 ### How to think about it
 
-Two people walk the array from opposite ends, each carrying a running total. The one starting on the
-left writes down, at every position, the product of everything they have passed *so far but not
-including where they are standing*. The one starting on the right does the mirror image. When they
-are done, every position has two notes pinned to it: "everything before me" and "everything after
-me". Multiply the two notes and you have "everything but me" — and notice that no factor was ever
-removed, because the element at position `i` was never multiplied into either note in the first
-place. That is the whole trick: exclusion by *never including*, rather than by dividing out.
+> **Intuition.** Two people walk the array from opposite ends, each carrying a running total. The one
+> starting on the left writes down, at every position, the product of everything they have passed *so
+> far but not including where they are standing*; the one on the right does the mirror image. Every
+> position ends up with two notes pinned to it — "everything before me" and "everything after me" —
+> and multiplying them gives "everything but me". No factor was ever removed, because the element at
+> position `i` never went into either note. **Exclusion by never including**, rather than by dividing
+> out.
 
 This is the prefix-sum idea with multiplication swapped in for addition, and recognising it as such
 is worth more than the solution itself.
 
+> **Why it works.** Two invariants, one per sweep. Forward: after the step for `i`, `left[i]` equals
+> the product of `nums[0..i-1]`, maintained by multiplying in `nums[i - 1]` — the element just passed,
+> never the current one. Backward: `right[i]` equals the product of `nums[i+1..n-1]`, maintained by
+> multiplying in `nums[i + 1]`. Since those two ranges are **disjoint** and together cover every index
+> except `i`, their product is by definition the answer for `i` — and the boundary slots are correct
+> for free, because the product over an empty range is `EMPTY_PRODUCT`.
+
 ### Worked example
 
-`nums = [1, 2, 3, 4]`.
+`nums = [1, 2, 3, 4]`. The forward sweep fills `left`, the backward sweep fills `right`, and the last
+column is the answer. `left[0]` and `right[3]` start at `EMPTY_PRODUCT` because nothing lies outside
+those boundaries:
 
-**Forward sweep** — `left[i]` = product of everything strictly before `i`. Start `left[0] = 1`, the
-empty product, because nothing is before position 0:
+| step | direction | computed as | `left` | `right` |
+|---|---|---|---|---|
+| init | — | boundaries are the empty product | `[1, _, _, _]` | `[_, _, _, 1]` |
+| `i=1` | → | `left[0] × nums[0]` = 1 × 1 | `[1, 1, _, _]` | `[_, _, _, 1]` |
+| `i=2` | → | `left[1] × nums[1]` = 1 × 2 | `[1, 1, 2, _]` | `[_, _, _, 1]` |
+| `i=3` | → | `left[2] × nums[2]` = 2 × 3 | `[1, 1, 2, 6]` | `[_, _, _, 1]` |
+| `i=2` | ← | `right[3] × nums[3]` = 1 × 4 | `[1, 1, 2, 6]` | `[_, _, 4, 1]` |
+| `i=1` | ← | `right[2] × nums[2]` = 4 × 3 | `[1, 1, 2, 6]` | `[_, 12, 4, 1]` |
+| `i=0` | ← | `right[1] × nums[1]` = 12 × 2 | `[1, 1, 2, 6]` | `[24, 12, 4, 1]` |
 
-| `i` | computed as | value |
-|---|---|---|
-| 0 | (nothing before it) | 1 |
-| 1 | `left[0] × nums[0]` = 1 × 1 | 1 |
-| 2 | `left[1] × nums[1]` = 1 × 2 | 2 |
-| 3 | `left[2] × nums[2]` = 2 × 3 | 6 |
+Combine them position by position:
 
-**Backward sweep** — `right[i]` = product of everything strictly after `i`. Start `right[3] = 1`:
-
-| `i` | computed as | value |
-|---|---|---|
-| 3 | (nothing after it) | 1 |
-| 2 | `right[3] × nums[3]` = 1 × 4 | 4 |
-| 1 | `right[2] × nums[2]` = 4 × 3 | 12 |
-| 0 | `right[1] × nums[1]` = 12 × 2 | 24 |
-
-**Combine:**
-
-| `i` | `left[i]` | `right[i]` | product |
+| `i` | `left[i]` | `right[i]` | `out[i]` |
 |---|---|---|---|
 | 0 | 1 | 24 | **24** |
 | 1 | 1 | 12 | **12** |
 | 2 | 2 | 4 | **8** |
 | 3 | 6 | 1 | **6** |
 
-Three passes, 2n stored numbers, and not a single division. Look at the `left` and `right` arrays
-together: each is read exactly once, in the combining step. That observation is what the next
-approach is built on.
+Three passes, `2n` stored numbers, not a single division. Note that `left` and `right` are each read
+exactly once, in the combining step — that observation is what the next approach is built on.
 
 ### Code
 
 ```python
 def product_except_self_two_prefix_arrays(nums: list[int]) -> list[int]:
     n = len(nums)
-    left = [1] * n   # left[i] = product of everything strictly before i
-    right = [1] * n  # right[i] = product of everything strictly after i
+    left = [EMPTY_PRODUCT] * n   # left[i] = product of everything strictly before i
+    right = [EMPTY_PRODUCT] * n  # right[i] = product of everything strictly after i
     for i in range(1, n):
         left[i] = left[i - 1] * nums[i - 1]
     for i in range(n - 2, -1, -1):
@@ -288,38 +299,36 @@ def product_except_self_two_prefix_arrays(nums: list[int]) -> list[int]:
     return [left[i] * right[i] for i in range(n)]
 ```
 
-Note the two off-by-one details that carry the whole meaning: the forward loop multiplies in
-`nums[i - 1]`, not `nums[i]`, and the backward loop multiplies in `nums[i + 1]`, not `nums[i]`. That
-is what makes each array *strictly* exclusive of its own position.
+The two off-by-one details carry the whole meaning: forward multiplies in `nums[i - 1]`, backward in
+`nums[i + 1]`. That is what makes each array *strictly* exclusive of its own position.
 
 ### Common mistake
 
-Writing `left[i] = left[i - 1] * nums[i]` — multiplying in the current element instead of the
-previous one. The array now holds "everything up to and including me", so combining it with `right[i]` —
-"everything strictly after me" — multiplies the *whole* array together at every position. On
-`[1, 2, 3, 4]` it produces `[24, 24, 24, 24]`, and the fact that position 0 is right makes the bug
-easy to miss. The fix is to state the invariant in words before writing the line:
-*`left[i]` is the product of everything strictly before `i`* — and then notice that the last element
-included is `nums[i - 1]`.
+> **Watch out.** The misconception is that `left[i]` means "the running product **at** `i`" — the
+> natural reading of a prefix array, and the one every prefix-*sum* tutorial encourages. Here it must
+> mean the product strictly **before** `i`, so the last element folded in is `nums[i - 1]`.
 
-The mirror-image version of this mistake is looping `for i in range(n - 1, -1, -1)` in the backward
-sweep and reading `right[i + 1]`, which on the first iteration indexes one past the end. In Python
-that is an `IndexError` and you find out immediately; in C++ it is silent memory corruption. Both
-sweeps must start one position *inside* the boundary, because the boundary slot is the empty product
-and is already correct.
+Writing `left[i] = left[i - 1] * nums[i]` makes the array hold "everything up to and including me".
+Combined with `right[i]` — "everything strictly after me" — it multiplies the *whole* array together
+at every position: `[1, 2, 3, 4]` produces `[24, 24, 24, 24]`, and position `0` being right is what
+makes the bug easy to miss.
+
+The mirror-image version loops `for i in range(n - 1, -1, -1)` in the backward sweep and reads
+`right[i + 1]`, indexing one past the end on the first iteration — an `IndexError` in Python, silent
+memory corruption in C++. Both sweeps must start one position *inside* the boundary, because the
+boundary slot is already `EMPTY_PRODUCT` and already correct.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(n).** Three separate linear passes, each doing one multiplication per element,
-so the time is linear with a small constant. The space is the two auxiliary arrays holding 2n numbers
-— genuinely extra storage, not counted in the output — and that is the only thing separating this
-from optimal.
+**Time** `O(n)`, **space** `O(n)`. Three linear passes, one multiplication per element each, so the
+time is linear with a small constant. The space is the two auxiliary arrays holding `2n` numbers —
+genuinely extra storage, not counted in the output — and that is the only thing separating this from
+optimal.
 
-Use it when clarity matters more than memory, which is more often than interview culture admits:
-`left` and `right` are self-describing, the code reads exactly like the explanation, and 2n integers
-is nothing at n = 10⁵. Use it also as the intermediate step in an interview — state it, show it is
-linear, and then compress it, because the compression is easier to explain when the thing being
-compressed is already on the board.
+Use it when **clarity** matters more than memory, which is more often than interview culture admits:
+`left` and `right` are self-describing and `2n` integers is nothing at `n = 10^5`. Use it also as the
+intermediate step in an interview — state it, show it is linear, then compress it, because the
+compression is far easier to explain when the thing being compressed is already on the board.
 
 ---
 
@@ -327,53 +336,57 @@ compressed is already on the board.
 
 ### The idea
 
-*Both auxiliary arrays are written once and read once — does either of them need to exist?* No.
-Write the left products directly into the output array, then sweep backward carrying the right
-product in a single variable, multiplying it into what the output already holds. Each position gets
-left × right without either half ever being stored separately.
+*Both auxiliary arrays are written once and read once — does either need to exist?* No. Write the
+left products directly into the output array, then sweep backward carrying the right product in a
+single variable, multiplying it into what the output already holds.
 
-This fixes Approach 3's weakness — **it keeps 2n numbers alive for the sole purpose of reading each
+This fixes Approach 3's weakness — **it keeps `2n` numbers alive for the sole purpose of reading each
 of them exactly once.**
 
 ### How to think about it
 
-Same two walkers as before, but they no longer leave notes for each other. The first walker writes
-its running product straight onto the answer sheet. The second walker comes back the other way and,
-instead of writing a second note, multiplies its running product into what is already written there.
-The answer sheet does double duty: on the way out it is a scratchpad holding the prefix, on the way
-back it becomes the finished answer, one slot at a time. The key realisation is that the backward
-walker only ever needs *one* number in hand — the running product of everything it has passed — and
-never needs to look at what any other position's suffix was.
+> **Intuition.** The same two walkers, but they no longer leave notes for each other. The first
+> writes its running product straight onto the answer sheet. The second comes back the other way and,
+> instead of writing a second note, multiplies its running product into what is already written
+> there. The answer sheet does double duty: on the way out a scratchpad holding the prefix, on the way
+> back the finished answer, one slot at a time. The backward walker only ever needs *one* number in
+> hand and never looks at any other position's suffix.
+
+> **Why it works.** One invariant per sweep, and the order of the two lines inside each loop is what
+> maintains it. Forward: `out[i]` is assigned `running` **before** `nums[i]` joins `running`, so
+> `out[i]` holds the product of `nums[0..i-1]` and can never contain its own element. Backward:
+> `out[i]` is multiplied by `running` **before** `nums[i]` joins it, so the factor applied is the
+> product of `nums[i+1..n-1]`. The two ranges are disjoint and cover everything but `i`, which is the
+> same argument as Approach 3 — only the storage changed, not the reasoning. A zero needs no special
+> case because nothing is ever undone, only accumulated.
 
 ### Worked example
 
-`nums = [1, 2, 3, 4]`.
+`nums = [1, 2, 3, 4]`. **Forward sweep** — write `running` into `out[i]` *first*, then fold `nums[i]`
+into `running`:
 
-**Forward sweep.** Write `running` into `out[i]` *first*, then fold `nums[i]` into `running`. That
-order is what makes `out[i]` exclude its own element:
-
-| `i` | `running` before | `out[i]` written | `running` after (× `nums[i]`) | `out` so far |
+| `i` | `running` before | `out[i]` written | `running` after | `out` so far |
 |---|---|---|---|---|
 | 0 | 1 | 1 | 1 | `[1, 1, 1, 1]` |
 | 1 | 1 | 1 | 2 | `[1, 1, 1, 1]` |
 | 2 | 2 | 2 | 6 | `[1, 1, 2, 1]` |
 | 3 | 6 | 6 | 24 | `[1, 1, 2, 6]` |
 
-`out` now holds the prefix products `[1, 1, 2, 6]` — identical to the `left` array from Approach 3,
-but stored nowhere extra. The final `running = 24` is never used again.
+`out` now holds the prefix products `[1, 1, 2, 6]` — identical to Approach 3's `left`, stored nowhere
+extra. The final `running = 24` is never read again.
 
-**Backward sweep.** Reset `running` to 1 and walk from the right, multiplying it into `out[i]` before
-folding `nums[i]` in:
+**Backward sweep** — reset `running` to `EMPTY_PRODUCT` and walk from the right, multiplying into
+`out[i]` before folding `nums[i]` in:
 
-| `i` | `out[i]` before | `running` before | `out[i]` after (× `running`) | `running` after (× `nums[i]`) | `out` so far |
+| `i` | `out[i]` before | `running` before | `out[i]` after | `running` after | `out` so far |
 |---|---|---|---|---|---|
 | 3 | 6 | 1 | **6** | 4 | `[1, 1, 2, 6]` |
 | 2 | 2 | 4 | **8** | 12 | `[1, 1, 8, 6]` |
 | 1 | 1 | 12 | **12** | 24 | `[1, 12, 8, 6]` |
 | 0 | 1 | 24 | **24** | 24 | `[24, 12, 8, 6]` |
 
-Two passes, one extra variable, no division, and the zero case needs no special handling — a zero is
-folded into `running` like any other value and quietly makes every product it touches zero, which is
+Two passes, one extra variable, no division, and a zero needs no handling at all — it is folded into
+`running` like any other value and quietly makes every product it touches zero, which is
 arithmetically correct rather than a special case.
 
 ### Code
@@ -381,28 +394,32 @@ arithmetically correct rather than a special case.
 ```python
 def product_except_self_prefix_suffix(nums: list[int]) -> list[int]:
     n = len(nums)
-    out = [1] * n
-    running = 1
+    out = [EMPTY_PRODUCT] * n
+    running = EMPTY_PRODUCT
     for i in range(n):
         out[i] = running     # written before nums[i] joins, so i excludes itself
         running *= nums[i]
-    running = 1
+    running = EMPTY_PRODUCT
     for i in range(n - 1, -1, -1):
         out[i] *= running    # folds the suffix into the prefix already stored
         running *= nums[i]
     return out
 ```
 
-On the 32-bit guarantee: every value ever *read* here is either a prefix product (which is bounded by
-one of the answers) or a finished answer, so all of them fit. The only value that can exceed 32 bits
-is the very last update of `running` in each pass — the product of the entire array — and that
-update is dead code, never read. In Java it silently wraps and does no harm; in C++ signed overflow
-is formally undefined, so a strict implementation stops the loop one step early or uses `long long`.
+On the 32-bit guarantee: every value ever *read* here is either a prefix product (bounded by one of
+the answers) or a finished answer, so all of them fit. The only value that can exceed 32 bits is the
+very last update of `running` in each pass — the product of the entire array — and that update is
+dead. In Java it silently wraps and does no harm; in C++ signed overflow is formally undefined, so a
+strict implementation stops one step early or uses `long long`.
 
 ### Common mistake
 
-Swapping the two lines in either loop — folding `nums[i]` into `running` *before* writing or
-multiplying:
+> **Watch out.** The misconception is that the two lines in each loop are **independent statements**
+> that happen to sit next to each other, so their order is a matter of taste. The order *is* the
+> correctness argument: writing before folding is the entire reason position `i` is excluded from its
+> own answer.
+
+Folding `nums[i]` into `running` before writing:
 
 ```python
 for i in range(n):
@@ -410,28 +427,26 @@ for i in range(n):
     out[i] = running
 ```
 
-Now `out[i]` holds "everything up to and including me", and after the backward sweep every answer is
-multiplied by its own element. On `[1, 2, 3, 4]` this yields `[24, 24, 24, 24]` — and note the first
-entry is *correct*, which is exactly why the bug survives a casual glance at the output. The ordering
-is not stylistic: writing before folding is the entire argument for why position `i` is excluded from
-its own answer.
+`out[i]` now holds "everything up to and including me", and after the backward sweep every answer is
+multiplied by its own element. On `[1, 2, 3, 4]` this yields `[24, 24, 24, 24]` — the first entry
+correct, which is exactly why the bug survives a casual glance.
 
-The second common mistake is forgetting to reset `running = 1` between the two sweeps. The backward
-pass then starts from the full product of the array, and every answer comes out multiplied by that
-total: `[1, 2, 3, 4]` yields `[576, 288, 192, 144]`, which is the correct answer times 24.
+The second mistake is forgetting to reset `running` between the sweeps. The backward pass then starts
+from the full product of the array and every answer comes out multiplied by that total: `[1, 2, 3, 4]`
+yields `[576, 288, 192, 144]`, the right answer times 24.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1)** beyond the required output. Two passes, one multiplication and one
+**Time** `O(n)`, **space** `O(1)` beyond the required output. Two passes, one multiplication and one
 assignment per element per pass; the only storage is a single `running` accumulator, because the
-output array — which the problem demands you return anyway — is reused as the prefix scratchpad. Two
-linear passes is also the floor: every element influences n − 1 answers, so no correct algorithm can
-read fewer than all of them.
+output array — which you must return anyway — is reused as the prefix scratchpad. Two linear passes is
+also the **floor**: every element influences `n - 1` answers, so no correct algorithm reads fewer than
+all of them.
 
-**This is the one to memorize.** It is short, it is optimal in both time and space, it needs no
-special case for zeros or negatives, and the pattern it teaches — *sweep prefixes forward, then fold
-suffixes backward into the same array* — reappears in trapping rain water, in candy-distribution
-problems, and in several interval and range-query problems. Learn the shape, not the lines.
+**This is the one to memorize.** It is short, optimal in both time and space, needs no special case
+for zeros or negatives, and the pattern it teaches — *sweep prefixes forward, then fold suffixes
+backward into the same array* — reappears in trapping rain water, in candy-distribution problems, and
+in several range-query problems. Learn the shape, not the lines.
 
 ---
 
@@ -439,25 +454,24 @@ problems, and in several interval and range-query problems. Learn the shape, not
 
 The banned operation is the whole teaching device: division is the obvious way to remove one factor
 from a product, and taking it away forces you to look for the *structure* of the problem instead of
-reaching for the shortcut. Brute force sees n unrelated questions and answers each with a full pass,
-which is not only quadratic but blind — it never notices that the answer for position 5 and the
-answer for position 6 differ by exactly two factors. The first instinct on noticing the shared work
-is to compute the shared thing once: one grand total, then remove one factor per position, which is
+reaching for the shortcut. Brute force sees `n` unrelated questions and answers each with a full pass,
+which is not only quadratic but blind — it never notices that the answer for position 5 and the answer
+for position 6 differ by exactly two factors. The first instinct on noticing the shared work is to
+compute the shared thing once: one grand total, then remove one factor per position, which is
 genuinely linear and genuinely the right instinct, right up until a zero appears and the inverse
 operation you were relying on stops existing — at which point the approach needs a three-branch
 zero-counting patch and the elegance is gone. What the zero exposes is that "remove a factor" was
-never the right frame. The right frame is *never put the factor in*: everything except position `i`
-is everything to its left times everything to its right, two completely independent questions, each
-of which is a running product that a single sweep can compute for every position at once. Build both
-as arrays and the problem is solved in linear time with no division anywhere — and then you notice
-that each of those two arrays is written once and read exactly once, which is the signature of
-storage that does not need to exist. The output array is already being allocated, so let it carry the
-prefix products on the way out, and let one scalar variable carry the suffix product on the way back,
-folding into each slot as it passes. What is left is two passes, one extra integer, and a zero that
-behaves like any other number because nothing is ever undone — only accumulated. The corner case to
-rehearse out loud is exactly the one the division shortcut could not survive, and the pattern worth
-carrying away is prefix-forward-then-fold-suffix-backward, which shows up far more often than this
-one problem.
+never the right frame. The right frame is *never put the factor in*: everything except position `i` is
+everything to its left times everything to its right, two completely independent questions, each of
+which is a running product that a single sweep computes for every position at once. Build both as
+arrays and the problem is solved in linear time with no division anywhere — and then you notice that
+each of those arrays is written once and read exactly once, which is the signature of storage that
+does not need to exist. The output array is already being allocated, so let it carry the prefix
+products on the way out, and let one scalar carry the suffix product on the way back, folding into
+each slot as it passes. What is left is two passes, one extra integer, and a zero that behaves like
+any other number because nothing is ever undone — only accumulated. The corner case to rehearse out
+loud is exactly the one the division shortcut could not survive, and the pattern worth carrying away
+is prefix-forward-then-fold-suffix-backward, which shows up far more often than this one problem.
 
 ---
 
@@ -465,34 +479,37 @@ one problem.
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Brute force | O(n²) | O(1) | No reuse at all — every answer recomputes factors its neighbours already computed | n is tiny; as the test-suite oracle |
-| Divide the total | O(n) | O(1) | Linear and short, but needs an inverse operation that fails at zero and a three-branch patch to be correct | Division is allowed and zeros are impossible by construction |
-| Two prefix arrays | O(n) | O(n) | Buys total clarity with 2n numbers that are each read exactly once | Readability matters more than memory; as the step before compressing it |
-| **Prefix + folded suffix** | **O(n)** | **O(1)** extra | **Reuses the output as scratch space; the order of write-then-fold is the whole correctness argument** | **The default answer for this problem** |
+| Brute force | `O(n²)` | `O(1)` | No reuse at all — every answer recomputes factors its neighbours already computed | `n` is tiny; as the test-suite oracle |
+| Divide the total | `O(n)` | `O(1)` | Linear and short, but needs an inverse that fails at zero and a three-branch patch to be correct | Division is allowed and zeros are impossible by construction |
+| Two prefix arrays | `O(n)` | `O(n)` | Buys total clarity with `2n` numbers that are each read exactly once | Readability matters more than memory; as the step before compressing it |
+| **Prefix + folded suffix** | **`O(n)`** | **`O(1)`** extra | **Reuses the output as scratch space; the order of write-then-fold is the whole correctness argument** | **The default answer for this problem** |
 
 ---
 
 ## Interview Priority
 
-**Memorize cold — the prefix/folded-suffix version.** This is the expected answer and it is only
-eight lines, but the lines are order-sensitive in a way that punishes half-memorisation. Drill the
-invariant rather than the code: *`out[i]` holds everything before `i`, so write it before folding
-`nums[i]` in*. If you can state that sentence you can rederive both loops, including the backward
-one, under pressure.
+> **In an interview.** Say the structural sentence before writing anything: *"everything except `i` is
+> everything left of `i` times everything right of `i`, so nothing ever has to be divided out."* Draw
+> `left` and `right` as two arrays, show each is read exactly once, then collapse them on the board
+> into the output plus one scalar. The follow-up is always **"what does a zero do to your solution?"**
+> — and the answer is the best line you have: *nothing, because nothing is ever undone, only
+> accumulated.* Have the division approach's three-branch zero patch ready as the contrast.
 
-**Memorize cold — the two-prefix-array version.** Not as a fallback but as the *explanation*. The
-fastest way to present the optimal solution is to draw the `left` and `right` arrays, show that each
-is read once, and then collapse them in front of the interviewer. Starting from the compressed
-version and trying to justify it backwards is much harder, and it looks memorised rather than
-understood.
+**Memorize cold — the prefix/folded-suffix version.** The expected answer, eight lines, and the lines
+are order-sensitive in a way that punishes half-memorisation. Drill the invariant rather than the
+code: *`out[i]` holds everything before `i`, so write it before folding `nums[i]` in.* If you can say
+that sentence you can rederive both loops, backward one included, under pressure.
 
-**Understand but do not memorize — the division approach.** Thirty seconds of your answer, and
-valuable ones: state it, state that it is linear, then state why the problem forbids it and what a
-zero does to it. Naming the shortcut *and* its failure mode is what demonstrates you understand why
-the constraint exists. Do not submit it — the statement rules it out explicitly, and doing it anyway
-reads as not having read the question.
+**Memorize cold — the two-prefix-array version.** Not as a fallback but as the *explanation*.
+Starting from the compressed version and justifying it backwards is much harder, and it reads as
+memorised rather than understood.
 
-**Understand but do not memorize — brute force.** Ten seconds to name and reject on the 10⁵ bound.
+**Understand but do not memorize — the division approach.** Thirty valuable seconds: state it, state
+that it is linear, then state why the problem forbids it and what a zero does to it. Naming the
+shortcut *and* its failure mode is what demonstrates you understand why the constraint exists. Do not
+submit it — the statement rules it out, and doing it anyway reads as not having read the question.
+
+**Understand but do not memorize — brute force.** Ten seconds to name and reject on the `10^5` bound.
 Its real use is as the oracle in the test suite, where its obviousness is the entire point.
 
 ---
@@ -500,11 +517,13 @@ Its real use is as the oracle in the test suite, where its obviousness is the en
 ## Full Runnable Script
 
 Every approach above, plus a test suite covering the statement's two examples (including the one with
-a zero), the smallest legal input, two zeros, one zero at the minimum length, all-negative values,
-repeated values, the extremes of the stated −30…30 range, and eleven randomised stress cases drawn
-from that range with zeros deliberately over-represented — each one cross-checked against brute force
-and against every other approach. (Python integers are arbitrary-precision, so the stress cases'
-products are allowed to exceed 32 bits; the 32-bit guarantee matters for Java and C++, not here.)
+a zero), the smallest legal input, two zeros, one zero at minimal length, all-negative values,
+repeated values, the extremes of the stated `-30`…`30` range, and eleven randomised stress cases from
+that range with zeros deliberately over-represented — each cross-checked against brute force and
+against every other approach. Python integers are arbitrary-precision, so the stress cases' products
+may exceed 32 bits; that guarantee matters for Java and C++, not here.
+
+`EMPTY_PRODUCT` is the one shared decision, declared once and used by all four approaches.
 
 ```python
 """Product of Everything Else - every approach in one file, plus a self-checking test suite.
@@ -516,13 +535,15 @@ from __future__ import annotations
 
 import random
 
+EMPTY_PRODUCT = 1  # the product of no numbers at all; every accumulator below starts here
+
 
 # --- 1. Brute force: multiply the others, once per position -------------------
 
 def product_except_self_brute_force(nums: list[int]) -> list[int]:
     out: list[int] = []
     for i in range(len(nums)):
-        product = 1
+        product = EMPTY_PRODUCT
         for j in range(len(nums)):
             if j != i:  # the only position skipped
                 product *= nums[j]
@@ -536,7 +557,7 @@ def product_except_self_division(nums: list[int]) -> list[int]:
     zeros = nums.count(0)
     if zeros > 1:  # two zeros leave a zero in every product
         return [0] * len(nums)
-    product_of_nonzero = 1
+    product_of_nonzero = EMPTY_PRODUCT
     for x in nums:
         if x != 0:
             product_of_nonzero *= x
@@ -549,8 +570,8 @@ def product_except_self_division(nums: list[int]) -> list[int]:
 
 def product_except_self_two_prefix_arrays(nums: list[int]) -> list[int]:
     n = len(nums)
-    left = [1] * n   # left[i] = product of everything strictly before i
-    right = [1] * n  # right[i] = product of everything strictly after i
+    left = [EMPTY_PRODUCT] * n   # left[i] = product of everything strictly before i
+    right = [EMPTY_PRODUCT] * n  # right[i] = product of everything strictly after i
     for i in range(1, n):
         left[i] = left[i - 1] * nums[i - 1]
     for i in range(n - 2, -1, -1):
@@ -562,12 +583,12 @@ def product_except_self_two_prefix_arrays(nums: list[int]) -> list[int]:
 
 def product_except_self_prefix_suffix(nums: list[int]) -> list[int]:
     n = len(nums)
-    out = [1] * n
-    running = 1
+    out = [EMPTY_PRODUCT] * n
+    running = EMPTY_PRODUCT
     for i in range(n):
         out[i] = running     # written before nums[i] joins, so i excludes itself
         running *= nums[i]
-    running = 1
+    running = EMPTY_PRODUCT
     for i in range(n - 1, -1, -1):
         out[i] *= running    # folds the suffix into the prefix already stored
         running *= nums[i]

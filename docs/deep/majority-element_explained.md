@@ -2,27 +2,36 @@
 
 ## Understanding the Problem
 
-You are handed a list of numbers in which one value appears **more than half the time**, and you
-must say which value that is. "More than half" is strict: in a list of seven, the winner must appear
-at least four times; a value appearing exactly three of six times does not qualify. You are told up
-front that such a value exists, so you are never asked to report its absence.
+Picture a show of hands in a room where one opinion has more supporters than every other opinion put
+together. Not merely the most popular — more than *all the rest combined*. You are handed the list of
+hands as they went up, in no particular order, and asked only for the winning value.
 
-**The core question is: which single value occurs more often than everything else put together?**
-The naive approach is slow because it answers that by re-counting: it takes one value, sweeps the
-whole list to tally it, then takes the next value and sweeps the whole list again — about n²
-comparisons, which at the maximum allowed size is 2.5 billion.
+"More than half" is strict: in a room of seven the winner needs at least four; a value appearing
+exactly three of six does not qualify. You are told up front that such a value exists, so you are
+never asked to report its absence.
 
-The constraints, and what each one buys:
+**The core question:** which single value occurs more often than everything else put together? The
+naive approach is slow because it answers that by re-counting — take one value, sweep the whole list
+to tally it, take the next value, sweep the whole list again. That is about n² comparisons, 2.5
+billion at the maximum allowed size.
 
-| Constraint | What it unlocks |
+### The constraints, and what each one unlocks
+
+| Constraint | What it means for you |
 |---|---|
 | `1 <= nums.length <= 5 * 10^4` | Quadratic work is ~2.5 × 10⁹ comparisons, far past a one-second budget, so the re-counting approach will not survive. The lower bound of 1 also means a single-element list is legal, and that element is trivially its own majority — worth checking your code handles it. |
-| `-10^9 <= nums[i] <= 10^9` | The values are arbitrary integers over a huge range, so you cannot index an array by value the way you could with lowercase letters or small bounded numbers. That rules out a counting array and forces either a hash map, a sort, or something that stores no per-value state at all. It also means the values are only ever compared for equality — nothing here needs arithmetic on them, so overflow is not a concern. |
-| **the majority element is guaranteed to exist** | This is the load-bearing promise. It is what lets the final approach run a single counter and trust whatever survives, with no verification and no memory. It is also the one constraint most likely to be removed in a follow-up question, and removing it does not slow the algorithm down — it makes the algorithm *wrong* until you add a second pass. |
-| more than n/2 means **strictly** more than half | This is what makes the pairing argument work at all. A value with exactly half the elements can be cancelled out one-for-one by the rest and leave nothing standing; a value with even one more than half cannot. It is also why every comparison in your code must be `>` and never `>=`. |
+| `-10^9 <= nums[i] <= 10^9` | The values are arbitrary integers over a huge range, so you cannot index an array by value the way you could with lowercase letters. **This is the constraint that rules out a counting array**, forcing a hash map, a sort, or something storing no per-value state at all. It also means values are only ever compared for equality — no arithmetic on them, so no overflow to worry about. |
+| **the majority element is guaranteed to exist** | The load-bearing promise. **This is the constraint that licenses Boyer–Moore** to run a single counter and trust whatever survives, with no verification pass and no memory. It is also the constraint most likely to be removed in a follow-up — and removing it does not slow the algorithm down, it makes the algorithm *wrong* until you add that second pass. |
+| more than n/2 means **strictly** more than half | This is what makes the pairing argument work at all. A value holding exactly half can be cancelled one-for-one by the rest and leave nothing standing; a value with even one more than half cannot. It is also why every comparison in your code must be `>` and never `>=`. |
 
 Nothing in the problem asks *how many times* the winner appears. That gap — between the question
 asked and the information a counting solution collects — is the space the best approach lives in.
+
+The worked example used in every section below is the statement's own:
+
+```
+nums = [2, 2, 1, 1, 1, 2, 2]        answer: 2   (four 2s out of seven)
+```
 
 ---
 
@@ -32,24 +41,22 @@ asked and the information a counting solution collects — is the space the best
 
 *How do I know whether a value is the majority?* Count how many times it appears and compare that
 against half the length. *And how do I find the majority?* Do that for every value in the list and
-return the first one that clears the bar. This is the definition transcribed directly into code; it
+return the first that clears the bar. This is the definition transcribed directly into code; it
 assumes nothing at all about the input.
 
 ### How to think about it
 
-Two fingers again. The outer finger picks a candidate value; the inner finger walks the entire list
-tallying how many times that exact value shows up. When the tally clears half the length, you are
-done. The work is a full sweep per candidate, and since candidates come from the list itself, the
-list is swept up to n times. The waste is easy to name: sweeping for the value `2` learns exactly
-how many `1`s there are too — it counts them, passes over them, and throws that away before
-starting the next sweep. Every later approach is a way of keeping something from that sweep.
+> **Intuition.** Two fingers. The outer finger picks a candidate value; the inner finger walks the
+> entire list tallying how many times that exact value shows up, and when the tally clears half the
+> length you are done. Since candidates come from the list itself, the list is swept up to `n`
+> times. The waste is easy to name: sweeping for the value `2` learns exactly how many `1`s there
+> are too — it counts them, passes over them, and throws that away before starting the next sweep.
+> Every later approach is a way of keeping something from that sweep.
 
 ### Worked example
 
-Input: `nums = [2, 2, 1, 1, 1, 2, 2]`. The list has 7 elements, so the winner needs **more than 3**
-occurrences, meaning at least 4.
-
-The outer finger starts on `nums[0] = 2`, and the inner finger sweeps:
+`nums = [2, 2, 1, 1, 1, 2, 2]`. Seven elements, so the winner needs **more than 3** occurrences,
+meaning at least 4. The outer finger starts on `nums[0] = 2` and the inner finger sweeps:
 
 | position | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|---|
@@ -57,40 +64,51 @@ The outer finger starts on `nums[0] = 2`, and the inner finger sweeps:
 | is it a `2`? | yes | yes | no | no | no | yes | yes |
 | running tally of `2` | 1 | 2 | 2 | 2 | 2 | 3 | **4** |
 
-Tally 4 > 3, so the answer is `2`, found on the first candidate after 7 comparisons. That was luck
-of the draw: the majority happened to sit at index 0. Feed it `[5, 6, 7, 8, 8, 8, 8, 8, 8]` and the
-outer finger burns a full sweep on `5`, another on `6`, another on `7`, and only clears the bar on
-its fourth — 36 comparisons for nine elements. The worst case is a majority that starts late.
+Tally 4, and `2 × 4 > 7`, so the answer is `2` — found on the first candidate after 7 comparisons.
+That was luck of the draw: the majority happened to sit at index 0. Feed it
+`[5, 6, 7, 8, 8, 8, 8, 8, 8]` and the outer finger burns a full sweep on `5`, another on `6`, another
+on `7`, and only clears the bar on its fourth — 36 comparisons for nine elements. The worst case is a
+majority that starts late.
 
 ### Code
 
+`is_majority` is the one place in this document that decides what "majority" means. Every approach
+that needs to *check* a value routes through it, so the rounding argument below has exactly one
+home.
+
 ```python
+def is_majority(nums: list[int], value: int) -> bool:
+    """Strictly more than half. `2 * count > n` has no rounding to get wrong."""
+    return 2 * sum(1 for x in nums if x == value) > len(nums)
+
+
 def majority_element_brute_force(nums: list[int]) -> int:
-    need = len(nums) // 2
     for x in nums:
-        if sum(1 for y in nums if y == x) > need:  # strictly more than half
+        if is_majority(nums, x):
             return x
-    return nums[0]
+    return nums[0]  # unreachable while the promise holds
 ```
 
 ### Common mistake
 
-Writing `>= need` instead of `> need`. Integer division has already rounded down, so `need` is 3
-for a list of 7, and `>= 3` accepts a value that appears only three times out of seven — which is a
-*minority*. On `nums = [1, 1, 1, 2, 2, 2, 2]` the loop meets `1` first, tallies 3, accepts it, and
-returns `1` when the true majority is `2`. The fix is not to fiddle with the rounding but to drop
-the division entirely: `2 * count > len(nums)` says "strictly more than half" with no rounding to
-get wrong, and it is exactly the definition the statement gives.
+> **Watch out.** The misconception is that "more than half of 7" can be written as
+> `count >= len(nums) // 2`, because half of 7 "is" 3. Integer division has *already* rounded down,
+> so that bar is set at 3 out of 7 — a **minority** — and `>=` waves it through.
+
+On `nums = [1, 1, 1, 2, 2, 2, 2]` the loop meets `1` first, tallies 3, accepts it, and returns **1**
+when the true majority is `2`. The fix is not to fiddle with the rounding but to delete the division:
+`2 * count > len(nums)` says "strictly more than half" with nothing to round, and it is exactly the
+definition the statement gives. That is why `is_majority` is written the way it is.
 
 ### Complexity and when to use this
 
-**Time O(n²), space O(1).** The cost is one full sweep per candidate and up to n candidates, each
-sweep doing n equality checks. Space is a single tally, regardless of input size.
+**Time** `O(n²)`, **space** `O(1)`. The cost is one full sweep per candidate and up to `n`
+candidates, each sweep doing `n` equality checks. Space is a single tally, regardless of input size.
 
-Use it as an oracle. It is so directly a restatement of "appears more than half the time" that if a
-faster approach disagrees with it, the faster approach is the one that is wrong — which is precisely
-the job it does in the stress test at the bottom of this file. Beyond that, it is the sentence you
-say first in an interview to establish the baseline you are about to beat.
+Use it as an **oracle**. It is so directly a restatement of "appears more than half the time" that if
+a faster approach disagrees with it, the faster approach is wrong — which is precisely its job in the
+stress test at the bottom of this file. Beyond that, it is the sentence you say first in an interview
+to establish the baseline you are about to beat.
 
 ---
 
@@ -99,28 +117,35 @@ say first in an interview to establish the baseline you are about to beat.
 ### The idea
 
 *The rescanning wastes work because equal values are scattered — what if they were not?* Sort the
-list and every run of equal values becomes one contiguous block. A block covering more than half
-the list must cover the middle slot, whatever else is around it, so the answer is simply the element
-sitting at the centre after sorting. This fixes the brute force's repeated sweeping by paying once
-to restructure the input, then answering with a single array read.
+list and every run of equal values becomes one contiguous block. A block covering more than half the
+list must cover the middle slot, whatever else is around it, so the answer is the element sitting at
+the centre after sorting.
+
+This fixes the brute force's repeated sweeping by paying once to restructure the input, then
+answering with a single array read.
 
 ### How to think about it
 
-Two costs, and it pays to keep them apart. The first is the **restructuring**: sorting, at
-O(n log n). The second is the **search**: once sorted, finding the answer is one indexing operation,
-O(1) — you do not even scan. That is the trade this rung makes, and it is the general shape of a
-whole family of solutions: spend a log-linear pass turning a messy input into a structured one, then
+> **Intuition.** Picture the sorted list as a row of seats and the majority as one unbroken ribbon
+> laid across more than half of them. However you slide a ribbon longer than half the row, it must
+> cover the centre seat — there is not enough room on either side for it to miss. So whatever sits
+> in the centre seat *is* the majority, and the argument is geometric: no counting anywhere in it.
+
+Two costs, and it pays to keep them apart. The **restructuring** is the sort, at `O(n log n)`; the
+**search** afterwards is one indexing operation, `O(1)`. That split is the general shape of a whole
+family of solutions — spend a log-linear pass turning a messy input into a structured one, then
 harvest the answer almost for free.
 
-Why the middle slot specifically? Picture the sorted list as a row of seats and the majority as one
-unbroken ribbon laid across more than half of them. However you slide a ribbon longer than half the
-row, it must cover the centre seat — there is not enough room on either side for it to miss. So
-whatever is sitting in the centre seat *is* the majority. The argument is geometric and needs no
-counting at all.
+> **Why it works.** The invariant sorting buys is that equal values are **adjacent**, so the
+> majority occupies one contiguous block of length `m > n / 2`. A block of that length starting at
+> index `s` covers `s .. s + m - 1`; for it to miss index `n // 2` you would need either
+> `s > n // 2` (leaving fewer than `n / 2` seats to its right, too few to hold it) or
+> `s + m - 1 < n // 2` (fewer than `n / 2` seats to its left, likewise too few). Both are
+> impossible, so the centre seat is covered.
 
 ### Worked example
 
-Input: `nums = [2, 2, 1, 1, 1, 2, 2]`.
+`nums = [2, 2, 1, 1, 1, 2, 2]`.
 
 | Stage | Contents |
 |---|---|
@@ -144,28 +169,30 @@ def majority_element_sort(nums: list[int]) -> int:
 
 ### Common mistake
 
-Reaching for `len(ordered) // 2 - 1` — "the middle of a list of 7 is index 3, so for the element
-*before* the middle…". On this very example that returns `ordered[2] = 1`, a value that appears
-three times out of seven. The reason `n // 2` is the safe slot and `n // 2 - 1` is not: a block of
-`n // 2 + 1` seats can sit flush against the right end, occupying indices `n // 2` through `n - 1`
-and leaving index `n // 2 - 1` outside it — which is exactly what happened above. The centre slot is
-the only index guaranteed to be covered for both odd and even lengths, so use it and nothing else.
+> **Watch out.** The misconception is that `n // 2` overshoots — "the middle of seven items is the
+> fourth, so I want the index *before* it". The off-by-one feels like a correction and is actually
+> the bug: `n // 2` is already the centre index, and `n // 2 - 1` is a seat the ribbon is free to
+> miss.
 
-A second, quieter mistake is calling an in-place sort on the caller's array. `nums.sort()` reorders
-the list the caller handed you, which is a side effect nobody asked for; `sorted(nums)` copies.
+On this very example `ordered[len(ordered) // 2 - 1]` is `ordered[2] = 1`, a value appearing three
+times out of seven. A block of `n // 2 + 1` seats can sit flush against the right end, occupying
+indices `n // 2` through `n - 1` and leaving `n // 2 - 1` outside it — which is exactly what happened
+above. The centre slot is the only index guaranteed to be covered for both odd and even lengths.
+
+A second, quieter mistake: calling `nums.sort()` reorders the list the caller handed you, a side
+effect nobody asked for. `sorted(nums)` copies.
 
 ### Complexity and when to use this
 
-**Time O(n log n), space O(n).** The time is entirely the sort — the lookup afterwards is a single
-array read and contributes nothing. The space is the sorted copy; sorting in place instead brings it
-down to O(log n) for the recursion stack, at the cost of destroying the input.
+**Time** `O(n log n)`, **space** `O(n)`. The time is entirely the sort — the lookup afterwards is a
+single array read and contributes nothing. The space is the sorted copy; sorting in place instead
+brings it to `O(log n)` for the recursion stack, at the cost of destroying the input.
 
-It is not the fastest answer here, but it is worth more than its runtime suggests. It is three lines,
-it is very hard to get wrong once you have the right index, and in an interview it is a perfectly
-respectable second sentence — "sorting gives it to me in n log n, let me now do better". It is also
-the approach that genuinely wins when you need *more* than the majority: the median, the top-k
-values, or every value occurring more than n/3 times all fall out of a sorted array with a short
-extra scan.
+It is not the fastest answer here but it is worth more than its runtime suggests: three lines, very
+hard to get wrong once you have the right index, and a perfectly respectable second sentence in an
+interview. It is also the approach that genuinely wins when you need *more* than the majority — the
+median, the top-k values, or every value occurring more than n/3 times all fall out of a sorted array
+with a short extra scan.
 
 ---
 
@@ -174,44 +201,42 @@ extra scan.
 ### The idea
 
 *Sorting rearranges the whole list just to find one value — can the counts be collected without
-moving anything?* Yes: walk the list once, keeping a dictionary from value to how many times it has
-been seen, then return whichever key has the biggest tally. This fixes the sorting rung's
-log-linear cost — one pass instead of a sort — and fixes the brute force's rescanning at the same
-time, because every value's tally is built during the same single sweep.
+moving anything?* Yes: walk the list once keeping a dictionary from value to how many times it has
+been seen, then return whichever key has the biggest tally.
+
+This fixes the sorting rung's log-linear cost — one pass instead of a sort — and fixes the brute
+force's rescanning at the same time, because every value's tally is built during that single sweep.
 
 ### How to think about it
 
-A tally sheet with a row per distinct value. Each element you read adds one tick to its own row, and
-no row is ever re-read while you are ticking another. That is the single-pass win over brute force:
-counting `2`s no longer throws away what you learned about `1`s. At the end you scan the rows and
-pick the tallest.
+> **Intuition.** A tally sheet with a row per distinct value. Each element you read adds one tick to
+> its own row, and no row is ever re-read while you are ticking another; counting `2`s no longer
+> throws away what you learned about `1`s. At the end you scan the rows and pick the tallest. Its
+> weakness is not speed but **scope** — the sheet holds a tally for every distinct value, and the
+> question only ever asked about one of them.
 
-This is the instinctive answer, and for most purposes it is a fine one. Its weakness is not speed
-but *scope*: the sheet holds a tally for every distinct value in the input, and the question only
-ever asked about one of them. On a list of 50,000 mostly-distinct values you will build 25,000 rows
-to report a single number. Hold on to that mismatch — it is the crack the last approach goes
-through.
+On a list of 50,000 mostly-distinct values you build 25,000 rows to report a single number. Hold on
+to that mismatch: it is the crack the last approach goes through.
 
 ### Worked example
 
-Input: `nums = [2, 2, 1, 1, 1, 2, 2]`.
+`nums = [2, 2, 1, 1, 1, 2, 2]`.
 
-| Step | value read | tally sheet after the tick |
-|---|---|---|
-| 1 | 2 | `{2: 1}` |
-| 2 | 2 | `{2: 2}` |
-| 3 | 1 | `{2: 2, 1: 1}` |
-| 4 | 1 | `{2: 2, 1: 2}` |
-| 5 | 1 | `{2: 2, 1: 3}` |
-| 6 | 2 | `{2: 3, 1: 3}` |
-| 7 | 2 | `{2: 4, 1: 3}` |
+| Step | value read | `counts` after the tick | current `best` | `counts[best]` |
+|---|---|---|---|---|
+| 1 | 2 | `{2: 1}` | — | — |
+| 2 | 2 | `{2: 2}` | — | — |
+| 3 | 1 | `{2: 2, 1: 1}` | — | — |
+| 4 | 1 | `{2: 2, 1: 2}` | — | — |
+| 5 | 1 | `{2: 2, 1: 3}` | — | — |
+| 6 | 2 | `{2: 3, 1: 3}` | — | — |
+| 7 | 2 | `{2: 4, 1: 3}` | — | — |
+| scan | row `2` | — | `2` (the seed, `nums[0]`) | 4 |
+| scan | row `1` | — | `2` — 3 does not beat 4 | 4 |
 
-Then the second scan over the sheet: start with `best = nums[0] = 2` (tally 4); the row for `2`
-does not beat itself; the row for `1` has 3, which is not more than 4. Answer: `2`.
-
-Seven ticks plus two row comparisons, against the brute force's seven comparisons *per candidate*.
-Note step 6, where `1` and `2` are briefly tied at 3 — the sheet is happy to hold that ambiguity,
-and the majority only pulls ahead at the last element.
+Answer: `2`. Seven ticks plus two row comparisons, against the brute force's seven comparisons *per
+candidate*. Note step 6, where `1` and `2` are briefly tied at 3 — the sheet is happy to hold that
+ambiguity, and the majority only pulls ahead at the last element.
 
 ### Code
 
@@ -229,19 +254,21 @@ def majority_element_count_map(nums: list[int]) -> int:
 
 ### Common mistake
 
-Confusing the tally with the value. The natural way to write "find the biggest" is
-`best = 0; for value, seen in counts.items(): if seen > best: best = seen` — and now `best` holds a
-*count*, so the function returns `4` on this example instead of `2`. The bug survives casual testing
-because 4 is a perfectly plausible-looking integer and, on small inputs where the majority value and
-its count happen to coincide, it even returns the right answer. Track the winning **key** and compare
-through the map (`counts[best]`), or use `max(counts, key=counts.get)`, which makes the distinction
+> **Watch out.** The misconception is that "find the biggest" means tracking the biggest **number
+> you have seen**, which in this loop is a *count*, not a *value*. The natural phrasing —
+> `best = 0; if seen > best: best = seen` — returns the tally instead of the key.
+
+On this example that returns **4** instead of `2`. The bug survives casual testing because 4 is a
+perfectly plausible-looking integer, and on small inputs where the majority value and its count
+happen to coincide it even returns the right answer. Track the winning **key** and compare through
+the map (`counts[best]`), or write `max(counts, key=counts.get)`, which makes the distinction
 impossible to get wrong.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(n).** The time is one pass to build the sheet plus one pass over its rows, each
-with constant expected cost per step; the space is one entry per *distinct* value, which in the worst
-case — before you knew a majority existed — is the whole input.
+**Time** `O(n)`, **space** `O(n)`. The time is one pass to build the sheet plus one pass over its
+rows, each with constant expected cost per step. The space is one entry per *distinct* value, which
+in the worst case — before you knew a majority existed — is the whole input.
 
 This is the right choice whenever you need more than the single winner: the full frequency
 distribution, the runner-up, the top k, or the answer to "and how many times did it appear?". It is
@@ -257,35 +284,35 @@ delivers.
 
 *The tally sheet spends memory proportional to the number of distinct values, but the question is
 about one value — can the list be reduced without remembering any of them?* Yes, by cancellation.
-Pair off each occurrence of a candidate against one occurrence of anything else; both are struck
-out. A value holding strictly more than half the list cannot be fully struck out, so whatever is
-left standing is the answer — and tracking it takes one candidate and one counter.
+Pair off each occurrence of a candidate against one occurrence of anything else and strike both out.
+A value holding strictly more than half the list cannot be fully struck out, so whatever is left
+standing is the answer — and tracking it takes one candidate and one counter.
 
 ### How to think about it
 
-Think of it as an election where every vote for someone else destroys one vote for the current
-leader. You hold two things: who is currently leading, and by how much. A matching value pushes the
-lead up by one; a differing value pulls it down by one. When the lead hits zero, the current leader
-has been completely cancelled out and you hand the lead to the very next element you see — you have
-no idea whether it is the true majority, and it does not matter.
+> **Intuition.** An election in which every vote for someone else destroys one vote for the current
+> leader. You hold exactly two things: who is currently leading, and by how much. A matching value
+> pushes the lead up by one, a differing value pulls it down by one, and when the lead hits zero the
+> current leader has been completely cancelled out — so you hand the lead to the very next element
+> you see. You have no idea whether that newcomer is the true majority, and it does not matter.
 
-Why the survivor is correct: every decrement destroys one majority vote **and** one non-majority
-vote together, so it consumes them in pairs. There are fewer than half the elements that are *not*
-the majority, so the pairing runs out of non-majority votes before it runs out of majority ones. At
-least one majority vote is left uncancelled, and no other value can be holding the lead at the end,
-because holding the lead requires having survived every pairing. The counter is not a count of
-anything real — it is a *margin*, and it can be zero in the middle of an array whose majority is
-overwhelming.
+> **Why it works.** Every decrement is an **exchange**: it destroys one vote for the current leader
+> and one vote for something else, consuming them strictly in pairs. Fewer than half the elements
+> are *not* the majority, so the pairing runs out of non-majority votes before it runs out of
+> majority ones — at least one majority vote survives uncancelled. And no other value can be
+> holding the lead at the end, because holding the lead requires having survived every pairing,
+> which only the value with a surplus can do. Note what the counter is not: it is a **margin**, not
+> a tally, and it can sit at zero in the middle of an array whose majority is overwhelming.
 
-The one thing this argument never establishes is that the survivor is a majority. It establishes
-only that *if* a majority exists, the survivor is it. That is why the guarantee in the statement is
+The one thing this argument never establishes is that the survivor *is* a majority. It establishes
+only that **if** a majority exists, the survivor is it. That is why the guarantee in the statement is
 not decoration.
 
 ### Worked example
 
-Input: `nums = [2, 2, 1, 1, 1, 2, 2]`. Start with `candidate = nums[0] = 2` and `count = 0`.
+`nums = [2, 2, 1, 1, 1, 2, 2]`. Start with `candidate = nums[0] = 2` and `count = 0`.
 
-| Step | value | count was 0? | candidate after | matches? | count after |
+| Step | value | `count` was 0? | `candidate` after | matches? | `count` after |
 |---|---|---|---|---|---|
 | 1 | 2 | yes → adopt `2` | 2 | yes | 1 |
 | 2 | 2 | no | 2 | yes | 2 |
@@ -295,15 +322,13 @@ Input: `nums = [2, 2, 1, 1, 1, 2, 2]`. Start with `candidate = nums[0] = 2` and 
 | 6 | 2 | no | 1 | no | **0** |
 | 7 | 2 | yes → adopt `2` | **2** | yes | 1 |
 
-Answer: `2`.
+Answer: `2`. Steps 3 and 4 cancelled two `2`s against two `1`s — four elements struck out, margin
+back to zero. Step 5 handed the lead to `1`, a value that is *not* the majority, and the algorithm
+was perfectly happy about it. Step 6 cancelled that lone `1` against a `2`.
 
-Trace what actually happened. Steps 3 and 4 cancelled two `2`s against two `1`s — four elements
-struck out, margin back to zero. Step 5 handed the lead to `1`, a value that is *not* the majority,
-and the algorithm was perfectly happy about that. Step 6 cancelled that lone `1` against a `2`. By
-step 7 the only elements left uncancelled are `2`s, and the last one takes the lead and keeps it.
-Two `1`s and two `2`s annihilated in the middle; the surplus of `2`s is what survives. And notice
-that the final `count` is 1, which tells you nothing about how many `2`s there were — the counter is
-a margin, not a tally.
+By step 7 the only elements left uncancelled are `2`s, and the last one takes the lead and keeps it.
+Two `1`s and two `2`s annihilated in the middle; the surplus of `2`s is what survives. Notice the
+final `count` is 1, which tells you nothing about how many `2`s there were.
 
 ### Code
 
@@ -320,8 +345,12 @@ def majority_element_boyer_moore(nums: list[int]) -> int:
 
 ### Common mistake
 
-Swapping the two statements in the loop — adjusting the count first and adopting the new candidate
-afterwards:
+> **Watch out.** The misconception is that the two statements in the loop are independent
+> bookkeeping, so their order is a matter of taste. It is not: adopting a new leader and giving it
+> its own first vote are the *same* event, and separating them leaves a leader installed with zero
+> votes behind it.
+
+Adjusting the count first and adopting afterwards:
 
 ```python
 count += 1 if x == candidate else -1
@@ -329,52 +358,48 @@ if count == 0:
     candidate = x        # WRONG: adopted but never counted
 ```
 
-Now when the margin collapses you install a new leader **without giving it its own vote**, so it
-starts the next round at zero instead of one, and the very next differing element drives the count
-negative. On `nums = [2, 1, 2]` — where `2` is a genuine majority, two out of three — this version
-returns `1`. The bug is nasty because it is invisible most of the time: on the seven-element example
-above it still returns `2`, by luck. A negative `count` is the tell; if you ever see one while
-debugging, this is the reason.
+The newcomer starts the next round at zero instead of one, so the very next differing element drives
+the count negative. On `nums = [2, 1, 2]` — where `2` is a genuine majority, two out of three — this
+returns **1**. The bug is nasty because it is invisible most of the time: on the seven-element
+example above it still returns **2**, by luck. A negative `count` is the tell.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1).** The time is one pass with two comparisons and one addition per element —
-no hashing, no allocation, nothing that can degrade. The space is two variables, and that is true
-whether the array holds ten elements or fifty thousand.
+**Time** `O(n)`, **space** `O(1)`. The time is one pass with two comparisons and one addition per
+element — no hashing, no allocation, nothing that can degrade. The space is two variables, whether
+the array holds ten elements or fifty thousand.
 
-This is the answer to ship, and the reason to ship it is the space, not the speed — the hash map is
-already linear in time. Reach for it when memory is the binding constraint: streaming data you
-cannot store, an embedded target, or a interviewer who has just said "now do it in constant space".
-Its precondition is the whole game, so say the precondition out loud when you write it.
+This is the answer to ship, and the reason is the **space**, not the speed — the hash map is already
+linear in time. Reach for it when memory is the binding constraint: streaming data you cannot store,
+an embedded target, or an interviewer who has just said "now do it in constant space". Its
+precondition is the whole game, so say the precondition out loud when you write it.
 
 ### Without the promise
 
 Remove "a majority is guaranteed to exist" and this code does not slow down, it *lies*. Run it on
 `[1, 2, 3]` and it returns `3`; run it on `[1, 1, 2, 2]` and it returns `1`. Both are simply the last
 value to pick up the lead, and neither is a majority of anything. Nothing in the loop can detect
-this, because the counter tracks a margin and a margin of 1 at the end is equally consistent with
+this, because the counter tracks a margin, and a margin of 1 at the end is equally consistent with
 "an overwhelming winner" and "no winner at all".
 
-The repair is one extra pass: count how many times the survivor actually appears and check it
-clears half.
+The repair is one extra pass — and it is the same check Approach 1 already owns, so it is a call, not
+new code:
 
 ```python
 def majority_element_boyer_moore_verified(nums: list[int]) -> int | None:
     """Same walk, plus the pass that the 'a majority exists' promise pays for."""
     candidate = majority_element_boyer_moore(nums)
-    if sum(1 for x in nums if x == candidate) > len(nums) // 2:
-        return candidate
-    return None
+    return candidate if is_majority(nums, candidate) else None
 ```
 
-**What the verification costs:** one more linear scan — 2n comparisons instead of n, still O(n) time
-and still O(1) space. That is the entire price of dropping the guarantee, which is worth knowing
-precisely, because it means the guarantee buys you a constant factor and nothing more. The reason to
-care is that the promise is the most commonly removed constraint in the follow-up, and answering
-"then I add a verification pass, still linear, still constant space" immediately is much better than
-discovering the problem when the interviewer feeds you `[1, 2, 3]`.
+**What the verification costs:** one more linear scan — 2n comparisons instead of n, still `O(n)`
+time and still `O(1)` space. That is the entire price of dropping the guarantee, which is worth
+knowing precisely: the guarantee buys a constant factor and nothing more. The promise is the most
+commonly removed constraint in the follow-up, and answering "then I add a verification pass, still
+linear, still constant space" immediately beats discovering the problem when the interviewer feeds
+you `[1, 2, 3]`.
 
-The same cancellation argument generalises: to find every value appearing more than n/3 times, keep
+The same cancellation argument generalises. To find every value appearing more than n/3 times, keep
 **two** candidates and two counters — at most two such values can exist, and pairing three distinct
 values off against each other cancels them three at a time. That variant *always* needs the
 verification pass, because "more than n/3" carries no guarantee that any such value exists.
@@ -383,17 +408,17 @@ verification pass, because "more than n/3" carries no guarantee that any such va
 
 ## The Overall Arc
 
-The thread running through every rung is *collect only what the question asks about*. The brute
-force collects nothing at all and pays for it by rebuilding the same knowledge n times over: each
-sweep counts every value in the list and reports one number about one of them, then discards the
-rest and starts again. Sorting is the first real idea — restructure the input so that equality
-becomes adjacency, and the answer stops needing to be counted at all, because a block longer than
-half the row cannot miss the centre seat; but it moves all n elements to learn about one, and pays
-n log n for the privilege. The hash map is the instinct most people land on and the first genuinely
-linear answer: one pass, one tally per distinct value, nothing recomputed — and yet look at what is
-on the sheet when it finishes. Tens of thousands of rows, one of which is the answer and the rest of
-which were never asked for. That surplus is the signal. Boyer–Moore takes the question at its word:
-you were asked for a single value, so carry a single value, plus the one extra number needed to know
+The thread running through every rung is *collect only what the question asks about*. The brute force
+collects nothing at all and pays for it by rebuilding the same knowledge n times over: each sweep
+counts every value in the list, reports one number about one of them, then discards the rest and
+starts again. Sorting is the first real idea — restructure the input so that equality becomes
+adjacency, and the answer stops needing to be counted at all, because a block longer than half the
+row cannot miss the centre seat; but it moves all n elements to learn about one, and pays n log n for
+the privilege. The hash map is the instinct most people land on and the first genuinely linear
+answer: one pass, one tally per distinct value, nothing recomputed — and yet look at what is on the
+sheet when it finishes. Tens of thousands of rows, one of which is the answer and the rest of which
+were never asked for. That surplus is the signal. Boyer–Moore takes the question at its word: you
+were asked for a single value, so carry a single value, plus the one extra number needed to know
 whether it is still winning. The pairing argument is what makes that safe — every disagreeing element
 cancels one agreeing element, the minority runs out of ammunition before the majority does, and so
 the last value standing must be the one that had more than half. What makes the whole thing possible
@@ -409,33 +434,34 @@ gets **wrong**, until you spend one more linear pass to check what it handed you
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Count by rescanning | O(n²) | O(1) | Literal, obviously correct, remembers nothing | n is tiny, or you need a trustworthy oracle to cross-check a faster version |
-| Sort, take the middle | O(n log n) | O(n) | One restructuring pass buys an O(1) lookup | You also need the median, the top k, or the n/3 variants — or you want three lines you cannot get wrong |
-| Count in a hash map | O(n) | O(n) | Linear, but stores a tally for every distinct value | You need the full frequency picture, the runner-up, or the count itself |
-| Boyer–Moore voting | O(n) | O(1) | Constant space, but correct **only** because a majority is promised | Memory is the binding constraint — streaming, embedded, or an explicit O(1)-space requirement |
+| Count by rescanning | `O(n²)` | `O(1)` | Literal, obviously correct, remembers nothing | `n` is tiny, or you need a trustworthy oracle to cross-check a faster version |
+| Sort, take the middle | `O(n log n)` | `O(n)` | One restructuring pass buys an `O(1)` lookup | You also need the median, the top k, or the n/3 variants — or you want three lines you cannot get wrong |
+| Count in a hash map | `O(n)` | `O(n)` | Linear, but stores a tally for every distinct value | You need the full frequency picture, the runner-up, or the count itself |
+| **Boyer–Moore voting** | **`O(n)`** | **`O(1)`** | **Constant space, but correct only because a majority is promised** | **Memory is the binding constraint — streaming, embedded, or an explicit `O(1)`-space requirement** |
 
 ---
 
 ## Interview Priority
 
-**Know cold: Boyer–Moore, and the hash map.** The hash map is the answer you should be able to write
-in fifteen seconds to get a correct solution on the board; Boyer–Moore is the answer to the follow-up
-that always comes — "now in constant space". Being able to state the pairing argument in two
-sentences (*every disagreement cancels one agreement; a strict majority cannot be fully cancelled*)
-is what separates having memorised the loop from understanding it, and it is what makes the two
-follow-ups answerable on the spot: *what if no majority is guaranteed?* (add a verification pass,
-still O(n) time and O(1) space) and *what about everything appearing more than n/3 times?* (two
-candidates, two counters, and now the verification pass is mandatory). Get the statement order right
-inside the loop — adopt on zero, **then** count — because the swapped version passes most small tests
-and fails on `[2, 1, 2]`.
+> **In an interview.** Name the `O(n²)` baseline in your first sentence, mention the sort as the easy
+> `O(n log n)` improvement — the ribbon-covering-the-centre-seat argument takes five seconds — then
+> write the hash map to get something correct on the board. The follow-up always comes: **"now in
+> constant space."** Answer with Boyer–Moore and state the pairing argument in two sentences —
+> *every disagreement cancels one agreement; a strict majority cannot be fully cancelled*. Two more
+> follow-ups are waiting: *"what if no majority is guaranteed?"* (add a verification pass, still
+> `O(n)` time and `O(1)` space) and *"what about everything appearing more than n/3 times?"* (two
+> candidates, two counters, and now the verification pass is mandatory).
 
-**Understand but do not drill: the rescanning brute force and the sort.** Name the brute force in
-your first sentence to put the O(n²) baseline on the table, and mention the sort as the easy
-n log n improvement — the ribbon-covering-the-centre-seat argument is a nice thing to say and takes
-five seconds. Neither is what the question is testing, but skipping straight to the voting algorithm
-without them makes it look recalled rather than derived, and the natural next question — "why does
-that work?" — is much easier to answer well if you have already talked about what the other
-approaches were storing and why it was more than you needed.
+**Know cold: Boyer–Moore, and the hash map.** The map is the fifteen-second correct answer; the
+voting algorithm is the answer to the constant-space follow-up. Get the statement order right inside
+the loop — adopt on zero, **then** count — because the swapped version passes most small tests and
+fails on `[2, 1, 2]`.
+
+**Understand but do not drill: the rescanning brute force and the sort.** Neither is what the
+question is testing, but skipping straight to the voting algorithm makes it look recalled rather than
+derived — and the natural next question, *"why does that work?"*, is much easier to answer well once
+you have already talked about what the other approaches were storing and why it was more than you
+needed.
 
 ---
 
@@ -448,6 +474,10 @@ deliberately built to contain a genuine majority. There is also a no-answer sect
 majority at all, which lie outside the problem's promise, showing what plain Boyer–Moore returns
 there and what the verification pass returns instead.
 
+`is_majority` is the single definition of "strictly more than half" — the brute force, the verified
+variant and the test harness all route through it. `run_case` and `APPROACHES` are **scaffolding**,
+not answers: they exist only to print the approaches side by side and report whether they agreed.
+
 ```python
 """The Value That Owns the Majority — every approach in one file, cross-checked.
 
@@ -459,12 +489,16 @@ from __future__ import annotations
 import random
 
 
+def is_majority(nums: list[int], value: int) -> bool:
+    """Strictly more than half. `2 * count > n` has no rounding to get wrong."""
+    return 2 * sum(1 for x in nums if x == value) > len(nums)
+
+
 def majority_element_brute_force(nums: list[int]) -> int:
-    need = len(nums) // 2
     for x in nums:
-        if sum(1 for y in nums if y == x) > need:  # strictly more than half
+        if is_majority(nums, x):
             return x
-    return nums[0]
+    return nums[0]  # unreachable while the promise holds
 
 
 def majority_element_sort(nums: list[int]) -> int:
@@ -496,9 +530,7 @@ def majority_element_boyer_moore(nums: list[int]) -> int:
 def majority_element_boyer_moore_verified(nums: list[int]) -> int | None:
     """Same walk, plus the pass that the 'a majority exists' promise pays for."""
     candidate = majority_element_boyer_moore(nums)
-    if sum(1 for x in nums if x == candidate) > len(nums) // 2:
-        return candidate
-    return None
+    return candidate if is_majority(nums, candidate) else None
 
 
 APPROACHES: list[tuple[str, object]] = [
@@ -546,10 +578,7 @@ def main() -> None:
     for nums in [[1, 2, 3], [1, 1, 2, 2]]:
         bare = majority_element_boyer_moore(list(nums))
         checked = majority_element_boyer_moore_verified(list(nums))
-        true_majority = None
-        for x in set(nums):
-            if nums.count(x) > len(nums) // 2:
-                true_majority = x
+        true_majority = next((x for x in set(nums) if is_majority(nums, x)), None)
         print(f"    nums={nums} -> Boyer-Moore says {bare} (no majority exists), "
               f"verified says {checked}")
         ok &= checked == true_majority  # the check is what makes the answer honest
