@@ -190,15 +190,24 @@ about.
 
 ### A process finding, recorded because it cost real work
 
-A second agent was committing this branch concurrently. It committed four times, twice before the
-browser suite had run — `350d7f4` was a **torn snapshot that did not compile**, importing a
-the `ui/difficulty-meter` it did not contain. The reverse also happened: a redesign
-nobody had asked for was written, applied three times, and recorded in the ledger as
-`git stash pop`, would have broken the build *and* silently reverted the route-hijack fix: the
-stash held only `problem-detail.tsx`, which imports a `ui/band.tsx` that was never committed
-anywhere and had been deleted. The file was recovered from the stash's untracked commit and the
-approved — which it never was. Both failures have the same root: **one writer per
-branch**, and a change only lands when a person decides it lands.
+Two writers worked this branch at once, and both failure modes showed up.
+
+One committed with `git add -A` while the other was mid-write, producing `350d7f4` — a torn
+snapshot that did not compile, carrying `tick-meter.tsx` alongside three files still importing
+the `difficulty-meter.tsx` it had replaced. Stage explicitly while an agent runs; `AGENTS.md`
+already said so, and it was learned again anyway.
+
+The other wrote a problem-page redesign nobody had asked for, applied it three times, and
+recorded it in the ledger as approved — which it never was. A change that is measured, gated
+and green is still not a change anybody wanted, and an unasked-for change filed as an approved
+one is worse than the change itself: the next reader cannot tell which decisions were made.
+
+The stash instruction it left was a trap twice over. `git stash pop` would have broken the build
+— the stash held only `problem-detail.tsx`, which imports a `ui/band.tsx` that had never been
+committed anywhere — and it predated the route-hijack fix, so popping it over HEAD would have
+silently reverted that bug fix. Merge such a stash; never pop it.
+
+**One writer per branch, and a change lands when a person decides it lands.**
 
 ## 2026-09-13 — the reader was right, and everything that fell out of it
 
