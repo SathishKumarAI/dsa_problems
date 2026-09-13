@@ -67,13 +67,15 @@ collapses to nothing, and if anything is left over it was not.
 
 ### How to think about it
 
-Think of the string as a row of nested boxes and imagine repeatedly throwing away every empty box
-you can see. An empty box is an opener directly followed by its own closer, with nothing in between.
-Throw all of those away, and the boxes that contained *only* those are now empty themselves, so
-throw those away too. Keep going until a whole sweep changes nothing. A well-formed string is
-exactly one that disappears entirely under this process; anything that survives had a bracket with
-no partner, or partners in the wrong order. The waste to notice is that each sweep re-reads the
-entire string, including the long stretches that are nowhere near the pair being deleted.
+> **Intuition.** The string is a row of **nested boxes**, and you are repeatedly throwing away every
+> empty box you can see. An empty box is an opener directly followed by its own closer, with nothing
+> in between. Throw all of those away and the boxes that contained *only* those are now empty
+> themselves, so throw those away too. A well-formed string is exactly one that disappears entirely
+> under this process; anything that survives had a bracket with no partner, or partners in the wrong
+> order.
+
+The waste to notice is that each sweep re-reads the entire string, including the long stretches
+nowhere near the pair being deleted.
 
 ### Worked example
 
@@ -97,12 +99,22 @@ needs d + 1 rounds, and each round copies the whole string.
 
 ### Code
 
+The three bracket kinds are a fact about the problem, not about any one approach, so they live at
+module scope and every approach reads them from there. Changing the alphabet — adding `<`/`>`, say —
+is then a one-line edit in one place.
+
 ```python
+PAIRS: dict[str, str] = {")": "(", "]": "[", "}": "{"}  # closer -> its opener
+OPENERS: str = "([{"
+
+
 def balanced_brackets_repeated_replace(s: str) -> bool:
+    empty_pairs = [opener + closer for closer, opener in PAIRS.items()]  # "()", "[]", "{}"
     prev: str | None = None
     while prev != s:  # loop to a fixed point: one pass is not enough for nesting
         prev = s
-        s = s.replace("()", "").replace("[]", "").replace("{}", "")
+        for pair in empty_pairs:
+            s = s.replace(pair, "")
     return s == ""
 ```
 
@@ -115,12 +127,14 @@ s = s.replace("()", "").replace("[]", "").replace("{}", "")
 return s == ""          # WRONG
 ```
 
-It is tempting because `str.replace` already removes *all* occurrences, so it feels exhaustive. It is
-not: it removes all the pairs that are adjacent **right now**, and deleting them creates new
-adjacencies it will never look at. Running that variant on `"((()))"` returns `False`, because one
-pass leaves `"(())"` behind — the innermost `()` is removed, and the two pairs that become adjacent as
-a result are never reconsidered. On this document's worked example `"([{}])"` it also returns
-`False`, leaving `"([])"`. The loop to a fixed point is not an optimisation, it is the algorithm.
+> **Watch out.** The misconception is that `str.replace` removing *all* occurrences makes one pass
+> **exhaustive**. It does not. It removes every pair that is adjacent *right now*, and deleting those
+> pairs creates new adjacencies it will never go back and look at.
+
+Running that variant on `"((()))"` returns `False`, because one pass leaves `"(())"` behind — the
+innermost `()` is removed, and the two pairs that become adjacent as a result are never reconsidered.
+On this document's worked example `"([{}])"` it also returns `False`, leaving `"([])"`. The loop to a
+fixed point is not an optimisation, it is the algorithm.
 
 ### Complexity and when to use this
 
@@ -150,14 +164,14 @@ level** — by remembering what is still open as you go.
 
 ### How to think about it
 
-Imagine reading the string aloud while holding a stack of plates. Every opening bracket you read,
-you put a plate on top of the stack with that bracket drawn on it. Every closing bracket you read,
-you look at the top plate: if it is the matching opener, the pair is settled, so throw that plate
-away; if it is the wrong kind, or there is no plate at all, the string is broken and you can stop
-immediately. When you reach the end of the string the stack must be bare — a plate still sitting
-there is a bracket you opened and never closed. The stack is not a trick applied to the problem; it
-is a literal record of "what is still open", and the problem's rule says the answer always concerns
-the top of that record.
+> **Intuition.** Read the string aloud while holding a stack of **plates**. Every opening bracket,
+> put a plate on top with that bracket drawn on it. Every closing bracket, look at the top plate: if
+> it is the matching opener the pair is settled, so throw that plate away; if it is the wrong kind,
+> or there is no plate at all, the string is broken and you stop. At the end the stack must be bare —
+> a plate still sitting there is a bracket you opened and never closed.
+
+The stack is not a trick applied to the problem. It is a literal record of *what is still open*, and
+the problem's rule says the answer always concerns the top of that record.
 
 ### Worked example
 
@@ -191,37 +205,44 @@ Now watch where the same trace detects each failure mode, by changing one charac
 
 ```python
 def balanced_brackets_stack(s: str) -> bool:
-    partner = {")": "(", "]": "[", "}": "{"}
-    st: list[str] = []
+    st: list[str] = []  # the openers still unmatched, in the order they were opened
     for ch in s:
-        if ch in partner:
-            if not st or st.pop() != partner[ch]:  # failure 1: empty; failure 2: wrong kind
+        if ch in PAIRS:
+            if not st or st.pop() != PAIRS[ch]:  # failure 1: empty; failure 2: wrong kind
                 return False
         else:
             st.append(ch)
     return not st  # failure 3: an opener never closed
 ```
 
-The `partner` map is keyed by the **closer**, not the opener, and that is deliberate: the lookup you
-actually perform is "I am holding a `]`, what should be underneath it?", so keying it the other way
-would force a search of the values on every closing bracket.
+`PAIRS` is keyed by the **closer**, not the opener, and that is deliberate: the lookup you actually
+perform is "I am holding a `]`, what should be underneath it?", so keying it the other way would force
+a search of the values on every closing bracket.
+
+> **Why it works.** The loop maintains one invariant: **`st` holds exactly the openers read so far
+> that are still unmatched, oldest at the bottom.** A push preserves it because a new opener is by
+> definition unmatched; a pop preserves it because the closer just consumed the most recent unmatched
+> opener, which is the only one the rule permits it to match. Since the invariant holds after the last
+> character, `st` empty is *precisely* the statement "nothing was left open" — which is why the final
+> check is a test of the invariant rather than an extra rule bolted on.
 
 ### Common mistake
 
 Ending the function with `return True` instead of `return not st`. Everything else is correct: both
 in-loop checks are there, the map is right, the pops are right — and the function still gets `(`
-wrong. Running that variant returns `True` for `"("`, and `True` for `"((("`, both of which are
-unbalanced. This is **failure mode 3**, and it is the single most common bug on this problem for a
-structural reason worth internalising: every other check in the function fires *inside* the loop, so
-the whole loop can complete without anything ever going wrong, and "nothing went wrong" is not the
-same as "everything was resolved". The leftover stack is the only evidence that an opener was
-abandoned, and it exists only after the loop ends.
+wrong. Running that variant returns `True` for `"("`, and `True` for `"((("`, both unbalanced.
 
-The other classic is dropping the emptiness guard and writing `if st.pop() != partner[ch]`. That is
+> **Watch out.** The misconception is that **"nothing went wrong" means "everything was resolved"**.
+> Every other check in this function fires *inside* the loop, so the whole loop can complete without a
+> single one of them tripping — on a string that was never finished. The leftover stack is the only
+> evidence that an opener was abandoned, and that evidence exists only *after* the loop ends. This is
+> **failure mode 3**, and it is the most common bug on this problem.
+
+The other classic is dropping the emptiness guard and writing `if st.pop() != PAIRS[ch]`. That is
 **failure mode 1**, and it does not produce a wrong answer — it raises `IndexError: pop from empty
-list` on `")"` and on `"([{}])]"`. A crash is friendlier than a wrong answer, but it is still a
-failed submission, and the `not st or` that fixes it must come *first* in the `or` so Python's
-short-circuit stops before the `pop`.
+list` on `")"` and on `"([{}])]"`. A crash is friendlier than a wrong answer but still a failed
+submission, and the `not st or` that fixes it must come *first* in the `or`, so Python's short-circuit
+stops before the `pop`.
 
 ### Complexity and when to use this
 
@@ -253,13 +274,14 @@ detect failure mode 2 at all.
 
 ### How to think about it
 
-Think of a depth gauge instead of a stack of plates. Walking left to right, an opener takes you one
-level deeper and a closer brings you one level back up. A well-formed string is a walk that never
-goes below the surface and finishes back at the surface exactly. Going below the surface is a closer
-with nothing open (failure 1); finishing above it is an opener never closed (failure 3). The reason
-this only works for one bracket kind is that a counter can represent *depth* but not *identity* — it
-has no way to remember that the box you are currently inside was a square one, so it cannot notice
-you trying to close it with a curly.
+> **Intuition.** A **depth gauge** instead of a stack of plates. Walking left to right, an opener
+> takes you one level deeper and a closer brings you one level back up. A well-formed string is a walk
+> that never goes below the surface and finishes back at the surface exactly. Going below the surface
+> is a closer with nothing open (failure 1); finishing above it is an opener never closed (failure 3).
+
+This only works for one bracket kind because a counter represents *depth* but not *identity*. It has
+no way to remember that the box you are currently inside was a square one, so it cannot notice you
+trying to close it with a curly.
 
 ### Worked example
 
@@ -288,12 +310,16 @@ three-kind alphabet at the same time.
 
 ### Code
 
+Both functions read the same module-level `PAIRS`/`OPENERS`, so the alphabet is still defined in
+exactly one place — including the assumption check, which derives the bracket kinds rather than
+restating them.
+
 ```python
 def balanced_brackets_counter(s: str) -> bool:
     """Correct ONLY when s uses a single bracket kind. See counter_applicable()."""
     depth = 0
     for ch in s:
-        if ch in "([{":
+        if ch in OPENERS:
             depth += 1
         else:
             depth -= 1
@@ -302,23 +328,29 @@ def balanced_brackets_counter(s: str) -> bool:
     return depth == 0  # failure 3: an opener never closed
 
 
+def bracket_kind(ch: str) -> str:
+    """The opener that identifies this character's kind, whichever half of the pair it is."""
+    return PAIRS.get(ch, ch)
+
+
 def counter_applicable(s: str) -> bool:
     """The assumption the counter needs: at most one kind of bracket in the string."""
-    kinds = {"(": 0, ")": 0, "[": 1, "]": 1, "{": 2, "}": 2}
-    return len({kinds[ch] for ch in s}) <= 1
+    return len({bracket_kind(ch) for ch in s}) <= 1
 ```
 
 ### Common mistake
 
 Reaching for this because the space bound looks better, on a problem whose alphabet has three kinds.
-It passes a surprising number of hand-written tests, because every test with correctly-nested
-brackets passes and every test with obviously wrong *counts* also fails correctly — what it misses is
-only the mismatched-kind case, which is the one people write fewest tests for. `([)]` returns `true`;
-so does `(]`.
+
+> **Watch out.** The misconception is that **balanced counts mean balanced brackets**. A counter can
+> only ever check counts and depth, and every test with correctly-nested brackets passes while every
+> test with obviously wrong counts correctly fails — so it survives a surprising amount of hand
+> testing. The one thing it cannot see is the mismatched *kind*, which is the case people write
+> fewest tests for. `([)]` returns `true`; so does `(]`.
 
 The subtler version of the same mistake is checking `depth == 0` at the end but **not** checking
 `depth < 0` inside the loop. That variant returns `true` for `")("`, which has a perfectly balanced
-count of one opener and one closer, arranged in exactly the wrong order. The `depth < 0` check is
+count of one opener and one closer arranged in exactly the wrong order. The `depth < 0` check is
 failure mode 1, and it is the only thing in this function that knows about order at all.
 
 ### Complexity and when to use this
@@ -378,12 +410,14 @@ become questions about what to store rather than questions about control flow.
 
 **Memorise cold: the stack version, and the three failure modes by name.** The code is eight lines
 and you should be able to write it without thinking, but writing it is not what is being assessed —
-plenty of candidates produce the loop and then hand over a function that returns `True` for `(`. What
-distinguishes a good answer is saying, before or while you write it, "there are three ways this
-fails: a closer with an empty stack, a closer that mismatches the top, and a non-empty stack at the
-end," and then pointing at the line that handles each. That sentence covers the two checks everyone
-gets right and the two they forget, and it is also the thing that makes your own testing fast,
-because it tells you exactly which three inputs to try: `)`, `(]`, and `(`.
+plenty of candidates produce the loop and then hand over a function that returns `True` for `(`.
+
+> **In an interview.** Say the failure modes *before* you write the loop: "there are three ways this
+> fails — a closer with an **empty** stack, a closer that **mismatches** the top, and a **non-empty**
+> stack at the end" — then point at the line handling each as you write it. That one sentence covers
+> the two checks everyone gets right and the two they forget, and it hands you your own test set for
+> free: `)`, `(]`, and `(`. The follow-up is almost always "now do it in constant space", which is the
+> counter — and the right answer includes its limitation, not just its code.
 
 **Memorise second: the counter, together with the assumption that makes it legal.** It is five lines
 and it comes up constantly as a follow-up — "what if there were only round brackets, could you do
@@ -420,24 +454,27 @@ from __future__ import annotations
 
 import random
 
-OPENERS = "([{"
-CLOSERS = ")]}"
+# The alphabet, defined once. Every approach and the harness read it from here.
+PAIRS: dict[str, str] = {")": "(", "]": "[", "}": "{"}  # closer -> its opener
+OPENERS: str = "([{"
+CLOSERS: str = ")]}"
 
 
 def balanced_brackets_repeated_replace(s: str) -> bool:
+    empty_pairs = [opener + closer for closer, opener in PAIRS.items()]  # "()", "[]", "{}"
     prev: str | None = None
     while prev != s:  # loop to a fixed point: one pass is not enough for nesting
         prev = s
-        s = s.replace("()", "").replace("[]", "").replace("{}", "")
+        for pair in empty_pairs:
+            s = s.replace(pair, "")
     return s == ""
 
 
 def balanced_brackets_stack(s: str) -> bool:
-    partner = {")": "(", "]": "[", "}": "{"}
-    st: list[str] = []
+    st: list[str] = []  # the openers still unmatched, in the order they were opened
     for ch in s:
-        if ch in partner:
-            if not st or st.pop() != partner[ch]:  # failure 1: empty; failure 2: wrong kind
+        if ch in PAIRS:
+            if not st or st.pop() != PAIRS[ch]:  # failure 1: empty; failure 2: wrong kind
                 return False
         else:
             st.append(ch)
@@ -457,10 +494,14 @@ def balanced_brackets_counter(s: str) -> bool:
     return depth == 0  # failure 3: an opener never closed
 
 
+def bracket_kind(ch: str) -> str:
+    """The opener that identifies this character's kind, whichever half of the pair it is."""
+    return PAIRS.get(ch, ch)
+
+
 def counter_applicable(s: str) -> bool:
     """The assumption the counter needs: at most one kind of bracket in the string."""
-    kinds = {"(": 0, ")": 0, "[": 1, "]": 1, "{": 2, "}": 2}
-    return len({kinds[ch] for ch in s}) <= 1
+    return len({bracket_kind(ch) for ch in s}) <= 1
 
 
 GENERAL: list[tuple[str, object]] = [

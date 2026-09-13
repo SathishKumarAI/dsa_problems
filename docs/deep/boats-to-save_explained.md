@@ -14,9 +14,9 @@ person joins it.
 
 ### The constraints, and what each one unlocks
 
-| Constraint | What it means for you |
+| Constraint | What it unlocks |
 |---|---|
-| `1 <= people.length <= 5 * 10^4` | Fifty thousand people. **This is the constraint that kills the exact search**: a table over every subset of the crowd needs 2⁵⁰⁰⁰⁰ entries, a number with fifteen thousand digits. It also rules out O(n²): 2.5 × 10⁹ operations is minutes, not milliseconds. O(n log n) is comfortable, and O(n) after a sort is what you want. |
+| `1 <= people.length <= 5 * 10^4` | Fifty thousand people. **This is the constraint that kills the exact search**: a table over every subset of the crowd needs 2⁵⁰⁰⁰⁰ entries, a number with fifteen thousand digits. It also rules out `O(n²)`: 2.5 × 10⁹ operations is minutes, not milliseconds. `O(n log n)` is comfortable, and `O(n)` after a sort is what you want. |
 | `1 <= people[i] <= limit` | Nobody is heavier than a boat can carry, so **a one-person boat always exists** and the answer is never "impossible". This is quietly load-bearing: it means the answer is always between ⌈n/2⌉ and n, and it means no approach has to handle a failure case. |
 | `limit <= 3 * 10^4` | Weights are small positive whole numbers. **This is the constraint that unlocks the bucket rung** — you can afford one counter per possible weight, which replaces comparing weights with indexing them. It is also the constraint that makes that rung a trap, because the table is sized by the *limit*, not by the crowd. |
 | a boat holds at most **two** people | **This is the constraint the entire greedy rests on.** Allow three per boat and this becomes bin packing, which is NP-hard and has no simple greedy answer. With exactly two seats, a boatload is a *pair*, and a pairing question can be settled one person at a time from the extremes. |
@@ -47,13 +47,13 @@ more boat — carrying one person, or two who fit together — until everybody h
 
 ### How to think about it
 
-Think of a light switch per person: on means "already across". The state of the crossing is the whole
-row of switches, and every boat you launch flips one or two of them from off to on. Starting from the
-all-off row, you want the shortest chain of flips that reaches the all-on row — which is a
-shortest-path question over 2ⁿ states. One pruning is worth building in from the start: a boat has to
-carry *somebody*, so insist it carries the lowest-numbered person still waiting. That costs nothing
-(the boat that carries them exists in every solution) and it stops you from exploring the same
-boatload in both possible orders.
+> **Intuition.** Think of a light switch per person: on means "already across". The state of the crossing is the whole
+> row of switches, and every boat you launch flips one or two of them from off to on. Starting from the
+> all-off row, you want the shortest chain of flips that reaches the all-on row — which is a
+> shortest-path question over 2ⁿ states. One pruning is worth building in from the start: a boat has to
+> carry *somebody*, so insist it carries the lowest-numbered person still waiting. That costs nothing
+> (the boat that carries them exists in every solution) and it stops you from exploring the same
+> boatload in both possible orders.
 
 ### Worked example
 
@@ -77,6 +77,12 @@ million.
 ### Code
 
 ```python
+def fits_one_boat(lighter: int, heavier: int, limit: int) -> bool:
+    """The problem's one rule, in one place: two people share a boat only if their
+    combined weight is within the limit. Change the rule here and every rung follows."""
+    return lighter + heavier <= limit
+
+
 def boats_to_save_subset_search(people: list[int], limit: int) -> int:
     n = len(people)
     full = 1 << n
@@ -98,7 +104,7 @@ def boats_to_save_subset_search(people: list[int], limit: int) -> int:
         if best[mask] + 1 < best[alone]:
             best[alone] = best[mask] + 1
         for j in range(first + 1, n):
-            if not (mask >> j) & 1 and people[first] + people[j] <= limit:
+            if not (mask >> j) & 1 and fits_one_boat(people[first], people[j], limit):
                 both = alone | (1 << j)
                 if best[mask] + 1 < best[both]:
                     best[both] = best[mask] + 1
@@ -107,17 +113,17 @@ def boats_to_save_subset_search(people: list[int], limit: int) -> int:
 
 ### Common mistake
 
-Dropping the weight check on the pair — writing `if not (mask >> j) & 1:` and forgetting
-`and people[first] + people[j] <= limit`. The search then happily loads two people into a boat that
-cannot float, and because it is minimising, it *prefers* those overloaded boats. On the
-no-pairs-possible crowd `people = [3, 5, 3, 4], limit = 5` the buggy version returns **2**; the
-correct answer is **4**. The bug is invisible on crowds where most pairs fit anyway, which is most
-random test data — it only shows up when the limit is genuinely tight, exactly where the problem is
-interesting.
+> **Watch out.** Dropping the weight check on the pair — writing `if not (mask >> j) & 1:` and
+> forgetting the `and fits_one_boat(...)` beside it. The search then happily loads two people into a boat that
+> cannot float, and because it is minimising, it *prefers* those overloaded boats. On the
+> no-pairs-possible crowd `people = [3, 5, 3, 4], limit = 5` the buggy version returns **2**; the
+> correct answer is **4**. The bug is invisible on crowds where most pairs fit anyway, which is most
+> random test data — it only shows up when the limit is genuinely tight, exactly where the problem is
+> interesting.
 
 ### Complexity and when to use this
 
-**Time O(2ⁿ · n), space O(2ⁿ).** The time is one visit per subset of the crowd, and each visit scans
+**Time `O(2ⁿ · n)`, space `O(2ⁿ)`.** The time is one visit per subset of the crowd, and each visit scans
 for the lowest waiting person and then tries every partner for them — that is the `· n`. The space is
 the table itself, one boat-count per subset. Both are stated analytically rather than measured: the
 stress tests below run this rung only up to twelve people, because at thirty it would need a billion
@@ -145,37 +151,32 @@ to believe any particular grouping is right.**
 
 ### How to think about it
 
-Stop thinking about the crowd and think only about one person: the heaviest one left. They are going
-on a boat this round; that is not a choice you get to make. The boat has one spare seat, and the only
-decision in the entire problem is whether that seat sails empty or carries somebody. The lightest
-person left is the easiest passenger in the world to seat, so they are the one to try — and if even
-they do not fit, the seat is going empty and there is nothing to think about. That single question,
-asked once per round, replaces the whole subset table.
+> **Intuition.** Stop thinking about the crowd and think only about one person: the heaviest one left. They are going
+> on a boat this round; that is not a choice you get to make. The boat has one spare seat, and the only
+> decision in the entire problem is whether that seat sails empty or carries somebody. The lightest
+> person left is the easiest passenger in the world to seat, so they are the one to try — and if even
+> they do not fit, the seat is going empty and there is nothing to think about. That single question,
+> asked once per round, replaces the whole subset table.
 
-### Why the greedy is safe — the exchange argument
-
-This is the part worth being able to say out loud, because a greedy you cannot justify is a guess
-that happened to pass.
-
-Call the heaviest waiting person **H** and the lightest **L**. Take any optimal plan at all. H rides
-in some boat in it.
-
-*Case one: L cannot ride with H* (`L + H > limit`). Then nobody can, because every other waiting
-person weighs at least as much as L. So in every plan, including the optimal one, H sails alone, and
-our rule does exactly that. Nothing was given up.
-
-*Case two: L can ride with H.* Suppose the optimal plan does not pair them. Then H either sails alone
-or sails with somebody else, call them X; and L either sails alone or sails with somebody else, call
-them Y. Swap the passengers: put L with H, and put X with Y (or send them alone, whichever the seats
-allow). The H-and-L boat is fine by assumption. The X-and-Y boat is fine too, because X was light
-enough to ride with H — the heaviest person present — so X plus Y is no heavier than X plus H, which
-already fit. The swap uses **no more boats than before** and now contains our greedy choice. Repeat
-the argument on what is left and you have converted any optimal plan into ours without ever adding a
-boat.
-
-That is the whole proof, and its shape is the thing to carry away: *pairing the lightest with the
-heaviest never blocks a pairing that mattered, because any other partner is heavier and therefore
-harder to place later.*
+> **Why it works.** This is the **exchange argument**, and it is worth being able to say out loud,
+> because a greedy you cannot justify is a guess that happened to pass. Call the heaviest waiting
+> person **H** and the lightest **L**, and take any optimal plan at all; H rides in some boat in it.
+>
+> *Case one: L cannot ride with H* (`L + H > limit`). Then nobody can, because every other waiting
+> person weighs at least as much as L. So in every plan, including the optimal one, H sails alone —
+> which is exactly what our rule does. Nothing was given up.
+>
+> *Case two: L can ride with H.* Suppose the optimal plan does not pair them. Then H either sails
+> alone or sails with somebody else, call them X; and L either sails alone or sails with somebody
+> else, call them Y. Swap the passengers: put L with H, and put X with Y (or send them alone,
+> whichever the seats allow). The H-and-L boat is fine by assumption. The X-and-Y boat is fine too,
+> because X was light enough to ride with H — the heaviest person present — so X plus Y is no heavier
+> than X plus H, which already fit. The swap uses no more boats than before and now contains our
+> greedy choice. Repeat on what is left and you have converted any optimal plan into ours without ever
+> adding a boat.
+>
+> The shape is the thing to carry away: *pairing the lightest with the heaviest never blocks a pairing
+> that mattered, because any other partner is heavier and therefore harder to place later.*
 
 ### Worked example
 
@@ -191,6 +192,8 @@ Three boats. Six full scans of a four-person array to launch three boats — and
 scans re-derived a fact (who is heaviest, who is lightest) that never changed.
 
 ### Code
+
+`fits_one_boat` is the shared rule from Approach 1 — every rung asks it the same question.
 
 ```python
 def boats_to_save_rescan(people: list[int], limit: int) -> int:
@@ -210,7 +213,7 @@ def boats_to_save_rescan(people: list[int], limit: int) -> int:
         for i in range(n):
             if not used[i] and (lo < 0 or people[i] < people[lo]):
                 lo = i
-        if lo >= 0 and people[lo] + people[hi] <= limit:
+        if lo >= 0 and fits_one_boat(people[lo], people[hi], limit):
             used[lo] = True
             waiting -= 1
     return boats
@@ -218,17 +221,17 @@ def boats_to_save_rescan(people: list[int], limit: int) -> int:
 
 ### Common mistake
 
-Boarding two people but decrementing the waiting counter once — writing `used[lo] = True` and
-forgetting the `waiting -= 1` beside it. The loop then runs extra rounds after the shore is already
-empty, and on each of those `hi` stays `-1`, so `used[-1] = True` silently re-marks the *last* person
-in the list (Python's negative index does not complain) and the boat count keeps rising. On the
-worked example it returns **4** instead of **3**; on the two-person crowd `[1, 2], limit = 3` it
-returns **2** instead of **1**. The lesson generalises past this problem: whenever one action changes
-two pieces of state, put the two updates on adjacent lines so a reader can see they travel together.
+> **Watch out.** Boarding two people but decrementing the waiting counter once — writing `used[lo] = True` and
+> forgetting the `waiting -= 1` beside it. The loop then runs extra rounds after the shore is already
+> empty, and on each of those `hi` stays `-1`, so `used[-1] = True` silently re-marks the *last* person
+> in the list (Python's negative index does not complain) and the boat count keeps rising. On the
+> worked example it returns **4** instead of **3**; on the two-person crowd `[1, 2], limit = 3` it
+> returns **2** instead of **1**. The lesson generalises past this problem: whenever one action changes
+> two pieces of state, put the two updates on adjacent lines so a reader can see they travel together.
 
 ### Complexity and when to use this
 
-**Time O(n²), space O(n).** Each round launches at most one boat, so there are at most n rounds, and
+**Time `O(n²)`, space `O(n)`.** Each round launches at most one boat, so there are at most n rounds, and
 each round makes two full passes over the array looking for extremes — n rounds × 2n work is
 quadratic. The space is the `used` array, one flag per person. At fifty thousand people that is about
 2.5 × 10⁹ comparisons: too slow, but only by a constant-and-a-bit, not by an astronomical margin like
@@ -255,12 +258,12 @@ weights never change.**
 
 ### How to think about it
 
-Line everyone up lightest at the front, heaviest at the back — the queue for a ride, sorted by
-weight. Now the rule needs no searching at all: call the person at the back, then look at the person
-at the front and see whether they fit alongside. Sorting is a one-time cost that answers "who is the
-heaviest?" for every future round at once. What this version still gets wrong is *removal*: taking
-the person off the front of a real queue means everyone behind them shuffles forward one place, and
-paying that shuffle once per boat quietly costs as much as the scanning did.
+> **Intuition.** Line everyone up lightest at the front, heaviest at the back — the queue for a ride, sorted by
+> weight. Now the rule needs no searching at all: call the person at the back, then look at the person
+> at the front and see whether they fit alongside. Sorting is a one-time cost that answers "who is the
+> heaviest?" for every future round at once. What this version still gets wrong is *removal*: taking
+> the person off the front of a real queue means everyone behind them shuffles forward one place, and
+> paying that shuffle once per boat quietly costs as much as the scanning did.
 
 ### Worked example
 
@@ -278,6 +281,8 @@ fifty thousand moves for one boat.
 
 ### Code
 
+`fits_one_boat` is the shared rule from Approach 1 — every rung asks it the same question.
+
 ```python
 def boats_to_save_sorted_queue(people: list[int], limit: int) -> int:
     waiting = sorted(people)
@@ -285,33 +290,33 @@ def boats_to_save_sorted_queue(people: list[int], limit: int) -> int:
     while waiting:
         heaviest = waiting.pop()
         boats += 1
-        if waiting and waiting[0] + heaviest <= limit:
+        if waiting and fits_one_boat(waiting[0], heaviest, limit):
             waiting.pop(0)  # removing the front shifts everyone behind it — this is the hidden O(n)
     return boats
 ```
 
 ### Common mistake
 
-Pairing from the light end instead: pop the *lightest* and let them share with the next-lightest who
-fits. It feels equally greedy — you are still filling boats — and it passes the worked example, where
-both rules return **3**. It is wrong, and the crowd that exposes it is `people = [1, 1, 2, 2]`,
-`limit = 3`: light-end pairing puts the two 1s together, then finds 2 + 2 = 4 over the limit and sails
-each 2 alone, for **3** boats; the correct answer is **2** (a 1 with a 2, and the other 1 with the
-other 2). The reason is exactly the exchange argument above, read backwards — pairing two light people
-together *wastes* the only capacity that the heavy people could have used. Being able to name that
-failure case is worth more than being able to write the loop.
+> **Watch out.** Pairing from the light end instead: pop the *lightest* and let them share with the next-lightest who
+> fits. It feels equally greedy — you are still filling boats — and it passes the worked example, where
+> both rules return **3**. It is wrong, and the crowd that exposes it is `people = [1, 1, 2, 2]`,
+> `limit = 3`: light-end pairing puts the two 1s together, then finds 2 + 2 = 4 over the limit and sails
+> each 2 alone, for **3** boats; the correct answer is **2** (a 1 with a 2, and the other 1 with the
+> other 2). The reason is exactly the exchange argument above, read backwards — pairing two light people
+> together *wastes* the only capacity that the heavy people could have used. Being able to name that
+> failure case is worth more than being able to write the loop.
 
 ### Complexity and when to use this
 
-**Time O(n²), space O(n).** The sort is O(n log n) and the peeks are free, but `pop(0)` on a Python
+**Time `O(n²)`, space `O(n)`.** The sort is `O(n log n)` and the peeks are free, but `pop(0)` on a Python
 list — and `erase(begin())` on a C++ vector, and `remove(0)` on a Java `ArrayList` — shifts every
-remaining element, so a pairing round costs O(n) and there can be n/2 of them. The space is the
+remaining element, so a pairing round costs `O(n)` and there can be n/2 of them. The space is the
 sorted copy. This is the rung where the cost has moved: the searching is fixed and the *removing* is
 now the bottleneck, which is a much more common shape of performance bug than it first appears.
 
 Use it — or rather, use its idea — when the container genuinely supports cheap removal at both ends:
 a `collections.deque` in Python, an `ArrayDeque` in Java, a `std::deque` in C++ all make removal from
-the front O(1) and turn this into an honest O(n log n) solution that reads very naturally. Written
+the front `O(1)` and turn this into an honest `O(n log n)` solution that reads very naturally. Written
 with a plain list, treat it as the instructive mistake it is.
 
 ---
@@ -320,7 +325,7 @@ with a plain list, treat it as the instructive mistake it is.
 
 ### The idea
 
-*Sorting costs O(n log n) — but these are small whole numbers, so does anything actually need
+*Sorting costs `O(n log n)` — but these are small whole numbers, so does anything actually need
 comparing?* No. Count how many people share each weight, then walk one cursor down from `limit` and
 one up from 1 over that table of counts. Removing a person becomes "decrement a counter", which is a
 single write and shifts nothing.
@@ -329,12 +334,12 @@ This fixes the queue's weakness — **taking a person off the front moves every 
 
 ### How to think about it
 
-Instead of a line of people, picture a row of numbered pigeonholes, one per possible weight from 1 to
-`limit`, each holding a tally of how many people weigh that much. The heaviest person still waiting is
-found by walking the high cursor down until it lands on a non-empty hole; the lightest by walking the
-low cursor up. Neither cursor ever goes backwards, so across the entire run they cover the row once
-each, and everything else is arithmetic on counters. The catch — and it is the whole reason this is
-not the final rung — is that the row is as long as the weight *limit*, not as long as the crowd.
+> **Intuition.** Instead of a line of people, picture a row of numbered pigeonholes, one per possible weight from 1 to
+> `limit`, each holding a tally of how many people weigh that much. The heaviest person still waiting is
+> found by walking the high cursor down until it lands on a non-empty hole; the lightest by walking the
+> low cursor up. Neither cursor ever goes backwards, so across the entire run they cover the row once
+> each, and everything else is arithmetic on counters. The catch — and it is the whole reason this is
+> not the final rung — is that the row is as long as the weight *limit*, not as long as the crowd.
 
 ### Worked example
 
@@ -357,6 +362,8 @@ just taken was the last one.
 
 ### Code
 
+`fits_one_boat` is the shared rule from Approach 1 — every rung asks it the same question.
+
 ```python
 def boats_to_save_buckets(people: list[int], limit: int) -> int:
     count = [0] * (limit + 1)  # +1 because a person may weigh exactly the limit
@@ -374,7 +381,7 @@ def boats_to_save_buckets(people: list[int], limit: int) -> int:
         if waiting > 0:  # without this, the low cursor could re-seat the person just taken
             while low <= limit and count[low] == 0:
                 low += 1
-            if low <= limit and low + high <= limit:
+            if low <= limit and fits_one_boat(low, high, limit):
                 count[low] -= 1
                 waiting -= 1
     return boats
@@ -391,17 +398,17 @@ and the next section is why.
 
 ### Common mistake
 
-Allocating `count = [0] * limit` instead of `limit + 1`. It looks right — there are `limit` distinct
-weights, 1 through `limit` — but index `limit` is then one past the end, and the constraints
-explicitly permit `people[i] == limit`. On the worked example, where somebody weighs exactly 3 and
-the limit is 3, Python raises `IndexError: list index out of range` on the very first person. Python
-at least tells you; C++ writes past the end of the vector and corrupts whatever was next in memory,
-which is the same bug with a much worse failure mode. Whenever a table is indexed by a value, size it
-by `max_value + 1`, not `max_value`.
+> **Watch out.** Allocating `count = [0] * limit` instead of `limit + 1`. It looks right — there are `limit` distinct
+> weights, 1 through `limit` — but index `limit` is then one past the end, and the constraints
+> explicitly permit `people[i] == limit`. On the worked example, where somebody weighs exactly 3 and
+> the limit is 3, Python raises `IndexError: list index out of range` on the very first person. Python
+> at least tells you; C++ writes past the end of the vector and corrupts whatever was next in memory,
+> which is the same bug with a much worse failure mode. Whenever a table is indexed by a value, size it
+> by `max_value + 1`, not `max_value`.
 
 ### Complexity and when to use this
 
-**Time O(n + limit), space O(limit).** The `n` is the single pass that fills the table; the `limit` is
+**Time `O(n + limit)`, space `O(limit)`.** The `n` is the single pass that fills the table; the `limit` is
 the two cursors, each of which crosses the table once and never turns around. The space is one
 counter per possible weight. There is no `log n` anywhere — which is exactly why this rung tempts
 people, and exactly where it misleads.
@@ -424,19 +431,29 @@ on the lightest person and one on the heaviest, and let each round launch exactl
 person at the heavy index. If the person at the light index fits beside them, advance the light index
 too. Either way the heavy index steps back.
 
-This fixes both remaining weaknesses at once — **the queue's O(n) removals** (nothing is removed;
+This fixes both remaining weaknesses at once — **the queue's `O(n)` removals** (nothing is removed;
 an index moves) and **the bucket table's memory bill sized by the limit** (the state is now two
 integers, no matter how large the limit is).
 
 ### How to think about it
 
-Two fingers on a sorted row of weights, one at each end, walking toward each other. The right finger
-points at the person whose boat is being launched right now; that always happens, which is why the
-right finger moves every single round and why the boat count is exactly the number of rounds. The
-left finger points at the cheapest possible companion, and it moves only when that companion actually
-boards. The fingers meeting is not a special case: when they land on the same person, that person's
-boat launches and the walk ends. Everything the earlier rungs computed with scans, queues and tables
-is now two comparisons of two array reads.
+> **Intuition.** Two fingers on a sorted row of weights, one at each end, walking toward each other. The right finger
+> points at the person whose boat is being launched right now; that always happens, which is why the
+> right finger moves every single round and why the boat count is exactly the number of rounds. The
+> left finger points at the cheapest possible companion, and it moves only when that companion actually
+> boards. The fingers meeting is not a special case: when they land on the same person, that person's
+> boat launches and the walk ends. Everything the earlier rungs computed with scans, queues and tables
+> is now two comparisons of two array reads.
+
+> **Why it works.** Two claims, and the exchange argument in Approach 2 supplies the first. *The
+> decision is right*: `order[j]` is the heaviest person still waiting and `order[i]` the lightest, so
+> pairing them when they fit is safe and sailing alone when they do not is forced — the sort is what
+> makes "the ends of the range" and "the extremes of the crowd" the same thing, and the converging
+> walk is what keeps that true after every round, because the untouched middle `order[i..j]` is exactly
+> the set of people still waiting. *The count is right*: `j` decreases on every single round and never
+> on any other occasion, so `boats` equals the number of rounds equals the number of people who
+> boarded at the heavy end — one boat each, with a companion or without. Both indices move only
+> inward, so the walk ends after at most `n` rounds.
 
 ### Worked example
 
@@ -459,13 +476,15 @@ and the entire state at any moment was the two numbers `i` and `j`.
 
 ### Code
 
+`fits_one_boat` is the shared rule from Approach 1 — every rung asks it the same question.
+
 ```python
 def boats_to_save_two_pointers(people: list[int], limit: int) -> int:
     order = sorted(people)
     i, j = 0, len(order) - 1
     boats = 0
     while i <= j:  # <=, not <: when both land on the same person, that person still needs a boat
-        if order[i] + order[j] <= limit:
+        if fits_one_boat(order[i], order[j], limit):
             i += 1  # the lightest fits alongside the heaviest, so they share
         j -= 1      # the heaviest boards either way, so j always moves
         boats += 1
@@ -474,12 +493,12 @@ def boats_to_save_two_pointers(people: list[int], limit: int) -> int:
 
 ### Common mistake
 
-Writing `while i < j` instead of `while i <= j`. It is the natural thing to type — the two pointers
-are converging, so surely they stop when they meet — and it is wrong, because the person they meet on
-has not been carried yet. On the worked example it returns **2** instead of **3**; on a single-person
-crowd `[1], limit = 1` it returns **0** instead of **1**, which is the clearest possible statement of
-the bug: nobody crossed. The test for this in your head should be the one-person crowd, every time
-you write a converging loop — does the last survivor get handled?
+> **Watch out.** Writing `while i < j` instead of `while i <= j`. It is the natural thing to type — the two pointers
+> are converging, so surely they stop when they meet — and it is wrong, because the person they meet on
+> has not been carried yet. On the worked example it returns **2** instead of **3**; on a single-person
+> crowd `[1], limit = 1` it returns **0** instead of **1**, which is the clearest possible statement of
+> the bug: nobody crossed. The test for this in your head should be the one-person crowd, every time
+> you write a converging loop — does the last survivor get handled?
 
 A second, subtler slip is advancing `i` inside the `if` and then *also* advancing it at the bottom of
 the loop, so a shared boat skips a person: that person is silently never carried and the count comes
@@ -487,17 +506,17 @@ out low.
 
 ### Complexity and when to use this
 
-**Time O(n log n), space O(1) beyond the sort.** The whole cost is the sort — the converging walk
-itself is O(n), because every round retires at least one person (the heavy index always moves) and
+**Time `O(n log n)`, space `O(1)` beyond the sort.** The whole cost is the sort — the converging walk
+itself is `O(n)`, because every round retires at least one person (the heavy index always moves) and
 there are only n people to retire. The space claim deserves precision: the code above calls `sorted()`,
-which builds a copy and is therefore O(n); sort the caller's list in place with `people.sort()` and
-the extra space really is O(1), apart from whatever the sort routine uses internally (O(log n) stack
+which builds a copy and is therefore `O(n)`; sort the caller's list in place with `people.sort()` and
+the extra space really is `O(1)`, apart from whatever the sort routine uses internally (`O(log n)` stack
 for most library sorts). Either way, no structure grows with the crowd.
 
 **This is the one to memorise.** It is five lines, it needs no auxiliary structure, it is unaffected
 by how large `limit` is, and it beats the bucket rung whenever the weight range is bigger than the
 crowd — which, at a limit of 30000, is most realistic inputs. If the weights arrive already sorted,
-it is outright O(n) with O(1) space and nothing can beat it.
+it is outright `O(n)` with `O(1)` space and nothing can beat it.
 
 ---
 
@@ -513,13 +532,13 @@ person, because if even they do not fit then nobody does, and if they do fit the
 can never block a pairing that mattered — any other partner is heavier and therefore harder to place
 later. That exchange argument is the load-bearing sentence of this problem, and once you have it the
 remaining rungs are not about *what* to decide but about how cheaply you can find the two people the
-rule names. Rescanning finds them in O(n) per round and re-derives an ordering that never changed;
+rule names. Rescanning finds them in `O(n)` per round and re-derives an ordering that never changed;
 sorting settles that ordering once and turns "find the heaviest" into "look at the end", at which
 point the bottleneck moves from searching to *removing*, because popping the front of a queue shifts
 everyone behind it. Counting the weights into buckets removes the removing — a person leaves by
 decrementing a counter — and buys genuine linearity, but linear in the wrong quantity: the table is
 sized by the weight limit, so ferrying two people across with a limit of thirty thousand allocates and
-walks thirty thousand counters, which is the reminder that "O(n)" is meaningless until you say what n
+walks thirty thousand counters, which is the reminder that "`O(n)`" is meaningless until you say what n
 counts. The last rung throws the container away entirely: on a sorted array the heaviest and the
 lightest are just two indices, each moving only inward, so the whole remaining state is two integers
 and the cost is the sort and nothing else. Exhaustive, then greedy-but-searching, then
@@ -533,11 +552,11 @@ is the reason it is allowed to be.
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Exact search over every group | O(2ⁿ · n) | O(2ⁿ) | Assumes nothing, so it must try everything | n under ~20; as the oracle that proves a greedy right; genuine bin packing, where no greedy exists |
-| Rescan for the heaviest and the lightest | O(n²) | O(n) | Has the right rule but no cheap way to apply it | The input must not be reordered and a copy is not affordable; stating the greedy on a whiteboard |
-| Sort, then empty the queue from both ends | O(n²) with a list, O(n log n) with a deque | O(n) | Fixes the searching and leaves the removing | The container has O(1) removal at both ends (`deque`, `ArrayDeque`) |
-| Count the weights into buckets | O(n + limit) | O(limit) | No comparisons at all, but the bill is sized by the weight range | Weights fall in a small known range and the crowd is much larger than that range |
-| **Sort, then two converging pointers** | **O(n log n)** | **O(1) beyond the sort** | **Pays once for order, then holds the entire state in two integers** | **The default. O(n) outright if the input is already sorted** |
+| Exact search over every group | `O(2ⁿ · n)` | `O(2ⁿ)` | Assumes nothing, so it must try everything | n under ~20; as the oracle that proves a greedy right; genuine bin packing, where no greedy exists |
+| Rescan for the heaviest and the lightest | `O(n²)` | `O(n)` | Has the right rule but no cheap way to apply it | The input must not be reordered and a copy is not affordable; stating the greedy on a whiteboard |
+| Sort, then empty the queue from both ends | `O(n²)` with a list, `O(n log n)` with a deque | `O(n)` | Fixes the searching and leaves the removing | The container has `O(1)` removal at both ends (`deque`, `ArrayDeque`) |
+| Count the weights into buckets | `O(n + limit)` | `O(limit)` | No comparisons at all, but the bill is sized by the weight range | Weights fall in a small known range and the crowd is much larger than that range |
+| **Sort, then two converging pointers** | **`O(n log n)`** | **`O(1)` beyond the sort** | **Pays once for order, then holds the entire state in two integers** | **The default. `O(n)` outright if the input is already sorted** |
 
 ---
 
@@ -551,8 +570,21 @@ a guess, and this is the problem where interviewers ask. Practise saying it in t
 heaviest person is boarding regardless; if the lightest cannot join them, nobody can; if the lightest
 can, pairing them there never blocks a pairing that mattered, because every other candidate is heavier
 and harder to place. Add the counter-example that kills the obvious alternative — pairing from the
-light end returns 3 on `[1, 1, 2, 2]` with limit 3, where 2 is achievable — and you have demonstrated
-you know *why* rather than *that*.
+light end returns `3` on `[1, 1, 2, 2]` with limit `3`, where `2` is achievable — and you have
+demonstrated you know *why* rather than *that*.
+
+> **In an interview.** Say this, in this order. *"Sort the weights, then put one index at the lightest
+> person and one at the heaviest. Each round launches exactly one boat for the heaviest person still
+> waiting; if the lightest fits beside them they board too and the light index advances. That is
+> `O(n log n)` for the sort and `O(1)` extra space."* Then justify it before you are asked, because
+> this is the problem where they ask: *"The heaviest person is boarding regardless, so the only
+> question is whether the lightest can join. If they cannot, nobody can. If they can, using them here
+> never blocks a pairing that mattered, because every other candidate is heavier and harder to place
+> later."* Two follow-ups are near-certain. **"What if a boat holds three?"** — the greedy dies, this
+> becomes bin packing, and the honest answer is that no simple exchange argument survives; a bitmask
+> search works for tiny `n`. **"The weights are bounded — can you drop the sort?"** — yes, count into
+> buckets for `O(n + limit)`, then note that at `limit = 30000` the table can dwarf the crowd, so the
+> sort usually still wins.
 
 **Understand but do not memorise — the bucket count.** Worth recognising, because "small bounded
 integers, so count instead of sort" is a move you will need elsewhere (sort-colors, anagram checks,
@@ -592,6 +624,14 @@ from __future__ import annotations
 import random
 
 
+# --- the problem's one rule, shared by every approach ------------------------
+
+def fits_one_boat(lighter: int, heavier: int, limit: int) -> bool:
+    """The problem's one rule, in one place: two people share a boat only if their
+    combined weight is within the limit. Change the rule here and every rung follows."""
+    return lighter + heavier <= limit
+
+
 # --- 1. Exact search over every group ------------------------------------------
 
 def boats_to_save_subset_search(people: list[int], limit: int) -> int:
@@ -615,7 +655,7 @@ def boats_to_save_subset_search(people: list[int], limit: int) -> int:
         if best[mask] + 1 < best[alone]:
             best[alone] = best[mask] + 1
         for j in range(first + 1, n):
-            if not (mask >> j) & 1 and people[first] + people[j] <= limit:
+            if not (mask >> j) & 1 and fits_one_boat(people[first], people[j], limit):
                 both = alone | (1 << j)
                 if best[mask] + 1 < best[both]:
                     best[both] = best[mask] + 1
@@ -641,7 +681,7 @@ def boats_to_save_rescan(people: list[int], limit: int) -> int:
         for i in range(n):
             if not used[i] and (lo < 0 or people[i] < people[lo]):
                 lo = i
-        if lo >= 0 and people[lo] + people[hi] <= limit:
+        if lo >= 0 and fits_one_boat(people[lo], people[hi], limit):
             used[lo] = True
             waiting -= 1
     return boats
@@ -655,7 +695,7 @@ def boats_to_save_sorted_queue(people: list[int], limit: int) -> int:
     while waiting:
         heaviest = waiting.pop()
         boats += 1
-        if waiting and waiting[0] + heaviest <= limit:
+        if waiting and fits_one_boat(waiting[0], heaviest, limit):
             waiting.pop(0)  # removing the front shifts everyone behind it
     return boats
 
@@ -678,7 +718,7 @@ def boats_to_save_buckets(people: list[int], limit: int) -> int:
         if waiting > 0:  # without this, the low cursor could re-seat the person just taken
             while low <= limit and count[low] == 0:
                 low += 1
-            if low <= limit and low + high <= limit:
+            if low <= limit and fits_one_boat(low, high, limit):
                 count[low] -= 1
                 waiting -= 1
     return boats
@@ -691,7 +731,7 @@ def boats_to_save_two_pointers(people: list[int], limit: int) -> int:
     i, j = 0, len(order) - 1
     boats = 0
     while i <= j:  # <=, not <: when both land on the same person, that person still needs a boat
-        if order[i] + order[j] <= limit:
+        if fits_one_boat(order[i], order[j], limit):
             i += 1  # the lightest fits alongside the heaviest, so they share
         j -= 1      # the heaviest boards either way, so j always moves
         boats += 1

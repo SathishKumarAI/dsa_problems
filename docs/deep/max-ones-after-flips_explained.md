@@ -37,8 +37,8 @@ algorithm with a different definition of "the wrong thing".
 
 | Constraint | What it means for you |
 |---|---|
-| `1 <= nums.length <= 10^5` | A hundred thousand elements. An O(n²) brute force is 10¹⁰ operations at worst — not slow, *dead*. **This is the constraint that rules out brute force** and forces something linear or near-linear. The array is also never empty, so there is no empty-input branch. |
-| each value is `0` or `1` | Only two kinds of thing exist, so "the wrong thing" is a single category and the window's state collapses to **one integer**: how many zeroes are inside. **This is the constraint that makes the optimal solution O(1) space** — a problem with 26 kinds of wrong thing would need a table. |
+| `1 <= nums.length <= 10^5` | A hundred thousand elements. An `O(n²)` brute force is 10¹⁰ operations at worst — not slow, *dead*. **This is the constraint that rules out brute force** and forces something linear or near-linear. The array is also never empty, so there is no empty-input branch. |
+| each value is `0` or `1` | Only two kinds of thing exist, so "the wrong thing" is a single category and the window's state collapses to **one integer**: how many zeroes are inside. **This is the constraint that makes the optimal solution `O(1)` space** — a problem with 26 kinds of wrong thing would need a table. |
 | `0 <= k <= nums.length` | The budget can be zero and can be large enough to cover every zero in the array. Both extremes are legal and both must work: `k = 0` degenerates to "the longest run of 1s already present", and `k = n` returns `n`. |
 | `k = 0` asks for the longest run of 1s already present | Spelled out so you do not special-case it. The window code handles it with no branch: a window with a budget of zero simply never tolerates a zero inside it. |
 | the flips must all land **inside one window** | **This is the constraint that makes it a window problem at all.** You cannot spend one flip at the front of the array and one at the back and claim the two runs joined up. A contiguous answer means a contiguous budget. |
@@ -70,12 +70,13 @@ within budget, record the width. The widest width ever recorded is the answer.
 
 ### How to think about it
 
-Imagine standing at each tree in a row of trees and looking down the line, counting the gaps as you
-go, and stopping when you have counted more gaps than you can afford to fill. Then you walk back,
-step forward one tree, and do it all again. Nothing you learned the first time survives the walk
-back — you start the count from zero every time. That total amnesia is the entire inefficiency, and
-it is worth noticing that the amnesia is *unnecessary*: the stretch starting at tree 1 is the
-stretch starting at tree 0 minus one tree, and you already know what was in it.
+> **Intuition.** Imagine standing at each tree in a row of trees and looking down the line,
+> counting the gaps as you go, and stopping when you have counted more gaps than you can afford to
+> fill. Then you walk back, step forward one tree, and do it all again. Nothing you learned the
+> first time survives the walk back — you start the count from zero every time. That total amnesia
+> is the entire inefficiency, and it is worth noticing that the amnesia is *unnecessary*: the
+> stretch starting at tree 1 is the stretch starting at tree 0 minus one tree, and you already
+> know what was in it.
 
 ### Worked example
 
@@ -114,6 +115,10 @@ def max_ones_after_flips_brute_force(nums: list[int], k: int) -> int:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that the **counting** is the algorithm and the budget check
+> is bookkeeping. It is the other way round: `zeroes` is only ever a claim about the window, and
+> the comparison against `k` is the thing that decides anything at all.
+
 Recording the width *outside* the budget check:
 
 ```python
@@ -136,14 +141,14 @@ simple as possible, which is what a reference version is for.
 
 ### Complexity and when to use this
 
-**Time O(n²), space O(1).** The cost comes from the nested walk: n starting positions, each scanning
+**Time** `O(n²)`, **space** `O(1)`. The cost comes from the nested walk: n starting positions, each scanning
 up to n positions to its right, roughly n²/2 increments in total. Space is constant because the only
 state is two loop counters and one running total; nothing is stored.
 
 At n = 10⁵ this is around five billion operations, so it will not pass. Use it anyway as the oracle
 in a test harness — it is the version whose correctness you can see by reading it, which is exactly
 what you need to cross-check the clever ones (that is its job at the bottom of this document). In an
-interview, state it in one sentence, name its O(n²) cost, and move on; starting from brute force is
+interview, state it in one sentence, name its `O(n²)` cost, and move on; starting from brute force is
 not a weakness, staying there is.
 
 ---
@@ -163,14 +168,14 @@ counted, once per starting position.**
 
 ### How to think about it
 
-Think of a milepost every few metres along a road, each one stamped with the total number of
-potholes you have passed so far. To learn how many potholes lie between two mileposts you do not
-drive the road counting — you subtract one stamp from the other. Now fix the far milepost and ask
-how far back you may start while meeting no more than `k` potholes: because the stamps only ever
-increase along the road, you can jump to the middle, look at the stamp, and decide in one glance
-whether to search nearer or further. That "the stamps only ever increase" is not decoration; it is
-the licence for the binary search, and it comes directly from the fact that adding a position can
-only add zeroes.
+> **Intuition.** Think of a milepost every few metres along a road, each one stamped with the
+> total number of potholes you have passed so far. To learn how many potholes lie between two
+> mileposts you do not drive the road counting — you subtract one stamp from the other. Now fix
+> the far milepost and ask how far back you may start while meeting no more than `k` potholes:
+> because the stamps only ever increase along the road, you can jump to the middle, look at the
+> stamp, and decide in one glance whether to search nearer or further. That "the stamps only ever
+> increase" is not decoration; it is the licence for the binary search, and it comes directly from
+> the fact that adding a position can only add zeroes.
 
 ### Worked example
 
@@ -203,7 +208,6 @@ with left edge 5 is `nums[5..10]` — the two six-wide answers, found without a 
 ```python
 from bisect import bisect_left
 
-
 def max_ones_after_flips_prefix_binary_search(nums: list[int], k: int) -> int:
     zeros_before: list[int] = [0] * (len(nums) + 1)  # zeros_before[i] = zeroes in nums[:i]
     for i, x in enumerate(nums):
@@ -219,6 +223,11 @@ def max_ones_after_flips_prefix_binary_search(nums: list[int], k: int) -> int:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that `bisect_left` and `bisect_right` are stylistic variants
+> of one another. They agree only when the searched-for value is **absent** — and here it is
+> present constantly, because every stretch of `1`s leaves the prefix count unchanged and fills
+> the array with ties.
+
 Reaching for `bisect_right` instead of `bisect_left`. They differ only when the searched-for value is
 actually present in the array — and here it is present constantly, because `zeros_before` is full of
 repeats (every stretch of 1s leaves the stamp unchanged). `bisect_left` returns the **first** index
@@ -232,8 +241,8 @@ The lesson generalises past this problem: on an array with duplicates, `bisect_l
 
 ### Complexity and when to use this
 
-**Time O(n log n), space O(n).** Splitting the two bills is the point of this rung: **building** the
-prefix array is one linear pass, and **searching** it is n binary searches at O(log n) each, so the
+**Time** `O(n log n)`, **space** `O(n)`. Splitting the two bills is the point of this rung: **building** the
+prefix array is one linear pass, and **searching** it is n binary searches at `O(log n)` each, so the
 search half is what makes the total super-linear. Space is the prefix array itself, n + 1 integers —
 the price of being able to answer any stretch's zero count instantly.
 
@@ -259,13 +268,19 @@ and restarts from the middle of the array**, and it drops the prefix array entir
 
 ### How to think about it
 
-Two hands holding the two ends of a rubber band laid over the row. The right hand always moves
-right, one position per step, and whenever the position it swallows is a zero, you spend a flip. The
-left hand never moves on its own — it moves only when you have overspent, and then it moves just
-far enough to get back inside budget, releasing a flip each time it passes a zero. The band's width
-at any legal moment is a candidate answer. Both hands travel left to right and neither ever goes
-back, so although the code *looks* like a loop inside a loop, each position is entered once and left
-at most once: the total work is linear, not quadratic.
+> **Intuition.** Two hands holding the two ends of a rubber band laid over the row. The right hand
+> always moves right, one position per step, and whenever the position it swallows is a zero, you
+> spend a flip. The left hand never moves on its own — it moves only when you have overspent, and
+> then it moves just far enough to get back inside budget, releasing a flip each time it passes a
+> zero. The band's width at any legal moment is a candidate answer. Both hands travel left to
+> right and neither ever goes back, so although the code *looks* like a loop inside a loop, each
+> position is entered once and left at most once: the total work is linear, not quadratic.
+
+> **Why it works.** The window is legal at every measurement because of one invariant: **`zeroes`
+> always equals the number of `0`s in `nums[left..right]`**. The right edge maintains it by
+> incrementing on a zero, the left edge by decrementing on a zero, and the `while` restores
+> `zeroes <= k` before any width is recorded. Linearity is a separate argument: `left` never
+> decreases, so across the whole run the inner loop performs at most `n` steps in total.
 
 ### Worked example
 
@@ -310,6 +325,9 @@ def max_ones_after_flips_sliding_window(nums: list[int], k: int) -> int:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that `zeroes` counts **steps the left edge has taken**. It
+> counts what is inside the window right now, so only a `0` actually leaving may refund a flip.
+
 Decrementing `zeroes` unconditionally as the left edge advances:
 
 ```python
@@ -327,7 +345,7 @@ currently inside the window*, and every line that touches it has to keep that cl
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1).** The time is linear because each index is added by the right edge exactly
+**Time** `O(n)`, **space** `O(1)`. The time is linear because each index is added by the right edge exactly
 once and removed by the left edge at most once — the inner `while` is not a nested scan, it is the
 left edge's share of one forward journey, so the two edges together take at most 2n steps. Space is
 three integers, and that is only possible because the alphabet is `{0, 1}` and "what is inside the
@@ -340,7 +358,7 @@ and this version still works while the next one quietly breaks.
 
 ---
 
-## Approach 4 — A window that never shrinks, only slides
+## Approach 4 — A window that never shrinks, only slides *(an addition — named in the data file's `arc`, but not one of its `alternatives`)*
 
 ### The idea
 
@@ -355,19 +373,27 @@ seen**, and it removes the `best` variable too.
 
 ### How to think about it
 
-Picture a frame of fixed width sliding along the row rather than a rubber band stretching and
-snapping back. Every step the frame's right edge moves one position right. If the window is still
-affordable, the frame *widens* by one; if it is not, the left edge also moves one, and the frame
-merely *slides* at its current width. The frame therefore never narrows, and its width at any moment
-equals the widest affordable window found so far. The frame may well be holding an illegal window at
-the end — that is allowed and it is the part that feels wrong at first — but its **width** is a
-width that was legal at some point, and no wider one ever existed. Since the question asks only for
-the width, the frame *is* the answer.
+
+> **Intuition.** Picture a frame of fixed width sliding along the row rather than a rubber band
+> stretching and snapping back. Every step the frame's right edge moves one position right. If the
+> window is still affordable, the frame *widens* by one; if it is not, the left edge also moves
+> one, and the frame merely *slides* at its current width. The frame therefore never narrows, and
+> its width at any moment equals the widest affordable window found so far. The frame may well be
+> holding an illegal window at the end — that is allowed and it is the part that feels wrong at
+> first — but its **width** is a width that was legal at some point, and no wider one ever
+> existed. Since the question asks only for the width, the frame *is* the answer.
 
 Be precise about why this is safe, because it is the whole trick: it works **because the answer is a
 maximum**. If the problem asked for the shortest qualifying window, or for the window's actual
 contents, a frame carrying a stale illegal window would be a lie. Here it is a correct record of a
 high-water mark.
+
+> **Why it works.** Two facts carry this. First, the window gains at most **one** zero per step,
+> so a single corrective step always suffices and the loop was never a loop. Second, the answer is
+> a **maximum**: the window's width never decreases, and it increases only in a step that ended
+> legal — so at every moment the width equals the widest legal window seen so far, and the window
+> itself may sit illegal without harming that. Ask for a *minimum* instead and this argument
+> collapses, which is exactly why the previous rung is the general one.
 
 ### Worked example
 
@@ -411,6 +437,11 @@ def max_ones_after_flips_non_shrinking(nums: list[int], k: int) -> int:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that `while` is the cautious choice and `if` the
+> optimization, so `while` must be safe in either version. It is not: `while` belongs with a
+> tracked `best`, and `if` belongs with `len(nums) - left`. Each half is correct only with its own
+> partner.
+
 Mixing the two forms: keeping the `while` from Approach 3 but returning `len(nums) - left` from
 Approach 4.
 
@@ -435,7 +466,7 @@ Either half of either pair, taken alone, is a bug.
 
 ### Complexity and when to use this
 
-**Time O(n), space O(1).** The time is now linear by inspection rather than by amortised argument —
+**Time** `O(n)`, **space** `O(1)`. The time is now linear by inspection rather than by amortised argument —
 one loop, a fixed amount of work per iteration, no inner loop to reason about. The space is two
 integers; even `best` is gone.
 
@@ -460,8 +491,8 @@ and immediately exposes the waste: each starting position re-walks ground its pr
 walked, so the zeroes in the middle of the array get counted again and again from every angle. The
 first cure is to count them once and store the running totals, after which any stretch's zero count
 is a subtraction — and because those running totals never decrease, the leftmost affordable start
-for a given right edge can be found by binary search instead of a walk, which buys O(n log n) at the
-price of an O(n) array. But the binary searches are themselves redundant, because the answer each one
+for a given right edge can be found by binary search instead of a walk, which buys `O(n log n)` at the
+price of an `O(n)` array. But the binary searches are themselves redundant, because the answer each one
 returns is never to the left of the answer the previous one returned: the left edge only ever moves
 forward, so it can simply be *carried* rather than re-derived, the prefix array evaporates, and the
 whole thing collapses to two pointers and one integer — grow on the right, restore legality on the
@@ -483,14 +514,21 @@ unfamiliar problem into one of these.
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Try every window | O(n²) | O(1) | No memory at all, so every start recounts the same zeroes | n is tiny; you need an oracle to cross-check the fast versions |
-| Prefix counts + binary search | O(n log n) | O(n) | Buys instant range counts with an array, then still pays log n per right edge | Arbitrary range-count queries are asked repeatedly, not in one sweep |
-| **Sliding window (shrink to legal)** | **O(n)** | **O(1)** | **Carries the left edge instead of re-deriving it; inner loop is amortised, not nested** | **The default answer — and the only rung that survives min-variants and "which indices"** |
-| Sliding window (never shrinks) | O(n) | O(1) | Drops the running maximum by letting the window's width *be* it — valid only for a maximum-length answer | You want the tightest loop and the question is purely "how wide" |
+| Try every window | `O(n²)` | `O(1)` | No memory at all, so every start recounts the same zeroes | n is tiny; you need an oracle to cross-check the fast versions |
+| Prefix counts + binary search | `O(n log n)` | `O(n)` | Buys instant range counts with an array, then still pays log n per right edge | Arbitrary range-count queries are asked repeatedly, not in one sweep |
+| **Sliding window (shrink to legal)** | **`O(n)`** | **`O(1)`** | **Carries the left edge instead of re-deriving it; inner loop is amortised, not nested** | **The default answer — and the only rung that survives min-variants and "which indices"** |
+| Sliding window (never shrinks) | `O(n)` | `O(1)` | Drops the running maximum by letting the window's width *be* it — valid only for a maximum-length answer | You want the tightest loop and the question is purely "how wide" |
 
 ---
 
 ## Interview Priority
+
+> **In an interview.** Open with the translation before any code — *"at most `k` changes" is "a
+> window whose count of the wrong thing is at most `k`"* — then write Approach 3. The follow-up is
+> always the same: **"that is a loop inside a loop, so isn't it `O(n²)`?"** Answer that `left`
+> only ever moves forward, so across the entire run it takes at most `n` steps, making both edges
+> together `2n`. Offer Approach 4 as the tightening, and say why it is allowed: the answer is a
+> **maximum**, so a window that has gone illegal never has to be repaired.
 
 **Memorize cold — the translation.** Before any code: *"at most k changes" is "a window whose count
 of the wrong thing is at most k."* Say it out loud in the interview. It is ten seconds, it reframes
@@ -502,7 +540,7 @@ someone who memorised an answer.
 
 **Memorize cold — the shrink-to-legal sliding window (Approach 3).** This is the expected solution
 and you should be able to produce it without thinking: add on the right, `while` illegal remove on
-the left, record the width. Be ready for the follow-up "isn't that a nested loop, so O(n²)?" — the
+the left, record the width. Be ready for the follow-up "isn't that a nested loop, so `O(n²)`?" — the
 answer is that the left edge moves forward only, so across the entire run it takes at most n steps
 in total, making the pair of edges 2n and the whole thing linear. That amortised argument is asked
 about more often than the code is.
@@ -520,7 +558,7 @@ one subtraction, and a prefix array that never decreases is sorted and therefore
 the engine of subarray-sum problems, and it is also the fallback whenever the window's rule turns out
 *not* to be monotone enough for two pointers.
 
-**Not worth memorizing — brute force.** But do say it, name its O(n²), and reject it on the
+**Not worth memorizing — brute force.** But do say it, name its `O(n²)`, and reject it on the
 `10^5` constraint. Naming the baseline and killing it on a stated constraint is the part interviewers
 score.
 
@@ -545,7 +583,6 @@ from __future__ import annotations
 import random
 from bisect import bisect_left
 
-
 # --- 1. Try every window -------------------------------------------------------
 
 def max_ones_after_flips_brute_force(nums: list[int], k: int) -> int:
@@ -558,7 +595,6 @@ def max_ones_after_flips_brute_force(nums: list[int], k: int) -> int:
             if zeroes <= k:
                 best = max(best, j - i + 1)
     return best
-
 
 # --- 2. Prefix zero counts, then binary search for each left edge --------------
 
@@ -573,7 +609,6 @@ def max_ones_after_flips_prefix_binary_search(nums: list[int], k: int) -> int:
         left = bisect_left(zeros_before, need, 0, right + 1)
         best = max(best, right - left)
     return best
-
 
 # --- 3. Sliding window that shrinks until affordable ---------------------------
 
@@ -591,7 +626,6 @@ def max_ones_after_flips_sliding_window(nums: list[int], k: int) -> int:
         best = max(best, right - left + 1)
     return best
 
-
 # --- 4. Sliding window that never shrinks (optimal) ----------------------------
 
 def max_ones_after_flips_non_shrinking(nums: list[int], k: int) -> int:
@@ -606,14 +640,12 @@ def max_ones_after_flips_non_shrinking(nums: list[int], k: int) -> int:
             left += 1
     return len(nums) - left
 
-
 APPROACHES = [
     ("brute_force", max_ones_after_flips_brute_force),
     ("prefix_binary_search", max_ones_after_flips_prefix_binary_search),
     ("sliding_window", max_ones_after_flips_sliding_window),
     ("non_shrinking", max_ones_after_flips_non_shrinking),
 ]
-
 
 # --- test suite ----------------------------------------------------------------
 
@@ -657,7 +689,6 @@ def main() -> None:
         if all_agreed
         else "MISMATCH: the approaches did NOT all agree."
     )
-
 
 if __name__ == "__main__":
     main()
