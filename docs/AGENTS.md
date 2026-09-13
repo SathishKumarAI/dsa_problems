@@ -34,6 +34,26 @@ The reply arrives as a task notification like any other. A resumed agent that ha
 | `a7d0e04531ea9883a` | statistics: chapters 1–5 | in progress |
 | `a6102580f2cb670eb` · `a368821d8d694ccbb` · `a74f8235ffa3655fc` · `a276a2b1dccff3659` · `a876b8cf649c97fd1` · `a6a60ac22a094a092` | deep docs wave 4 — binary search, linked list, stack | in progress |
 
+## Waiting to be resumed (as of 2026-09-12, limit resets 3am America/Chicago)
+
+The session limit killed these mid-task for the second time. Every one is
+resumable — `SendMessage` to the id, tell it what changed in the tree while it
+was gone, and it continues from its own last thought.
+
+| Agent | Left to do | Its last words |
+|---|---|---|
+| `a876b8cf649c97fd1` | deep docs: add-two-numbers, odd-even-list, reorder-list, rotate-list | "Heredoc got mangled. I'll use the Write tool." |
+| `a368821d8d694ccbb` | deep docs: koko-bananas, ship-in-d-days, find-peak-element, k-closest-values | "build and verify the scripts before writing the documents" |
+| `a6a60ac22a094a092` | deep docs: calculator-basic, simplify-path, + single-number retrofit | "build and verify the Python for calculator-basic" |
+| `a6102580f2cb670eb` | deep docs: classic-binary-search, search-insert-position, first-last-position, single-in-sorted | — |
+| `a74f8235ffa3655fc` | deep docs: rotated-minimum, rotated-search, search-2d-matrix, remove-k-digits | — |
+| `a276a2b1dccff3659` | deep docs: palindrome-list, remove-nth-from-end, swap-pairs, remove-list-elements | — |
+| `ab265f86a2251927e` | retrofit: eleven more documents (valid-anagram fix already landed) | "Now dispatching the next eleven." |
+| `a33d43453240864bd` | retrofit: move-zeroes, sorted-squares | (spawned by the retrofit agent) |
+| `a7d0e04531ea9883a` | statistics chapter 5, hypothesis testing | "Adding the exhaustive small-population enumeration" |
+
+Still unwritten and unassigned: trees (11), heaps (9), graphs (11), dp (14).
+
 ---
 
 ## The rules
