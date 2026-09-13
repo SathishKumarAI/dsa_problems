@@ -51,15 +51,17 @@ array.
 
 ### How to think about it
 
-The shape of the reasoning is: **escape to a container that supports the operation you want.** You
-want random access; arrays have it, linked lists do not; so build an array. It is a completely
-legitimate instinct and the right one in plenty of real code — it is wrong here only because the
-question is specifically testing whether you can get the same answer without the array.
+> **Intuition.** A linked list is a paper chain: to reach the tenth link you must run your fingers
+> through the nine before it, and there is no way to grab the middle of it directly. So you lay the
+> links out in a row on the table instead, where "the middle one" is something you can simply point
+> at. You have **escaped to a container that supports the operation you want** — a completely
+> legitimate instinct, and the right one in plenty of real code. It is wrong here only because the
+> question is specifically testing whether you can get the same answer without the table.
 
-Note carefully what goes into the array: the **nodes**, not the values. If you collect values you can
-find the middle value but you cannot return the middle *node*, and the problem asks for a node with
-the rest of the list still hanging off it. That distinction is invisible on an example like
-`[1,2,3,4,5]` where every value is unique, and it is the whole game on `[1,1,1,1]`.
+Note carefully what goes onto the table: the **nodes**, not the values. Collect values and you can
+find the middle value but not the middle *node*, and the problem asks for a node with the rest of the
+list still hanging off it. That distinction is invisible on `[1,2,3,4,5]`, where every value is
+unique, and it is the whole game on `[1,1,1,1]`.
 
 ### Worked example
 
@@ -96,16 +98,21 @@ def middle_of_list_copy_to_array(head: ListNode | None) -> ListNode | None:
 
 ### Common mistake
 
-Writing `nodes[(len(nodes) - 1) // 2]`, which is the other plausible-looking way to spell "the
-middle". It is right for odd lengths and wrong for even ones: on the six-node example it gives index
-2, the node holding 3 — the **first** middle, when the problem asked for the second. The bug survives
-every odd-length test you write, and `[1,2,3,4,5]` is the example most people try first. Derive the
-index from the even case, not the odd one; the odd case will take care of itself.
+> **Watch out.** The misconception is that `n // 2` and `(n - 1) // 2` are two spellings of the same
+> idea — "the middle" — and you may pick whichever reads better. They are two **different indices**
+> that happen to agree on odd lengths, which is exactly the half of the input space your first test
+> case comes from.
+
+Writing `nodes[(len(nodes) - 1) // 2]`. On the six-node example it returns index **2**, the node
+holding **3** — the *first* middle, when the problem asked for the second. On the five-node
+`[1,2,3,4,5]` it returns index 2 holding 3, which is **right**, and that is the trap: the bug
+survives every odd-length test you write, and `[1,2,3,4,5]` is the example most people try first.
+Derive the index from the even case and the odd case takes care of itself.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(n)`.** Time is a single walk plus a constant-time index. Space is the array of
-`n` node references — nothing is copied deeply, but the array itself scales with the list.
+**Time** `O(n)`, **space** `O(n)`. Time is a single walk plus a constant-time index. Space is the
+array of `n` node references — nothing is copied deeply, but the array itself scales with the list.
 
 Use it when you need more than the middle: if the surrounding code wants the middle *and* the quartile
 points, or wants to index the list repeatedly, materialising it once is cheaper than walking it once
@@ -126,18 +133,17 @@ reach the end before you can begin.
 
 ### How to think about it
 
-The shape is: **the array was doing two jobs, and only one of them was necessary.** It was recording
-the length, which is a single integer, and it was providing random access, which you used exactly
-once. Replace the first with a counter and the second with a walk, and the storage disappears.
+> **Intuition.** Pacing out a corridor to find its midpoint. You do not need a photograph of the
+> corridor — you need one number, its length — so you walk it once counting your steps, then walk
+> back to the door and pace out half that many. The table of links was doing **two jobs** and only
+> one was necessary: it recorded the length, which is a single integer, and it offered random access,
+> which you used exactly once. Replace the first with a counter and the second with a walk, and the
+> storage disappears.
 
 The price is a dependency in time rather than space: the first pass must *finish* before the second
 can *start*, because `count // 2` is unknown until the end of the list is found. That is the property
 worth naming, because it is precisely what the next approach removes — and it is what makes this
-version unusable on a stream you can only read once.
-
-The indexing is the same as before: after counting, walking `count // 2` steps from the head lands you
-on index `count // 2`. Six nodes, three steps: `N1 → N2 → N3 → N4`. The `range(count // 2)` loop body
-runs three times and moves the pointer three times.
+version unusable on a stream you can read only once.
 
 ### Worked example
 
@@ -187,11 +193,16 @@ def middle_of_list_count_then_walk(head: ListNode | None) -> ListNode | None:
 
 ### Common mistake
 
-Forgetting `node = head` before the second loop. The counting loop exits precisely because `node`
-became `None`, so the walk starts from nothing: `range(count // 2)` then either crashes with
-`AttributeError: 'NoneType' object has no attribute 'next'` on the first step, or — on a one-node list,
-where `count // 2 == 0` and the loop body never runs — silently returns `None`. The one-node case
-returning `None` instead of the head is the nastier half, because it is the case people test last.
+> **Watch out.** The misconception is that `node` is *the* pointer for this function, so the second
+> loop can carry on with wherever it was left. The counting loop does not "finish" at the end of the
+> list — it finishes at `None`, because reaching `None` is the only thing that stops it. The pointer
+> you want to reuse is guaranteed to be the one value you cannot walk from.
+
+Forgetting `node = head` before the second loop. On the six-node example the walk dies immediately
+with `AttributeError: 'NoneType' object has no attribute 'next'`; on a one-node list, where
+`count // 2 == 0` and the loop body never runs, it silently returns **`None`** instead of the head.
+Both measured. The silent one is the nastier half, because a one-node list is the case people test
+last.
 
 The underlying reason is that `node` is being used for two different purposes in the same function. If
 you find this bug in your own code, the durable fix is to use two differently-named variables — a
@@ -199,7 +210,7 @@ you find this bug in your own code, the durable fix is to use two differently-na
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(1)`.** Time is `n` steps to count plus `n/2` to walk — about `1.5n` node
+**Time** `O(n)`, **space** `O(1)`. Time is `n` steps to count plus `n/2` to walk — about `1.5n` node
 touches, linear. Space is one integer and one pointer.
 
 Use it when you need the length anyway. If the caller is going to ask "how long is this list?" in the
@@ -221,14 +232,24 @@ constant space, and no number is ever computed — the answer comes out of the g
 
 ### How to think about it
 
-Two walkers leave the front door together; one walks at double the other's pace. The moment the fast
-walker runs out of road, the slow walker is standing at the halfway mark. Nobody measured the road.
-The ratio did the arithmetic: **distance travelled is proportional to speed, so half the speed means
-half the distance, whatever the total turns out to be.**
+> **Intuition.** Two walkers leave the front door together and one walks at double the other's pace.
+> The moment the fast walker runs out of road, the slow walker is standing at the halfway mark.
+> Nobody measured the road: the **ratio** did the arithmetic, because half the speed means half the
+> distance whatever the total turns out to be.
 
-That is the whole idea, and the only thing left to get right is *exactly* where the fast pointer stops,
-because that is what decides the even case. The condition is `while fast is not None and fast.next is
-not None`, and it is doing two jobs at once:
+> **Why it works.** The invariant is that `fast` has always travelled **exactly twice** as far as
+> `slow` — one iteration moves `slow` by 1 and `fast` by 2, and both start at index 0, so
+> `index(fast) = 2 · index(slow)` holds at every point where `fast` is still on a node. The loop runs
+> `n // 2` times, so
+> `slow` finishes on index `n // 2`, which is the answer for *both* parities. The termination is what
+> splits the two cases, and it splits them asymmetrically: on an **odd** length `fast` comes to rest
+> *on* the last node, so `fast.next is None` stops the loop; on an **even** length `fast` steps
+> *past* the last node onto `None`, so `fast is None` stops it. Two different clauses fire, one loop
+> count comes out, and the second middle falls out of the arithmetic rather than out of a branch.
+
+The only thing left to get right is *exactly* where the fast pointer stops, because that is what
+decides the even case. The condition is `while fast is not None and fast.next is not None`, and it is
+doing two jobs at once:
 
 - `fast.next is not None` is what lets `fast = fast.next.next` be legal — you may only step twice from
   a node that has a successor.
@@ -237,10 +258,6 @@ not None`, and it is doing two jobs at once:
   `while fast.next is not None and fast.next.next is not None` and the loop runs twice, slow ends at
   index 2, and you have returned the first middle. Both versions are "correct"; only one answers the
   question that was asked.
-
-The parity works out because of where fast lands: on an odd-length list fast ends *on* the last node
-(and `fast.next` is `None`); on an even-length list fast ends *past* it, on `None`. Either way the
-loop has run exactly `n // 2` times, which is exactly how many steps slow took.
 
 ### Worked example
 
@@ -276,11 +293,17 @@ def middle_of_list_fast_slow(head: ListNode | None) -> ListNode | None:
 
 ### Common mistake
 
-Writing `while fast is not None` alone. On the six-node example, the third iteration leaves
-`fast = None` and stops safely — but on the five-node list, iteration 2 leaves `fast = N5`, the test
-passes, and `fast = fast.next.next` evaluates `N5.next.next`, which is `None.next`, and the whole thing
-dies with `AttributeError: 'NoneType' object has no attribute 'next'`. It crashes on odd lengths and
-works on even ones, which is an unusually cruel failure mode to debug.
+> **Watch out.** The misconception is that the two clauses are **belt and braces** — one real check
+> plus a defensive one — so dropping the second is tidying. Both are load-bearing, and they are
+> load-bearing on *different inputs*: one ends the even case, the other ends the odd case and is the
+> only thing making `fast.next.next` legal.
+
+Writing `while fast is not None` alone. On the six-node example the third iteration leaves
+`fast = None` and it stops safely, returning **4** — the right answer. On the five-node list
+iteration 2 leaves `fast = N5`, the test passes, and `fast.next.next` evaluates `None.next`, so it
+dies with `AttributeError: 'NoneType' object has no attribute 'next'`. The one-node list crashes the
+same way. All three measured: it works on every even length and crashes on every odd one, which is an
+unusually cruel failure mode to debug.
 
 The rule underneath it: **you may dereference a pointer only after checking it, and `fast.next.next`
 dereferences twice, so it needs two checks.** That is why the condition has two clauses, and why the
@@ -289,8 +312,9 @@ first or the check itself would crash.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(1)`.** The loop runs `n // 2` times and does two pointer moves each, so about
-`1.5n` dereferences — linear, in a single forward pass. Space is two pointers, regardless of `n`.
+**Time** `O(n)`, **space** `O(1)`. The loop runs `n // 2` times and does two pointer moves each, so
+about `1.5n` dereferences — linear, in a single forward pass. Space is two pointers, regardless of
+`n`.
 
 This is the one to ship. The single pass is the reason: it works on a list you can only read once (a
 stream, a generator, a cursor over data too large to hold), and it never needs the length. It is also
@@ -316,11 +340,12 @@ to the problem as posed. It is an answer to the problem as it usually appears in
 
 ### How to think about it
 
-The shape is: **stop solving the part of the problem that someone else already solved.** All three
-previous approaches spend most of their work discovering `n` — the array measures it by storing
-everything, the counter measures it with a full pass, the fast pointer measures it implicitly by
-racing to the end. If `n` arrives with the input, every one of those becomes pure overhead and the
-task collapses to a single arithmetic step plus a half-length walk.
+> **Intuition.** Someone at the door hands you a tape measure with the corridor's length already
+> written on it. Every previous approach was in the business of **discovering** that number — the
+> table measured it by storing everything, the counter measured it with a full pass, the two walkers
+> measured it implicitly by racing to the end. Hand the number over for free and all that work
+> becomes overhead: the task collapses to one division and a half-length walk, and the far half of
+> the corridor is never entered.
 
 The failure mode is not a coding error, it is a trust error: a stale or wrong `size` gives a confidently
 wrong node, or walks off the end. That is why this belongs behind an encapsulated list type that
@@ -357,11 +382,18 @@ def middle_of_list_known_length(head: ListNode | None, length: int) -> ListNode 
 
 ### Common mistake
 
-Trusting a `length` that a mutation has invalidated. Delete a node from the list and forget to
-decrement `size`, and this function returns the node one past the true middle — or, if enough deletions
-pile up, walks off the end. The bug is not in this function and cannot be fixed in this function; it
-is in whatever failed to keep the count honest. That is why the `if node is None` guard is here: it
-converts a silent wrong answer into a loud failure at the point where the lie becomes detectable.
+> **Watch out.** The misconception is that a wrong answer here is a bug **in this function**. It is
+> not, and it cannot be fixed here: the function is a faithful reading of the number it was given.
+> The bug is in whatever failed to keep that number honest, which is why this belongs behind an
+> encapsulated type and not in a free function anyone can call with any integer.
+
+Trusting a `length` that a mutation has invalidated. Delete a node and forget to decrement `size`,
+and with `length = 6` on a five-node list this returns index **3**, the node holding **4**, when the
+true middle is index 2 holding **3** — one past the answer, confidently. Pile up enough deletions and
+it walks off the end instead: `length = 6` on a one-node list raises
+`ValueError: length is larger than the list`. Both measured, and the second is the better outcome —
+that is what the `if node is None` guard buys, converting a silent wrong answer into a loud failure
+at the point where the lie becomes detectable.
 
 The second mistake is subtler: reaching for this approach in an interview because it looks fastest.
 The problem hands you a `head` and nothing else, so quoting a length you were never given is answering
@@ -369,9 +401,9 @@ a different question.
 
 ### Complexity and when to use this
 
-**Time `O(n)` with exactly `n // 2` node touches, space `O(1)`.** It is still linear — a linked list
-offers no way to jump — but the constant is half of approach 2's and a third of approach 3's, and the
-second half of the list is never read. Space is one pointer and one integer.
+**Time** `O(n)` with exactly `n // 2` node touches, **space** `O(1)`. It is still linear — a linked
+list offers no way to jump — but the constant is half of approach 2's and a third of approach 3's,
+and the second half of the list is never read. Space is one pointer and one integer.
 
 Use it inside a list type that owns its own `size` field, where the count is maintained as an
 invariant rather than trusted from outside. In that setting it is strictly better than approach 3. As
@@ -418,6 +450,14 @@ infer it from a ratio, or be given it.
 ---
 
 ## Interview Priority
+
+> **In an interview.** Say the two-pass version out loud first and price it — *"count the nodes,
+> then walk `n // 2`; that is linear and constant-space but it is two passes"* — then offer the
+> one-pass improvement as an improvement rather than a trick. Write `while fast and fast.next`, and
+> expect the follow-up **"what if the list has an even number of nodes — which middle do you
+> return?"** The answer is the second, and the reason is that the loop runs `n // 2` times either
+> way; stopping one iteration earlier with `while fast.next and fast.next.next` returns the first
+> middle instead. Knowing which of those two conditions you wrote, and why, is the whole question.
 
 **Memorize cold: the fast-and-slow loop.** Four lines, and it is far more valuable as a component than
 as an answer. Splitting a list in half for merge sort, checking a list is a palindrome, reordering a
