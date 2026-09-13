@@ -1,9 +1,14 @@
 // One pattern's page: blurb header, filters, then compact problem rows.
 // A pattern held three problems when this was a card list; it now holds up to
-// twelve and the set is 87, so the row is one line and the filters are the
+// twelve and the set is 127, so the row is one line and the filters are the
 // navigation (backlog B37, B40).
-import { useState } from "react"
-import { RouteIcon, SearchIcon } from "lucide-react"
+//
+// The filter set lives in `prefs` (lib/store.ts), not in useState: it survives
+// a reload and follows you from one pattern to the next. That is only safe
+// because it ANNOUNCES itself — a filtered list that looks like a short list
+// is the bug, so while anything is set there is a banner saying what is on,
+// how many rows it hid, and how to clear it.
+import { FilterIcon, RouteIcon, SearchIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -27,6 +32,8 @@ import {
   usePatternMask,
 } from "@/lib/disclosure"
 import { toggleSolved, useSolved } from "@/lib/progress"
+import type { Prefs } from "@/lib/store"
+import { setPref, usePrefs } from "@/lib/store"
 
 interface Props {
   pattern: Pattern
@@ -36,9 +43,19 @@ interface Props {
 const LEVELS: Difficulty[] = ["easy", "medium", "hard"]
 
 export function ProblemList({ pattern, onOpen }: Props) {
-  const [query, setQuery] = useState("")
-  const [level, setLevel] = useState<Difficulty | "all">("all")
-  const [state, setState] = useState<"all" | "unsolved" | "solved">("all")
+  const {
+    filterQuery: query,
+    filterLevel: level,
+    filterState: state,
+  } = usePrefs()
+  const setQuery = (v: string) => setPref("filterQuery", v)
+  const setLevel = (v: Prefs["filterLevel"]) => setPref("filterLevel", v)
+  const setState = (v: Prefs["filterState"]) => setPref("filterState", v)
+  const clear = () => {
+    setQuery("")
+    setLevel("all")
+    setState("all")
+  }
   const solved = useSolved()
   const mask = usePatternMask()
   const hidden = mask.hidden.has(pattern.id)
@@ -55,14 +72,29 @@ export function ProblemList({ pattern, onOpen }: Props) {
   const filtering = query !== "" || level !== "all" || state !== "all"
 
   return (
-    <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
+    // max-w-page, not max-w-reading: twenty-one rows with a brief each is an
+    // INDEX (DESIGN.md, Containers), and at 768 the brief truncated after six
+    // words while two thirds of a 1440 screen stayed empty. The prose in the
+    // header keeps its own 35em cap — the measure rule is about sentences, not
+    // about the container they sit in.
+    <div className="mx-auto flex w-full max-w-page flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <div className="font-mono text-ui text-primary">
-          {hidden ? MASKED_GLYPH : pattern.glyph}
+        {/* the glyph is the pattern's mark, so it sits ON the title's baseline
+            rather than floating above it as an orphan line */}
+        <div className="flex flex-wrap items-baseline gap-x-3">
+          <span className="font-mono text-ui text-primary">
+            {hidden ? MASKED_GLYPH : pattern.glyph}
+          </span>
+          <h1 className="font-heading text-title font-semibold">
+            {hidden ? MASKED_NAME : pattern.name}
+          </h1>
         </div>
-        <h1 className="font-heading text-title font-semibold">
-          {hidden ? MASKED_NAME : pattern.name}
-        </h1>
+        {/* the one authored moment on this surface: a rule draws itself under
+            the title. The title is already at full opacity above it. */}
+        <span
+          aria-hidden
+          className="h-px w-full max-w-[35em] animate-edge-in-x bg-gradient-to-r from-primary/60 to-transparent"
+        />
         {hidden ? (
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-3 text-ui">
             <span className="text-muted-foreground">
@@ -75,145 +107,174 @@ export function ProblemList({ pattern, onOpen }: Props) {
             </Button>
           </div>
         ) : (
-          <p className="text-ui text-muted-foreground">{pattern.blurb}</p>
+          <p className="max-w-[35em] text-ui text-muted-foreground">
+            {pattern.blurb}
+          </p>
         )}
       </header>
 
-      <div className="flex flex-col gap-3">
-        <div className="relative">
-          <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-9"
-            // a placeholder is not an accessible name: it is gone the moment
-            // anything is typed, and it is announced inconsistently
-            aria-label="Filter problems by title or brief"
-            placeholder="Filter by title or brief…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+      {/* One panel: the filter bar is the head of the list it filters, not a
+          separate floating control strip with the list somewhere below it.
+          On the page ground these were three unrelated slabs. */}
+      <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="flex flex-col gap-3 p-3">
+          <div className="relative">
+            <SearchIcon className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              // a placeholder is not an accessible name: it is gone the moment
+              // anything is typed, and it is announced inconsistently
+              aria-label="Filter problems by title or brief"
+              placeholder="Filter by title or brief…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <ToggleGroup
+              size="sm"
+              value={[level]}
+              onValueChange={(v: string[]) =>
+                setLevel((v[0] as Prefs["filterLevel"]) ?? "all")
+              }
+              aria-label="filter by difficulty"
+            >
+              <ToggleGroupItem value="all">all</ToggleGroupItem>
+              {LEVELS.map((d) => (
+                <ToggleGroupItem key={d} value={d}>
+                  {d}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <ToggleGroup
+              size="sm"
+              value={[state]}
+              onValueChange={(v: string[]) =>
+                setState((v[0] as Prefs["filterState"]) ?? "all")
+              }
+              aria-label="filter by solved state"
+            >
+              <ToggleGroupItem value="all">any</ToggleGroupItem>
+              <ToggleGroupItem value="unsolved">unsolved</ToggleGroupItem>
+              <ToggleGroupItem value="solved">solved</ToggleGroupItem>
+            </ToggleGroup>
+            <span
+              className="ml-auto font-mono text-meta text-muted-foreground tabular-nums"
+              aria-live="polite"
+            >
+              {problems.length}/{all.length}
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <ToggleGroup
-            size="sm"
-            value={[level]}
-            onValueChange={(v: string[]) =>
-              setLevel((v[0] as Difficulty | "all") ?? "all")
-            }
-            aria-label="filter by difficulty"
-          >
-            <ToggleGroupItem value="all">all</ToggleGroupItem>
-            {LEVELS.map((d) => (
-              <ToggleGroupItem key={d} value={d}>
-                {d}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-          <ToggleGroup
-            size="sm"
-            value={[state]}
-            onValueChange={(v: string[]) =>
-              setState((v[0] as "all" | "unsolved" | "solved") ?? "all")
-            }
-            aria-label="filter by solved state"
-          >
-            <ToggleGroupItem value="all">any</ToggleGroupItem>
-            <ToggleGroupItem value="unsolved">unsolved</ToggleGroupItem>
-            <ToggleGroupItem value="solved">solved</ToggleGroupItem>
-          </ToggleGroup>
-          <span
-            className="ml-auto font-mono text-meta text-muted-foreground tabular-nums"
+
+        {filtering && (
+          <div
+            data-testid="filter-banner"
+            className="flex flex-wrap items-center gap-2 border-t border-chart-1/40 bg-chart-1/5 px-3 py-2 text-ui"
             aria-live="polite"
           >
-            {problems.length}/{all.length}
-          </span>
-        </div>
-      </div>
+            <FilterIcon className="size-4 shrink-0 text-chart-1" />
+            <span className="text-muted-foreground">
+              Filtered — showing{" "}
+              <b className="text-foreground tabular-nums">{problems.length}</b>{" "}
+              of <span className="tabular-nums">{all.length}</span>
+            </span>
+            {level !== "all" && (
+              <Badge variant="outline" className="font-mono">
+                {level}
+              </Badge>
+            )}
+            {state !== "all" && (
+              <Badge variant="outline" className="font-mono">
+                {state}
+              </Badge>
+            )}
+            {query !== "" && (
+              <Badge variant="outline" className="max-w-40 truncate font-mono">
+                “{query}”
+              </Badge>
+            )}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="ml-auto text-muted-foreground"
+              onClick={clear}
+            >
+              Clear filters
+            </Button>
+          </div>
+        )}
 
-      {problems.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>Nothing matches</EmptyTitle>
-            <EmptyDescription>
-              {all.length} problem{all.length === 1 ? "" : "s"} here, none of
-              them matching these filters.
-            </EmptyDescription>
-          </EmptyHeader>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setQuery("")
-              setLevel("all")
-              setState("all")
-            }}
-          >
-            Clear filters
-          </Button>
-        </Empty>
-      ) : (
-        <ul className="flex flex-col divide-y rounded-lg border">
-          {problems.map((p) => {
-            const done = solved.has(p.id)
-            return (
-              <li
-                key={p.id}
-                className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-accent/40"
-              >
-                <Checkbox
-                  checked={done}
-                  onCheckedChange={() => toggleSolved(p.id)}
-                  aria-label={`Mark ${p.title} solved`}
-                />
-                <button
-                  className="flex min-w-0 flex-1 items-baseline gap-2 text-left"
-                  onClick={() => onOpen(p.id)}
+        {problems.length === 0 ? (
+          <Empty className="border-t">
+            <EmptyHeader>
+              <EmptyTitle>Nothing matches</EmptyTitle>
+              <EmptyDescription>
+                {all.length} problem{all.length === 1 ? "" : "s"} here, none of
+                them matching these filters.
+              </EmptyDescription>
+            </EmptyHeader>
+            <Button size="sm" variant="outline" onClick={clear}>
+              Clear filters
+            </Button>
+          </Empty>
+        ) : (
+          <ul className="flex flex-col divide-y border-t">
+            {problems.map((p) => {
+              const done = solved.has(p.id)
+              return (
+                <li
+                  key={p.id}
+                  className="flex items-center gap-3 px-3 py-2 transition-colors hover:bg-accent/40"
                 >
-                  <span
+                  <Checkbox
+                    checked={done}
+                    onCheckedChange={() => toggleSolved(p.id)}
+                    aria-label={`Mark ${p.title} solved`}
+                  />
+                  <button
+                    className="flex min-w-0 flex-1 items-baseline gap-2 text-left"
+                    onClick={() => onOpen(p.id)}
+                  >
+                    {/* NOT shrink-0: at 390 the title and the difficulty badge
+                        were both unshrinkable, so twelve of the twenty-one
+                        rows drew the badge ON TOP of the last two words
+                        (measured on a 390x844 screenshot). The title
+                        truncates instead, and the brief — the first thing a
+                        phone can afford to drop — appears from sm. */}
+                    <span
+                      className={cn(
+                        "min-w-0 truncate text-body font-medium",
+                        done && "text-muted-foreground line-through"
+                      )}
+                    >
+                      {p.title}
+                    </span>
+                    {journeyForProblem(p.id) && (
+                      <RouteIcon
+                        className="size-3.5 shrink-0 text-chart-1"
+                        aria-label="has a full journey"
+                      />
+                    )}
+                    <span className="hidden truncate text-ui text-muted-foreground sm:block">
+                      {p.brief}
+                    </span>
+                  </button>
+                  <Badge
+                    variant="outline"
                     className={cn(
-                      "shrink-0 text-body font-medium",
-                      done && "text-muted-foreground line-through"
+                      "shrink-0 font-mono",
+                      difficultyClass[p.difficulty]
                     )}
                   >
-                    {p.title}
-                  </span>
-                  {journeyForProblem(p.id) && (
-                    <RouteIcon
-                      className="size-3.5 shrink-0 text-chart-1"
-                      aria-label="has a full journey"
-                    />
-                  )}
-                  <span className="truncate text-ui text-muted-foreground">
-                    {p.brief}
-                  </span>
-                </button>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "shrink-0 font-mono",
-                    difficultyClass[p.difficulty]
-                  )}
-                >
-                  {p.difficulty}
-                </Badge>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-      {filtering && problems.length > 0 && (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="self-start text-muted-foreground"
-          onClick={() => {
-            setQuery("")
-            setLevel("all")
-            setState("all")
-          }}
-        >
-          Clear filters
-        </Button>
-      )}
+                    {p.difficulty}
+                  </Badge>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   )
 }

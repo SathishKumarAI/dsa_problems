@@ -225,6 +225,10 @@ async function newPage(port, width, height) {
         ...opts,
       }),
     eval: evaluate,
+    /** a PNG of the viewport, base64 — same CDP socket, no extra dependency.
+     *  Used to LOOK at a change rather than assert about it. */
+    screenshot: async () =>
+      (await send("Page.captureScreenshot", { format: "png" })).result?.data,
     async resize(w, h = 1000) {
       await send("Emulation.setDeviceMetricsOverride", {
         width: w,

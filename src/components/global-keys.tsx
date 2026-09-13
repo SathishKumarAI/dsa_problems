@@ -1,8 +1,10 @@
-// App-wide keys: `?` opens the shortcuts dialog, `f` toggles focus (both
-// rails). Page-local keys (space / ← / → / r) live with their page. Ignores
-// keystrokes inside inputs. Must sit inside SidebarProvider.
+// App-wide keys: Ctrl/⌘ K opens the command palette, `?` the shortcuts
+// dialog, `f` toggles focus (both rails). Page-local keys (space / ← / → / r)
+// live with their page. Ignores keystrokes inside inputs — except Ctrl/⌘ K.
+// Must sit inside SidebarProvider.
 import { useEffect } from "react"
 import { useSidebar } from "@/components/ui/sidebar"
+import { openPalette } from "@/features/search/palette-state"
 import { openDialog } from "@/lib/dialogs"
 import { useRoute } from "@/lib/route"
 import { setPref, usePrefs } from "@/lib/store"
@@ -15,6 +17,13 @@ export function GlobalKeys() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement
+      // before the input guard on purpose: Ctrl/⌘ K is the one key that must
+      // work while the caret sits in a filter box
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        openPalette()
+        return
+      }
       if (
         ["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName) ||
         t.isContentEditable ||

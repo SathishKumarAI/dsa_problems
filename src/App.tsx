@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { AppDialogs } from "./components/app-dialogs"
 import { AppSidebar } from "./components/app-sidebar"
 import { GlobalKeys } from "./components/global-keys"
+import { CommandPalette, SearchTrigger } from "@/features/search/palette"
 
 // the engine-heavy features load on first visit, not on the content pages (B22 / F1)
 const JourneyPage = lazy(() =>
@@ -97,6 +98,7 @@ export default function App() {
         <AppSidebar view={view} />
         <GlobalKeys />
         <AppDialogs />
+        <CommandPalette />
         {/* The journey page bounds its own height so the transport can be
             pinned to the foot of a column that scrolls INSIDE itself. That
             only worked at lg, so below it SidebarInset computed min-height
@@ -104,19 +106,31 @@ export default function App() {
             descendant height became content-driven — the transport rode the
             page instead of sitting still. Bounded at every width now. */}
         <SidebarInset className={cn(panels && "h-svh overflow-hidden")}>
-          <div className="flex items-center gap-2 border-b px-4 py-2 md:hidden">
+          {/* On a phone there is no rail, so this bar IS the shell: it stays
+              put and lets the page pass under it, blurred, the way every other
+              floating surface here does. It used to scroll away with the
+              content, which left a 127-problem list with no way back. */}
+          <div className="sticky top-0 z-20 flex items-center gap-2 border-b bg-background/70 px-4 py-2 backdrop-blur-md md:hidden">
             <SidebarTrigger />
             <span className="font-mono text-ui">dsa.patterns</span>
+            <SearchTrigger className="ml-auto" />
             <Button
               size="icon-sm"
               variant="ghost"
-              className="ml-auto size-11 text-muted-foreground"
+              className="size-11 text-muted-foreground"
               aria-label="how to use this app"
               onClick={() => openDialog("help")}
             >
               <CircleHelpIcon />
             </Button>
           </div>
+          {/* The panel pages already own their top-right corner (measured:
+              the journey's meta row and the visualizer's h1 sit there), so on
+              those the palette is keyboard-only. Everywhere else it gets a
+              visible control. */}
+          {!panels && (
+            <SearchTrigger className="fixed top-3 right-4 z-20 hidden md:inline-flex" />
+          )}
           <main
             className={cn(
               wide ? "flex-1 px-4 py-6 md:px-6" : "flex-1 px-4 py-8 md:px-8",

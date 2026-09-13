@@ -60,14 +60,31 @@ The palette did not change on 2026-09-12; the light in the room did.
 |---|---|---|
 | Page ground | `crust`, with a mauve wash top-left and a blue one bottom-right | A flat fill reads as a document. The two hues are the ones the chip grammar already uses for *focus* and *window*, so the room is lit by the product's own colours |
 | Grid | 64px hairlines at 7% of the foreground, masked out below 62% | Depth and scale without competing for attention — felt more than seen |
-| Resting surfaces | A 1px highlight along the top edge, and a shadow with both an offset and a blur | A panel a millimetre above the page. A zero-offset halo would be decoration |
+| Resting surfaces | `--shadow-panel`: a 1px highlight along the top edge, and a shadow with both an offset and a blur | A panel a millimetre above the page. A zero-offset halo would be decoration |
+| The one primary surface | `--shadow-raised` on `[data-surface="raised"]`: a tight contact shadow under the near edge PLUS a long soft cast | Two shadows is what separates *lifted* from *outlined*. **One per screen** — home's dock. A second one is a page with no primary |
 | Floating surfaces | `backdrop-filter: blur(14px)` — sidebar, dialogs, hover-peek rails, the test-case drawer | These sit ON TOP of a stage that is usually mid-animation: opaque would hide it, transparent would be unreadable |
 | Where you are | A 2px accent edge on the active rail row plus a 22px glow | The rail is the only place that needs a persistent "you are here" |
-| Hover | A 1px lift and a deeper shadow — never a colour change | Colour is load-bearing here (the chip roles); it cannot be spent on hover |
+| The rail | A hairline of light down its inner edge, and a shadow cast ACROSS the page | The border alone drew a seam; this draws an edge, and the content column reads as sitting in FRONT of the navigation |
+| Hover | A 1px lift and a deeper shadow — never a colour change (`--shadow-lift`) | Colour is load-bearing here (the chip roles); it cannot be spent on hover |
 | Arrival | `main` settles in from a 6px blur over 320ms, exponential ease-out | One authored moment, from an already-visible default, so a reader who lands mid-animation still sees the page |
+| Per surface | ONE more each: `animate-edge-in-y` (home's dock draws its accent edge) and `animate-edge-in-x` (the pattern page draws a rule under its title) | The same idea both times — an edge drawing itself along a thing that is ALREADY at full opacity. Nothing fades in, so nothing is missed by arriving late |
 
-Selection, caret, scrollbars and the focus ring are themed from the palette as
-well: they ship with browser defaults that belong to no design system, and they
+**Write a transition as longhands, not the `transition:` shorthand.** The
+shorthand repeats the duration once per property, so `getComputedStyle` reports
+`"0.15s, 0.15s, 0.15s"` and the R6 audit — which compares that string against
+the two tokens — fails a page that is in fact using one duration.
+
+And a `transition-*` UTILITY beats anything in `@layer base` whatever the
+specificity. `transition-colors` on the cards silently reset
+`transition-property` to the colour longhands, so the hover lift documented in
+the row above had never once run: measured 2026-09-12, `transitionProperty` was
+`"color, background-color, …"` on every card on home. The utilities are gone
+from the surfaces that lift.
+
+Selection, caret, `accent-color` (the native checkbox, radio and the speed
+range in settings — without it the browser's own blue, the one colour this
+palette does not contain), scrollbars and the focus ring are themed from the
+palette as well: they ship with browser defaults that belong to no design system, and they
 are the cheapest tell that a page was assembled rather than built. Mono numerals
 carry `tabular-nums slashed-zero` — every number on the stage is measurement.
 
@@ -103,6 +120,32 @@ Prose is capped at **`35em`** — about 68 characters at any step, which is insi
 > in a proportional face, so a `68ch` cap renders about 90 characters. Use `em` at 0.5 em per
 > character. This cost one round trip during U7 and is the kind of thing a system file exists for.
 
+## Shape — how a surface is built
+
+The audit's word for the old home was *the lazy container*: four stacks of
+same-size cards, where a journey you were halfway through and a pattern you had
+never opened had the same weight, the same width and the same shadow. 1738 px of
+page at 1440, and nothing on it said *here*.
+
+Three tiers, and an element picks exactly one:
+
+| Tier | What it is | On home |
+|---|---|---|
+| **the dock** | ONE raised surface, `[data-surface="raised"]` — the thing you came back to do | resume the started journey, or, when nothing is started, start one. It is never absent: a page whose most important element is conditional has no shape on the day it matters most |
+| **rows** | a bordered panel, `divide-y`, one line each, scannable | the journeys in play; the catalogue |
+| **a strip** | a single bordered line, its own thing | the algorithm visualizer |
+
+Rules that keep it honest:
+
+- **A card inside a card is always wrong.** A panel holds rows; a row holds
+  text. If a row needs a card, it is not a row.
+- **A row's progress is its own bottom hairline**, `h-px` at `width: pct%`. At
+  0 % it draws nothing, so an untouched list stays quiet instead of showing ten
+  empty troughs.
+- **Rows tint on hover; surfaces lift.** A row is not a surface — a background
+  tint is the right affordance for a line in a list, `--shadow-lift` the right
+  one for a panel.
+
 ## Containers
 
 Three widths, so a new page has an obvious one to pick.
@@ -110,7 +153,7 @@ Three widths, so a new page has an obvious one to pick.
 | Token | Width | For |
 |---|---|---|
 | `max-w-reading` | 768 px | a single document: a problem, a drill, a flashcard deck |
-| `max-w-page` | 1120 px | an index or an overview: home |
+| `max-w-page` | 1120 px | an index or an overview: home, **a pattern's problem list** |
 | `max-w-stage` | 1760 px | the journey and the visualizer, which earn the width |
 
 ## Spacing

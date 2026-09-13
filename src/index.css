@@ -16,6 +16,26 @@
 @theme {
   --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
   --default-transition-duration: 150ms;
+
+  /* Elevation, three steps, and every one of them carries an OFFSET as well
+     as a blur: light in this room comes from above, so a surface casts a
+     shadow BELOW itself. A zero-offset colour halo is decoration — it says
+     "glowing", not "raised" — and the hairline of light along the top edge is
+     the other half of the same lie being told honestly.
+
+     `panel` is a resting surface a millimetre above the page, `raised` is the
+     one primary surface per screen, `lift` is what either becomes under the
+     pointer. Components name the role; the values live here (B-rule: the
+     palette lives only in this file). */
+  --shadow-panel:
+    inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 7%, transparent),
+    0 12px 28px -22px rgb(0 0 0 / 0.9);
+  --shadow-raised:
+    inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 12%, transparent),
+    0 2px 6px -4px rgb(0 0 0 / 0.6), 0 24px 48px -28px rgb(0 0 0 / 0.95);
+  --shadow-lift:
+    inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 12%, transparent),
+    0 18px 34px -24px rgb(0 0 0 / 0.95);
 }
 
 @theme inline {
@@ -259,11 +279,7 @@
       );
     background-size: 64px 64px;
     opacity: 0.45;
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      black,
-      transparent 62%
-    );
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 62%);
     mask-image: linear-gradient(to bottom, black, transparent 62%);
   }
 
@@ -271,9 +287,15 @@
      a shadow that has both an offset and a blur. A zero-offset halo would be
      decoration; this is the panel sitting a millimetre above the page. */
   [class*="bg-card"] {
-    box-shadow:
-      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 7%, transparent),
-      0 12px 28px -22px rgb(0 0 0 / 0.9);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* The one primary surface on a screen — home's dock. It is not a brighter
+     card, it is a HIGHER one: a tighter contact shadow under the near edge
+     plus a longer, softer cast. Two shadows is what separates "lifted" from
+     "outlined". */
+  [data-surface="raised"] {
+    box-shadow: var(--shadow-raised);
   }
 
   /* …and blur on the surfaces that FLOAT over the stage, for the reason in the
@@ -286,25 +308,53 @@
     backdrop-filter: blur(14px) saturate(125%);
   }
 
-
+  /* The rail is the bezel this instrument is bolted to: a hairline of light
+     down its inner edge and a shadow cast ACROSS the page, so the content
+     column reads as sitting in front of the navigation rather than beside it.
+     The border alone drew a seam; this draws an edge. */
+  [data-slot="sidebar-container"] {
+    box-shadow:
+      inset -1px 0 0 0 color-mix(in oklab, var(--foreground) 8%, transparent),
+      18px 0 40px -32px rgb(0 0 0 / 0.9);
+  }
 
   /* A resting surface answers the pointer by lifting, not by changing colour —
      colour in this app is load-bearing (the chip roles), so it cannot be spent
-     on hover. */
+     on hover.
+
+     This used to be written without an explicit timing function, and it never
+     ran: `transition-colors` on the card components is a UTILITY, and a
+     utility layer beats @layer base whatever the specificity — it reset
+     transition-property to the colour longhands, so the lift and the shadow
+     both snapped. Measured on home: transitionProperty was
+     "color, background-color, …" on every card. The utilities are gone from
+     the surfaces that lift, and the curve is named here so the R6 audit
+     (one curve, two durations) sees the token rather than `ease`. */
   a[class*="bg-card"],
   button[class*="bg-card"] {
-    transition:
-      box-shadow var(--default-transition-duration),
-      transform var(--default-transition-duration),
-      border-color var(--default-transition-duration);
+    /* longhands, not the `transition:` shorthand: the shorthand repeats the
+       duration once per property, so getComputedStyle reports
+       "0.15s, 0.15s, 0.15s" and the R6 audit — which compares the string
+       against the two tokens — fails on a page that is in fact using one
+       duration. One list of properties, one duration, one curve. */
+    transition-property: box-shadow, transform, border-color;
+    transition-duration: var(--default-transition-duration);
+    transition-timing-function: var(--default-transition-timing-function);
   }
 
   a[class*="bg-card"]:hover,
   button[class*="bg-card"]:hover {
     transform: translateY(-1px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* …and the raised surface lifts from where it already is, not down to the
+     resting shadow. */
+  a[data-surface="raised"]:hover,
+  button[data-surface="raised"]:hover {
     box-shadow:
-      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 12%, transparent),
-      0 18px 34px -24px rgb(0 0 0 / 0.95);
+      var(--shadow-raised),
+      0 28px 56px -30px rgb(0 0 0 / 0.95);
   }
 
   /* Where you are, stated once: a 2px accent edge on the active rail row and a
@@ -334,6 +384,10 @@
 
   html {
     caret-color: var(--primary);
+    /* checkboxes, radios and the speed range in the settings dialog are real
+       native controls: without this they render in the browser's own blue,
+       which is the one colour this palette does not contain. */
+    accent-color: var(--primary);
   }
 
   /* Every number on the stage is measurement, so it gets measurement's
@@ -364,6 +418,40 @@
     filter: blur(0);
     transform: translateY(0);
   }
+}
+
+/* One authored moment per index surface, and both are the same idea: an EDGE
+   drawing itself along the thing it belongs to. Exponential ease-out, 320 ms,
+   and — the part that matters — the surface underneath is already at its
+   final opacity and position, so a reader who arrives late has missed a line
+   being drawn, not the content. The global reduced-motion rules zero the
+   duration; nothing here needs its own guard. */
+@keyframes edge-in-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@utility animate-edge-in-y {
+  animation: edge-in-y var(--duration-reveal) cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top;
+}
+
+@keyframes edge-in-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@utility animate-edge-in-x {
+  animation: edge-in-x var(--duration-reveal) cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left;
 }
 
 /* a merge-sort write: the value is replaced in place, so there is no motion
