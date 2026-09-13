@@ -46,6 +46,10 @@ Markdown has enough furniture; use it deliberately so the eye can find things.
   - `> **Watch out.** …` — the trap, the off-by-one, the destroyed input.
   - `> **Why it works.** …` — the invariant or exchange argument. Every greedy and every two-pointer solution owes one.
   - `> **In an interview.** …` — what to say out loud, and what the follow-up will be.
+  - `> **Under the hood.** …` — what the language or the data structure is ACTUALLY doing, when the
+    cost of a line depends on it: what a dict does to find a key, why a list `pop(0)` is not free,
+    what a sort actually costs. Use it where a reader would otherwise take a complexity on faith,
+    and put a MEASURED number in it.
 - **Tables** for anything with more than two parallel facts: constraint → what it unlocks, step → state, approach → trade-off.
 - **Bold** the load-bearing noun in a paragraph — the one word a skimmer must catch. Never bold whole sentences.
 - **Inline code** for every identifier, value and complexity: `left`, `nums[i]`, `O(n log n)`.
@@ -69,7 +73,20 @@ Markdown has enough furniture; use it deliberately so the eye can find things.
 
 1. **Understanding the Problem** — restate it in plain language, no jargon. One sentence naming the core question: what are we actually searching for, and what makes the naive approach slow. Then a **constraint → what it unlocks** table; a bounded alphabet, a sorted input, values promised to lie in `1..n` are permission slips, and each later optimization should point at the one that lets it exist.
 
-2. **One section per approach**, least to most optimized, each carrying **all six**:
+2. **Reading the Calculations** — a short section for the reader who can follow the prose and then
+   stalls at `j = index_of.get(target - x, -1)`. Two parts, both required:
+   - **A symbol table**: every name and expression the document's code uses — `i`, `nums[i]`,
+     `need`, `seen`, `lo + (hi - lo) // 2` — with *what it computes*, *why it is written that way*,
+     and *what a wrong version would mean*. Read it as: the arithmetic is never decoration, each
+     expression answers one question.
+   - **How to trace it by hand**: the columns to draw on paper and what updates each row, so the
+     reader can replay the worked examples below instead of watching them. Name the moment the
+     answer is decided.
+
+   This section is where "I do not understand the calculations" is answered. It comes BEFORE the
+   approaches, because a reader who cannot decode the expressions cannot read any of them.
+
+3. **One section per approach**, least to most optimized, each carrying **all six**:
    - **The idea** (2–3 sentences) as question-and-answer, naming **which limitation of the prior approach it fixes**.
    - **How to think about it** (3–5 sentences) — the mental model, in a `> **Intuition.**` callout. The *shape* of the reasoning, never the code restated.
    - **Worked example** — ONE input, **the same one in every approach of that document**, traced as a **table of state per step**.
@@ -77,15 +94,20 @@ Markdown has enough furniture; use it deliberately so the eye can find things.
    - **Common mistake** — the misconception behind the bug, in a `> **Watch out.**` callout, and **why** it is wrong.
    - **Complexity and when to use this** — time and space with one sentence each on *where the cost comes from*, plus the situation that makes this the right choice anyway.
 
-3. **Cover the progression** — brute force → restructure plus search → the instinctive suboptimal version → the optimal → any constraint-exploiting version, **stating the assumption it needs and what breaks without it**. Do not skip the instinctive step; it is usually the most educational.
+4. **Cover the progression** — brute force → restructure plus search → the instinctive suboptimal version → the optimal → any constraint-exploiting version, **stating the assumption it needs and what breaks without it**. Do not skip the instinctive step; it is usually the most educational.
 
-4. **The Overall Arc** — ONE connected narrative paragraph tracing the single principle every optimization chases, each weakness motivating the next. Expand the data file's `arc`; do not paste it.
+5. **The Overall Arc** — ONE connected narrative paragraph tracing the single principle every optimization chases, each weakness motivating the next. Expand the data file's `arc`; do not paste it.
 
-5. **Comparison table**: Approach | Time | Space | Core trade-off | Best used when.
+6. **Comparison table**: Approach | Time | Space | Core trade-off | Best used when.
 
-6. **Interview Priority** — which 2–3 to know cold and why; why the others are for understanding rather than recall. Use a `> **In an interview.**` callout for what to actually say.
+7. **Interview Priority** — which 2–3 to know cold and why; why the others are for understanding rather than recall. Use a `> **In an interview.**` callout for what to actually say.
 
-7. **Full Runnable Script** — every approach plus tests: the statement's example, an edge case, duplicates if relevant, a no-answer case if allowed, and a random stress case cross-checked against brute force. Print every approach side by side; end with one line stating whether all agreed.
+8. **How to Get Fluent** — three to six drills, in order, that turn reading into ability: what to
+   write from memory, what to trace on paper, which sibling problem uses the same move, and the ONE
+   sentence that should come back a month later. Not a reading list — `docs/RESOURCES.md` is the
+   reading list. These are exercises, and each says what "done" looks like.
+
+9. **Full Runnable Script** — every approach plus tests: the statement's example, an edge case, duplicates if relevant, a no-answer case if allowed, and a random stress case cross-checked against brute force. Print every approach side by side; end with one line stating whether all agreed.
 
 ---
 

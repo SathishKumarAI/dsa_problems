@@ -37,6 +37,118 @@ nums = [3, 6, 1, 5], target = 8        answer: [0, 3]   (3 + 5 = 8)
 
 ---
 
+## Reading the Calculations
+
+If the prose above makes sense and then `j = index_of.get(target - x, -1)` stops you dead, this
+section is the one you need. Nothing below is decoration: **every expression in this document
+answers exactly one question**, and once you know which question, the line reads itself.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `i` | **a position**, not a value — "slot number `i`" | The answer is positions, so the code carries positions everywhere | Returning values instead of positions answers a different question |
+| `nums[i]` | the **number sitting in** slot `i` | Square brackets mean "look inside the list at this slot" | Confusing `i` with `nums[i]` is the single most common beginner error here |
+| `target - x` | the **partner** `x` still needs | Addition rearranged: if `x + partner == target`, then `partner == target - x` | `target + x` or `x - target` asks for a number that has nothing to do with the problem |
+| `need` | a name for `target - x`, computed once | A named value you can say out loud beats an expression repeated three times | — |
+| `index_of` | a table from **value → the slot it sits in** | The question is "where is `need`?", so the table is keyed by value and answers with a position | Keyed the other way round (`position → value`) it answers a question you never asked |
+| `index_of.get(need, -1)` | the slot holding `need`, **or `-1` if there is none** | `.get` with a default never raises; `-1` is impossible as a real slot, so it safely means "absent" | `index_of[need]` raises `KeyError` the first time a partner is missing |
+| `j != i` | "the partner is a **different slot** from the one I am standing on" | The statement forbids pairing an element with itself | Without it, `3` at slot `0` with `target = 6` returns `[0, 0]` — one element used twice |
+| `enumerate(nums)` | both at once: the slot number **and** the value in it | Saves writing `for i in range(len(nums))` then `nums[i]` | — |
+
+Three of those rows are the whole two-pass solution. It really is that small.
+
+### The one piece of arithmetic, spelled out
+
+Everything turns on rearranging one equation. You are looking for two slots `i` and `j` with
+
+```
+nums[i] + nums[j] == target
+```
+
+Subtract `nums[i]` from both sides and the unknown is alone:
+
+```
+nums[j] == target - nums[i]
+```
+
+That is the whole trick, and it changes the **kind** of question you are asking. Before rearranging
+you had a question about a *pair* — you must hold two numbers at once to test it, which is why the
+brute force needs two loops. After rearranging you have a question about **one** number: *is the
+value `target - nums[i]` somewhere in this list?* One number is a question a lookup table can
+answer.
+
+On the worked example, with `target = 8`, here is that subtraction at every slot — every row printed
+by the script at the foot of this document, not typed from memory:
+
+| `i` | `nums[i]` | `need = target - nums[i]` | is `need` in the list? |
+|---|---|---|---|
+| `0` | `3` | `8 - 3 = 5` | **yes**, at slot `3` |
+| `1` | `6` | `8 - 6 = 2` | no |
+| `2` | `1` | `8 - 1 = 7` | no |
+| `3` | `5` | `8 - 5 = 3` | **yes**, at slot `0` |
+
+Two rows say yes, and they are the same pair seen from its two ends: `(0, 3)` and `(3, 0)`. That is
+not a bug; it is why the code may stop at the first one.
+
+### How to trace it by hand
+
+Take a sheet of paper and draw these columns. This is the two-pass version, which builds the whole
+table first and then asks:
+
+```
+PASS 1 — build the table          PASS 2 — ask for each partner
+  i   nums[i]   index_of              i  nums[i]  need  index_of.get(need)  j != i?
+```
+
+Rules, and there are only four:
+
+1. **Pass one writes, pass two reads.** In pass one you never ask a question; in pass two you never
+   write. Mixing them is the one-pass version, a different rung.
+2. In pass one, each row adds **one entry**: `nums[i] → i`. If the value is already there, **the new
+   row overwrites the old one** — write it down anyway, crossed out, because that overwriting is
+   what makes duplicates work.
+3. In pass two, each row computes `need`, looks it up in the **finished** table from pass one, and
+   checks `j != i`.
+4. **The answer is decided on the first row of pass two where the lookup succeeds *and* `j != i`.**
+   Circle it. Everything after it never runs.
+
+Filled in for `nums = [3, 6, 1, 5]`, `target = 8`:
+
+| pass | `i` | `nums[i]` | `index_of` after this row | `need` | `.get(need, -1)` | `j != i`? |
+|---|---|---|---|---|---|---|
+| 1 | `0` | `3` | `{3: 0}` | — | — | — |
+| 1 | `1` | `6` | `{3: 0, 6: 1}` | — | — | — |
+| 1 | `2` | `1` | `{3: 0, 6: 1, 1: 2}` | — | — | — |
+| 1 | `3` | `5` | `{3: 0, 6: 1, 1: 2, 5: 3}` | — | — | — |
+| 2 | `0` | `3` | (unchanged, complete) | `5` | `3` | `3 != 0` ✔ → **return `[0, 3]`** |
+
+One row of pass two did the work. The other three never happen.
+
+> **Watch out.** The most common way to misread this is to think pass two searches the list. It does
+> not — it searches the **table**, which was finished before pass two began. That is exactly why the
+> table already contains the element you are standing on, and exactly why `j != i` is needed.
+
+### Reading a complexity out loud
+
+`O(n)` is not a speed; it is a **shape**. It says: *if the list gets ten times longer, the work gets
+about ten times bigger.* `O(n²)` says: ten times longer, a hundred times the work. Read every
+complexity in this document as a sentence about growth, never as a number of seconds.
+
+Counted on real inputs — printed by the script below — for a list whose answer is the very last
+pair:
+
+| `n` | brute-force comparisons | one-pass lookups |
+|---|---|---|
+| `100` | `1 065` | `43` |
+| `1 000` | `14 636` | `133` |
+| `10 000` | `435 163` | `404` |
+
+Ten times the input multiplies the brute force by about thirty and the hash version by about three.
+That is the difference between `O(n²)` and `O(n)`, in numbers you can check.
+
+---
+
 ## Approach 1 — Brute force: try every pair
 
 ### The idea
@@ -295,6 +407,42 @@ asked for.**
 > moment you ask a question the cloakroom already contains *every* value in the array — including
 > the element you are standing on. That is the single subtlety of this rung, and it is exactly what
 > the next rung removes.
+
+> **Under the hood.** "In one step" is the claim the whole rung rests on, so here is what actually
+> happens when you write `index_of.get(5)`. Python computes `hash(5)`, which for a small integer
+> **is the integer itself** — `hash(5) == 5`, `hash(0) == 0`. It takes that number modulo the
+> table's slot count to pick a **bucket**, jumps straight to it, and compares the key it finds there
+> with `5`. No scanning. The list's length never enters into it, which is why the cost does not grow
+> with `n` — measured, on this machine:
+>
+> | `n` | `dict.get` | `x in list` |
+> |---|---|---|
+> | `1 000` | `20.5 ns` | `2 940 ns` |
+> | `10 000` | `18.5 ns` | `29 755 ns` |
+> | `100 000` | `19.5 ns` | `301 150 ns` |
+> | `1 000 000` | `20.0 ns` | `3 030 150 ns` |
+>
+> The dict column is **flat** — a thousand keys or a million, about twenty nanoseconds. The list
+> column multiplies by ten every time the input does. That is `O(1)` and `O(n)` seen as numbers
+> rather than as symbols. Building the map costs one insertion per element, about `40 ns` each, so
+> pass one of this rung is roughly `40 ms` for a million values — paid once, not once per question.
+
+> **Under the hood.** The honest asterisk: `O(1)` is an **average**, not a guarantee. Two keys can
+> land in the same bucket, and then the table has to compare them one after another. With ordinary
+> integers this essentially never bites — forcing every key to collide on purpose, though, shows the
+> real shape:
+>
+> | keys | distinct hashes | all one hash |
+> |---|---|---|
+> | `200` | `86 ns` | `3 736 ns` |
+> | `1 000` | `94 ns` | `18 384 ns` |
+> | `4 000` | `94 ns` | `74 146 ns` |
+>
+> The left column is flat; the right one grows linearly, because a bucket holding every key **is** a
+> list being scanned. That is the `O(n)` worst case textbooks mention, and it is why the honest
+> statement for this problem is "`O(n)` expected". You will not hit it with integers. You could hit
+> it with an adversary choosing your keys, which is a real attack on web servers and the reason
+> Python randomises string hashing at startup.
 
 ### Worked example
 
@@ -608,6 +756,41 @@ a constraint has *unlocked* something is a more valuable habit than any implemen
 
 ---
 
+## How to Get Fluent
+
+Reading this page is not the same as being able to write the answer. These drills are in order, and
+each one says what "done" looks like.
+
+1. **Say the rearrangement before you write anything.** Out loud: *"I need two slots summing to the
+   target, so for each number the partner I want is `target - nums[i]` — one number, which a lookup
+   can answer."* **Done when** you can say it without looking, because every hash-map problem starts
+   with turning a question about a pair into a question about one value.
+
+2. **Hand-trace the two-pass version on `[3, 6, 1, 5]`, `target = 8`,** using the four columns above.
+   Then trace it again on `[2, 2]`, `target = 4` — the case where the table holds `{2: 1}` and the
+   `j != i` guard is what saves you. **Done when** your paper matches the tables in this document
+   row for row, including the row where the answer is decided.
+
+3. **Write the one-pass version from memory, then break it on purpose.** Move the insertion *above*
+   the lookup and find an input it now gets wrong. **Done when** you can state in one sentence why
+   asking before inserting removes the need for `j != i` — that sentence is the whole difference
+   between the two hash rungs.
+
+4. **Count, do not time.** Take `nums = list(range(10_000))` with the answer as the last pair, and
+   count comparisons in the brute force against lookups in the hash version. **Done when** you have
+   produced numbers like the `435 163` against `404` in this document yourself, because a complexity
+   you have measured once stops being a symbol.
+
+5. **Do the three siblings without re-reading this page.** *Contains Duplicate* is this map with the
+   value thrown away; *Subarray Sum Equals K* is this map over **running totals** instead of values;
+   *Group Anagrams* is this map with a **computed key**. **Done when** you recognise, in each, which
+   thing became the key and which became the value — that pairing is the actual skill.
+
+6. **A month later, the one sentence that should come back:** *a hash map turns "is it here?" from a
+   search into a lookup, and the whole job is choosing what to key on.*
+
+---
+
 ## Full Runnable Script
 
 Every approach above, plus a test suite covering the statement's example, the smallest legal input,
@@ -629,6 +812,7 @@ Run: python pair_sum_all.py
 from __future__ import annotations
 
 import random
+import time
 from bisect import bisect_left
 
 MAX_DIRECT_SPAN = 1 << 20  # widest value range worth allocating a slot array for
@@ -753,6 +937,113 @@ def unique_pair_case(size: int, spread: int, rng: random.Random) -> tuple[list[i
             return nums, target
 
 
+
+
+# ------------------------------------------- measurements, not answers
+# Everything the "Reading the Calculations" and "Under the hood" sections
+# quote is printed here, so no number in this document is remembered.
+def explain_arithmetic(nums: list[int], target: int) -> None:
+    """The one piece of arithmetic, at every slot."""
+    print(f"\n=== need = target - nums[i], for nums={nums}, target={target} ===")
+    for i, x in enumerate(nums):
+        need = target - x
+        where = nums.index(need) if need in nums else None
+        print(f"  i={i}  nums[i]={x:>3}  need = {target} - {x} = {need:>3}"
+              f"   {'found at slot ' + str(where) if where is not None else 'not in the list'}")
+
+
+def count_work(rng: random.Random) -> None:
+    """Comparisons against lookups, on inputs whose answer is the LAST pair."""
+    def brute(nums, target):
+        n = 0
+        for i in range(len(nums)):
+            for j in range(i + 1, len(nums)):
+                n += 1
+                if nums[i] + nums[j] == target:
+                    return n
+        return n
+
+    def one_pass(nums, target):
+        seen, n = {}, 0
+        for i, x in enumerate(nums):
+            n += 1
+            if target - x in seen:
+                return n
+            seen[x] = i
+        return n
+
+    print("\n=== work done when the answer is the last pair ===")
+    print(f"  {'n':>7} {'brute-force comparisons':>25} {'one-pass lookups':>18}")
+    for size in (100, 1000, 10000):
+        data = rng.sample(range(10 * size), size)
+        target = data[-1] + data[-2]
+        print(f"  {size:>7} {brute(data, target):>25,} {one_pass(data, target):>18,}")
+
+
+def measure_lookup() -> None:
+    """A lookup does not care how big the container is; a scan does."""
+    def timed(fn, repeat=5):
+        best = float("inf")
+        for _ in range(repeat):
+            t = time.perf_counter()
+            fn()
+            best = min(best, time.perf_counter() - t)
+        return best
+
+    print("\n=== nanoseconds per question (this machine, so expect your own numbers) ===")
+    print(f"  {'n':>9} {'dict.get':>12} {'x in list':>14}")
+    for n in (1_000, 10_000, 100_000):
+        values = list(range(n))
+        table = {v: i for i, v in enumerate(values)}
+        d = timed(lambda: [table.get(-1) for _ in range(200)]) / 200 * 1e9
+        s = timed(lambda: [-1 in values for _ in range(20)]) / 20 * 1e9
+        print(f"  {n:>9} {d:>11.1f}n {s:>13.1f}n")
+    print("  the dict column is FLAT; the list column multiplies with n")
+
+
+class _AllOneBucket:
+    """Every instance hashes the same, on purpose: the O(n) worst case, forced."""
+
+    __slots__ = ("v",)
+
+    def __init__(self, v: int) -> None:
+        self.v = v
+
+    def __hash__(self) -> int:
+        return 42
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, _AllOneBucket) and self.v == other.v
+
+
+class _OwnBucket(_AllOneBucket):
+    def __hash__(self) -> int:
+        return hash(self.v)
+
+
+def measure_collisions() -> None:
+    """O(1) is an average. Force every key into one bucket and watch it become O(n)."""
+    def timed(fn, repeat=3):
+        best = float("inf")
+        for _ in range(repeat):
+            t = time.perf_counter()
+            fn()
+            best = min(best, time.perf_counter() - t)
+        return best
+
+    print("\n=== the same lookup, with distinct hashes and with one shared hash ===")
+    print(f"  {'keys':>6} {'distinct':>12} {'all one bucket':>17}")
+    for n in (200, 1000, 4000):
+        good = {_OwnBucket(i): i for i in range(n)}
+        bad = {_AllOneBucket(i): i for i in range(n)}
+        probe_g = [_OwnBucket(i) for i in range(0, n, max(1, n // 50))]
+        probe_b = [_AllOneBucket(i) for i in range(0, n, max(1, n // 50))]
+        g = timed(lambda: [good.get(k) for k in probe_g]) / len(probe_g) * 1e9
+        b = timed(lambda: [bad.get(k) for k in probe_b]) / len(probe_b) * 1e9
+        print(f"  {n:>6} {g:>11.0f}n {b:>16.0f}n")
+    print(f"  hash(5) = {hash(5)}, hash(0) = {hash(0)}, and hash(-1) = {hash(-1)}: "
+          "a small int hashes to itself, except -1")
+
 def main() -> None:
     cases: list[tuple[str, list[int], int]] = [
         ("statement example", [3, 6, 1, 5], 8),
@@ -788,6 +1079,11 @@ def main() -> None:
         if not agreed or not valid:
             all_agreed = False
             print(f"  DISAGREEMENT (agreed={agreed}, valid={valid})")
+
+    explain_arithmetic([3, 6, 1, 5], 8)
+    count_work(random.Random(7))
+    measure_lookup()
+    measure_collisions()
 
     print(f"\n{len(cases)} cases, {len(APPROACHES)} approaches.")
     print(
