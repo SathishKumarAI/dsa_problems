@@ -34,6 +34,112 @@ The worked example traced in every section below is the statement's second one:
 ```
 nums = [4, 1, 2, 1, 2]        answer: 4
 ```
+---
+
+## Reading the Calculations
+
+Four of the five approaches below are ordinary counting. One of them is `^`, and if that symbol
+means nothing to you the optimal solution is a magic trick rather than an idea. This section is so
+that it is an idea.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `x ^ y` | **XOR** — bitwise "exactly one of us" | It is the only common operator that *undoes itself*, which is what a problem about pairs needs | `+` accumulates instead of cancelling; `\|` never turns a bit back off |
+| `acc` | the XOR of everything seen **so far** | One integer replaces a whole table of counts | — |
+| `acc ^= x` | `acc = acc ^ x` | The same shorthand as `+=`, with XOR | — |
+| `counts[x]` | how many times `x` has appeared | The honest bookkeeping the XOR rung makes unnecessary | — |
+| `nums[i] != nums[i + 1]` | "this sorted pair does not match" | After sorting, the lone value is the first index whose partner differs | Comparing `i` with `i - 1` shifts every answer by one |
+
+### What XOR actually does
+
+It works on the **binary digits** of two numbers, one column at a time, and it answers one question
+per column: *is exactly one of these bits a 1?*
+
+```
+   4  =  0100
+   1  =  0001
+  XOR    ----
+   5  =  0101      each column: 1 if the two bits differ, 0 if they are the same
+```
+
+Three properties follow from that, and they are the whole solution. Each was checked over every
+value in range rather than asserted — the run is at the foot of this document:
+
+| Law | Says | Checked over |
+|---|---|---|
+| `x ^ x == 0` | **a value cancels itself** | all 256 values `0..255` |
+| `x ^ 0 == x` | zero changes nothing, so it is the safe starting point | all 256 |
+| `a ^ b == b ^ a` and `(a ^ b) ^ c == a ^ (b ^ c)` | **order does not matter** | 4 096 pairs and 32 768 triples |
+
+Put them together and the problem dissolves. Every value appears twice except one; XOR everything,
+the pairs cancel to `0` no matter how far apart they sit, and `0 ^ lonely` is `lonely`.
+
+### The one calculation, spelled out
+
+`nums = [4, 1, 2, 1, 2]`, folding left to right. Every row printed by the script:
+
+| Step | Value | Value in binary | Running `acc` | `acc` in binary |
+|---|---|---|---|---|
+| start | — | — | `0` | `0000` |
+| 0 | `4` | `0100` | `4` | `0100` |
+| 1 | `1` | `0001` | `5` | `0101` |
+| 2 | `2` | `0010` | `7` | `0111` |
+| 3 | `1` | `0001` | `6` | `0110` |
+| 4 | `2` | `0010` | `4` | `0100` |
+
+Watch row 3 and row 5. At row 1 the `1` switched bit 0 **on**; at row 3 the second `1` switched it
+**off** again. Same for the `2`s in rows 2 and 4. The `4` was never touched again, so its bit
+survives — and the final `0100` is `4`.
+
+> **Intuition.** A row of light switches, one per bit. Every number flips the switches for the bits
+> it contains. A value that appears twice flips its switches twice, which is the same as never
+> having touched them. Only the value that appears once leaves its lights on.
+
+### Reading it as columns instead of steps
+
+The same computation, seen the other way round — and this is the version that makes the *why*
+obvious. Look at one bit position across all five numbers:
+
+| Bit | Worth | The column | Number of `1`s | Result |
+|---|---|---|---|---|
+| 3 | `8` | `0, 0, 0, 0, 0` | `0` — even | `0` |
+| 2 | `4` | `1, 0, 0, 0, 0` | `1` — **odd** | `1` |
+| 1 | `2` | `0, 0, 1, 0, 1` | `2` — even | `0` |
+| 0 | `1` | `0, 1, 0, 1, 0` | `2` — even | `0` |
+
+Answer bits: `0100` = **`4`**.
+
+**XOR is per-column parity.** Each bit of the answer says whether that column held an odd number of
+ones. Paired values contribute two ones to every column they touch — always even — so they vanish,
+and only the lone value can make a column odd. Nothing about this depends on the order of the array,
+which is why the script checks all **30** distinct orderings of the example and gets `4` from every
+one.
+
+### How to trace it by hand
+
+Two columns, and one rule:
+
+```
+  i   nums[i]   acc (binary)   acc (decimal)
+```
+
+1. Start `acc` at `0000`.
+2. Each row: write `nums[i]` in binary under the previous `acc`, and write a `1` in every column
+   where the two digits **differ**.
+3. There is no early exit and no answer until the array ends — unlike every other approach here,
+   this one cannot stop early, because the last element might be the lonely one.
+
+### Reading a complexity out loud
+
+`O(n)` time here is one pass with no inner work. `O(1)` space is the sentence worth pausing on: it
+means the memory does not grow with the input **at all** — not one integer per distinct value, not a
+sorted copy, one integer full stop. Of the five approaches below, only this one and the sort are
+`O(1)`, and the sort has to destroy the input to get there.
+
+---
+
 
 ---
 
@@ -305,6 +411,16 @@ or two `0`s — even either way — so pairs are invisible in every column.
 > partner. Note which half of the promise is doing the work: *even* multiplicity, not exactly two —
 > a value appearing four times also disappears, a value appearing three times does not.
 
+> **Under the hood.** `^` is not a library call or a loop — it is one CPU instruction, and it does
+> every bit of both operands **at the same time**. A 64-bit XOR settles all 64 columns in a single
+> clock cycle, which is why this rung has no constant factor worth discussing: the whole solution is
+> `n` of the cheapest instruction a processor has. Two consequences worth keeping. Python's integers
+> are arbitrary-precision, so `^` on values larger than a machine word costs more than one
+> instruction — irrelevant here, where the constraint keeps values inside `2^31`. And XOR carries
+> nothing between columns, unlike `+`, which is exactly why it can never overflow: the answer of an
+> XOR is always at most as wide as its widest operand.
+
+
 ### Worked example
 
 `nums = [4, 1, 2, 1, 2]`. In binary: `4 = 100`, `1 = 001`, `2 = 010`.
@@ -530,6 +646,35 @@ constraint and then chose not to need it.
 
 ---
 
+## How to Get Fluent
+
+1. **Say what XOR does before you use it.** Out loud: *"a bit is 1 when exactly one of the two is 1,
+   so a value XORed with itself is zero, and zero XORed with anything is that thing."* **Done when**
+   you can say it without looking, because every XOR trick — the missing number, the single number
+   in a stream, swapping two variables — is those two facts.
+
+2. **Do the column table by hand** on `[4, 1, 2, 1, 2]`. Four rows, one per bit, counting ones.
+   **Done when** your table matches the one above and you can say why an even column must be a
+   paired value.
+
+3. **Break it deliberately.** Change one `2` to a `3` so the array no longer has the promised
+   shape, and run the XOR rung. It returns a number, confidently, and the number is meaningless.
+   **Done when** you can state the promise the trick depends on — *every value appears exactly
+   twice except one* — and say what the rung does when that promise is broken: not fail, **lie**.
+
+4. **Write the four other rungs from memory** and rank them by what they cost. **Done when** you can
+   say which is `O(1)` space besides XOR (the sort — by destroying the input) and why the hash map
+   is the one to write first in an interview anyway.
+
+5. **Do the siblings without re-reading this page.** *Missing Number* is XOR over the values **and**
+   the indices; *Single Number II* (every value three times except one) is the one where XOR stops
+   working, because parity only counts to two — the fix is counting bits mod 3. **Done when** you
+   can explain why the second one breaks the trick rather than just remembering that it does.
+
+6. **A month later, the one sentence that should come back:** *XOR is per-column parity, so anything
+   that appears an even number of times disappears.*
+
+
 ## Full Runnable Script
 
 Every approach above, plus a test suite covering both statement examples, the single-element input, a
@@ -626,6 +771,73 @@ def make_case(pairs: list[int], loner: int, seed: int) -> list[int]:
     return nums
 
 
+
+
+# ----------------------------------------- the arithmetic, printed not claimed
+# Everything "Reading the Calculations" quotes comes from here: the fold table,
+# the three laws checked over a real range, the column view, and the proof that
+# order cannot matter. None of it is an approach.
+def show_fold(nums: list[int]) -> None:
+    """XOR folded left to right, in binary, one row per step."""
+    width = max(4, max(nums).bit_length())
+    print(f"\n=== acc ^= x, over {nums} ===")
+    print(f"  {'step':<6} {'value':>5} {'bits':>{width + 2}} {'acc':>5} {'acc bits':>{width + 2}}")
+    acc = 0
+    pad = width + 2
+    # format(...) first, THEN pad: an f-string cannot chain two specs, and
+    # "{acc:0{width}b:>{pad}}" is a ValueError rather than a wide number
+    bits = lambda v: format(v, f"0{width}b").rjust(pad)
+    print(f"  {'start':<6} {'':>5} {'':>{pad}} {acc:>5} {bits(acc)}")
+    for i, x in enumerate(nums):
+        acc ^= x
+        print(f"  {i:<6} {x:>5} {bits(x)} {acc:>5} {bits(acc)}")
+
+
+def check_laws() -> None:
+    """The three properties the optimal rung rests on, over every value in range."""
+    print("\n=== the laws XOR rests on, checked rather than asserted ===")
+    print(f"  x ^ x == 0            {all((x ^ x) == 0 for x in range(256))}   (256 values)")
+    print(f"  x ^ 0 == x            {all((x ^ 0) == x for x in range(256))}   (256 values)")
+    print(
+        f"  a ^ b == b ^ a        "
+        f"{all((a ^ b) == (b ^ a) for a in range(64) for b in range(64))}   (4096 pairs)"
+    )
+    print(
+        f"  (a^b)^c == a^(b^c)    "
+        f"{all(((a ^ b) ^ c) == (a ^ (b ^ c)) for a in range(32) for b in range(32) for c in range(32))}"
+        f"   (32768 triples)"
+    )
+
+
+def show_columns(nums: list[int]) -> None:
+    """XOR is per-column parity. This is the view that shows why."""
+    from functools import reduce
+    from operator import xor
+
+    width = max(4, max(nums).bit_length())
+    print(f"\n=== the same fold, read as columns instead of steps ===")
+    for bit in range(width - 1, -1, -1):
+        col = [(x >> bit) & 1 for x in nums]
+        ones = sum(col)
+        print(
+            f"  bit {bit} (worth {2**bit:>3}): {col}  ones={ones}  "
+            f"{'odd  -> 1' if ones % 2 else 'even -> 0'}"
+        )
+    answer = reduce(xor, nums)
+    print(f"  answer bits = {format(answer, f'0{width}b')} = {answer}")
+
+
+def show_order_free(nums: list[int]) -> None:
+    """Order cannot change the answer. Not argued — every ordering is tried."""
+    from functools import reduce
+    from itertools import permutations
+    from operator import xor
+
+    orderings = set(permutations(nums))
+    results = {reduce(xor, p) for p in orderings}
+    print(f"\n=== order does not matter, over every arrangement of {nums} ===")
+    print(f"  {len(orderings)} distinct orderings -> {len(results)} distinct result(s): {results}")
+
 def main() -> None:
     cases: list[tuple[str, list[int]]] = [
         ("statement example 1", [2, 2, 1]),
@@ -653,6 +865,10 @@ def main() -> None:
             all_agreed = False
             print("  !! approaches disagree")
 
+    show_fold([4, 1, 2, 1, 2])
+    check_laws()
+    show_columns([4, 1, 2, 1, 2])
+    show_order_free([4, 1, 2, 1, 2])
     print()
     print("ALL APPROACHES AGREED ON EVERY CASE" if all_agreed
           else "DISAGREEMENT FOUND - see the lines above")
