@@ -12,6 +12,53 @@ bucket. It does not, and nothing on the page said so.
 3. **`docs/deep/TEMPLATE.md`** and **`docs/deep/PROMPT.md`** — the skeleton and the brief. Read the
    four-readers table before writing anything.
 
+## Where it stopped — the UI pass (2026-09-13, evening)
+
+A second, concurrent session ran a polish brief over `src/components/**`, `src/features/**`,
+`src/index.css` and `src/App.tsx`. Full write-up: `docs/WORKLOG.md`, entry
+*"the design system held only where a test was looking"*. Everything below is **verified green**:
+`npm run check` 758/758, `npm run build` clean, `npm run test:ui` 166/166.
+
+**Read this before touching the UI again:**
+
+| | |
+|---|---|
+| Four bug fixes shipped | the ladder's `#rung-…` links hijacked the hash ROUTE and rendered home · anchors landed under the phone's 61px sticky bar · home scrolled sideways at 1440 · the flashcards' filter pushed the page to 559px at 390 |
+| New primitives | `ui/row.tsx` · `ui/tick-meter.tsx` · `ui/band.tsx` · `lib/complexity.ts` (has its own test) |
+| New gates | 3, each **mutation-tested** — the fix was removed and the test confirmed to fail by name |
+| Numbers | off-token durations 5 → 0 document-wide · touch targets <44px on the problem page 17 → 7 · phone stage share 23% → **62%** · routes scrolling sideways 2 → 0 |
+
+**The next UI thing, if you want one:** `B68` — the prose is thin in the patterns read most. It is
+the only open P0 that is bounded by a measurement already taken (81 of 174 rungs have an `idea`
+under 160 characters, 56 have no `whyNow`), needs no new problems, no new journeys and no new
+gates. `B42` should **not** be done — the backlog row already re-measured and demoted it.
+
+### Four stashes, and none of it has shipped
+
+Read the stash MESSAGES, never the numbers — they have shifted as entries were pushed:
+
+```
+git stash list
+```
+
+The one worth recovering is **"problem-page redesign, applied onto current HEAD"**. It was
+rebased after the route-hijack fix, so it keeps that fix, the complexity marks and the deep-doc
+door; it imports `ui/band.tsx`, which sits in its own entry. The oldest entry predates the bug
+fix, so **merge, never `git stash pop`** — popping it would silently revert `dbd1e10`.
+
+None of it ships until a person decides it does (G10). The redesign was written three times and
+asked for zero times, which is the actual finding here: a change that is measured, gated and
+green is still not a change anybody wanted.
+
+### The process finding, because it cost real work
+
+Two agents wrote this branch at once. The other one committed four times, **twice before the browser
+suite had run**; `350d7f4` is a torn snapshot that does not compile (it imports a
+`ui/difficulty-meter` it does not contain). It also filed two already-fixed findings into the
+backlog as open (G9, G10 — both now corrected and ticked) and stashed an authorised change as
+"unauthorized". **One writer per branch.** If a background agent is committing this repo, turn it
+off before working here.
+
 ## Where it stopped
 
 `master` holds everything through **#89**. This session's work is on

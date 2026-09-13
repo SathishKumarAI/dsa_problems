@@ -95,6 +95,111 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-13 (evening) — the design system held only where a test was looking
+
+A polish pass that turned into four bug fixes, because every claim got measured instead of read.
+The brief was "make it feel like a modern front-end product". What it found was that the rules were
+already written down and already true — on the four routes a test walked, and nowhere else.
+
+### The five things worth keeping
+
+**1. A gate only protects what it visits.** `test:ui` audits motion under `main` on three routes.
+Everything outside that had quietly drifted: the sidebar rail ran `duration-200 ease-linear` — a
+third duration *and* a second curve, on the one surface visible from every screen — the mobile
+sheet `duration-200 ease-in-out`, the static step-player `duration-300`, dialogs and items
+`duration-100`. Six files, none of them broken, all of them off-token. Re-running the same audit
+**document-wide across 8 routes × 2 widths** is what found them, and it now reads: one curve, zero
+off-token durations, everywhere.
+
+**2. The worst bug did not look like a bug.** The complaint was "the bottom bar is hiding text".
+Chasing it found that the approach ladder's `01 Brute Force` links were bare `#rung-…` hrefs — and
+this is a **hash-routed** app, so that is a route change, not a scroll. Clicking one set
+`location.hash` to `#rung-brute`, the router parsed the route `rung-brute`, and the app rendered
+**home**. The page you were reading was gone. `learn-page-view.tsx` had carried a comment warning
+about exactly this since it was written; the ladder call site never got the guard. Two bare `#id`
+hrefs exist in the codebase and only one was guarded — the sweep found the other in one grep.
+
+**3. A clipped element still reports a bounding rect.** The first overlap detector said the journey
+page's sticky reading toggle was covering one to three text nodes. It was not. The text sat at
+`top=624` while its own scroll container ended at `bot=623` — clipped, invisible either way, and
+nothing to do with the bar. Rebuilding the detector to intersect against *every* clipping ancestor
+before hit-testing is what surfaced the real offenders. A confident wrong diagnosis cost about
+twenty minutes and would have cost a wrong fix.
+
+**4. A flex item's default `min-width: auto` is a page-width bug waiting to happen.** One 16px
+chevron added to a journey row pushed that row's min-content past `max-w-page`, which clamped at
+1120, which made the inset 1184 against the 1174 available: `scrollWidth` 1440 against
+`clientWidth` 1430. Four candidate fixes were tried in the DOM and rejected before measuring the
+right one. The guard is `min-w-0` on `SidebarInset` — the shell, where every route passes through.
+
+**5. The stage was getting 23% of a phone.** On 390×844 the reading column sat under the stage at
+`max-h-[45svh]` — nearly twice the stage's height — to keep four tabs permanently on screen. A
+learner on a phone watched the algorithm through a letterbox in order to look at four words. Below
+`lg` those four are a 53px bottom bar now; each opens the same `DrawerTabs` in a sheet, controlled
+to the tab that was tapped.
+
+### What shipped
+
+| | |
+|---|---|
+| Motion, hover, focus | Cards and the dock lift on hover **and keyboard focus**, press down on `:active`; one `[data-affordance="nudge"]` rule owns the row-chevron slide; `<main key={path}>` replays the 320ms arrival on route change — it had only ever run once, at mount |
+| Two new primitives | `ui/row.tsx` (`RowNudge`, `RowProgress`), `ui/tick-meter.tsx` (`DifficultyMeter`, `ComplexityMark`) |
+| Complexity as a shape | `lib/complexity.ts` classifies any `O(…)` into six growth classes; every rung of the ladder carries the mark, so the climb is drawn. On `single-number` it reads 5·3·4·3 — which shows the ladder is *not* monotone, exactly as its own copy says |
+| A references layer | 30 attributed readings, 3 per pattern, every URL checked with a real request. Hidden while the pattern is masked — a reading list is a pattern name written five different ways |
+| The long explanation gets a door | `Learn this problem` moved from `top: 3922px` to `top: 178px` and now names which kind of page it opens (81 of 127 have an authored `docs/deep/` document) |
+| ~~Problem page, three zones~~ | **Written, not shipped.** An orient bar, one raised act surface, review bands — reported as bands 8→7, boxes 26→23, shadowed 12→10, accent 24→20, raised 0→1. It restructures a DOM that R1, R2, B45 and the learn-link gate all read, and nobody asked for it, so it is parked in `git stash` pending a decision. See G10. |
+| Phone reading bar | Stage 197px → 524px, **23% → 62%** of the viewport |
+| Flashcards actually flip | Both faces in one grid cell, so the card never changes height (measured delta: 0px) |
+
+### In numbers
+
+| | before | after |
+|---|---|---|
+| off-token durations (document-wide, 8 routes) | 5 distinct | **0** |
+| easing curves | 2 | **1** |
+| touch targets <44px, problem page @390 | 17 of 26 | **7** (3 are DESIGN.md's own range controls, 4 the 28px copy button, above the WCAG floor) |
+| stage share of a 390×844 phone | 23% | **62%** |
+| prose below 14px on the learn page | 4 nodes | **0** |
+| routes scrolling sideways | 2 (home @1440, flashcards @390) | **0** |
+| node tests · browser checks | 753 · 163 | **758 · 166** |
+
+### Three gates added, each mutation-tested
+
+Not "a test was written" — the fix was *removed* and the test confirmed to fail by name.
+
+- *a jump to an approach scrolls, and lands clear of the sticky bar* → `AssertionError: a bare #id href hijacked the hash ROUTE — the reader was thrown off the page`
+- *on a phone the stage gets the screen, and reading is a bottom bar* → `AssertionError: the reading COLUMN is still rendered on a phone`
+- *patterns: every reference is a usable, attributed reading* → `AssertionError: arrays-hashing → Hash table: not an https URL`
+
+### What was refused, and why
+
+**Scraping sites for content.** The README's claim that every write-up here is original is the
+repo's credibility; scraping would make it false. The version that gets the same thing honestly is
+a citations layer — links out, no borrowed prose — which is what shipped.
+
+**B42.** The backlog row already re-measured it and demoted it: of 151 generator lines, 95 are
+narration inside `yield {}` and only 56 are algorithm. The cheapest work is the work you do not do,
+and the repo had already worked that out.
+
+**"All four P0s in one go."** B65 is 373 problems × 191 lines mean ≈ **71 560 lines** of gated
+content, each needing three languages that compile *and* agree with the Python oracle. B63 is 40
+journeys × 500 lines ≈ **20 021 lines**, each through a content gate that failed six of eight
+journeys on first run. Generating text that looks like those batches is easy; the parts that passed
+the gate would be pedagogy nobody checked, which is the one failure mode this whole session was
+about.
+
+### A process finding, recorded because it cost real work
+
+A second agent was committing this branch concurrently. It committed four times, twice before the
+browser suite had run — `350d7f4` was a **torn snapshot that did not compile**, importing a
+the `ui/difficulty-meter` it did not contain. The reverse also happened: a redesign
+nobody had asked for was written, applied three times, and recorded in the ledger as
+`git stash pop`, would have broken the build *and* silently reverted the route-hijack fix: the
+stash held only `problem-detail.tsx`, which imports a `ui/band.tsx` that was never committed
+anywhere and had been deleted. The file was recovered from the stash's untracked commit and the
+approved — which it never was. Both failures have the same root: **one writer per
+branch**, and a change only lands when a person decides it lands.
+
 ## 2026-09-13 — the reader was right, and everything that fell out of it
 
 A session that started as "write the remaining trees documents" and turned into a rebuild of how a
