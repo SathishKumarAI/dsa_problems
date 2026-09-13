@@ -108,7 +108,7 @@ safe here.
 
 ---
 
-## Approach 2: Swap on the way back up
+## Approach 2: Swap on the way back up  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -231,7 +231,7 @@ here, which is the point worth being honest about.
 
 ---
 
-## Approach 4: Build a new inverted tree
+## Approach 4: Build a new inverted tree  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

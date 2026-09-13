@@ -64,7 +64,11 @@ export interface HashModel {
   entries: HashEntry[]
   buckets: number
   chains: HashEntry[][]
-  probe: number | null // key being looked up right now (null = inserting)
+  probe: number | null // the key this frame is about (null = neither)
+  mode: "insert" | "lookup" // what is happening TO the probe, so the panel
+  // can show the bucket arithmetic while the map is being BUILT and not only
+  // while it is queried — a learner watching pass 1 was shown values landing
+  // in buckets with no arithmetic anywhere on screen
   slot: number // bucket the probe hashes to, -1 when no probe
   present: boolean // probe physically found in its chain
   hit: boolean // the ALGORITHM's verdict (may differ from present)

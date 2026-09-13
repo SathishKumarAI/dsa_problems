@@ -40,7 +40,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 |---|---|
 | Theme colours, type scale, container widths (all tokens) | `src/index.css` (the decisions: `docs/DESIGN.md`) |
 | Routes (`#/journey/…`, `#/algorithms`, `#/p/…`) | `src/lib/route.ts`, `src/App.tsx` |
-| Add / edit a **journey** (acts, generators, presets, quiz, challenge) | `src/engine/journeys/<slug>.ts` → register in `src/engine/index.ts` |
+| Add / edit a **journey** (acts, generators, presets, quiz, challenge) | `src/data/journeys/<slug>.ts` → register in `src/engine/index.ts`. **Five early journeys still live in `src/engine/journeys/`** (`two-sum`, `three-sum`, `single-number`, `sorted-pair-sum`, `container-water`); everything since is in `src/data/journeys/` — 90 files there against 5 — so look in `src/engine/index.ts` for the import path rather than guessing |
 | Frame / act / journey / stage-model contracts (incl. `EdgeCase`, frame `corner`) | `src/engine/types.ts` |
 | The hash-map bucket arithmetic | `src/engine/hashmap.ts` |
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |

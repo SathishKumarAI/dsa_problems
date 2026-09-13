@@ -176,7 +176,7 @@ The order of those three tests is not a style choice — see below.
 
 ---
 
-## Approach 3: The same lockstep walk, iteratively
+## Approach 3: The same lockstep walk, iteratively  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

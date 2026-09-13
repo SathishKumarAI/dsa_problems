@@ -11,7 +11,16 @@
 import assert from "node:assert/strict"
 import { after, before, describe, test } from "node:test"
 import { JOURNEYS } from "../src/engine/index.ts"
+import { readdirSync } from "node:fs"
 import { PROBLEMS } from "../src/data/index.ts"
+
+// which problems actually have a deep document, read from disk rather than
+// listed here, so this file cannot go stale as documents are written
+const DEEP_DOCS = new Set(
+  readdirSync("docs/deep")
+    .filter((f) => f.endsWith("_explained.md"))
+    .map((f) => f.replace(/_explained\.md$/, ""))
+)
 import { chromePath, launch, startServer } from "./browser.mjs"
 
 const exe = chromePath()
@@ -1733,7 +1742,12 @@ describe(
         return !![...document.querySelectorAll('a')]
           .find(a => /deep dive/i.test(a.textContent || ''));
       `)
-      await page.goto(`${server.base}/#/p/trees/right-side-view`)
+      // Computed, never named: `right-side-view` was hard-coded here and
+      // stopped being a valid fixture the day its deep document was written.
+      // The repo has learned this once already (see the no-journey fixture).
+      const bare = PROBLEMS.find((p) => !DEEP_DOCS.has(p.id))
+      assert.ok(bare, "every problem has a deep document — this check needs rewriting")
+      await page.goto(`${server.base}/#/p/${bare.pattern}/${bare.id}`)
       const withoutDoc = await page.run(`
         return !![...document.querySelectorAll('a')]
           .find(a => /deep dive/i.test(a.textContent || ''));
@@ -1742,7 +1756,7 @@ describe(
       assert.equal(
         withoutDoc,
         false,
-        "a problem with no deep document offered the link"
+        `${bare.id} has no deep document but offered the link`
       )
       assert.deepEqual(page.errors(), [])
     })

@@ -121,7 +121,33 @@ export function HashMapView({ map }: { map: HashModel }) {
           the UI suite until the walkthrough stopped living behind a closed
           tab — a reminder that a rule only holds where something looks. */}
       <div className="flex max-w-[35em] flex-col gap-1.5 text-ui text-muted-foreground">
-        {probing && (
+        {/* An INSERT gets the same arithmetic a lookup gets. Without this,
+            pass 1 of a two-pass hash showed values dropping into buckets with
+            no sum anywhere on screen, and "why did 39 land in bucket 7?" had
+            no answer on the page that was supposed to answer it. */}
+        {probing && map.mode === "insert" && (
+          <div>
+            insert:{" "}
+            <b className="font-mono text-foreground">
+              hash({map.probe}) = {map.probe} mod {map.buckets} = bucket{" "}
+              {map.slot}
+            </b>{" "}
+            —{" "}
+            {map.hops > 1 ? (
+              <span>
+                {map.hops - 1} key{map.hops - 1 === 1 ? "" : "s"} already live
+                there, so it joins that chain — the slot is decided by the
+                VALUE, never by the order it arrived in
+              </span>
+            ) : (
+              <span>
+                the bucket was empty, so it sits alone — the slot is decided by
+                the VALUE, never by the order it arrived in
+              </span>
+            )}
+          </div>
+        )}
+        {probing && map.mode === "lookup" && (
           <div>
             lookup:{" "}
             <b className="font-mono text-foreground">

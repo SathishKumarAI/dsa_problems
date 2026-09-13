@@ -119,7 +119,7 @@ smallest, recovering a swapped pair, printing the values in order.
 
 ---
 
-## Approach 2: The same walk, keeping only the previous value
+## Approach 2: The same walk, keeping only the previous value  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -270,7 +270,7 @@ demonstrates you understand the property rather than a side effect of it.
 
 ---
 
-## Approach 4: In-order without the call stack
+## Approach 4: In-order without the call stack  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

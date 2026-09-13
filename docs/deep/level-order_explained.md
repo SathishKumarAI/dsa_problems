@@ -40,7 +40,7 @@ solutions which assume a level is full.
 
 ---
 
-## Approach 1: Find the height, then collect each level separately
+## Approach 1: Find the height, then collect each level separately  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -183,7 +183,7 @@ already doing a depth-first walk for another reason and want the levels for free
 
 ---
 
-## Approach 3: Breadth-first, tagging each node with its depth
+## Approach 3: Breadth-first, tagging each node with its depth  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

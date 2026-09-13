@@ -52,7 +52,7 @@ One tree, used in every approach: `root = [3, 9, 20, null, null, 15, 7]`, the ba
 
 ---
 
-## Approach 1: Judge every node, independently
+## Approach 1: Judge every node, independently  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -194,7 +194,7 @@ first thing to write before improving it.
 
 ---
 
-## Approach 3: Measure each subtree only once
+## Approach 3: Measure each subtree only once  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -364,7 +364,7 @@ BST inside a tree are all this function with a different combining step.
 
 ---
 
-## Approach 5: The same pass, without the call stack
+## Approach 5: The same pass, without the call stack  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

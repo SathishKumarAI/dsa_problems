@@ -67,3 +67,29 @@ test("hit and present are independent (count-scan case)", () => {
   assert.equal(m.present, true)
   assert.equal(m.hit, false)
 })
+
+test("an insert reports the same bucket arithmetic a lookup does", () => {
+  // The panel showed nothing at all while the map was being BUILT, so a
+  // learner watching pass 1 of a two-pass hash saw values land in buckets
+  // with no sum on screen. The model now says which of the two is happening.
+  // the frame yields AFTER the insertion, so `seen` already holds the key
+  // being filed — that is the contract the panel's "hops - 1" reads
+  const built = hashLayout(entriesOf([[45, 0], [31, 1], [39, 2]]), {
+    probe: 39,
+    mode: "insert",
+  })
+  assert.equal(built.mode, "insert")
+  assert.equal(built.slot, 7, "39 mod 8 is 7")
+  assert.equal(built.hops, 2, "31 was already in bucket 7, so 39 joins a chain")
+
+  const alone = hashLayout(entriesOf([[45, 0], [25, 1]]), {
+    probe: 25,
+    mode: "insert",
+  })
+  assert.equal(alone.slot, 1, "25 mod 8 is 1")
+  assert.equal(alone.hops, 1, "alone in its bucket: hops - 1 == 0 others")
+})
+
+test("lookup stays the default, so every other journey is unchanged", () => {
+  assert.equal(hashLayout(entriesOf([[7, 0]]), { probe: 7 }).mode, "lookup")
+})

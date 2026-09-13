@@ -295,7 +295,7 @@ equality test before extending. Learn the shape, not the answer.
 
 ---
 
-## Approach 4: The same pass, without the call stack
+## Approach 4: The same pass, without the call stack  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

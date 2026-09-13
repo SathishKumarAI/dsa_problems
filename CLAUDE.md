@@ -28,7 +28,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## The pedagogy (do not regress this)
 
-- **107 problems, 87 journeys.** The twenty newest (batch 6) ship a static walkthrough instead, and
+- **127 problems, 93 journeys.** The other **34** ship a static walkthrough instead, and
   `problems.test.ts` forbids carrying both — so a journey written for one of them DELETES that
   problem's `walkthrough` in the same commit (B63).
 - **Progressive disclosure is the product.** No unearned act or pattern name anywhere a learner
