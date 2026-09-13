@@ -47,7 +47,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
 | Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`) |
-| The per-problem markdown explainer (`npm run docs:explained`) | `scripts/gen-explained.mjs` · output: `docs/explained/**` · drift gate: `scripts/gen-explained.test.mjs` |
+| **The one page per problem** (`npm run docs:learn`) — problem, hints, the authored teaching document, every rung in three languages, a runnable script | `scripts/gen-learn.mjs` · output: `docs/learn/**` · drift gate: `scripts/gen-learn.test.mjs` |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |
 | Which model is trusted with what, and the measured token cost | `docs/MODELS.md` |
 | Compile every Java/C++ block (`npm run verify:code`) | `scripts/localsmith/verify.mjs` |
@@ -57,7 +57,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | **HTTP API** — every endpoint | `src/api/routes.ts` (contract: `docs/API.md`) |
 | API transport (HTTP vs in-process) | `src/api/client.ts` |
 | Standalone API server / Vite `/api` middleware | `server/index.ts` / `server/vite-api.ts` |
-| Read a deep document in the app (`#/deep/<id>`) | `src/components/deep-doc-view.tsx` · markdown → blocks: `src/lib/markdown.ts` · blocks → UI: `src/components/markdown.tsx` · which ids exist: `src/lib/deep-docs.ts` |
+| Read a learn page in the app (`#/learn/<id>`) | `src/components/learn-page-view.tsx` · markdown → blocks: `src/lib/markdown.ts` · blocks → UI: `src/components/markdown.tsx` · which ids exist: `src/lib/learn-pages.ts` |
 | Journey page layout | `src/features/journey/journey-page.tsx` |
 | Journey policy (unlock, quiz, predict, hints, XP, deep links, keys) | `src/features/journey/use-journey.ts` |
 | Generic play / pause / seek over frames | `src/features/journey/use-player.ts` |

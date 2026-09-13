@@ -9,7 +9,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
-| A problem's whole ladder as ONE page, code and a runnable script | `docs/explained/<id>.md` — generated, `npm run docs:explained` |
+| **Everything about one problem, on one page** | `docs/learn/<id>.md` — generated, `npm run docs:learn`. Merges the data (statement, hints, every rung in three languages) with the authored teaching document from `docs/deep/<id>_explained.md`. Shows the ending, so the app links it only when the ladder is not capped |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |

@@ -13,7 +13,7 @@
     "test": "node --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
     "api": "node server/index.ts",
     "test:ui": "vite build && node --test \"test/**/*.test.mjs\"",
-    "docs:explained": "node scripts/gen-explained.mjs",
+    "docs:learn": "node scripts/gen-learn.mjs",
     "verify:code": "node scripts/localsmith/verify.mjs",
     "verify:run": "node scripts/localsmith/run.mjs",
     "verify:vectors": "node scripts/localsmith/mutate.mjs",

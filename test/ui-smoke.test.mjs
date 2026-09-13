@@ -14,12 +14,12 @@ import { JOURNEYS } from "../src/engine/index.ts"
 import { readdirSync } from "node:fs"
 import { PROBLEMS } from "../src/data/index.ts"
 
-// which problems actually have a deep document, read from disk rather than
-// listed here, so this file cannot go stale as documents are written
-const DEEP_DOCS = new Set(
-  readdirSync("docs/deep")
-    .filter((f) => f.endsWith("_explained.md"))
-    .map((f) => f.replace(/_explained\.md$/, ""))
+// which problems actually have a learn page, read from disk rather than
+// listed here, so this file cannot go stale as pages are written
+const LEARN_PAGES = new Set(
+  readdirSync("docs/learn")
+    .filter((f) => f.endsWith(".md") && f !== "README.md")
+    .map((f) => f.replace(/\.md$/, ""))
 )
 import { chromePath, launch, startServer } from "./browser.mjs"
 
@@ -1677,12 +1677,12 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
-    test("a deep document renders as a page, not as raw markdown", async () => {
-      // The reader parses `docs/deep/<id>_explained.md` in the browser, so the
+    test("a learn page renders as a page, not as raw markdown", async () => {
+      // The reader parses `docs/learn/<id>.md` in the browser, so the
       // things that can break are exactly the things node cannot see: an
       // unclosed fence swallowing the rest of the file, a table that never
       // became a table, a `#` heading printed literally.
-      await page.goto(`${server.base}/#/deep/max-depth`)
+      await page.goto(`${server.base}/#/learn/max-depth`)
       await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
       const out = await page.run(`
         // The PROSE elements only, each read live. Two things this had to
@@ -1730,42 +1730,67 @@ describe(
         [],
         "a backtick reached the screen — an inline code span was not parsed"
       )
-      assert.equal(out.scrollW, out.clientW, "the deep document scrolls sideways")
+      assert.equal(out.scrollW, out.clientW, "the learn page scrolls sideways")
       assert.deepEqual(page.errors(), [])
     })
 
-    test("the deep-dive link appears only where a document exists", async () => {
-      // The link is the one door, and it is gated exactly as the arc is. A
-      // problem with no document must not advertise one.
-      await page.goto(`${server.base}/#/p/trees/max-depth`)
-      const withDoc = await page.run(`
-        return !![...document.querySelectorAll('a')]
-          .find(a => /deep dive/i.test(a.textContent || ''));
-      `)
-      // Computed, never named: `right-side-view` was hard-coded here and
-      // stopped being a valid fixture the day its deep document was written.
-      // The repo has learned this once already (see the no-journey fixture).
-      const bare = PROBLEMS.find((p) => !DEEP_DOCS.has(p.id))
-      assert.ok(bare, "every problem has a deep document — this check needs rewriting")
-      await page.goto(`${server.base}/#/p/${bare.pattern}/${bare.id}`)
-      const withoutDoc = await page.run(`
-        return !![...document.querySelectorAll('a')]
-          .find(a => /deep dive/i.test(a.textContent || ''));
-      `)
-      assert.ok(withDoc, "max-depth has a deep document and offers no link")
+    test("every problem has a learn page, and a started journey hides the link", async () => {
+      // This check used to prove "no page, no link". Since docs/learn merged
+      // the generated and authored pages, ALL 127 problems have one — so the
+      // premise is gone and the question that remains is the one that matters:
+      // the page carries the whole ladder and the ending, so a learner partway
+      // through a journey must not be offered it (the same gate the arc gets).
       assert.equal(
-        withoutDoc,
+        PROBLEMS.filter((p) => !LEARN_PAGES.has(p.id)).length,
+        0,
+        "a problem has no page in docs/learn — run npm run docs:learn"
+      )
+
+      const journeyed = PROBLEMS.find((p) =>
+        JOURNEYS.some((j) => j.problemId === p.id && j.acts.length > 2)
+      )
+      const slug = JOURNEYS.find((j) => j.problemId === journeyed.id).slug
+
+      // not started: the whole ladder shows, so the link is offered
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
+      await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
+      const offered = await page.run(`
+        return !![...document.querySelectorAll('a')]
+          .find(a => /learn this problem/i.test(a.textContent || ''));
+      `)
+
+      // started and unfinished: the ladder is capped, so the link must go.
+      // Written on another route first — the store caches per key, so a write
+      // while the page is mounted is undone (CLAUDE.md).
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:${slug}', '2'); return 1`)
+      await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
+      const gated = await page.run(`
+        return {
+          link: !![...document.querySelectorAll('a')]
+            .find(a => /learn this problem/i.test(a.textContent || '')),
+          capped: /still ahead of you/.test(document.body.innerText),
+        };
+      `)
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
+
+      assert.ok(offered, `${journeyed.id}: no link on an unstarted journey`)
+      assert.ok(gated.capped, `${journeyed.id}: unlocked=2 did not cap the ladder`)
+      assert.equal(
+        gated.link,
         false,
-        `${bare.id} has no deep document but offered the link`
+        `${journeyed.id}: the learn page was offered mid-journey — it gives the ending away`
       )
       assert.deepEqual(page.errors(), [])
     })
 
-    test("390 px wide: a deep document does not scroll sideways", async () => {
+    test("390 px wide: a learn page does not scroll sideways", async () => {
       // Its tables are the widest things in the app; they must scroll inside
       // their own box rather than taking the page with them.
       await page.resize(390)
-      await page.goto(`${server.base}/#/deep/balanced-tree`)
+      await page.goto(`${server.base}/#/learn/balanced-tree`)
       await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
       const out = await page.run(`
         return {

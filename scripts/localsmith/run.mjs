@@ -324,7 +324,7 @@ def __canon(v):
 `
 
 /** a python literal for one argument of the named shape — the docs generator
- *  emits the same cases into its runnable script (scripts/gen-explained.mjs) */
+ *  emits the same cases into its runnable script (scripts/gen-learn.mjs) */
 export const pyLit = (v, t) => lit.python(v, t)
 
 /** one line per case. The try/except is what per-process isolation used to buy:

@@ -39,7 +39,7 @@ import { ladderOf, leetcodeUrl } from "@/lib/ladder"
 import type { Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href } from "@/lib/route"
-import { hasDeepDoc } from "@/lib/deep-docs"
+import { hasLearnPage } from "@/lib/learn-pages"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
 import { difficultyClass } from "@/lib/difficulty"
@@ -206,12 +206,12 @@ function ApproachLadder({
             {problem.arc}
           </p>
         )}
-        {/* The long-form document, when one is written. Gated exactly as the
-            arc is: it walks the whole ladder, so offering it while a journey
-            still has unearned rungs would hand over the ending. */}
-        {hasDeepDoc(problem.id) && !capped && (
+        {/* The learn page. Gated exactly as the arc is: it carries the whole
+            ladder and the ending, so offering it while a journey still has
+            unearned rungs would hand the ending over. */}
+        {hasLearnPage(problem.id) && !capped && (
           <a
-            href={href(`/deep/${problem.id}`)}
+            href={href(`/learn/${problem.id}`)}
             className="flex max-w-[35em] items-center gap-3 rounded-lg border bg-card/40 px-4 py-3 text-body transition-colors hover:border-chart-1/60 hover:bg-card"
           >
             <BookOpenIcon className="size-4 shrink-0 text-chart-1" />
@@ -219,10 +219,11 @@ function ApproachLadder({
               {/* a <b> here joins the rung names the UI test reads out of this
                   container — the arc's label is a span for the same reason */}
               <span className="font-semibold text-foreground">
-                Read the deep dive
+                Learn this problem
               </span>{" "}
-              — how someone who cannot yet see the answer gets there: worked
-              traces, the bug you are about to write, and a runnable script.
+              — one page with everything: the question, the
+              hints, the full explanation, every approach in three languages, and a
+              script you can run.
             </span>
           </a>
         )}
