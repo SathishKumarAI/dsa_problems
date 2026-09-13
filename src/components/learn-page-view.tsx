@@ -9,7 +9,7 @@
 // who has chosen to read ahead, and the app has never pretended otherwise —
 // the same is true of `#/journey/<slug>?act=`.
 import { useEffect, useState } from "react"
-import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react"
+import { ArrowLeftIcon, ExternalLinkIcon, ListTreeIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { loadLearnPage } from "@/lib/learn-pages"
@@ -19,6 +19,8 @@ import { href, navigate } from "@/lib/route"
 import { leetcodeUrl } from "@/lib/ladder"
 import { difficultyClass } from "@/lib/difficulty"
 import { Badge } from "@/components/ui/badge"
+import { DifficultyMeter } from "@/components/ui/tick-meter"
+import { cn } from "@/lib/utils"
 import { Markdown } from "./markdown"
 
 export function LearnPageView({ id }: { id: string }) {
@@ -85,6 +87,7 @@ export function LearnPageView({ id }: { id: string }) {
                 variant="outline"
                 className={difficultyClass[problem.difficulty]}
               >
+                <DifficultyMeter difficulty={problem.difficulty} />
                 {problem.difficulty}
               </Badge>
             )}
@@ -116,7 +119,8 @@ export function LearnPageView({ id }: { id: string }) {
           aria-label="contents"
           className="sticky top-6 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
         >
-          <span className="pb-1 text-meta font-semibold text-foreground">
+          <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
+            <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
             Contents
           </span>
           {outline.map((entry) => (
@@ -132,11 +136,23 @@ export function LearnPageView({ id }: { id: string }) {
                   block: "start",
                 })
               }}
-              className={
+              // `-ml-4 border-l-2 border-transparent pl-4` puts each entry's
+              // own indicator exactly on top of the rail's border, so the
+              // hovered section lights that hairline instead of adding a
+              // second line beside it. Border and colour only — the row never
+              // moves, which is what would make a 30-entry rail jitter.
+              className={cn(
+                // `text-ui`, not `text-meta`: four of this document's section
+                // labels run past 55 characters, which is the threshold the
+                // repo's own audit uses to call something a SENTENCE rather
+                // than a label — and a sentence is never set below the ui
+                // step. The audit walks four routes and this is not one of
+                // them, so nothing had ever flagged it.
+                "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-colors hover:border-chart-1 hover:text-foreground",
                 entry.level === 3
-                  ? "pl-3 text-meta text-dim hover:text-foreground"
-                  : "text-meta text-muted-foreground hover:text-foreground"
-              }
+                  ? "pl-7 text-dim"
+                  : "pl-4 text-muted-foreground"
+              )}
             >
               {entry.text.replace(/`/g, "")}
             </a>
@@ -144,9 +160,10 @@ export function LearnPageView({ id }: { id: string }) {
           {problem && (
             <a
               href={href(`/p/${problem.pattern}/${problem.id}`)}
-              className="mt-3 border-t pt-3 text-meta text-chart-1 underline-offset-2 hover:underline"
+              className="mt-3 inline-flex items-center gap-1.5 border-t pt-3 text-meta text-chart-1 underline-offset-2 hover:underline"
             >
-              ◂ back to the problem
+              <ArrowLeftIcon className="size-3.5 shrink-0" aria-hidden />
+              back to the problem
             </a>
           )}
         </nav>

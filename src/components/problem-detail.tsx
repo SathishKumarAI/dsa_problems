@@ -11,9 +11,11 @@
 // belongs to the learner, not to the page.
 import {
   ArrowLeftIcon,
+  ArrowRightIcon,
   BookOpenIcon,
   ExternalLinkIcon,
   RouteIcon,
+  ScrollTextIcon,
 } from "lucide-react"
 import {
   Accordion,
@@ -22,6 +24,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
+import { ComplexityMark, DifficultyMeter } from "@/components/ui/tick-meter"
+import { RowNudge } from "@/components/ui/row"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
@@ -36,10 +40,10 @@ import {
   usePatternMask,
 } from "@/lib/disclosure"
 import { ladderOf, leetcodeUrl } from "@/lib/ladder"
-import type { Rung } from "@/lib/ladder"
+import type { Ladder, Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href } from "@/lib/route"
-import { hasLearnPage } from "@/lib/learn-pages"
+import { hasDeepDoc, hasLearnPage } from "@/lib/learn-pages"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
 import { difficultyClass } from "@/lib/difficulty"
@@ -127,15 +131,16 @@ function RungCode({ code }: { code: Code }) {
 function ApproachLadder({
   problem,
   journey,
+  ladder,
 }: {
   problem: Problem
   journey?: AnyJourney
+  /** computed by the PAGE, not here: the header needs `capped` too, to decide
+   *  whether the full-explanation door may be opened, and computing the same
+   *  ladder twice is how two controls drift into disagreeing about the ledger */
+  ladder: Ladder
 }) {
-  const unlocked = Math.max(
-    useStored<number>(K.unlocked(journey?.slug ?? ""), 1),
-    1
-  )
-  const { rungs, capped, hidden } = ladderOf(problem, journey, unlocked)
+  const { rungs, capped, hidden } = ladder
   const langs = LANGS.map((l) => l.key).filter((k) =>
     rungs.some((r) => r.code[k])
   )
@@ -186,7 +191,11 @@ function ApproachLadder({
                 {String(i + 1).padStart(2, "0")}
               </span>
               <b className="text-body">{r.name}</b>
-              <span className="font-mono text-meta text-muted-foreground">
+              {/* the second channel on the whole ladder: read DOWN the rungs
+                  and the bars visibly shrink. That climb is what the prose
+                  between the rungs is describing, and this is it drawn. */}
+              <span className="inline-flex items-center gap-2 font-mono text-meta text-muted-foreground">
+                <ComplexityMark cost={r.cost} />
                 {r.cost}
               </span>
             </div>
@@ -206,36 +215,16 @@ function ApproachLadder({
             {problem.arc}
           </p>
         )}
-        {/* The learn page. Gated exactly as the arc is: it carries the whole
-            ladder and the ending, so offering it while a journey still has
-            unearned rungs would hand the ending over. */}
-        {hasLearnPage(problem.id) && !capped && (
-          <a
-            href={href(`/learn/${problem.id}`)}
-            className="flex max-w-[35em] items-center gap-3 rounded-lg border bg-card/40 px-4 py-3 text-body transition-colors hover:border-chart-1/60 hover:bg-card"
-          >
-            <BookOpenIcon className="size-4 shrink-0 text-chart-1" />
-            <span className="text-muted-foreground">
-              {/* a <b> here joins the rung names the UI test reads out of this
-                  container — the arc's label is a span for the same reason */}
-              <span className="font-semibold text-foreground">
-                Learn this problem
-              </span>{" "}
-              — one page with everything: the question, the
-              hints, the full explanation, every approach in three languages, and a
-              script you can run.
-            </span>
-          </a>
-        )}
         {capped && journey && (
           <p className="text-ui max-w-[35em] text-muted-foreground">
             {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
             still ahead of you.{" "}
             <a
               href={href(`/journey/${journey.slug}`)}
-              className="text-chart-1 underline-offset-2 hover:underline"
+              className="group inline-flex items-center gap-1 text-chart-1 underline-offset-2 hover:underline"
             >
-              Continue the journey ▸
+              Continue the journey
+              <ArrowRightIcon aria-hidden className="size-3.5 shrink-0" />
             </a>{" "}
             — each one opens when the previous one runs out of road.
           </p>
@@ -257,6 +246,15 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
   // "Two Pointers" while the journey teaching it was unfinished.
   const mask = usePatternMask()
   const hidden = mask.hidden.has(pattern.id)
+  // One ladder for the whole page. The header's "read the full explanation"
+  // door and the ladder itself are gated by the SAME `capped` flag, because
+  // they are held back for the same reason: both hand over the ending.
+  const unlocked = Math.max(
+    useStored<number>(K.unlocked(journey?.slug ?? ""), 1),
+    1
+  )
+  const ladder = ladderOf(problem, journey, unlocked)
+  const deep = hasDeepDoc(problem.id)
 
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-8">
@@ -281,6 +279,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
             variant="outline"
             className={cn("font-mono", difficultyClass[problem.difficulty])}
           >
+            <DifficultyMeter difficulty={problem.difficulty} />
             {problem.difficulty}
           </Badge>
         </div>
@@ -289,23 +288,63 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         </p>
         {/* the page explains; the learner writes and submits the code on
             LeetCode, so that is the primary action and there is no editor */}
+        {/* The two things a reader can do from here, side by side and at the
+            TOP — which is where the decision is actually made. Solving is the
+            primary action (this page explains and hosts no editor); reading
+            the whole thing is the other one, and it used to be a single row
+            buried under the entire approach ladder, past the fold on every
+            problem in the set.
+
+            The second door names WHICH kind of page it opens. 81 of the 127
+            problems have an authored document in `docs/deep/` that the
+            generator splices into the learn page verbatim — `pair-sum` is 1503
+            lines of which 1262 are that document — and the other 46 get a page
+            assembled from the problem data. Offering both behind identical
+            words told a learner nothing about which one they were about to
+            open. The phrase "Learn this problem" stays in the link text: the
+            UI test reads it to prove the ledger still hides this mid-journey. */}
         <div className="flex flex-wrap items-center gap-3">
           <a
             href={leetcodeUrl(problem.leetcode)}
             target="_blank"
             rel="noopener"
-            className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-ui font-medium text-[var(--primary-foreground)] transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="btn-glow inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px"
           >
             Solve on LeetCode
             <ExternalLinkIcon className="size-4" />
           </a>
+          {hasLearnPage(problem.id) && !ladder.capped && (
+            <a
+              href={href(`/learn/${problem.id}`)}
+              className="group inline-flex min-h-9 items-center gap-2 rounded-lg border bg-card px-3 text-ui font-medium hover:border-chart-1/60"
+            >
+              {deep ? (
+                <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
+              ) : (
+                <BookOpenIcon className="size-4 shrink-0 text-chart-1" />
+              )}
+              Learn this problem
+              <span className="font-normal text-muted-foreground">
+                {deep
+                  ? "— the long explanation"
+                  : "— every approach, one page"}
+              </span>
+              <RowNudge />
+            </a>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ui text-muted-foreground">
           <span className="font-mono">
             {hidden ? MASKED_GLYPH : pattern.glyph}
           </span>
-          <span className="font-mono">time {problem.complexity.time}</span>
-          <span className="font-mono">space {problem.complexity.space}</span>
+          <span className="inline-flex items-center gap-2 font-mono">
+            <ComplexityMark value={problem.complexity.time} />
+            time {problem.complexity.time}
+          </span>
+          <span className="inline-flex items-center gap-2 font-mono">
+            <ComplexityMark value={problem.complexity.space} />
+            space {problem.complexity.space}
+          </span>
           <label className="ml-auto flex items-center gap-2">
             <Checkbox
               checked={solved.has(problem.id)}
@@ -321,16 +360,17 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
       {journey && (
         <a
           href={href(`/journey/${journey.slug}`)}
-          className="flex items-center gap-3 rounded-xl border border-chart-1/40 bg-chart-1/5 p-4 transition-colors hover:border-chart-1"
+          className="group flex items-center gap-3 rounded-xl border border-chart-1/40 bg-chart-1/5 p-4 transition-colors hover:border-chart-1"
         >
           <RouteIcon className="size-5 shrink-0 text-chart-1" />
-          <span className="flex flex-col">
-            <b className="text-body">Start the learning journey ▸</b>
+          <span className="flex min-w-0 flex-col">
+            <b className="text-body">Start the learning journey</b>
             <span className="text-ui text-muted-foreground">
               {journey.acts.length} acts: the need, every approach earned by the
               last one's weakness, your own code animated, then the reveal.
             </span>
           </span>
+          <RowNudge as="arrow" className="ml-auto size-5" />
         </a>
       )}
 
@@ -411,7 +451,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         </Section>
       )}
 
-      <ApproachLadder problem={problem} journey={journey} />
+      <ApproachLadder problem={problem} journey={journey} ladder={ladder} />
     </div>
   )
 }
