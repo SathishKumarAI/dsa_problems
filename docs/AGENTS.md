@@ -8,15 +8,30 @@ Written 2026-09-12, the day twenty-nine subagents wrote most of a documentation 
 
 ## How to not lose an agent
 
-An agent is **resumable by id**, and a resumed agent keeps its full context — it picks up from its own last thought rather than restarting. This matters most when one dies mid-task, which is common: the session API limit killed **nine of eleven** agents at once on 2026-09-12.
+An agent is **resumable by id for as long as the session that spawned it is alive**, and a resumed
+agent keeps its full context — it picks up from its own last thought rather than restarting. This
+matters most when one dies mid-task, which is common: the session API limit killed **nine of
+eleven** agents at once on 2026-09-12.
 
 ```
 SendMessage → to: "<agentId>",  message: "Resume where you stopped — …"
 ```
 
-The reply arrives as a task notification like any other. A resumed agent that has already written half its files keeps them; tell it what changed in the repo while it was gone, because it cannot see the tree's history.
+The reply arrives as a task notification like any other. A resumed agent that has already written
+half its files keeps them; tell it what changed in the repo while it was gone, because it cannot see
+the tree's history.
 
-**Write the id down when you spawn it.** A roster with no ids is a roster you cannot resume.
+> **An agent id does not survive the session.** This file previously said every killed agent was
+> resumable and left nine ids for the next session to pick up. It was wrong. On 2026-09-13
+> `ListAgents` in a new session returned peer *sessions* only — not one of the nine ids existed, and
+> `SendMessage` had nothing to address. The context those agents held died with the process that
+> held it.
+>
+> So the rule is: **an unfinished agent is unfinished work, not a resumable agent.** Before the
+> session that owns it ends, either resume it or write down *what is still owed as files* — the
+> queue below is that, and it is the only form that survives the night.
+
+**Write the id down while the session lives; write the owed FILES down for anyone after it.**
 
 ### The roster, 2026-09-12
 
@@ -34,25 +49,49 @@ The reply arrives as a task notification like any other. A resumed agent that ha
 | `a7d0e04531ea9883a` | statistics: chapters 1–5 | in progress |
 | `a6102580f2cb670eb` · `a368821d8d694ccbb` · `a74f8235ffa3655fc` · `a276a2b1dccff3659` · `a876b8cf649c97fd1` · `a6a60ac22a094a092` | deep docs wave 4 — binary search, linked list, stack | in progress |
 
-## Waiting to be resumed (as of 2026-09-12, limit resets 3am America/Chicago)
+## The work queue — what is owed, in files
 
-The session limit killed these mid-task for the second time. Every one is
-resumable — `SendMessage` to the id, tell it what changed in the tree while it
-was gone, and it continues from its own last thought.
+Measured against the tree on **2026-09-13**, not carried over from a roster. Agent ids are gone
+(see above); these are the only durable units.
 
-| Agent | Left to do | Its last words |
-|---|---|---|
-| `a876b8cf649c97fd1` | deep docs: add-two-numbers, odd-even-list, reorder-list, rotate-list | "Heredoc got mangled. I'll use the Write tool." |
-| `a368821d8d694ccbb` | deep docs: koko-bananas, ship-in-d-days, find-peak-element, k-closest-values | "build and verify the scripts before writing the documents" |
-| `a6a60ac22a094a092` | deep docs: calculator-basic, simplify-path, + single-number retrofit | "build and verify the Python for calculator-basic" |
-| `a6102580f2cb670eb` | deep docs: classic-binary-search, search-insert-position, first-last-position, single-in-sorted | — |
-| `a74f8235ffa3655fc` | deep docs: rotated-minimum, rotated-search, search-2d-matrix, remove-k-digits | — |
-| `a276a2b1dccff3659` | deep docs: palindrome-list, remove-nth-from-end, swap-pairs, remove-list-elements | — |
-| `ab265f86a2251927e` | retrofit: eleven more documents (valid-anagram fix already landed) | "Now dispatching the next eleven." |
-| `a33d43453240864bd` | retrofit: move-zeroes, sorted-squares | (spawned by the retrofit agent) |
-| `a7d0e04531ea9883a` | statistics chapter 5, hypothesis testing | "Adding the exhaustive small-population enumeration" |
+**Deep documents, still unwritten.** Ten that a killed agent had been briefed on:
 
-Still unwritten and unassigned: trees (11), heaps (9), graphs (11), dp (14).
+| Pattern | Owed |
+|---|---|
+| linked-list | `add-two-numbers` · `odd-even-list` · `reorder-list` · `rotate-list` |
+| binary-search | `koko-bananas` · `ship-in-d-days` · `find-peak-element` · `k-closest-values` |
+| stack | `calculator-basic` · `simplify-path` |
+
+Never assigned to anyone: **trees (11) · heaps (9) · graphs (11) · dp (14)**.
+
+Regenerate this list rather than trusting it — one line, and it cannot be stale:
+
+```bash
+for f in $(find src/data/problems -name '*.ts' ! -name 'index.ts' ! -name '*.test.ts'); do
+  id=$(basename "$f" .ts)
+  [ -f "docs/deep/${id}_explained.md" ] || echo "$id"
+done
+```
+
+**Retrofits to the upgraded spec — fifteen, not the eleven the old roster claimed.** A document
+written before the teaching-quality section landed carries none of the three required callouts, so
+the count is measurable rather than remembered:
+
+```bash
+grep -L '^> \*\*Intuition\.\*\*' docs/deep/*_explained.md
+```
+
+`container-water` · `find-all-duplicates` · `first-missing-positive` · `intersection-of-arrays` ·
+`isomorphic-strings` · `missing-number` · `move-zeroes` · `remove-duplicates-sorted` ·
+`remove-element` · `sort-colors` · `sorted-pair-sum` · `sorted-squares` · `three-sum-zero` ·
+`trap-rain-water` · `valid-palindrome`
+
+`move-zeroes` and `sorted-squares` appear there, which is how we know the agent briefed to retrofit
+exactly those two landed nothing at all. **An agent's last words are not evidence that its files
+exist.** Check the disk.
+
+**Statistics:** chapter 5, hypothesis testing. `docs/statistics/` stops at
+`04-confidence-and-uncertainty.md`.
 
 ---
 
@@ -108,7 +147,8 @@ Briefs end with: *report anything you deliberately left out, and why.* That is w
 
 | What happened | Fix |
 |---|---|
-| **Rate limit killed nine agents mid-task.** Files were on disk that nobody had checked | Resume by id. Then verify everything yourself — this is why `verify-deep.mjs` exists |
+| **Rate limit killed nine agents mid-task.** Files were on disk that nobody had checked | Resume by id *while the session lives*. Then verify everything yourself — this is why `verify-deep.mjs` exists |
+| **The session ended with nine ids written down and none of them resumable** | Ids are session-scoped. Convert unfinished agents into a file-level queue before the session ends |
 | **`git add -A` swept an agent's half-written file into a commit** | Stage explicitly while agents run. Keep a list of which files are busy |
 | Agents cannot edit `docs/**` when scoped to `src/**`, so **FEATURES rows and backlog ticks go unwritten** | The coordinator owes those. Expect it and do it at commit time |
 | An agent left **scratch files in the repo root** when it was killed | Check `git status` for stray `*-tmp.mjs` before committing |
