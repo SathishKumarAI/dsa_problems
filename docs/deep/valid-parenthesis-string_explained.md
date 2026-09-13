@@ -1,0 +1,865 @@
+# Brackets With a Wildcard — explained
+
+## Understanding the Problem
+
+You are handed a strip of characters. Some are `(`, some are `)`, and some are `*` — a blank tile. You
+may decide, independently for each blank, that it is an opening bracket, or a closing bracket, or
+nothing at all (you pull the tile out and close the gap). Two blanks in the same strip need not become
+the same thing. The question is whether **some** set of decisions turns the strip into a properly
+balanced bracket string: every closer matched by an earlier opener, and nothing left open at the end.
+
+`"(*))"` works — read the blank as `(` and you have `(())`. `"(((*)"` does not — even the most generous
+reading of that blank leaves two openers stranded.
+
+**The core question:** is there any assignment of the blanks that balances? The naive approach is slow
+because it *enumerates* those assignments — three choices per blank, multiplied together — when almost
+all of them are indistinguishable in the only way that matters.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= s.length <= 100` | 100 characters with up to 100 blanks means `3^100` readings — about `10^47`, so the exponential rungs below are **demonstrations, not submissions**. The same 100 is small enough that anything `O(n²)` is 10 000 operations, which is why the memoised rung is already a perfectly good answer and the linear one is a refinement rather than a rescue. |
+| `s` contains only `(`, `)` and `*` | A **three-symbol alphabet**, and only one of the three is ambiguous. Nothing about *which* characters were consumed ever matters again — only how many openers are still outstanding — which is the observation the whole ladder is built on. |
+| Each `*` is chosen **independently** | The choices do not constrain one another, so the reachable states after a prefix are a free product of the choices so far. That independence is what makes the set of reachable counts an unbroken **interval**, which is what makes the final rung possible. |
+| The **empty** reading of `*` is allowed | The choice beginners forget. It is what lets an odd-length string such as `"()*"` balance at all, and a brute force offering only `(` or `)` per blank gets `"(*)"` wrong. |
+
+Note what is *absent*: you are asked whether a valid reading **exists**, not to produce one, and not to
+count them. That is the permission slip for collapsing the entire search into two integers — an
+existence question can be answered by tracking what is *reachable* without ever tracking how.
+
+The worked example used in every section below:
+
+```
+s = "(*))(*)"        answer: True
+```
+
+It is chosen because it is the shortest string that punishes the two subtle bugs at once: it needs a
+blank read as **nothing**, and it needs the low bound clamped at zero — omit the clamp and this string
+reports `False`.
+
+---
+
+## Approach 1 — Enumerate every concrete reading
+
+### The idea
+
+*How do I know some reading balances?* Write them all out. Each blank has exactly three meanings, so a
+strip with `k` blanks has `3^k` readings; produce each one as a concrete bracket string and check it
+the ordinary way.
+
+### How to think about it
+
+> **Intuition.** A combination lock with one wheel per blank, and each wheel has three positions:
+> `(`, `)`, and *remove me*. Turn the lock through all its settings, and after each one read the
+> resulting string straight through with a tally — plus one per opener, minus one per closer, fail if
+> the tally ever drops below zero, and it must finish at zero. The method never reasons about brackets
+> at all; it reasons about **settings**, and asks a completely separate judge whether each setting
+> happened to work.
+
+### Worked example
+
+`s = "(*))(*)"`, blanks at positions 1 and 5, so `3² = 9` readings. The state is the concrete string
+and the running tally:
+
+| blank 1 | blank 5 | concrete string | tally, until the judge stops | verdict |
+|---|---|---|---|---|
+| `(` | `(` | `(())(()` | 1, 2, 1, 0, 1, 2, 1 | ends at 1 — rejected |
+| `(` | `)` | `(())())` | 1, 2, 1, 0, 1, 0, −1 | negative — rejected |
+| `(` | *removed* | `(())()` | 1, 2, 1, 0, 1, 0 | **accepted** |
+| `)` | `(` | `()))(()` | 1, 0, −1 | negative — rejected |
+| `)` | `)` | `()))())` | 1, 0, −1 | negative — rejected |
+| `)` | *removed* | `()))()` | 1, 0, −1 | negative — rejected |
+| *removed* | `(` | `())(()` | 1, 0, −1 | negative — rejected |
+| *removed* | `)` | `())())` | 1, 0, −1 | negative — rejected |
+| *removed* | *removed* | `())()` | 1, 0, −1 | negative — rejected |
+
+**Exactly one** of the nine works, and it is the one that reads a blank as *nothing*. Note also that
+six of the nine died at character three for the identical reason — the strip's own `)` at position 2
+outran its openers — which is the redundancy every later rung is built to remove.
+
+### Code
+
+```python
+def is_balanced(s: str) -> bool:
+    """Shared judge for the concrete-string rung. Not part of any answer."""
+    depth = 0
+    for ch in s:
+        depth += 1 if ch == OPEN else -1
+        if depth < 0:
+            return False
+    return depth == 0
+
+
+def valid_parenthesis_string_enumerate(s: str) -> bool:
+    slots = [i for i, ch in enumerate(s) if ch == STAR]
+    for reading in product(STAR_MEANINGS, repeat=len(slots)):
+        chars = list(s)
+        for i, piece in zip(slots, reading):
+            chars[i] = piece  # "" makes the blank vanish
+        if is_balanced("".join(chars)):
+            return True
+    return False
+```
+
+`STAR_MEANINGS = (OPEN, CLOSE, "")` is a module constant — the three meanings named once, so adding or
+removing a meaning is a single edit and no approach can disagree with another about what a blank may be.
+
+### Common mistake
+
+> **Watch out.** You will give each blank **two** meanings, not three, because "a wildcard bracket" so
+> obviously means "either bracket". The empty reading is not a third kind of bracket; it is the
+> character not being there, and it changes the string's **length**.
+
+Run the two-meaning version and it returns `False` for `"(*)"` — a string whose only valid reading is
+the empty one, since `"(()"` and `"())"` both fail. It returns `False` for `"*"`, for `"()*"`, for
+`"***"`, and for the worked example. The tell is odd lengths: a string of odd length can *only* balance
+if some blank vanishes, so any solution that cannot shorten the string will reject every odd-length
+input outright.
+
+### Complexity and when to use this
+
+**Time `O(3^k · n)`, space `O(n)`**, where `k` is the number of blanks. The `3^k` is one reading per
+lock setting and the `· n` is the judge's pass over each. With `k = 20` that is already 3.5 billion
+readings; with the constraint's `k = 100` it will not finish before the heat death of anything.
+
+Use it as the **oracle** on short inputs — it is correct by exhaustion, which is exactly its job in the
+stress test at the foot of this document, where it is run on strings of length at most 10. Never
+submit it. Its value in an interview is one sentence naming the search space, said in order to reject
+it.
+
+---
+
+## Approach 2 — Recurse, branching three ways at every blank
+
+### The idea
+
+*The lock rebuilds a whole concrete string for every setting — can the readings share their prefixes?*
+Yes: walk the strip once, carrying how many openers are outstanding, and at each blank take all three
+branches. A prefix is then processed once rather than once per setting, and a branch whose count goes
+negative can be abandoned immediately instead of being completed and judged.
+
+This fixes Approach 1's weakness — **it materialises and re-judges an entire string per setting, so
+six of the nine readings above paid for seven characters to die at character three.**
+
+### How to think about it
+
+> **Intuition.** Walk the strip carrying a single number: how many openers are still waiting to be
+> closed. A `(` adds one, a `)` subtracts one, and a blank forks the walk into three walkers carrying
+> one more, one fewer, and the same. If any walker's number goes negative it has closed something that
+> was never opened — kill it, because the number only moves by one at a time and **a negative count can
+> never be repaired**. A walker that reaches the end holding zero is a proof, and one proof is enough.
+
+The early kill is a real improvement and also a trap for your intuition, because it makes the algorithm
+*feel* fast. It is not. The branching factor is still three at every blank; abandoning dead branches
+prunes the shape of the tree without touching its exponential size.
+
+### Worked example
+
+`s = "(*))(*)"`. Depth-first, taking the three blank branches in the order `(`, `)`, *nothing*. State
+is `(position, open_count)`:
+
+| step | position | character | `open_count` in | branch taken | `open_count` out | what happens |
+|---|---|---|---|---|---|---|
+| 1 | 0 | `(` | 0 | — | 1 | forced |
+| 2 | 1 | `*` | 1 | as `(` | 2 | first of three |
+| 3 | 2 | `)` | 2 | — | 1 | forced |
+| 4 | 3 | `)` | 1 | — | 0 | forced |
+| 5 | 4 | `(` | 0 | — | 1 | forced |
+| 6 | 5 | `*` | 1 | as `(` | 2 | first of three |
+| 7 | 6 | `)` | 2 | — | 1 | end of strip, count ≠ 0 → **fail, back up** |
+| 8 | 5 | `*` | 1 | as `)` | 0 | second of three |
+| 9 | 6 | `)` | 0 | — | **−1** | **killed immediately** — no continuation can fix it |
+| 10 | 5 | `*` | 1 | as nothing | 1 | third of three |
+| 11 | 6 | `)` | 1 | — | 0 | end of strip, count == 0 → **True** |
+
+Eleven steps, and the whole `*` = `)` subtree at step 2 was never explored because step 11 answered the
+question first. Note step 9: the kill saved nothing here because there was nothing left to explore, but
+on a long strip that same test removes an entire subtree per dead branch.
+
+### Code
+
+```python
+def valid_parenthesis_string_recurse(s: str) -> bool:
+    def walk(at: int, open_count: int) -> bool:
+        if open_count < 0:  # a closer with nothing to close; unrepairable
+            return False
+        if at == len(s):
+            return open_count == 0
+        if s[at] == OPEN:
+            return walk(at + 1, open_count + 1)
+        if s[at] == CLOSE:
+            return walk(at + 1, open_count - 1)
+        return (
+            walk(at + 1, open_count + 1)   # blank as an opener
+            or walk(at + 1, open_count - 1)  # blank as a closer
+            or walk(at + 1, open_count)      # blank as nothing
+        )
+
+    return walk(0, 0)
+```
+
+The `or` chain short-circuits, which is the "one proof is enough" rule expressed in Python rather than
+in a comment.
+
+### Common mistake
+
+> **Watch out.** You will write `and` between the three blank branches. The word in the specification is
+> *"a blank **may** stand for …"*, and "may" is an existential — **some** reading must work, not all of
+> them. `and` silently asks the opposite question: *is every meaning of every blank valid?*
+
+```python
+        return (
+            walk(at + 1, open_count + 1)
+            and walk(at + 1, open_count - 1)   # WRONG - demands ALL readings balance
+            and walk(at + 1, open_count)
+        )
+```
+
+It returns `False` for `"*"`, for `"(*)"`, for the statement's own `"(*))"`, and for the worked example
+— in fact for every string containing a blank, because no blank has all three meanings valid at once in
+a balanced string. Strings with no blank still pass, so the function looks half-right: it answers
+ordinary bracket-matching correctly and gets the entire point of the problem wrong.
+
+### Complexity and when to use this
+
+**Time `O(3^n)`, space `O(n)`.** Three branches per blank and up to `n` blanks; the early kill prunes
+constants and a fair number of subtrees but not the exponent. Space is the recursion depth, at most
+`n` frames.
+
+Use it as the **bridge**, not as an answer. Its real value is that it is the first version whose state
+is small — a position and a single integer — and once you can see that pair, memoisation and then the
+interval trick are both obvious. It is also the rung the data file carries as its stated alternative, so
+it is the version to be able to write on demand.
+
+---
+
+## Approach 3 — Memoise on (position, open count)
+
+### The idea
+
+*How many genuinely different situations does the walk ever find itself in?* A position and an
+outstanding count — nothing else. Positions run to `n` and the count can never exceed `n`, so there are
+at most `n²` distinct situations, and the exponential tree must be revisiting them over and over.
+Remember each answer the first time.
+
+This fixes Approach 2's weakness — **two different sequences of blank choices that arrive at the same
+position with the same count have identical futures, and the plain recursion solves that future once
+per path.**
+
+### How to think about it
+
+> **Intuition.** Two walkers meet at character 30, both holding four outstanding openers. Everything
+> behind them differs — different blanks read differently, different routes taken — and **none of it
+> can ever matter again**, because the rest of the strip only ever consults the count. They have the
+> same future, so answering it twice is pure waste. Write the answer on the wall at (character 30,
+> count 4) and let the second walker read it off.
+
+This is the rung where the problem stops being a search and becomes a table. It is also the
+instinctive-but-suboptimal step: `O(n²)` is entirely good enough for `n = 100`, most people stop here,
+and the final rung is a genuine further insight rather than a necessity.
+
+### Worked example
+
+`s = "(*))(*)"`. The memo entries, in the order they are computed (a cell is filled when its subtree
+resolves, so the deepest ones come first):
+
+| order filled | `(at, open_count)` | how it resolves | value |
+|---|---|---|---|
+| 1 | `(7, 1)` | past the end, count ≠ 0 | `False` |
+| 2 | `(6, 2)` | `)` → `(7, 1)` | `False` |
+| 3 | `(7, -1)` | count went negative | `False` |
+| 4 | `(6, 0)` | `)` → count −1 | `False` |
+| 5 | `(7, 0)` | past the end, count == 0 | **`True`** |
+| 6 | `(6, 1)` | `)` → `(7, 0)` | **`True`** |
+| 7 | `(5, 1)` | blank: `(6,2)` false, `(6,0)` false, `(6,1)` **true** | **`True`** |
+| 8 | `(4, 0)` | `(` → `(5, 1)` | **`True`** |
+| 9 | `(3, 1)` | `)` → `(4, 0)` | **`True`** |
+| 10 | `(2, 2)` | `)` → `(3, 1)` | **`True`** |
+| 11 | `(1, 1)` | blank: `(2, 2)` **true** — short-circuits | **`True`** |
+| 12 | `(0, 0)` | `(` → `(1, 1)` | **`True`** |
+
+Twelve entries for a seven-character strip. The ceiling is `n · (n+1)` cells, and on this input the
+`or` chain short-circuits so hard that only twelve are ever touched — but the *guarantee* is the
+ceiling, and the guarantee is what turns an exponential into a polynomial.
+
+### Code
+
+```python
+def valid_parenthesis_string_memo(s: str) -> bool:
+    @lru_cache(maxsize=None)
+    def walk(at: int, open_count: int) -> bool:
+        if open_count < 0:
+            return False
+        if at == len(s):
+            return open_count == 0
+        if s[at] == OPEN:
+            return walk(at + 1, open_count + 1)
+        if s[at] == CLOSE:
+            return walk(at + 1, open_count - 1)
+        return (
+            walk(at + 1, open_count + 1)
+            or walk(at + 1, open_count - 1)
+            or walk(at + 1, open_count)
+        )
+
+    return walk(0, 0)  # the cache lives with the closure and dies with it
+```
+
+The body is character-for-character Approach 2. That is the point: memoisation is a decorator, not a
+rewrite, and any rung that needs the recursion restructured to be memoised has the wrong state.
+
+### Common mistake
+
+> **Watch out.** You will key the cache on the **position** alone, because the position is what the loop
+> is "really" iterating over and the count feels like a passenger. The count is not a passenger; it is
+> half the state. Two visits to character 5 carrying different counts have different answers, and a
+> position-keyed cache serves the first one's answer to the second.
+
+```python
+        if at in cache:          # WRONG - two visits to `at` can hold different counts
+            return cache[at]
+```
+
+Run it on the worked example and it returns `False` instead of `True`. Trace the damage: `(6, 2)`
+resolves to `False` and is stored under the bare key `6`; later the walk reaches character 6 holding a
+count of 1 — genuinely `True` — reads `False` off the wall, and the whole proof is lost. The general
+rule is worth more than the bug: **the memo key must be every argument the function's answer depends
+on**, and the fastest way to check is to ask whether two calls with the same key could legitimately
+differ.
+
+### Complexity and when to use this
+
+**Time `O(n²)`, space `O(n²)`.** There are at most `n + 1` positions × `n + 1` counts, each computed
+once at `O(1)` cost, which is where both the time and the space come from. At `n = 100` that is roughly
+10 000 cells — microseconds, and a few hundred kilobytes at worst.
+
+Use it when you have five minutes rather than fifteen, or when the problem grows a feature the interval
+trick cannot express — *count* the valid readings, find the lexicographically smallest one, or allow a
+blank to stand for more than one character. All of those are one line of change to this table and a
+complete redesign for the next rung. **Generality is what this rung is for**, and it is a real reason to
+prefer it.
+
+---
+
+## Approach 4 — Two stacks of positions
+
+### The idea
+
+*Does the walk need a number at all, or would it rather know **where** the unmatched things are?* Keep
+two stacks of positions: openers still unmatched, and blanks still unspent. A closer consumes an opener
+if one exists and otherwise spends a blank. At the end, pair each leftover opener with a blank — but
+only a blank that lies to its **right**, since a blank can only close an opener that came before it.
+
+This fixes Approach 3's weakness — **an `O(n²)` table for a question that never needed a table**, at the
+price of a rung of scratch memory.
+
+### How to think about it
+
+> **Intuition.** Two spikes on a desk. Every `(` goes on the opener spike, every `*` on the blank
+> spike, each impaled with its position written on it. A `)` arrives and must be matched: take an opener
+> if there is one — **always prefer the real opener**, because a blank is flexible and an opener is not,
+> so spending the rigid thing first keeps your options open — and otherwise spend a blank as a
+> substitute opener. If both spikes are empty the `)` has nothing to match and the answer is `False`
+> immediately. At the end, whatever is left on the opener spike needs blanks from the blank spike to
+> close it, and a blank can only do that if it sits further right.
+
+The position bookkeeping is the whole reason this rung exists. The counting rungs above throw positions
+away and get away with it; this one keeps them and, in exchange, needs the right-of check that none of
+the others do.
+
+### Worked example
+
+`s = "(*))(*)"`. The state is the two stacks of positions:
+
+| `i` | character | `opens` before | `stars` before | action | `opens` after | `stars` after |
+|---|---|---|---|---|---|---|
+| 0 | `(` | `[]` | `[]` | push to openers | `[0]` | `[]` |
+| 1 | `*` | `[0]` | `[]` | push to blanks | `[0]` | `[1]` |
+| 2 | `)` | `[0]` | `[1]` | an opener exists — spend it | `[]` | `[1]` |
+| 3 | `)` | `[]` | `[1]` | no opener — spend the blank at 1 | `[]` | `[]` |
+| 4 | `(` | `[]` | `[]` | push to openers | `[4]` | `[]` |
+| 5 | `*` | `[4]` | `[]` | push to blanks | `[4]` | `[5]` |
+| 6 | `)` | `[4]` | `[5]` | an opener exists — spend it | `[]` | `[5]` |
+| — | drain | `[]` | `[5]` | no openers left | `[]` | `[5]` |
+
+`opens` is empty, so the answer is `True`, and the blank at position 5 is simply never used — which is
+this rung's way of saying "read it as nothing". Note step 2: had the `)` greedily spent the blank at 1
+instead of the opener at 0, the opener at 0 would still be waiting at step 3 and could only be closed
+by a blank to its right — which is exactly the blank that was just wasted. Preferring the opener is
+not a tie-break; it is the correctness argument.
+
+### Code
+
+```python
+def valid_parenthesis_string_two_stacks(s: str) -> bool:
+    opens: list[int] = []  # positions of unmatched '('
+    stars: list[int] = []  # positions of unspent '*'
+    for i, ch in enumerate(s):
+        if ch == OPEN:
+            opens.append(i)
+        elif ch == STAR:
+            stars.append(i)
+        elif opens:
+            opens.pop()  # prefer the rigid opener; keep the flexible blank in hand
+        elif stars:
+            stars.pop()  # spend a blank as a substitute opener
+        else:
+            return False  # a closer with nothing at all to match
+    while opens and stars:
+        if opens[-1] > stars[-1]:  # the blank sits LEFT of the opener - it cannot close it
+            return False
+        opens.pop()
+        stars.pop()
+    return not opens
+```
+
+### Common mistake
+
+> **Watch out.** You will drain the two stacks by counting — "three openers left, four blanks left,
+> fine" — and forget that a blank can only close an opener that is **to its left**. A leftover blank
+> sitting before a leftover opener is useless, and a count cannot tell you that.
+
+```python
+    while opens and stars:
+        opens.pop()
+        stars.pop()          # WRONG - never checks that the blank is right of the opener
+    return not opens
+```
+
+Run it on `"*("` and it returns `True` instead of `False`. The strip has one blank at position 0 and one
+opener at position 1; the buggy drain pairs them and declares victory, but no reading of `"*("` balances
+— `"(("`, `")("` and `"("` all fail. It also returns `True` for `"**(("`. Every one of these is a string
+where the *quantities* line up and the *order* does not, which is precisely the information the counting
+rungs never had and this one was supposed to keep.
+
+### Complexity and when to use this
+
+**Time `O(n)`, space `O(n)`.** One pass pushing or popping at most one element per character, then a
+drain that pops at most `n` pairs. The space is the two stacks, which in the worst case (`"(((…"` or
+`"***…"`) hold all `n` positions.
+
+Use it when you need to *report* the matching, not merely decide it: which blank played which role,
+where the first unfixable closer is, how to render the string with its pairs highlighted. The counting
+rungs cannot answer any of those, because they discarded the positions. For a plain yes/no it is
+strictly beaten by the next rung on space.
+
+---
+
+## Approach 5 — Carry the range of possible open counts
+
+### The idea
+
+*The memo table's second axis is the open count — but at any position, which counts are actually
+reachable?* An unbroken run of them. So instead of a row of cells, carry two integers: the **lowest**
+outstanding count any surviving reading could have, and the **highest**. A blank pushes the low down and
+the high up; everything else moves both together.
+
+This fixes Approach 3's weakness — **it stores a whole row per position when the row is always a solid
+interval and is therefore completely described by its two ends.**
+
+### How to think about it
+
+> **Intuition.** Stop thinking about individual readings and think about a **band**. At every point in
+> the strip, the set of possible "openers still outstanding" values is a band with a floor and a
+> ceiling. A `(` lifts the whole band by one. A `)` drops the whole band by one. A blank **stretches**
+> it: the floor drops (that blank could have been a closer) and the ceiling rises (it could have been an
+> opener), and the middle of the band covers the reading where it was nothing. You are not tracking
+> which reading you are in — you are tracking what is still possible, and at the end you ask whether
+> zero is still inside the band.
+
+Two rules keep the band honest, and they are not symmetric. If the **ceiling** ever goes below zero,
+then even the most generous reading has more closers than openers, every reading is dead, and you stop.
+If the **floor** goes below zero, you clamp it back to zero rather than stopping.
+
+> **Why it works.** The clamp is the step everyone stares at, and it needs two facts. First, **the
+> reachable set really is an interval.** It starts as `{0}`; a `(` or `)` shifts an interval and leaves
+> an interval; a blank replaces each value `c` with `{c−1, c, c+1}`, and the union of an interval with
+> its two neighbours-shifts is again an unbroken interval. So the two endpoints lose nothing — there are
+> no gaps for a valid reading to be hiding in. Second, **a reading whose count goes negative is dead
+> forever.** The count moves by at most one per character, so getting back to zero would require passing
+> through it, and the only way a reading's count rises is by an opener it has not yet spent; a reading
+> that closed something never opened has already violated the rule and cannot un-violate it. Clamping
+> the floor at zero therefore does not invent readings — it **deletes the dead ones from the band**,
+> leaving exactly the survivors. Finally, since the floor is clamped at zero and the ceiling is
+> non-negative (or you already returned `False`), zero lies in the band precisely when the floor is
+> zero — which is why the last line is `low == 0` and not `low <= 0 <= high`.
+
+### Worked example
+
+`s = "(*))(*)"`. The state is the band `[low, high]`:
+
+| `i` | character | `low` in | `high` in | effect | `low` raw | `high` | clamped `low` | band |
+|---|---|---|---|---|---|---|---|---|
+| 0 | `(` | 0 | 0 | both +1 | 1 | 1 | 1 | `[1, 1]` |
+| 1 | `*` | 1 | 1 | stretch | 0 | 2 | 0 | `[0, 2]` |
+| 2 | `)` | 0 | 2 | both −1 | **−1** | 1 | **0** | `[0, 1]` |
+| 3 | `)` | 0 | 1 | both −1 | **−1** | 0 | **0** | `[0, 0]` |
+| 4 | `(` | 0 | 0 | both +1 | 1 | 1 | 1 | `[1, 1]` |
+| 5 | `*` | 1 | 1 | stretch | 0 | 2 | 0 | `[0, 2]` |
+| 6 | `)` | 0 | 2 | both −1 | **−1** | 1 | **0** | `[0, 1]` |
+| — | end | | | `low == 0` | | | | **True** |
+
+Three clamps, at `i = 2`, `3` and `6`. Each one is discarding readings that had gone negative — at
+`i = 2`, for instance, the readings in which the blank at position 1 was a closer, which by then have
+closed two things having opened one. Without the clamp those dead readings keep dragging the floor down
+and the string is rejected; the "Common mistake" below quotes the number.
+
+Compare the cost with Approach 3: twelve memo cells there, seven steps and two integers here.
+
+### Code
+
+```python
+def valid_parenthesis_string_range(s: str) -> bool:
+    low = 0   # fewest outstanding openers any surviving reading could have
+    high = 0  # most
+    for ch in s:
+        if ch == OPEN:
+            low += 1
+            high += 1
+        elif ch == CLOSE:
+            low -= 1
+            high -= 1
+        else:  # a blank: closer at the floor, opener at the ceiling, nothing in between
+            low -= 1
+            high += 1
+        if high < 0:  # even the most generous reading has surplus closers
+            return False
+        if low < 0:
+            low = 0  # drop the readings that went negative; they are dead forever
+    return low == 0
+```
+
+### Common mistake
+
+> **Watch out.** You will drop the clamp, because `low` and `high` look like a matched pair that should
+> be treated alike, and the code already returns early when `high` goes negative. They are not alike.
+> `high < 0` means *every* reading is dead, so you stop. `low < 0` means *some* readings are dead, so
+> you delete them — and leaving the floor negative silently keeps counting corpses.
+
+```python
+        if high < 0:
+            return False
+        # missing: if low < 0: low = 0
+```
+
+Run it on the statement's own second example `"(*))"` and it returns **`False`** instead of `True`: the
+floor walks 1, 0, −1, −2 and the final `low == 0` test fails by two. On the worked example `"(*))(*)"`
+the floor ends at −3 and it returns `False` instead of `True`. The unclamped floor is not "the fewest
+openers outstanding" any more — it is a tally of imaginary readings that already broke the rules, and
+those readings then veto answers that real readings could have delivered.
+
+### Complexity and when to use this
+
+**Time `O(n)`, space `O(1)`.** One pass, three integer updates and two comparisons per character; the
+space is two integers regardless of how long the strip is or how many blanks it holds. There is no way
+to do better than `O(n)` time, since a single unexamined character can flip the answer.
+
+**This is the one to memorize.** It is ten lines, it needs no auxiliary structure, and the idea behind
+it — *carry an interval of possible states instead of enumerating the states* — is the genuinely
+transferable part of this problem. It reappears wherever a wildcard makes the state space branch:
+interval arithmetic, abstract interpretation in compilers, feasibility bands in scheduling, and any
+"can this be made to work" question where the reachable set is provably contiguous. Reach for a
+different rung only when you need more than a yes or no.
+
+---
+
+## The Overall Arc
+
+Every rung here chases one principle: **stop distinguishing situations the future cannot distinguish.**
+The lock-and-judge version distinguishes everything — each of the `3^k` settings is a separate universe
+with its own concrete string — and pays for it twice, once to build the string and once to judge it,
+which is why six of nine readings of a seven-character strip died at character three for the same reason
+seven characters later than they should have. Folding the judge into the walk fixes the second half of
+that waste: carry one number, the outstanding openers, fork three ways at each blank, and kill a branch
+the moment its number goes negative, since a count that has closed something never opened can never
+recover. That version is still exponential, but it has done something more valuable than getting faster
+— it has shrunk the state to a **pair**, a position and a count, and once the state is that small the
+next step is forced: two walkers standing at the same character with the same count have identical
+futures no matter how differently they got there, so remember the answer and the `3^n` tree collapses
+into an `n × n` table. Most people stop there, correctly, because `n = 100` makes 10 000 cells free. The
+last insight is a question about the table rather than the algorithm: look along any row of it and the
+reachable counts are never a scatter, they are an unbroken band — a `(` lifts the band, a `)` drops it,
+a blank stretches it by one in each direction — so the entire row is described by its two ends, and the
+table collapses again, from `n²` cells to two integers. The subtle move in that collapse is what to do
+when the floor goes below zero: not stop, because only *some* readings have died, and not keep it,
+because a negative floor is a tally of readings that already broke the rules and will now veto perfectly
+good answers — but clamp it to zero, which is exactly "delete the dead readings from the band" and is
+the reason the whole method is sound. Enumerate settings, walk with a count, remember the count, and
+finally carry only the range the count could be in — and the habit worth stealing is that last one:
+when a wildcard makes the state space branch, ask whether the reachable states form an interval, because
+if they do you can carry the interval and never enumerate anything.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Enumerate every reading | `O(3^k · n)` | `O(n)` | Correct by exhaustion; builds and judges a whole string per setting | Oracle for the stress test on short strings |
+| Recurse with three branches | `O(3^n)` | `O(n)` | Shares prefixes and kills dead branches early, but the branching factor is untouched | The bridge that reveals the two-part state |
+| Memoise on (position, count) | `O(n²)` | `O(n²)` | Polynomial for the price of a table; the recursion body is unchanged | Five-minute answers; variants that must **count** readings or report one |
+| Two stacks of positions | `O(n)` | `O(n)` | Keeps positions, so it can report the matching; needs the right-of check | You must say *which* blank played which role |
+| **Range of open counts** | **`O(n)`** | **`O(1)`** | **Carries an interval instead of states; answers existence only** | **The default answer, and the one to write in an interview** |
+
+---
+
+## Interview Priority
+
+**Know cold — the range sweep.** Ten lines, and you should be able to write them while explaining the
+band. Be able to justify the clamp without hesitating, because that is the only question this problem
+has.
+
+> **In an interview.** Say the model before the code: *"I don't know what each star is, so I won't
+> decide — I'll carry the range of open counts that are still possible."* Then narrate the three
+> updates, and volunteer the clamp before you are asked: *"if the low end goes negative I clamp it to
+> zero, because a reading that went negative already closed something it never opened and no later
+> character can undo that — keeping it would let dead readings veto live ones."* The follow-up is
+> `high < 0` versus `low < 0`; answer that one means *every* reading is dead so you stop, the other
+> means *some* are, so you discard them. If they ask why two endpoints suffice, say the reachable set is
+> always a contiguous interval, because a star maps each value to three consecutive ones.
+
+**Know cold — the memoised recursion.** Not because you will submit it, but because it is your safety
+net and your generality. If the interviewer mutates the problem — count the readings, produce one, let a
+star stand for two characters — the band collapses and the table survives. Being able to say *"the state
+is (position, outstanding count), so there are only `n²` situations"* is also the sentence that gets you
+from exponential to polynomial on half the string problems you will ever be asked.
+
+**Know cold — the three-way brute force.** Twenty seconds, and it is what makes everything after it a
+decision. State the search space as `3^k`, name the three meanings **including the empty one**, and then
+improve. Forgetting the empty reading is the most common way to get this problem wrong, so saying all
+three out loud is worth doing deliberately.
+
+**Understand but do not memorize — the two-stack version.** It is linear and it is a perfectly good
+answer, but it uses `O(n)` space to compute a boolean, and the right-of check at the drain is an extra
+thing to get right. Know that it exists and know its one advantage: it is the only rung that can tell
+you *which* star did what.
+
+**Understand but do not memorize — the concrete enumeration.** Nothing to recall beyond its cost. Its
+job is to be the thing you reject in your first sentence, and the thing you test against in real life.
+
+---
+
+## Full Runnable Script
+
+The same five functions, assembled, plus a test suite: all three statement examples, the worked example,
+every one-character input, a string needing the empty reading, a blank stranded left of an opener, a
+closer with nothing to match, and 60 randomised short strings at lengths 1–10 on **all five**
+approaches. Beyond length 10 the two exponential rungs are dropped — their `3^n` cost is stated
+analytically, not measured — and 100 long strings of lengths 20 to 100 cross-check the three polynomial
+rungs, with the memoised recursion standing in as the reference since it is the brute-force recursion
+with a cache bolted on.
+
+```python
+"""Brackets With a Wildcard - every approach in one file, plus a self-checking test suite.
+
+Run: python valid_parenthesis_string_all.py
+"""
+
+from __future__ import annotations
+
+import random
+from functools import lru_cache
+from itertools import product
+
+OPEN = "("
+CLOSE = ")"
+STAR = "*"
+STAR_MEANINGS = (OPEN, CLOSE, "")  # the three readings of a blank, named once
+ALPHABET = OPEN + CLOSE + STAR
+
+
+# --- shared judge, used by the concrete-string rung -----------------------------
+
+def is_balanced(s: str) -> bool:
+    """Ordinary bracket matching on a string with no blanks left in it."""
+    depth = 0
+    for ch in s:
+        depth += 1 if ch == OPEN else -1
+        if depth < 0:
+            return False
+    return depth == 0
+
+
+# --- 1. Enumerate every concrete reading ----------------------------------------
+
+def valid_parenthesis_string_enumerate(s: str) -> bool:
+    slots = [i for i, ch in enumerate(s) if ch == STAR]
+    for reading in product(STAR_MEANINGS, repeat=len(slots)):
+        chars = list(s)
+        for i, piece in zip(slots, reading):
+            chars[i] = piece  # "" makes the blank vanish
+        if is_balanced("".join(chars)):
+            return True
+    return False
+
+
+# --- 2. Recurse, branching three ways at every blank ----------------------------
+
+def valid_parenthesis_string_recurse(s: str) -> bool:
+    def walk(at: int, open_count: int) -> bool:
+        if open_count < 0:  # a closer with nothing to close; unrepairable
+            return False
+        if at == len(s):
+            return open_count == 0
+        if s[at] == OPEN:
+            return walk(at + 1, open_count + 1)
+        if s[at] == CLOSE:
+            return walk(at + 1, open_count - 1)
+        return (
+            walk(at + 1, open_count + 1)     # blank as an opener
+            or walk(at + 1, open_count - 1)  # blank as a closer
+            or walk(at + 1, open_count)      # blank as nothing
+        )
+
+    return walk(0, 0)
+
+
+# --- 3. The same recursion, memoised on (position, open count) ------------------
+
+def valid_parenthesis_string_memo(s: str) -> bool:
+    @lru_cache(maxsize=None)
+    def walk(at: int, open_count: int) -> bool:
+        if open_count < 0:
+            return False
+        if at == len(s):
+            return open_count == 0
+        if s[at] == OPEN:
+            return walk(at + 1, open_count + 1)
+        if s[at] == CLOSE:
+            return walk(at + 1, open_count - 1)
+        return (
+            walk(at + 1, open_count + 1)
+            or walk(at + 1, open_count - 1)
+            or walk(at + 1, open_count)
+        )
+
+    return walk(0, 0)  # the cache lives with the closure and dies with it
+
+
+# --- 4. Two stacks of positions -------------------------------------------------
+
+def valid_parenthesis_string_two_stacks(s: str) -> bool:
+    opens: list[int] = []  # positions of unmatched '('
+    stars: list[int] = []  # positions of unspent '*'
+    for i, ch in enumerate(s):
+        if ch == OPEN:
+            opens.append(i)
+        elif ch == STAR:
+            stars.append(i)
+        elif opens:
+            opens.pop()  # prefer the rigid opener; keep the flexible blank in hand
+        elif stars:
+            stars.pop()  # spend a blank as a substitute opener
+        else:
+            return False  # a closer with nothing at all to match
+    while opens and stars:
+        if opens[-1] > stars[-1]:  # the blank sits LEFT of the opener - it cannot close it
+            return False
+        opens.pop()
+        stars.pop()
+    return not opens
+
+
+# --- 5. Carry the range of possible open counts (optimal) -----------------------
+
+def valid_parenthesis_string_range(s: str) -> bool:
+    low = 0   # fewest outstanding openers any surviving reading could have
+    high = 0  # most
+    for ch in s:
+        if ch == OPEN:
+            low += 1
+            high += 1
+        elif ch == CLOSE:
+            low -= 1
+            high -= 1
+        else:  # a blank: closer at the floor, opener at the ceiling, nothing in between
+            low -= 1
+            high += 1
+        if high < 0:  # even the most generous reading has surplus closers
+            return False
+        if low < 0:
+            low = 0  # drop the readings that went negative; they are dead forever
+    return low == 0
+
+
+# --- harness -------------------------------------------------------------------
+
+APPROACHES = [
+    ("enumerate", valid_parenthesis_string_enumerate),
+    ("recurse", valid_parenthesis_string_recurse),
+    ("memo", valid_parenthesis_string_memo),
+    ("two_stacks", valid_parenthesis_string_two_stacks),
+    ("range", valid_parenthesis_string_range),
+]
+
+POLYNOMIAL = APPROACHES[2:]  # the rungs that survive a 100-character string
+
+NAMED_CASES: list[tuple[str, str]] = [
+    ("statement example 1", "()"),
+    ("statement example 2", "(*))"),
+    ("statement example 3", "(((*)"),
+    ("worked example", "(*))(*)"),
+    ("smallest legal, one blank", "*"),
+    ("smallest legal, one open", "("),
+    ("smallest legal, one close", ")"),
+    ("blank must read as nothing", "()*"),
+    ("blank left of the opener", "*("),
+    ("all blanks, odd length", "***"),
+    ("closer with nothing to close", ")("),
+    ("blanks cannot undo a deficit", "))*"),
+]
+
+
+def main() -> None:
+    cases = list(NAMED_CASES)
+    rng = random.Random(20260912)
+    for n in range(1, 11):
+        for _ in range(6):
+            cases.append((f"stress n={n}", "".join(rng.choice(ALPHABET) for _ in range(n))))
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+
+    for label, s in cases:
+        results = [fn(s) for _, fn in APPROACHES]
+        agreed = all(r == results[0] for r in results)
+        if not label.startswith("stress"):
+            print(f"\n{label}: s={s!r}")
+            for (name, _), got in zip(APPROACHES, results):
+                print(f"  {name:<{width}} -> {got}")
+        if not agreed:
+            all_agreed = False
+            print(f"\n{label}: s={s!r}")
+            for (name, _), got in zip(APPROACHES, results):
+                print(f"  {name:<{width}} -> {got}")
+            print("  DISAGREEMENT")
+
+    # past n=10 the exponential rungs are excluded; their 3^n cost is analytic, not
+    # measured. The memoised recursion is the brute-force recursion with a cache, so
+    # it stands in as the reference for the long strings.
+    long_cases = 0
+    for n in (20, 40, 60, 80, 100):
+        for _ in range(20):
+            s = "".join(rng.choice(ALPHABET) for _ in range(n))
+            results = [fn(s) for _, fn in POLYNOMIAL]
+            long_cases += 1
+            if not all(r == results[0] for r in results):
+                all_agreed = False
+                print(f"\nlong n={n}: s={s!r} -> {results}")
+                print("  DISAGREEMENT")
+
+    print(
+        f"\n{len(cases)} short cases ({len(cases) - len(NAMED_CASES)} randomised) across "
+        f"{len(APPROACHES)} approaches, plus {long_cases} long cases across {len(POLYNOMIAL)}."
+    )
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()
+```

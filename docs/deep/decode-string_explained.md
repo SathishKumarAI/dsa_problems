@@ -1,0 +1,871 @@
+# Expand a Nested Encoding — explained
+
+## Understanding the Problem
+
+Think of a shorthand a copyist might use. Instead of writing `aaa` they write `3[a]`: a count, then
+the thing to repeat in brackets. The shorthand nests — `3[a2[c]]` means "three copies of *a followed by
+two c's*", which is `accaccacc` — and plain letters can sit outside any bracket at all. Your job is to
+write out the full text.
+
+**The core question:** when a `]` arrives, what exactly do you repeat, and what do you glue the result
+onto? The naive approach is slow because it answers that by **rewriting the whole text** every time it
+expands one group, so an encoding with several nested groups pays for the entire string over and over.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= s.length <= 30`, and the input is **always well formed** | Thirty characters means even a rewrite-the-whole-string baseline runs instantly, so the brute force is usable as an oracle. "Always well formed" is the bigger gift: **every `[` has a matching `]`, every `[` has a count in front of it, and no `]` is ever orphaned** — so no approach below contains a single line of error handling, and the stack can never be popped when it is empty. |
+| `1 <= k <= 300`, and `k` may have **more than one digit** | The single most-missed detail. A count is not a character, it is a **number spread across characters**, so it must be accumulated (`number = number * 10 + digit`) until the `[` arrives. `12[b]` is twelve `b`s, not one `b` then two `b`s. |
+| Groups **nest** | The permission slip for the whole document. Nesting means an inner group must be fully expanded before the enclosing group can repeat it, which is a last-opened-first-finished discipline — a recursion, or its stack written out by hand. |
+| Letters may appear **outside** any group, before or after it | There is always a "current text" being built even at the outermost level, so the outermost level is not a special case: it is just the bottom of the stack, with nothing beneath it. |
+
+Note what is *absent*: nothing bounds the **output**. Thirty input characters with `k = 300` and three
+levels of nesting is twenty-seven million characters, so the decoded length `m` — not the input length
+`n` — is the quantity every complexity below is really about.
+
+The worked example used in every section below:
+
+```
+s = "3[a2[c]]12[b]"        answer: "accaccaccbbbbbbbbbbbb"      (21 characters)
+```
+
+It is chosen deliberately: it nests two levels, it has a group *after* the nested one so the
+sequencing is visible, and its second count is **two digits**.
+
+---
+
+## Approach 1 — Expand the innermost group, over and over
+
+### The idea
+
+*Which group can I expand right now without thinking?* One with no brackets inside it — its content is
+already final. Find any such group, replace it with its expansion, and look again. Every expansion
+removes one pair of brackets, so eventually there are none left and the text is decoded.
+
+### How to think about it
+
+> **Intuition.** A sheet of paper covered in shorthand. You scan it for the innermost piece of
+> shorthand — one whose brackets contain nothing but letters — cross it out, write the expansion in its
+> place, and then **recopy the whole sheet**. You do that until no brackets remain. The method never
+> thinks about nesting, containment or order; it only knows how to expand the simplest possible group,
+> and it relies on the fact that doing so repeatedly must terminate. Total ignorance of the structure,
+> total confidence in the loop.
+
+### Worked example
+
+`"3[a2[c]]12[b]"`. The state is the whole string, rewritten each round:
+
+| round | string | leftmost innermost group | expands to | string after |
+|---|---|---|---|---|
+| 1 | `3[a2[c]]12[b]` | `2[c]` at index 3 | `cc` | `3[acc]12[b]` |
+| 2 | `3[acc]12[b]` | `3[acc]` at index 0 | `accaccacc` | `accaccacc12[b]` |
+| 3 | `accaccacc12[b]` | `12[b]` at index 9 | `bbbbbbbbbbbb` | `accaccaccbbbbbbbbbbbb` |
+| 4 | `accaccaccbbbbbbbbbbbb` | none — no `[` remains | — | **done**, 21 characters |
+
+Round 1 is the whole method in miniature: the scan skipped `3[a2[c]]` at index 0, because `3[` is
+followed by `a2[` and the pattern demands *letters only* between the brackets. Skipping it is not a
+shortcoming — it is what "innermost" means, and expanding it before its inside was final is exactly the
+bug described below.
+
+Note that rounds 2 and 3 each rescan and rebuild a string that has grown, so the work done is
+proportional to the **final** size once per group, not to the input size.
+
+### Code
+
+```python
+INNERMOST = re.compile(r"(\d+)\[([a-z]*)\]")
+# a group with NO brackets inside it: a count, '[', letters only, ']'
+
+
+def decode_string_innermost(s: str) -> str:
+    while OPEN in s:
+        s = INNERMOST.sub(lambda m: m.group(2) * int(m.group(1)), s, count=1)
+    return s
+```
+
+The pattern is the whole algorithm and lives at module scope as a named constant, so "what counts as an
+innermost group" is one edit in one place. `count=1` is load-bearing: rewriting every match in one pass
+would be fine here but stops being obviously correct the moment expansions can create new matches.
+
+### Common mistake
+
+> **Watch out.** You will write the group's content as `.*` — or `.*?` — because "whatever is inside
+> the brackets" sounds like *anything*. It is not anything. It is **letters only**, and that
+> restriction is the entire definition of *innermost*. With `.*` the pattern happily spans nested
+> brackets and expands a group whose inside is still shorthand.
+
+Run `(\d+)\[(.*)\]` on `3[a2[c]]` and watch the rewrites:
+
+```
+'3[a2[c]]'
+'a2[c]a2[c]a2[c]'
+'ac]a2[c]a2[cc]a2[c]a2[c'
+'ac]ac]a2[cc]a2[cc]a2[cc]a2[ca2[c'
+```
+
+The string is not converging on an answer — it is growing and shredding, because `3[…]` was expanded
+while `2[c]` was still inside it, and the copies scattered unmatched brackets through the text. On the
+worked example the loop never terminates at all; it dies with `MemoryError`. The lesson outlives the
+regex: **an expansion is only safe on a group whose content is already final**, and "contains no
+brackets" is how you check that.
+
+### Complexity and when to use this
+
+**Time `O(g · m)`, space `O(m)`**, where `g` is the number of groups and `m` the decoded length. Each
+round scans and rebuilds the entire current string, which grows towards `m`, and there is one round per
+group. With `n <= 30` the group count is at most 15, so this is instant here; it degrades badly the
+moment the encoding is long.
+
+Use it as the **oracle**. Its correctness argument fits in one sentence — "each round expands a group
+whose content is already final, and every round removes a pair of brackets" — which is what makes it
+the reference the stress test checks the other four against.
+
+---
+
+## Approach 2 — Recursive descent
+
+### The idea
+
+*The rewriting exists only because the method refuses to understand nesting — what if it did?* A group's
+content is itself an encoding, so a function that decodes an encoding can call itself on the inside of a
+group. One left-to-right pass, no rewriting, no rescanning.
+
+This fixes Approach 1's weakness — **it rebuilds the whole string once per group, and the string it
+rebuilds keeps getting longer.**
+
+### How to think about it
+
+> **Intuition.** Read the shorthand aloud, left to right, into a notepad. Digits go into a number you
+> are holding. Letters go straight onto the pad. When you hit `[`, hand the rest of the sheet to an
+> assistant with the same instructions, take back what they wrote and where they stopped, copy it onto
+> your pad the number of times you were holding, and carry on from there. When *you* hit `]`, you are
+> the assistant: hand your pad back to whoever called you.
+
+The awkward part is not the recursion; it is the **position**. The caller cannot know how far into the
+string the assistant read — that depends on how deeply the assistant's own group nested — so the
+assistant must report two things: the text it built *and* the index it stopped at. A recursive parser
+that returns only its value and lets the caller guess the position is the classic way to get this wrong.
+
+### Worked example
+
+`"3[a2[c]]12[b]"`. The state is the call depth, the position, the pending number and each level's `out`:
+
+| step | depth | `at` | char | `number` | action | `out` at this depth |
+|---|---|---|---|---|---|---|
+| 1 | 0 | 0 | `3` | 3 | accumulate | `""` |
+| 2 | 0 | 1 | `[` | 3 | **recurse from 2** | `""` |
+| 3 | 1 | 2 | `a` | 0 | append | `"a"` |
+| 4 | 1 | 3 | `2` | 2 | accumulate | `"a"` |
+| 5 | 1 | 4 | `[` | 2 | **recurse from 5** | `"a"` |
+| 6 | 2 | 5 | `c` | 0 | append | `"c"` |
+| 7 | 2 | 6 | `]` | 0 | **return `("c", 7)`** | — |
+| 8 | 1 | 7 | — | 0 | `out += "c" * 2`, resume at 7 | `"acc"` |
+| 9 | 1 | 7 | `]` | 0 | **return `("acc", 8)`** | — |
+| 10 | 0 | 8 | — | 0 | `out += "acc" * 3`, resume at 8 | `"accaccacc"` |
+| 11 | 0 | 8 | `1` | 1 | accumulate | `"accaccacc"` |
+| 12 | 0 | 9 | `2` | **12** | accumulate — second digit | `"accaccacc"` |
+| 13 | 0 | 10 | `[` | 12 | **recurse from 11** | `"accaccacc"` |
+| 14 | 1 | 11 | `b` | 0 | append | `"b"` |
+| 15 | 1 | 12 | `]` | 0 | **return `("b", 13)`** | — |
+| 16 | 0 | 13 | — | 0 | `out += "b" * 12`, past the end | `"accaccaccbbbbbbbbbbbb"` |
+
+Steps 11 and 12 are the multi-digit rule: `number` goes 1 then 12, never 1 then 2. Steps 8 and 10 are
+the position being *returned* — the caller resumes at the index the callee reported, which is one past
+the `]` the callee consumed.
+
+### Code
+
+```python
+def decode_string_recursive(s: str) -> str:
+    def parse(at: int) -> tuple[str, int]:
+        """Decode from `at` until this level's ']' or the end. Returns text AND where it stopped."""
+        out = ""
+        number = 0
+        while at < len(s):
+            ch = s[at]
+            if ch.isdigit():
+                number = number * 10 + int(ch)  # a count can span several characters
+                at += 1
+            elif ch == OPEN:
+                inner, at = parse(at + 1)
+                out += inner * number
+                number = 0
+            elif ch == CLOSE:
+                return out, at + 1  # consume the ']' on the caller's behalf
+            else:
+                out += ch
+                at += 1
+        return out, at
+
+    return parse(0)[0]
+```
+
+### Common mistake
+
+> **Watch out.** You will have `parse` return just the string, because that is what a decoder "returns",
+> and then advance the caller's index by one as if `[` were a single character to step over. The
+> assistant read an unknown number of characters, and only the assistant knows how many. **Returning
+> the value without the position is returning half the answer.**
+
+```python
+            elif ch == OPEN:
+                out += parse(at + 1) * number   # WRONG - no idea where the callee stopped
+                number = 0
+                at += 1                         # steps one character, not past the group
+```
+
+On `"3[a]2[bc]"` it returns `"aaaa"` instead of `"aaabcbc"`. On the worked example it returns
+`"acccacccacccaccc"` — 16 characters instead of 21. The caller re-reads the group's own contents as if
+they were top-level text, so letters get counted twice and the trailing groups are consumed by the
+wrong level. Note how *plausible* the wrong output looks: the right letters in roughly the right
+proportions, which is why this bug is usually found by a length mismatch rather than by eye.
+
+### Complexity and when to use this
+
+**Time `O(n · k)` — that is, the size of the decoded output, `m` — and space `O(m + d)`** where `d` is
+the nesting depth. Every character of the output is written once per enclosing level, and the recursion
+holds `d` frames plus each level's partial text.
+
+Use it when you would naturally reach for a parser: it is the shortest of the five, it reads exactly
+like the grammar (`group := count '[' encoding ']'`), and extending it — a new bracket type, an escape
+character, a `k` that may be zero — is a local edit. The one real hazard is depth: 30 characters cannot
+nest far enough to matter here, but the same shape applied to a megabyte of nested input will overflow
+the stack, which is precisely the argument for making the stack explicit.
+
+---
+
+## Approach 3 — Precompute the matching bracket, then recurse over ranges
+
+### The idea
+
+*The position threading is awkward because the callee discovers where its group ends — what if that were
+known in advance?* One pass with a stack pairs every `[` with its `]`. After that, decoding a group is a
+call over a known range `(lo, hi)`, and no function has to report where it stopped.
+
+This fixes Approach 2's weakness — **every call returns a position as well as a value, and threading
+that index back through the caller is the part people get wrong.**
+
+### How to think about it
+
+> **Intuition.** Before reading a word of the shorthand, go through it once with a spike, putting every
+> `[` you see onto it and, every time you meet a `]`, taking the top `[` off and writing the pair into a
+> table. When you are done, the table tells you the exact span of every group. Now decoding is easy:
+> "expand characters 2 through 6" is a complete instruction, and the function never has to negotiate
+> about where it stopped.
+
+This is the **restructure-then-search** rung: pay a cheap linear preprocessing pass to buy a simpler
+search. The stack in the preprocessing pass is doing exactly the job the call stack did in Approach 2 —
+remembering which opener is still waiting — which is a useful thing to notice, because it is the same
+stack the next rung will use for the decoding itself.
+
+### Worked example
+
+`"3[a2[c]]12[b]"`, indices `0`–`12`. First the preprocessing pass; the state is the spike:
+
+| `i` | char | spike before | action | spike after | table |
+|---|---|---|---|---|---|
+| 1 | `[` | `[]` | push 1 | `[1]` | `{}` |
+| 4 | `[` | `[1]` | push 4 | `[1, 4]` | `{}` |
+| 6 | `]` | `[1, 4]` | pop 4, pair it | `[1]` | `{4: 6}` |
+| 7 | `]` | `[1]` | pop 1, pair it | `[]` | `{4: 6, 1: 7}` |
+| 10 | `[` | `[]` | push 10 | `[10]` | `{4: 6, 1: 7}` |
+| 12 | `]` | `[10]` | pop 10, pair it | `[]` | `{4: 6, 1: 7, 10: 12}` |
+
+The **last** opener pushed is the **first** one closed — rows 6 and 7 — which is the stack discipline
+that makes the table correct. Then the decode, now purely range-based:
+
+| call | range | reads | `number` | recursion | returns |
+|---|---|---|---|---|---|
+| `expand(0, 13)` | whole string | `3`, then `[` at 1 | 3 | `expand(2, 7)` | … |
+| `expand(2, 7)` | inside the outer group | `a`, `2`, then `[` at 4 | 2 | `expand(5, 6)` | … |
+| `expand(5, 6)` | inside the inner group | `c` | — | none | `"c"` |
+| `expand(2, 7)` resumes | jumps to `closes[4] + 1 = 7`, which is `hi` | — | 0 | — | `"a" + "c"*2` = `"acc"` |
+| `expand(0, 13)` resumes | jumps to `closes[1] + 1 = 8`; reads `1`, `2`, `[` at 10 | 12 | `expand(11, 12)` | … |
+| `expand(11, 12)` | inside the last group | `b` | — | none | `"b"` |
+| `expand(0, 13)` resumes | jumps to `closes[10] + 1 = 13` = `hi` | — | — | — | `"accaccacc" + "b"*12` |
+
+Final: `"accaccaccbbbbbbbbbbbb"`. Each call knows its own boundaries up front, and `]` never appears in
+the decode loop at all — the ranges are chosen so no call ever sees one.
+
+### Code
+
+```python
+def decode_string_matched(s: str) -> str:
+    closes = match_brackets(s)
+
+    def expand(lo: int, hi: int) -> str:
+        out = ""
+        number = 0
+        at = lo
+        while at < hi:
+            ch = s[at]
+            if ch.isdigit():
+                number = number * 10 + int(ch)
+                at += 1
+            elif ch == OPEN:
+                close = closes[at]
+                out += expand(at + 1, close) * number
+                number = 0
+                at = close + 1  # skip the whole group, its closing bracket included
+            else:
+                out += ch
+                at += 1
+        return out
+
+    return expand(0, len(s))
+```
+
+`match_brackets` is a module-level helper — one linear stack pass returning `{open index: close
+index}` — declared once because it is a general-purpose tool, not part of this answer.
+
+### Common mistake
+
+> **Watch out.** You will build the table with a list and reach for `pop(0)`, or otherwise pair the
+> **first** opener with the **first** closer. Brackets do not pair in arrival order, they pair
+> innermost-first: a `]` belongs to the most recently opened `[`. A queue gives you the wrong partner
+> the instant anything nests.
+
+Run the front-popping version on `"3[a2[c]]"` and it returns
+
+```
+'ac]c]ac]c]ac]c]]'
+```
+
+instead of `"accaccacc"` — brackets appear in the *output*, which should be impossible, because the
+mismatched ranges caused a `]` to be read as an ordinary character. The genuinely dangerous part is what
+it does on `"3[a]2[bc]"`: it returns `"aaabcbc"`, **the correct answer**. With no nesting, first-opened
+and last-opened are the same bracket, so the bug is invisible on every flat test case and appears only
+on the inputs the table exists for.
+
+### Complexity and when to use this
+
+**Time `O(n + m)`, space `O(m + n/2 + d)`.** The preprocessing is one pass over `n` characters holding
+at most `n/2` open positions; the decode writes `m` characters and holds `d` recursive frames. The
+matching table is `n/2` entries at worst.
+
+Use it whenever the same encoding will be decoded more than once, or when you need to answer questions
+about the structure without decoding at all — how deep does it nest, which group contains index 9, what
+is the decoded *length* (computable from the table and the counts alone, without materialising twenty-
+seven million characters). The table is also the standard preprocessing step for bracket problems
+generally, so it is worth having in your hands.
+
+---
+
+## Approach 4 — One pass, two explicit stacks
+
+### The idea
+
+*The recursion's only real job is remembering what the enclosing level had built and how many times to
+repeat this one — can that be remembered without a call?* Yes. On `[`, push those two facts and start
+fresh. On `]`, pop them and splice. One loop, no recursion, no matching table.
+
+This fixes Approach 3's weakness — **it needs a preprocessing pass and a table**, and Approach 2's —
+**it needs the call stack, which is a resource you do not control.**
+
+### How to think about it
+
+> **Intuition.** A pile of clipboards. You are writing on the top one. When a `[` arrives you slide your
+> clipboard onto the pile together with a sticky note saying how many times its successor must be
+> copied, and pull out a blank one. When a `]` arrives you finish the blank one, take the clipboard
+> below off the pile, and copy the finished text onto it as many times as the sticky note says. The pile
+> **is** the call stack of Approach 2, made out of data instead of frames.
+
+> **Why it works.** The invariant is that at every moment, `current` holds the fully decoded text of the
+> innermost group *so far*, and the stacks hold, for each enclosing level from outermost to innermost,
+> the text that level had built before its `[` and the multiplier waiting on its `]`. A `[` preserves
+> this by pushing the current level and starting a new innermost one; a `]` preserves it by finishing
+> the innermost level and folding it into the one below. Because the input is guaranteed well formed,
+> every `]` has a matching entry to pop, so the two stacks are always the same height and never empty
+> when read — which is why this code contains no error handling at all.
+
+The two things you push are not interchangeable, and naming them is worth doing: **the text is what you
+will glue onto** and **the number is how many times you will glue**. Push one and forget the other and
+the bug is silent.
+
+### Worked example
+
+`"3[a2[c]]12[b]"`. The state is the two stacks plus `current` and the pending `number`:
+
+| char | `counts` | `texts` | `current` | `number` | what happened |
+|---|---|---|---|---|---|
+| — | `[]` | `[]` | `""` | 0 | start |
+| `3` | `[]` | `[]` | `""` | 3 | digit accumulates |
+| `[` | `[3]` | `[""]` | `""` | 0 | push both, start fresh |
+| `a` | `[3]` | `[""]` | `"a"` | 0 | append |
+| `2` | `[3]` | `[""]` | `"a"` | 2 | digit accumulates |
+| `[` | `[3, 2]` | `["", "a"]` | `""` | 0 | push both, start fresh |
+| `c` | `[3, 2]` | `["", "a"]` | `"c"` | 0 | append |
+| `]` | `[3]` | `[""]` | `"acc"` | 0 | pop: `"a"` + `"c"`×2 |
+| `]` | `[]` | `[]` | `"accaccacc"` | 0 | pop: `""` + `"acc"`×3 |
+| `1` | `[]` | `[]` | `"accaccacc"` | 1 | digit accumulates |
+| `2` | `[]` | `[]` | `"accaccacc"` | **12** | **second digit: 1×10 + 2** |
+| `[` | `[12]` | `["accaccacc"]` | `""` | 0 | push both, start fresh |
+| `b` | `[12]` | `["accaccacc"]` | `"b"` | 0 | append |
+| `]` | `[]` | `[]` | `"accaccaccbbbbbbbbbbbb"` | 0 | pop: prefix + `"b"`×12 |
+
+Read the `texts` column downwards and you are reading the call stack of Approach 2, one entry per
+enclosing level. Read the `number` column and the multi-digit rule is visible in a single row: `1` then
+`12`, never `1` then `2`.
+
+### Code
+
+```python
+def decode_string_stack(s: str) -> str:
+    counts: list[int] = []
+    texts: list[str] = []
+    current = ""
+    number = 0
+    for ch in s:
+        if ch.isdigit():
+            number = number * 10 + int(ch)  # a count spans characters; accumulate it
+        elif ch == OPEN:
+            counts.append(number)  # the multiplier waiting for this group's ']'
+            texts.append(current)  # everything the enclosing level had built
+            number = 0
+            current = ""
+        elif ch == CLOSE:
+            current = texts.pop() + current * counts.pop()  # resume, then splice
+        else:
+            current += ch
+    return current
+```
+
+### Common mistake
+
+> **Watch out.** You will write `number = int(ch)` and never notice, because every example in every
+> tutorial uses a single-digit count. A count is a **number written across characters**, and reading it
+> one character at a time keeps only the last digit.
+
+```python
+        if ch.isdigit():
+            number = int(ch)     # WRONG - keeps only the final digit of a multi-digit count
+```
+
+On the worked example it returns `"accaccaccbb"` — 11 characters instead of 21, since `12[b]` became
+`2[b]`. The spectacular case is `"100[a]"`, where it returns the **empty string**: the digits are `1`,
+`0`, `0` and the last one wins, so the count is zero and `"a" * 0` is nothing at all. A bug that silently
+turns a hundred copies into none is worth the one extra multiplication.
+
+The mirror-image bug is forgetting `number = 0` after pushing. Then the count is never reset and the
+next group inherits the previous one's digits — on the worked example that yields a 3311-character
+string, which at least fails loudly.
+
+### Complexity and when to use this
+
+**Time `O(n · k)` — the decoded size `m` — and space `O(m)`.** Each output character is written once per
+enclosing level, and the two stacks together hold one entry per open bracket, `d` of them, whose texts
+sum to at most `m`.
+
+One caveat worth knowing rather than fearing: `current += ch` looks quadratic, and in CPython it usually
+is not, because the interpreter grows the string in place when it holds the only reference. That is an
+optimisation of one interpreter, not a property of the algorithm, and it evaporates the moment anything
+else refers to the string. The next rung removes the dependence entirely.
+
+**This is the one to write.** It is fifteen lines, it is a single pass, it uses a stack you control
+rather than the interpreter's, and the two things it pushes are the whole idea.
+
+---
+
+## Approach 5 — The same pass, building into chunk lists
+
+### The idea
+
+*Approach 4 rebuilds an immutable string on every letter and again on every `]` — can the text be
+accumulated instead of rebuilt?* Yes. Let each level hold a **list of pieces** and join it only when the
+level finishes. One `append` per character, one `join` per group.
+
+This fixes Approach 4's weakness — **it depends on an interpreter optimisation to avoid copying the
+partial text on every single character**, which no language guarantees and which vanishes as soon as the
+string is shared.
+
+### How to think about it
+
+> **Intuition.** Same pile of clipboards, but now each clipboard is a tray of loose strips of paper
+> rather than a single sheet you recopy. Writing a letter drops one strip into the tray. Finishing a
+> group is the only moment anything is glued: you gather that tray's strips into one strip, copy it the
+> required number of times, and drop the result into the tray below. Nothing is copied until the moment
+> it must be.
+
+This is the same pattern as the mutable path buffer in backtracking problems, and it comes with the same
+trap: the thing you push onto the stack must be a **different object** from the one you keep writing
+into. Pushing a list and then clearing it pushes an empty list, because you pushed a reference.
+
+### Worked example
+
+`"3[a2[c]]12[b]"`. The state is the stack of `(tray, multiplier)` pairs and the current tray:
+
+| char | `stack` | `current` tray | `number` | what happened |
+|---|---|---|---|---|
+| — | `[]` | `[]` | 0 | start |
+| `3` | `[]` | `[]` | 3 | digit accumulates |
+| `[` | `[([], 3)]` | `[]` | 0 | push the tray, bind a **new** list |
+| `a` | `[([], 3)]` | `['a']` | 0 | append a strip |
+| `2` | `[([], 3)]` | `['a']` | 2 | digit accumulates |
+| `[` | `[([], 3), (['a'], 2)]` | `[]` | 0 | push, bind a new list |
+| `c` | `[([], 3), (['a'], 2)]` | `['c']` | 0 | append a strip |
+| `]` | `[([], 3)]` | `['a', 'cc']` | 0 | join `['c']`→`"c"`, ×2, drop into the popped tray |
+| `]` | `[]` | `['accaccacc']` | 0 | join `['a','cc']`→`"acc"`, ×3, drop in |
+| `1` | `[]` | `['accaccacc']` | 1 | digit accumulates |
+| `2` | `[]` | `['accaccacc']` | **12** | second digit |
+| `[` | `[(['accaccacc'], 12)]` | `[]` | 0 | push, bind a new list |
+| `b` | `[(['accaccacc'], 12)]` | `['b']` | 0 | append a strip |
+| `]` | `[]` | `['accaccacc', 'bbbbbbbbbbbb']` | 0 | join, ×12, drop in |
+| end | `[]` | joined | — | `"accaccaccbbbbbbbbbbbb"` |
+
+Compare the `current` column with Approach 4's: there, `current` was rebuilt into a new string at every
+letter; here it grows by one element and is glued exactly three times, once per `]`.
+
+### Code
+
+```python
+def decode_string_chunks(s: str) -> str:
+    stack: list[tuple[list[str], int]] = []
+    current: list[str] = []
+    number = 0
+    for ch in s:
+        if ch.isdigit():
+            number = number * 10 + int(ch)
+        elif ch == OPEN:
+            stack.append((current, number))
+            current = []  # a NEW list - never current.clear(), which empties the pushed one
+            number = 0
+        elif ch == CLOSE:
+            finished = "".join(current)
+            current, times = stack.pop()
+            current.append(finished * times)
+        else:
+            current.append(ch)
+    return "".join(current)
+```
+
+### Common mistake
+
+> **Watch out.** You will write `stack.append(current)` followed by `current.clear()`, reading it as
+> "save it, then start over". You did not save it. You saved a **reference to the very list you then
+> emptied**, so the stack now holds an empty list and everything the enclosing level had built is gone.
+
+```python
+        elif ch == OPEN:
+            stack.append((current, number))
+            current.clear()      # WRONG - empties the list that was just pushed
+```
+
+On the worked example it returns `'bbbbbbbbbbbbb'` — thirteen `b`s, 13 characters instead of 21, with
+every `a` and `c` erased. On `"3[a]2[bc]"` it returns `"bcbcbc"` instead of `"aaabcbc"`; on `"3[a2[c]]"`
+it returns `"cccccccccccc"` instead of `"accaccacc"`. In each case only the **innermost, last** group
+survives, because every enclosing level was emptied the moment it was saved. Rebinding
+(`current = []`) and clearing (`current.clear()`) look interchangeable and are opposites: one makes a new
+object, the other reaches into the old one.
+
+### Complexity and when to use this
+
+**Time `O(m · d)`, space `O(m)`**, where `d` is the nesting depth: each output character is joined once
+per level that encloses it, and nothing is copied *within* a level. Space is the trays, holding at most
+`m` characters in total.
+
+Use it in any language where string concatenation genuinely allocates — which is most of them, and which
+is why the data file's Java solution uses a `StringBuilder` and its C++ solution appends to a `string`
+rather than rebuilding one. Use it in Python too the moment the decoded text is large, because then the
+interpreter's in-place growth optimisation is the only thing standing between you and a quadratic, and
+you should not be relying on it. For a 30-character input it makes no measurable difference, and
+Approach 4 is a little easier to read.
+
+---
+
+## The Overall Arc
+
+Every rung here chases one principle: **nesting is a last-opened-first-finished discipline, so the only
+question is where you keep the suspended work.** The rewriting baseline keeps it nowhere: it refuses to
+model the structure at all, expands whichever group happens to have no brackets left inside it, and then
+recopies the entire text — which is correct, and costs the growing output once per group, and teaches
+the one thing the fast versions all depend on, that a group may only be expanded once its content is
+final. Recursion is the first honest answer, because the language already has a last-opened-first-
+finished structure lying around: a group's content is itself an encoding, so the function calls itself
+and the call stack remembers what each enclosing level had built. That works and exposes the awkward
+part, which is not the recursion but the **position** — the callee read an unknown number of characters
+and must report where it stopped, and a parser that returns its value without its position is the
+classic way to get this wrong. Precomputing the bracket pairs removes that negotiation by paying one
+cheap linear pass, and it is worth doing once just to see the shape: the stack in that preprocessing
+pass is doing exactly the job the call stack was doing, remembering which opener is still waiting, which
+tells you that the call stack was never essential — only the *discipline* was. So make it data. On a
+`[`, push the two facts the enclosing level will need when its `]` arrives — **the text built so far**
+and **the multiplier** — and start fresh; on a `]`, pop them and splice. That is one pass, no recursion,
+no table, and a stack whose depth you control rather than the interpreter's. What remains is not
+structure but copying: rebuilding an immutable string on every letter is quadratic in principle and
+saved only by an interpreter optimisation you should not be leaning on, so let each level accumulate a
+list of pieces and glue it exactly once, when the level finishes. Through all five, the detail that
+actually decides correctness is the smallest one — a count is a number spread across characters, so it
+must be accumulated with `number * 10 + digit` and reset at the `[`, and getting that wrong turns
+`12[b]` into two `b`s and `100[a]` into nothing at all. Rewrite everything, recurse, precompute the
+spans, make the stack explicit, and finally stop copying — with the explicit stack the one to know cold
+and the recursion the one to keep, because it is the version that says out loud what the stack is for.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Expand the innermost group | `O(g · m)` | `O(m)` | Understands no structure at all; recopies the growing text once per group | Oracle for the stress test; `n` is tiny |
+| Recursive descent | `O(m)` | `O(m + d)` | Shortest and closest to the grammar; the callee must report its stopping position | Parser-shaped work; a grammar likely to grow |
+| Precompute bracket pairs | `O(n + m)` | `O(m + n)` | One cheap pass buys ranges, so no call reports a position | Many decodes of one encoding; structural questions without decoding |
+| **Two explicit stacks** | **`O(m)`** | **`O(m)`** | **One pass, no recursion; you control the stack depth, not the interpreter** | **The default answer, and the one to write in an interview** |
+| Chunk lists | `O(m · d)` | `O(m)` | Removes per-character string rebuilding; one extra aliasing trap to respect | Large outputs; languages where concatenation genuinely allocates |
+
+---
+
+## Interview Priority
+
+**Know cold — the two explicit stacks.** Fifteen lines, single pass, and the version to submit. Be able
+to say what goes on the stack without hesitating, because that is the only question here.
+
+> **In an interview.** Say the two pushed facts out loud before writing anything: *"on a `[` I push the
+> text I've built so far and the multiplier, and start a fresh empty text; on a `]` I pop both, repeat
+> the just-finished text, and append it to the one I popped."* Then volunteer the digit rule before you
+> are asked — *"the count can be multi-digit, so I accumulate `number * 10 + digit` and reset it at the
+> `[`"* — because `k <= 300` is in the constraints precisely to catch people who do not. The usual
+> follow-up is "what if the input might be malformed", and the honest answer names what the guarantee
+> was buying: an unmatched `]` would pop an empty stack, so you would check the stacks before popping
+> and reject.
+
+**Know cold — the recursive descent.** Not because it beats the stack version, but because it is how you
+*explain* it. "The explicit stack is the call stack written out by hand, one entry per open bracket" is
+the sentence that shows you understand the equivalence rather than having memorised a template. It is
+also the better starting point if the problem grows a grammar — escapes, nested bracket types, optional
+counts.
+
+**Know cold — the multi-digit accumulation.** It is one line and it is the single most common failure on
+this problem. `number = number * 10 + int(ch)`, reset at the `[`. Say it, write it, and mention `100[a]`
+as the case that catches the wrong version, since it produces the empty string rather than a slightly
+wrong one.
+
+**Understand but do not memorize — the innermost-expansion baseline.** Twenty seconds to describe, and
+it earns its place by naming the rule everything else obeys: a group may only be expanded once its
+content contains no brackets. State it, price it at "the whole string once per group", and move on.
+
+**Understand but do not memorize — the matching table and the chunk lists.** One is a preprocessing
+technique worth *recognising* — pairing brackets with a stack is a general tool, and it answers
+structural questions without decoding anything. The other is a constant-factor fix whose real lesson is
+the aliasing trap: rebinding and clearing are opposites, and pushing a container you then mutate pushes
+nothing.
+
+---
+
+## Full Runnable Script
+
+The same five functions, assembled on shared constants and one shared bracket-matching helper, plus a
+test suite: both statement examples, the worked example, the smallest legal input, an encoding with no
+group at all, letters on both sides of a group, a three-digit count, a count of one, three levels of
+nesting, a group with a nested sibling, and 40 randomised well-formed encodings generated up to three
+levels deep — every one cross-checked against the innermost-expansion reference and against every other
+approach.
+
+```python
+"""Expand a Nested Encoding - every approach in one file, plus a self-checking test suite.
+
+Run: python decode_string_all.py
+"""
+
+from __future__ import annotations
+
+import random
+import re
+
+OPEN = "["
+CLOSE = "]"
+
+# a group with NO brackets inside it: a count, '[', letters only, ']'
+INNERMOST = re.compile(r"(\d+)\[([a-z]*)\]")
+
+
+# --- shared helper: pair every '[' with its ']' in one stack pass ---------------
+
+def match_brackets(s: str) -> dict[int, int]:
+    """{index of '[': index of its ']'}. General-purpose; not specific to decoding."""
+    closes: dict[int, int] = {}
+    open_positions: list[int] = []
+    for i, ch in enumerate(s):
+        if ch == OPEN:
+            open_positions.append(i)
+        elif ch == CLOSE:
+            closes[open_positions.pop()] = i  # a ']' belongs to the LAST '[' opened
+    return closes
+
+
+# --- 1. Expand the innermost group, over and over (the reference) ---------------
+
+def decode_string_innermost(s: str) -> str:
+    while OPEN in s:
+        s = INNERMOST.sub(lambda m: m.group(2) * int(m.group(1)), s, count=1)
+    return s
+
+
+# --- 2. Recursive descent, threading the read position --------------------------
+
+def decode_string_recursive(s: str) -> str:
+    def parse(at: int) -> tuple[str, int]:
+        """Decode from `at` until this level's ']' or the end. Returns text AND where it stopped."""
+        out = ""
+        number = 0
+        while at < len(s):
+            ch = s[at]
+            if ch.isdigit():
+                number = number * 10 + int(ch)  # a count can span several characters
+                at += 1
+            elif ch == OPEN:
+                inner, at = parse(at + 1)
+                out += inner * number
+                number = 0
+            elif ch == CLOSE:
+                return out, at + 1  # consume the ']' on the caller's behalf
+            else:
+                out += ch
+                at += 1
+        return out, at
+
+    return parse(0)[0]
+
+
+# --- 3. Precompute the matching bracket, then recurse over ranges ---------------
+
+def decode_string_matched(s: str) -> str:
+    closes = match_brackets(s)
+
+    def expand(lo: int, hi: int) -> str:
+        out = ""
+        number = 0
+        at = lo
+        while at < hi:
+            ch = s[at]
+            if ch.isdigit():
+                number = number * 10 + int(ch)
+                at += 1
+            elif ch == OPEN:
+                close = closes[at]
+                out += expand(at + 1, close) * number
+                number = 0
+                at = close + 1  # skip the whole group, its closing bracket included
+            else:
+                out += ch
+                at += 1
+        return out
+
+    return expand(0, len(s))
+
+
+# --- 4. One pass, two explicit stacks (optimal) ---------------------------------
+
+def decode_string_stack(s: str) -> str:
+    counts: list[int] = []
+    texts: list[str] = []
+    current = ""
+    number = 0
+    for ch in s:
+        if ch.isdigit():
+            number = number * 10 + int(ch)  # a count spans characters; accumulate it
+        elif ch == OPEN:
+            counts.append(number)  # the multiplier waiting for this group's ']'
+            texts.append(current)  # everything the enclosing level had built
+            number = 0
+            current = ""
+        elif ch == CLOSE:
+            current = texts.pop() + current * counts.pop()  # resume, then splice
+        else:
+            current += ch
+    return current
+
+
+# --- 5. The same pass, building into chunk lists --------------------------------
+
+def decode_string_chunks(s: str) -> str:
+    stack: list[tuple[list[str], int]] = []
+    current: list[str] = []
+    number = 0
+    for ch in s:
+        if ch.isdigit():
+            number = number * 10 + int(ch)
+        elif ch == OPEN:
+            stack.append((current, number))
+            current = []  # a NEW list - never current.clear(), which empties the pushed one
+            number = 0
+        elif ch == CLOSE:
+            finished = "".join(current)
+            current, times = stack.pop()
+            current.append(finished * times)
+        else:
+            current.append(ch)
+    return "".join(current)
+
+
+# --- harness -------------------------------------------------------------------
+
+APPROACHES = [
+    ("innermost", decode_string_innermost),
+    ("recursive", decode_string_recursive),
+    ("matched", decode_string_matched),
+    ("stack", decode_string_stack),
+    ("chunks", decode_string_chunks),
+]
+
+NAMED_CASES: list[tuple[str, str]] = [
+    ("statement example 1", "3[a]2[bc]"),
+    ("statement example 2", "3[a2[c]]"),
+    ("worked example", "3[a2[c]]12[b]"),
+    ("smallest legal input", "a"),
+    ("no group at all", "abc"),
+    ("letters outside, both sides", "ab3[cd]ef"),
+    ("multi-digit count", "100[a]"),
+    ("count of one", "1[ab]"),
+    ("three levels deep", "2[2[2[a]]]"),
+    ("nested with a sibling", "2[a3[b]c]"),
+]
+
+
+def random_encoding(rng: random.Random, depth: int) -> str:
+    """A well-formed encoding, kept short with small counts so outputs stay printable."""
+    out = []
+    for _ in range(rng.randint(1, 3)):
+        if depth > 0 and rng.random() < 0.5:
+            out.append(f"{rng.randint(1, 12)}{OPEN}{random_encoding(rng, depth - 1)}{CLOSE}")
+        else:
+            out.append("".join(rng.choice("abc") for _ in range(rng.randint(1, 3))))
+    return "".join(out)
+
+
+def main() -> None:
+    cases = list(NAMED_CASES)
+    rng = random.Random(20260912)
+    for _ in range(40):
+        cases.append(("stress", random_encoding(rng, 3)))
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+
+    for label, s in cases:
+        results = [fn(s) for _, fn in APPROACHES]
+        agreed = all(r == results[0] for r in results)
+        if label != "stress":
+            print(f"\n{label}: s={s!r}")
+            for (name, _), got in zip(APPROACHES, results):
+                shown = got if len(got) <= 40 else got[:37] + "..."
+                print(f"  {name:<{width}} -> {shown!r} (len {len(got)})")
+        if not agreed:
+            all_agreed = False
+            print(f"\n{label}: s={s!r} -> {results}")
+            print("  DISAGREEMENT")
+
+    print(
+        f"\n{len(cases)} cases ({len(cases) - len(NAMED_CASES)} randomised), "
+        f"{len(APPROACHES)} approaches."
+    )
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()
+```
