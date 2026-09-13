@@ -19,6 +19,7 @@
 
 import { readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { pathToFileURL } from "node:url"
 import { PATTERNS, PROBLEMS } from "../src/data/index.ts"
 
 const strict = process.argv.includes("--strict")
@@ -165,28 +166,35 @@ function report(rows) {
   return lines.join("\n")
 }
 
-const rows = audit()
-const untaught = rows.filter((r) => !r.taught).length
-const undisclosed = rows.filter((r) => r.taught && r.extra > 0 && !r.disclosed).length
+// Only when run directly: `learn-gaps.test.mjs` imports `audit()` and must
+// not have the report written out from under it as a side effect.
+function main() {
+  const rows = audit()
+  const untaught = rows.filter((r) => !r.taught).length
+  const undisclosed = rows.filter((r) => r.taught && r.extra > 0 && !r.disclosed).length
 
-if (!quiet) {
-  writeFileSync(REPORT, report(rows))
-  console.log(`wrote ${REPORT}`)
-  for (const s of SECTIONS) {
-    const n = rows.filter((r) => r.missing.includes(s.key)).length
-    console.log(`  ${String(n).padStart(3)} missing  ${s.heading}`)
+  if (!quiet) {
+    writeFileSync(REPORT, report(rows))
+    console.log(`wrote ${REPORT}`)
+    for (const s of SECTIONS) {
+      const n = rows.filter((r) => r.missing.includes(s.key)).length
+      console.log(`  ${String(n).padStart(3)} missing  ${s.heading}`)
+    }
   }
-}
 
-console.log(
-  `${rows.length} problems · ${rows.length - untaught} taught · ${untaught} with no document · ` +
-    `${undisclosed} adding approaches without saying so`
-)
-
-if (strict && undisclosed) {
-  console.error(
-    `\nFAIL: ${undisclosed} document(s) add an approach the data file does not have and never ` +
-      `say it is an addition. docs/deep/README.md requires an added rung to be labelled.`
+  console.log(
+    `${rows.length} problems · ${rows.length - untaught} taught · ${untaught} with no document · ` +
+      `${undisclosed} adding approaches without saying so`
   )
-  process.exit(1)
+
+  if (strict && undisclosed) {
+    console.error(
+      `\nFAIL: ${undisclosed} document(s) add an approach the data file does not have and never ` +
+        `say it is an addition. docs/deep/README.md requires an added rung to be labelled.`
+    )
+    process.exit(1)
+  }
+
 }
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) main()
