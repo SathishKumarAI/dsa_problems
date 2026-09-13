@@ -95,6 +95,127 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-13 — the reader was right, and everything that fell out of it
+
+A session that started as "write the remaining trees documents" and turned into a rebuild of how a
+problem is read, because a reader said the thing the whole repo was supposed to prevent:
+
+> *in the two-pass hash map solution I am not understanding why the first element goes to the first
+> bucket, what are the calculations*
+
+They were right twice. The first element does **not** go into the first bucket, and nothing on the
+page said so.
+
+### What shipped
+
+**Eleven teaching documents** — `max-depth`, `balanced-tree`, `tree-diameter`, `same-tree`,
+`mirror-tree`, `invert-tree`, `validate-bst`, `level-order`, `right-side-view`, plus the retrofit of
+`pair-sum` and the `single-in-sorted` document left uncommitted by the previous session. Trees went
+from **0 of 11** to **10 of 11**; only `inorder-walk` remains.
+
+**`docs/learn/` — one page per problem, replacing `docs/explained/`.** A problem's knowledge was
+spread across four places and the reader had to know which to open. The merged page carries the
+statement and constraints, the hints, the whole authored teaching document where one exists, the
+app's own ladder with every rung in Python/Java/C++, the arc, the pattern's siblings, and one
+runnable script. 127 pages; 81 carry a teaching document; **every one ends in a script that runs**
+— 81 authored (gated by `verify-deep`) and 46 vector-driven (gated by `verify:run`).
+
+**A reader for it in the app**, at `#/learn/<id>`, with a markdown parser written for this corpus
+rather than a dependency. Gated exactly as the arc is: the link is hidden while a journey still has
+unearned rungs.
+
+**The bucket arithmetic, on screen.** `HashModel` now carries a `mode`, so an insert gets the same
+`hash(k) = k mod buckets = bucket s` line a lookup gets, plus the sentence that answers the actual
+question — *the slot is decided by the VALUE, never by the order it arrived in* — and the table's
+starting size says why it is eight.
+
+### What measuring found, and it was not flattering
+
+An audit of where problem knowledge lives produced three findings, all verified before acting:
+
+- **`README.md`'s own "Change → file" table was wrong for 95% of journeys.** It pointed at
+  `src/engine/journeys/<slug>.ts`. Measured: **5** files there, **90** in `src/data/journeys/`. The
+  one document whose job is "trust this table instead of reading the code" was stale on its
+  flagship row.
+- **`CLAUDE.md` said 107 problems, 87 journeys.** It is 127 and 93.
+- **The pattern name prints unconditionally on every generated page** — the single most
+  spoiler-sensitive string in the disclosure system. Filed; the learn page is now a declared
+  spoiler zone, which may make it correct, but it needs a decision rather than a patch.
+
+Then `scripts/learn-gaps.mjs` counted the authored half, and that is the real finding:
+
+| | |
+|---|---|
+| Problems with no teaching document | **46** |
+| Missing "Reading the Calculations" | **126** |
+| Missing "How to Get Fluent" | **126** |
+| No measured "Under the hood" claim | **126** |
+| Adding approaches without disclosing it | **23** |
+
+`verify-deep` runs each document's script and checks the approaches agree — which says nothing about
+the prose. **45 of 81 documents teach a rung the data file does not have, and 29 never said so.**
+Six were written today and are labelled now.
+
+### Two data defects the documents found
+
+- **G6 — `balanced-tree`'s naive rung is labelled `O(n²)` and is not quadratic.** Its code checks
+  the root before recursing, so descending requires every ancestor to be balanced, balanced means
+  logarithmic height, and the worst case is `O(n log n)`. Instrumented `height()` entries on left
+  spines: **100 / 200 / 400 / 800** for n of 50 / 100 / 200 / 400 — linear. The genuinely quadratic
+  version is the one with no short circuit: **2 550 / 10 100 / 40 200 / 160 400** on the same
+  spines.
+- **G7 — all three of `tree-diameter`'s examples pass the most common wrong solution.** The data
+  file's note claims example 3 catches a through-the-root solution; measured, it returns 3, which is
+  correct. A real counterexample is `[1, 2, null, 3, 4, 5, 6, 7]` — through the root 3, answer 4 —
+  found by searching random trees for the smallest disagreement.
+
+### Lessons that cost something
+
+**A measurement is only true of the corpus you measured.** The markdown parser was written against
+80 authored documents with zero links and no HTML — measured, not assumed. Then `docs/learn` merged
+those documents with the generated pages and the corpus became 2 003 links, 879 `<details>` folds
+and a comment banner on all 127 pages. The LeetCode link rendered as literal brackets on a live
+page. The file now carries the command to re-run the count.
+
+**An agent id does not survive the session.** `docs/AGENTS.md` shipped a resume list of nine killed
+agents and the instruction to `SendMessage` them. In a new session `ListAgents` returns peer
+sessions only; not one of the nine existed. The roster is a queue of owed **files** now, with a
+one-line command that regenerates it.
+
+**Fixtures go stale within the hour.** A new UI check named `right-side-view` as "a problem with no
+deep document", and then that document was written. It computes the fixture from disk now — the
+lesson this repo already learned once with the no-journey fixture.
+
+**Three bugs were found by looking at the page, not by a test.** Backticks rendering literally
+inside bold (every complexity bullet is written ``**Time — `O(n)`.**``); the page scrolling sideways
+by 10px at 1440 because a `<pre>` does not wrap, so its min-content width is its longest line —
+measured at 966px — and that floor propagates to the shell; and the edit-me comment banner printing
+at the top of every learn page. Each now has a check that was run against the old behaviour first
+and failed.
+
+### The gates
+
+| Gate | Command | State |
+|---|---|---|
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **753 tests** |
+| The interface, in a real browser | `npm run test:ui` | **163 checks**, 0 failed |
+| Every teaching document's script runs and agrees | `node scripts/verify-deep.mjs` | **81/81** |
+| The authored half does not get worse | `node scripts/learn-gaps.mjs --strict` | ratchet, baseline recorded |
+
+### What was deliberately not done
+
+**PracHub was not scraped.** ~6 000 crowdsourced interview recollections behind a freemium wall with
+terms of service. Copying statements and solutions would break this repo's own rule — everything
+here is written in our words and verified by running it — so it is in `RESOURCES.md` as a coverage
+source with that reason attached.
+
+`docs/LEARN-PLAN.md` is the ordered queue of what remains, and `docs/deep/TEMPLATE.md` now carries
+the four readers a document has to serve at once. The first-year student who stalls at the
+arithmetic is the one every document here had been skipping.
+
+---
+
+
 ## 2026-09-12 — a page per problem, twenty more problems, and text you can actually read
 
 Three things shipped, and the third exists because of the second: writing a paragraph of prose onto

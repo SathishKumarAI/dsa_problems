@@ -1,12 +1,53 @@
 # STATUS — read this when you return
 
-Last session: **2026-09-12**, three things in one sitting — `docs/explained/` (B64), **batch 7**
-(107 → 127 problems, B65) with an **arc** on every one of the 127, and the readability pass the
-arcs exposed (B66). Before that: 2026-09-09. Journeys went **5 → 87**, the practice set's Java/C++ hole was closed,
-the UI got the pass it had been owed since the set tripled in size, the tree and list panels
-finally have something rendering them — and then eleven PRs (#71–#81) closed **ten backlog items**:
-the differential gate went from blind on 14 problems to blind on none, and four of the five things
-it fixed on screen were found by MEASURING rather than by reading.
+Last session: **2026-09-13**. It began as "finish the trees documents" and became a rebuild of how a
+problem is read, because a reader asked why the first element of a two-pass hash goes into the first
+bucket. It does not, and nothing on the page said so.
+
+## Start here
+
+1. **`docs/LEARN-PLAN.md`** — the ordered queue. Item 1 is small and finishes a gate.
+2. **`docs/LEARN-GAPS.md`** — per problem, what is missing. Regenerate with
+   `node scripts/learn-gaps.mjs`; never trust the numbers in prose, including the ones below.
+3. **`docs/deep/TEMPLATE.md`** and **`docs/deep/PROMPT.md`** — the skeleton and the brief. Read the
+   four-readers table before writing anything.
+
+## Where it stopped
+
+`master` holds everything through **#89**. This session's work is on
+`feat/deep-docs-and-list-journeys`, unmerged, and it is now much more than that branch name says —
+**that PR needs splitting or renaming before it merges.**
+
+**One page per problem.** `docs/learn/<id>.md` replaced `docs/explained/` and merges the generated
+half (statement, constraints, hints, the ladder in three languages, the arc, the siblings) with the
+authored teaching document from `docs/deep/`. 127 pages, 81 with a document, every one ending in a
+script that runs. Read it in the app at `#/learn/<id>`.
+
+**The gap, measured, and it is the work:**
+
+| | |
+|---|---|
+| Problems with no teaching document | **46** |
+| Missing "Reading the Calculations" | **126** |
+| Missing "How to Get Fluent" | **126** |
+| No measured "Under the hood" claim | **126** |
+| Documents adding rungs without disclosing it | **23** |
+
+Both new sections exist on exactly one problem — `pair-sum`, the worked example of the new shape.
+`scripts/learn-gaps.test.mjs` is a ratchet, not a wall: it fails when those numbers get worse, and
+separately asserts the baseline is not set above the tree.
+
+**Trees: 10 of 11.** Only `inorder-walk` left.
+
+## Traps this session added to the list
+
+- **An agent id does not survive the session.** `docs/AGENTS.md` used to ship a resume list; it is a
+  queue of owed files now, because `SendMessage` to yesterday's agent reaches nothing.
+- **A measurement is only true of the corpus you measured.** The markdown parser was written against
+  a corpus with zero links; the merge gave it 2 003, and a live page rendered them as brackets.
+- **Three bugs were found by looking at the page, not by a test** — literal backticks inside bold, a
+  10px sideways scroll from a `<pre>`'s min-content width, and the edit-me banner printing. Drive
+  the page.
 
 ## The spec checklist
 
