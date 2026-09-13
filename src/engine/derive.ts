@@ -47,9 +47,13 @@ export interface DFrame {
   // The row to draw instead of the input, for an act that reorders it (a sort
   // rung). Keys stay positional, so a sorted copy morphs rather than teleports.
   row?: Cell[]
-  // A shape the chip row cannot draw. At most one per frame; when present it
-  // replaces the state panel, and the chip row is hidden — a grid IS the data,
-  // so a row of chips above it would be a second, contradictory picture.
+  // A shape the chip row cannot draw. At most one per frame, and the chip row
+  // is hidden while it is there — a grid IS the data, so a row of chips above
+  // it would be a second, contradictory picture.
+  //
+  // It used to swallow `state` as well, silently. It no longer does: the state
+  // joins the shape's caption (see `caption` below), because a named count is a
+  // reading of the picture rather than a rival to it.
   grid?: { cells: Cell[][]; marks?: Record<string, ChipRole>; label?: string }
   tree?: {
     // level-order: the node at i has children 2i+1 and 2i+2, null = absent
@@ -155,6 +159,19 @@ function tabsFor(src: {
   return out
 }
 
+/** A frame may carry one SHAPE, and the shape takes the panel — so a `state`
+ *  written beside it used to be dropped on the floor. Measured 2026-09-12: 86
+ *  frames across thirteen journeys were writing counters nobody could ever see,
+ *  including the "nodes moved: 0" that is the entire proof of swap-pairs'
+ *  value-swap rung, and the "peak frames 20" that is the whole argument against
+ *  the recursive rung of add-two-numbers.
+ *
+ *  The state is not a second picture competing with the first — it is a READING
+ *  of it — so it joins the caption rather than replacing the shape or being
+ *  thrown away. */
+const caption = (label: string, state?: { label: string; value: Cell }[]) =>
+  [label, ...(state ?? []).map((s) => `${s.label} ${s.value}`)].join(" · ")
+
 export function deriveJourney<C extends Cell = number>(
   problem: Problem,
   spec: DerivedSpec<C>
@@ -191,7 +208,7 @@ export function deriveJourney<C extends Cell = number>(
         panel: f.grid
           ? {
               kind: "grid",
-              label: f.grid.label ?? "grid",
+              label: caption(f.grid.label ?? "grid", f.state),
               rows: f.grid.cells.map((row, r) =>
                 row.map((value, c) => ({
                   key: `g${r}-${c}`,
@@ -205,7 +222,7 @@ export function deriveJourney<C extends Cell = number>(
           : f.tree
             ? {
                 kind: "tree",
-                label: f.tree.label ?? "tree",
+                label: caption(f.tree.label ?? "tree", f.state),
                 slots: f.tree.slots.map((value, i) =>
                   value === null
                     ? null
@@ -220,17 +237,7 @@ export function deriveJourney<C extends Cell = number>(
             : f.list
               ? {
                   kind: "list",
-                  // A frame may carry one SHAPE, and the list takes the panel —
-                  // so a `state` written beside it used to be dropped on the
-                  // floor. Measured 2026-09-12: 46 frames across five journeys
-                  // were writing counters nobody could ever see, including the
-                  // "nodes moved: 0" that is the entire proof of swap-pairs'
-                  // value-swap rung. The state is not a second picture, it is a
-                  // reading of this one, so it belongs in the caption.
-                  label: [
-                    f.list.label ?? "list",
-                    ...(f.state ?? []).map((s) => `${s.label} ${s.value}`),
-                  ].join(" · "),
+                  label: caption(f.list.label ?? "list", f.state),
                   cycleTo: f.list.cycleTo,
                   nodes: f.list.values.map((value, i) => ({
                     key: `l${i}`,

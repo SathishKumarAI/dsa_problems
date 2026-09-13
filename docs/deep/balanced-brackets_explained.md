@@ -1,0 +1,579 @@
+# Balanced Brackets — explained
+
+## Understanding the Problem
+
+You are handed a string made of nothing but the six characters `(`, `)`, `[`, `]`, `{`, `}`. Decide
+whether it is *well-formed*. Well-formed means two things at once: every opening bracket eventually
+gets a closing bracket **of the same kind**, and the closings happen in the right order — the
+bracket you opened most recently is the one you must close first. `([{}])` is well-formed. `(]` is
+not, because the `]` closes something that was never opened. `([)]` is not either, even though the
+counts of each kind match perfectly, because the `)` tries to close a `(` while a `[` is still open
+in between.
+
+**The core question is: when a closing bracket arrives, which opening bracket is it supposed to be
+closing?** The answer is always *the most recent one that is still unmatched* — and that phrase, "the
+most recent one still unmatched", is the entire problem. The naive approach is slow because it finds
+those pairs by repeatedly deleting adjacent matched pairs and starting the scan over from the
+beginning, so a string nested n deep gets rescanned about n/2 times.
+
+This is the canonical stack problem, and it is worth being precise about *why* it is canonical.
+A stack is the data structure whose defining behaviour is **last in, first out**: the thing you can
+take out is the thing you put in most recently. The rule this problem states — a closer must match
+the most recent unmatched opener — is not merely *solvable with* a stack; it is a restatement of
+what a stack does. Almost every other problem in this pattern is this rule with a payload attached.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it means for you |
+|---|---|
+| `1 <= s.length <= 10^4` | The string is never empty, so you never have to decide what an empty string means (both general approaches below happen to call it balanced, which is the conventional answer, but the constraint means you are never graded on it). The upper bound is what prices the first rung out: the repeated-replace approach can need one pass per nesting level, and `((((...))))` at 10⁴ characters means ~5000 passes over a ~10⁴-character string, which is around 5 × 10⁷ character operations — slow enough to notice, and pure waste. |
+| `s holds only the six characters ()[]{}` | **A bounded alphabet, and this is the permission slip for the whole approach.** Because there are exactly three kinds and nothing else can appear, "is this character a closer?" is a three-entry dictionary lookup, and "otherwise it is an opener" is safe without any validation — there is no third category to worry about, no letters, no spaces. It is also what makes the final constant-space rung expressible at all, once the alphabet is narrowed further to a single kind. |
+| every closer must match the most recent unclosed opener | **This is the constraint that unlocks the stack, and it does so by being literally the same sentence.** "Most recent, still unmatched" is the definition of a stack's top. Once you notice that, you have not found a clever trick — you have found that the problem statement already told you the data structure. |
+
+### The three failure modes — the whole test suite
+
+A string is well-formed unless one of exactly three things goes wrong. Every correct solution
+detects all three; every buggy one is missing one of them. Name them now, because the rest of this
+document refers back to them:
+
+| # | Failure | Example | What the code must check |
+|---|---|---|---|
+| **1** | A closer arrives with **nothing open at all** | `)`, `()]` | The stack is empty when a closer is read |
+| **2** | A closer arrives but the most recent opener is the **wrong kind** | `(]`, `([)]` | The top of the stack is not this closer's partner |
+| **3** | The scan finishes but **something is still open** | `(`, `([]` | The stack is non-empty at the end |
+
+Failure 1 and failure 3 are the two people forget. Both are easy to miss for the same reason: they
+are not about a *comparison* going wrong, they are about the stack being the wrong *size*, and the
+happy path never exercises either one. A solution missing failure 3 returns `True` for `(` —
+verified below — and a solution missing failure 1 does not return a wrong answer at all, it crashes
+with an `IndexError`, which at least is loud.
+
+The worked example used in every section below is the statement's own first example:
+
+```
+s = "([{}])"        answer: true
+```
+
+---
+
+## Approach 1 — Repeated replace: delete matched pairs until nothing changes
+
+### The idea
+
+*How do I know whether the brackets pair up correctly?* Find a pair that is obviously matched — an
+opener sitting immediately beside its own closer, like `()` or `{}` — delete it, and repeat. Deleting
+an innermost pair exposes the pair that was wrapped around it, so if the string was well-formed it
+collapses to nothing, and if anything is left over it was not.
+
+### How to think about it
+
+Think of the string as a row of nested boxes and imagine repeatedly throwing away every empty box
+you can see. An empty box is an opener directly followed by its own closer, with nothing in between.
+Throw all of those away, and the boxes that contained *only* those are now empty themselves, so
+throw those away too. Keep going until a whole sweep changes nothing. A well-formed string is
+exactly one that disappears entirely under this process; anything that survives had a bracket with
+no partner, or partners in the wrong order. The waste to notice is that each sweep re-reads the
+entire string, including the long stretches that are nowhere near the pair being deleted.
+
+### Worked example
+
+`s = "([{}])"`. Each round applies all three replacements, then checks whether anything changed.
+
+| Round | Starting string | after removing `()` | after removing `[]` | after removing `{}` | Changed? |
+|---|---|---|---|---|---|
+| 1 | `([{}])` | `([{}])` | `([{}])` | `([])` | yes |
+| 2 | `([])` | `([])` | `()` | `()` | yes |
+| 3 | `()` | `""` | `""` | `""` | yes |
+| 4 | `""` | `""` | `""` | `""` | no — stop |
+
+Result: the empty string, so the answer is **true**. Notice the shape of the work. There is no stack
+here at all — that is the point of this rung — and the state being carried between rounds is the
+*whole remaining string*. The innermost pair `{}` dissolved first, then `[]`, then `()`: strictly
+inside-out, which is the same order a stack pops in. This approach is already doing last-in-first-out;
+it is just paying a full string rebuild for each pop instead of an array index.
+
+Four rounds for a string of six characters, three of them productive. A string nested d levels deep
+needs d + 1 rounds, and each round copies the whole string.
+
+### Code
+
+```python
+def balanced_brackets_repeated_replace(s: str) -> bool:
+    prev: str | None = None
+    while prev != s:  # loop to a fixed point: one pass is not enough for nesting
+        prev = s
+        s = s.replace("()", "").replace("[]", "").replace("{}", "")
+    return s == ""
+```
+
+### Common mistake
+
+Doing a **single** round of replacements instead of looping until nothing changes:
+
+```python
+s = s.replace("()", "").replace("[]", "").replace("{}", "")
+return s == ""          # WRONG
+```
+
+It is tempting because `str.replace` already removes *all* occurrences, so it feels exhaustive. It is
+not: it removes all the pairs that are adjacent **right now**, and deleting them creates new
+adjacencies it will never look at. Running that variant on `"((()))"` returns `False`, because one
+pass leaves `"(())"` behind — the innermost `()` is removed, and the two pairs that become adjacent as
+a result are never reconsidered. On this document's worked example `"([{}])"` it also returns
+`False`, leaving `"([])"`. The loop to a fixed point is not an optimisation, it is the algorithm.
+
+### Complexity and when to use this
+
+**Time O(n²), space O(n).** The cost comes from the outer loop: nesting depth can be as large as n/2,
+each round is a full scan and rebuild of the string, so the two multiply. The space is the new string
+each `replace` allocates — Python strings are immutable, so every round builds a fresh one.
+
+Use it essentially never in production, but *do* know it, for two reasons. It is the reference
+implementation the fast version gets stress-tested against at the bottom of this document, and more
+importantly, recognising that it is a slow simulation of popping is what makes the stack feel
+inevitable rather than clever. If you find yourself writing it in an interview, say out loud what it
+is doing — "this is repeatedly removing the innermost pair, which is a pop" — and the next rung
+writes itself.
+
+---
+
+## Approach 2 — One pass with a stack (optimal)
+
+### The idea
+
+*The previous rung deletes an innermost pair and then rescans from the start — can the string be
+decided in a single left-to-right pass?* Yes. Instead of physically deleting matched pairs, keep a
+record of the openers that are still unmatched, in the order they were opened. When a closer arrives,
+the opener it must match is by definition the last one you recorded, so check it and discard it. This
+fixes the repeated-replace rung's exact weakness — **rescanning the whole string once per nesting
+level** — by remembering what is still open as you go.
+
+### How to think about it
+
+Imagine reading the string aloud while holding a stack of plates. Every opening bracket you read,
+you put a plate on top of the stack with that bracket drawn on it. Every closing bracket you read,
+you look at the top plate: if it is the matching opener, the pair is settled, so throw that plate
+away; if it is the wrong kind, or there is no plate at all, the string is broken and you can stop
+immediately. When you reach the end of the string the stack must be bare — a plate still sitting
+there is a bracket you opened and never closed. The stack is not a trick applied to the problem; it
+is a literal record of "what is still open", and the problem's rule says the answer always concerns
+the top of that record.
+
+### Worked example
+
+`s = "([{}])"`, traced character by character. The rightmost column is the stack with its **top on
+the right**.
+
+| k | `s[k]` | Action | Stack after |
+|---|---|---|---|
+| 0 | `(` | opener → push | `(` |
+| 1 | `[` | opener → push | `([` |
+| 2 | `{` | opener → push | `([{` |
+| 3 | `}` | closer; top is `{`, which is its partner → pop | `([` |
+| 4 | `]` | closer; top is `[`, which is its partner → pop | `(` |
+| 5 | `)` | closer; top is `(`, which is its partner → pop | *(empty)* |
+
+End of string, stack empty → **true**.
+
+Watch the stack grow to `([{` and then unwind in exactly the reverse order: `}`, `]`, `)`. That
+mirroring is not a coincidence of this input, it is what the problem's rule forces. And note how
+cheap each step is compared with the previous approach: at step 3, deciding the `}` cost one
+dictionary lookup and one comparison against the top of the stack, where the repeated-replace rung
+spent a full rebuild of the string to settle the very same pair.
+
+Now watch where the same trace detects each failure mode, by changing one character:
+
+- `([{)])` — at k = 3 the closer is `)`, the top is `{`, they are not partners → **failure 2**, stop.
+- `([{}]))` — at k = 6 a `)` arrives and the stack is already empty → **failure 1**, stop.
+- `([{}]` — the scan ends with `(` still on the stack → **failure 3**, false.
+
+### Code
+
+```python
+def balanced_brackets_stack(s: str) -> bool:
+    partner = {")": "(", "]": "[", "}": "{"}
+    st: list[str] = []
+    for ch in s:
+        if ch in partner:
+            if not st or st.pop() != partner[ch]:  # failure 1: empty; failure 2: wrong kind
+                return False
+        else:
+            st.append(ch)
+    return not st  # failure 3: an opener never closed
+```
+
+The `partner` map is keyed by the **closer**, not the opener, and that is deliberate: the lookup you
+actually perform is "I am holding a `]`, what should be underneath it?", so keying it the other way
+would force a search of the values on every closing bracket.
+
+### Common mistake
+
+Ending the function with `return True` instead of `return not st`. Everything else is correct: both
+in-loop checks are there, the map is right, the pops are right — and the function still gets `(`
+wrong. Running that variant returns `True` for `"("`, and `True` for `"((("`, both of which are
+unbalanced. This is **failure mode 3**, and it is the single most common bug on this problem for a
+structural reason worth internalising: every other check in the function fires *inside* the loop, so
+the whole loop can complete without anything ever going wrong, and "nothing went wrong" is not the
+same as "everything was resolved". The leftover stack is the only evidence that an opener was
+abandoned, and it exists only after the loop ends.
+
+The other classic is dropping the emptiness guard and writing `if st.pop() != partner[ch]`. That is
+**failure mode 1**, and it does not produce a wrong answer — it raises `IndexError: pop from empty
+list` on `")"` and on `"([{}])]"`. A crash is friendlier than a wrong answer, but it is still a
+failed submission, and the `not st or` that fixes it must come *first* in the `or` so Python's
+short-circuit stops before the `pop`.
+
+### Complexity and when to use this
+
+**Time O(n), space O(n).** Time is one pass with O(1) work per character — a dictionary lookup and at
+most one push or one pop — and each character is visited exactly once. The space is the stack, which
+in the worst case holds every character: `((((((` at full length pushes n openers and pops none, so
+the bound is tight and cannot be improved for the general three-kind problem.
+
+This is the answer to ship. It is also the template you will reuse for the rest of the stack pattern:
+`decode-string`, the basic calculator with parentheses, and `simplify-path` are all this loop with
+something more interesting than a single character stored on the stack.
+
+---
+
+## Approach 3 — A single counter (constraint-exploiting, and only for one bracket kind)
+
+**This rung is an addition — it is not one of the approaches in the problem data**, and it is included
+because it is the sharpest possible demonstration of what the stack is actually buying you, and of
+what the "bounded alphabet" constraint does and does not permit.
+
+### The idea
+
+*The stack holds up to n characters — can the problem be decided in constant space?* Only if you
+narrow the alphabet. If there is exactly **one** kind of bracket, then every opener is
+interchangeable with every other opener, so you do not need to know *which* one is on top; you only
+need to know *how many* are open. A single integer replaces the entire stack. This fixes the stack
+rung's only remaining weakness — **O(n) space** — but it pays for it by giving up the ability to
+detect failure mode 2 at all.
+
+### How to think about it
+
+Think of a depth gauge instead of a stack of plates. Walking left to right, an opener takes you one
+level deeper and a closer brings you one level back up. A well-formed string is a walk that never
+goes below the surface and finishes back at the surface exactly. Going below the surface is a closer
+with nothing open (failure 1); finishing above it is an opener never closed (failure 3). The reason
+this only works for one bracket kind is that a counter can represent *depth* but not *identity* — it
+has no way to remember that the box you are currently inside was a square one, so it cannot notice
+you trying to close it with a curly.
+
+### Worked example
+
+`s = "([{}])"`, the same input, through the depth gauge. The "stack" here is a single number, which
+is precisely the point.
+
+| k | `s[k]` | Action | Depth after |
+|---|---|---|---|
+| 0 | `(` | opener → +1 | 1 |
+| 1 | `[` | opener → +1 | 2 |
+| 2 | `{` | opener → +1 | 3 |
+| 3 | `}` | closer → −1 | 2 |
+| 4 | `]` | closer → −1 | 1 |
+| 5 | `)` | closer → −1 | 0 |
+
+Never negative, ends at 0 → **true**. Which is the correct answer, and it is correct **by accident**.
+The counter never checked a single kind against another; it would have returned `true` for `([{)]}`
+just as happily. Run it on the statement's second example `"(]"` and it reports `true`, where the
+right answer is false: depth goes 1, then 0, never negative, ends at zero.
+
+That is the whole lesson of this rung, and it is why the trace above is worth staring at. Compare it
+against the stack's trace of the same input: there, step 3 recorded `{` and compared `}` to it; here,
+step 3 recorded the number 3 and compared nothing. **The stack's extra O(n) space is not overhead —
+it is the storage in which failure mode 2 is detectable.** You cannot have constant space and the
+three-kind alphabet at the same time.
+
+### Code
+
+```python
+def balanced_brackets_counter(s: str) -> bool:
+    """Correct ONLY when s uses a single bracket kind. See counter_applicable()."""
+    depth = 0
+    for ch in s:
+        if ch in "([{":
+            depth += 1
+        else:
+            depth -= 1
+            if depth < 0:  # failure 1: a closer with nothing open
+                return False
+    return depth == 0  # failure 3: an opener never closed
+
+
+def counter_applicable(s: str) -> bool:
+    """The assumption the counter needs: at most one kind of bracket in the string."""
+    kinds = {"(": 0, ")": 0, "[": 1, "]": 1, "{": 2, "}": 2}
+    return len({kinds[ch] for ch in s}) <= 1
+```
+
+### Common mistake
+
+Reaching for this because the space bound looks better, on a problem whose alphabet has three kinds.
+It passes a surprising number of hand-written tests, because every test with correctly-nested
+brackets passes and every test with obviously wrong *counts* also fails correctly — what it misses is
+only the mismatched-kind case, which is the one people write fewest tests for. `([)]` returns `true`;
+so does `(]`.
+
+The subtler version of the same mistake is checking `depth == 0` at the end but **not** checking
+`depth < 0` inside the loop. That variant returns `true` for `")("`, which has a perfectly balanced
+count of one opener and one closer, arranged in exactly the wrong order. The `depth < 0` check is
+failure mode 1, and it is the only thing in this function that knows about order at all.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** Time is the same single pass — one comparison and one increment per
+character. The space is one integer, because a count is all that a single-kind alphabet needs to
+distinguish.
+
+Use it when the alphabet really is one kind, which happens more often than you would expect: counting
+parenthesis depth in a parser, validating a run of `(` and `)` only, and the classic follow-up
+"longest valid parentheses substring" all live in this world. Say its assumption out loud when you
+use it — *"this works because there is only one bracket kind; with three it cannot detect `(]`"* —
+because an interviewer offering you a single-kind variant is usually checking whether you noticed.
+
+---
+
+## The Overall Arc
+
+The principle this problem chases is *find the structure the rule is already describing, and then
+store exactly that and nothing more*. The rule says a closer must match the most recent unmatched
+opener, and "most recent, still unmatched" is not a hint toward a stack — it is the definition of
+one, which is why this is the problem every stack chapter opens with. Start by not seeing that, and
+you get the repeated-replace rung: find an innermost pair, delete it, start over, repeat until
+nothing changes. It works, and it is quadratic, and the interesting thing about it is that it is
+*already doing last-in-first-out* — the pairs dissolve strictly inside-out — it is merely paying a
+full rescan and a full string rebuild for each pop. Name that, and the stack version is not an
+invention but a transcription: keep the unmatched openers in a list, push on an opener, and on a
+closer check the top and discard it. One pass, O(1) per character, and the three ways a string can be
+broken map onto three lines of that loop — an empty stack when a closer arrives, a top that is the
+wrong kind, and a stack that is not empty when the string runs out. Those three are the entire test
+suite, and the two that get forgotten are the two that are about the stack's *size* rather than a
+comparison, because neither can fire on a well-formed input. Then push once more and ask what the
+stack is really for: if every opener were interchangeable, you would not need to know which one is on
+top, only how many are open, and the whole structure collapses into a single integer walking a depth
+gauge that must never go negative and must finish at zero. That last rung is worth the detour not
+because you will often use it but because of what it costs: the moment the alphabet has three kinds,
+the counter silently accepts `(]` and `([)]`, which proves that the stack's O(n) space was never
+overhead — it was precisely the storage in which "wrong kind of closer" is a detectable event. Every
+nesting problem after this one is the same loop with a richer payload on the stack: a repeat count
+and a partial string in `decode-string`, a running total and a pending sign in the basic calculator,
+a path segment in `simplify-path`. Get the three failure modes reflexive here, and those problems
+become questions about what to store rather than questions about control flow.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Repeated replace | O(n²) | O(n) | Needs no data structure and barely any thought, but rebuilds the whole string once per nesting level | Explaining the inside-out pairing out loud, and as the oracle the fast version is stress-tested against |
+| One pass with a stack | O(n) | O(n) | Stores every unmatched opener, and that storage is exactly what makes all three failure modes detectable | Always, for the real three-kind problem — and as the template for every later nesting problem |
+| Single counter | O(n) | O(1) | Drops identity to keep only depth: constant space, but failure mode 2 becomes undetectable | Only when the alphabet is a single bracket kind — parser depth counting, `(`/`)`-only variants |
+
+---
+
+## Interview Priority
+
+**Memorise cold: the stack version, and the three failure modes by name.** The code is eight lines
+and you should be able to write it without thinking, but writing it is not what is being assessed —
+plenty of candidates produce the loop and then hand over a function that returns `True` for `(`. What
+distinguishes a good answer is saying, before or while you write it, "there are three ways this
+fails: a closer with an empty stack, a closer that mismatches the top, and a non-empty stack at the
+end," and then pointing at the line that handles each. That sentence covers the two checks everyone
+gets right and the two they forget, and it is also the thing that makes your own testing fast,
+because it tells you exactly which three inputs to try: `)`, `(]`, and `(`.
+
+**Memorise second: the counter, together with the assumption that makes it legal.** It is five lines
+and it comes up constantly as a follow-up — "what if there were only round brackets, could you do
+better on space?" — and the answer is yes, O(1), with a depth that must never go negative and must
+end at zero. The reason to hold it in recall rather than derive it is that its *limitation* is the
+better half of the answer: being able to say immediately that a counter cannot detect `(]` because an
+integer stores depth but not identity shows you understand what the stack was buying, which is a
+strictly more interesting thing to demonstrate than the eight-line loop.
+
+**Understand but do not drill: repeated replace.** Its value is entirely in the observation that it
+is an expensive simulation of popping, which is a good thirty seconds of an interview and a bad five
+minutes. Mention it, price it at O(n²) against the stated 10⁴ length, note that a deeply nested
+string forces about n/2 full rescans, and move to the stack. Do not write it out.
+
+---
+
+## Full Runnable Script
+
+All three approaches in one file. The general pair — repeated replace and the stack — are checked
+against each other on every case; the counter joins the comparison only on inputs that satisfy its
+single-kind assumption, and is separately shown failing on the mixed-kind inputs it cannot decide,
+which is the documented breakage rather than a bug. Cases cover all three of the statement's
+examples, the smallest legal input (length 1, which can never be balanced), the empty string as an
+out-of-constraints extra, each of the three failure modes in isolation, and a randomised stress test
+over raw six-character soup plus strings constructed to be valid.
+
+```python
+"""Balanced Brackets - every approach in one file, cross-checked.
+
+Run: python balanced_brackets.py
+"""
+
+from __future__ import annotations
+
+import random
+
+OPENERS = "([{"
+CLOSERS = ")]}"
+
+
+def balanced_brackets_repeated_replace(s: str) -> bool:
+    prev: str | None = None
+    while prev != s:  # loop to a fixed point: one pass is not enough for nesting
+        prev = s
+        s = s.replace("()", "").replace("[]", "").replace("{}", "")
+    return s == ""
+
+
+def balanced_brackets_stack(s: str) -> bool:
+    partner = {")": "(", "]": "[", "}": "{"}
+    st: list[str] = []
+    for ch in s:
+        if ch in partner:
+            if not st or st.pop() != partner[ch]:  # failure 1: empty; failure 2: wrong kind
+                return False
+        else:
+            st.append(ch)
+    return not st  # failure 3: an opener never closed
+
+
+def balanced_brackets_counter(s: str) -> bool:
+    """Correct ONLY when s uses a single bracket kind. See counter_applicable()."""
+    depth = 0
+    for ch in s:
+        if ch in OPENERS:
+            depth += 1
+        else:
+            depth -= 1
+            if depth < 0:  # failure 1: a closer with nothing open
+                return False
+    return depth == 0  # failure 3: an opener never closed
+
+
+def counter_applicable(s: str) -> bool:
+    """The assumption the counter needs: at most one kind of bracket in the string."""
+    kinds = {"(": 0, ")": 0, "[": 1, "]": 1, "{": 2, "}": 2}
+    return len({kinds[ch] for ch in s}) <= 1
+
+
+GENERAL: list[tuple[str, object]] = [
+    ("repeated replace", balanced_brackets_repeated_replace),
+    ("stack", balanced_brackets_stack),
+]
+
+
+def run_case(label: str, s: str) -> bool:
+    results = [(name, fn(s)) for name, fn in GENERAL]
+    applies = counter_applicable(s)
+    if applies:
+        results.append(("counter", balanced_brackets_counter(s)))
+    agree = all(r == results[0][1] for _, r in results)
+    print(label)
+    print(f"  s={s!r}")
+    for name, r in results:
+        print(f"    {name:<17} -> {r}")
+    if not applies:
+        print(f"    {'counter':<17} -- not applicable (more than one bracket kind)")
+    print(f"    all agree: {agree}")
+    return agree
+
+
+def random_string(rng: random.Random, n: int) -> str:
+    return "".join(rng.choice(OPENERS + CLOSERS) for _ in range(n))
+
+
+def random_balanced(rng: random.Random, n_pairs: int) -> str:
+    """Build a guaranteed-valid string by pushing and popping the way the answer does."""
+    out: list[str] = []
+    open_stack: list[str] = []
+    remaining = n_pairs
+    while remaining or open_stack:
+        if remaining and (not open_stack or rng.random() < 0.6):
+            kind = rng.randrange(3)
+            out.append(OPENERS[kind])
+            open_stack.append(CLOSERS[kind])
+            remaining -= 1
+        else:
+            out.append(open_stack.pop())
+    return "".join(out)
+
+
+def main() -> None:
+    ok = True
+
+    ok &= run_case("statement example 1 - fully nested", "([{}])")
+    ok &= run_case("statement example 2 - wrong kind of closer", "(]")
+    ok &= run_case("statement example 3 - unclosed opener left over", "(")
+
+    # Smallest legal input is length 1, and neither single character can be balanced.
+    ok &= run_case("smallest legal input - lone opener", "{")
+    ok &= run_case("smallest legal input - lone closer", "]")
+
+    # Outside the stated constraints (1 <= s.length), but every approach accepts it:
+    # the empty string is vacuously balanced.
+    ok &= run_case("empty string (outside constraints)", "")
+
+    # Failure mode 1 in isolation: a closer arriving with nothing open.
+    ok &= run_case("failure 1: closer against an empty stack", "()]")
+    # Failure mode 2 in isolation: a closer that mismatches the top.
+    ok &= run_case("failure 2: closer mismatching the top", "([)]")
+    # Failure mode 3 in isolation: everything matched, but something stayed open.
+    ok &= run_case("failure 3: non-empty stack at the end", "([]")
+
+    ok &= run_case("siblings, not nested", "()[]{}")
+    ok &= run_case("deep nesting", "(((((((((())))))))))")
+    ok &= run_case("all openers", "(((")
+    ok &= run_case("all closers", ")))")
+    ok &= run_case("balanced count, wrong order", ")(")
+
+    # The counter's documented breakage: on mixed-kind input it is not merely excluded
+    # from the comparison above, it is WRONG, and these are the inputs that prove it.
+    print("counter on mixed-kind input (documented breakage, not a bug)")
+    for bad in ("(]", "([)]", "{)"):
+        truth = balanced_brackets_stack(bad)
+        got = balanced_brackets_counter(bad)
+        print(f"  s={bad!r:8} truth={truth}  counter={got}  counter is wrong: {got != truth}")
+        if got == truth:  # the whole point of this rung is that it fails here
+            ok = False
+            print("  UNEXPECTED: the counter was supposed to be wrong on this input")
+
+    # Stress: random six-character soup, plus strings built to be valid.
+    rng = random.Random(7)
+    valid_seen = 0
+    counter_checked = 0
+    for _ in range(2000):
+        s = random_string(rng, rng.randint(0, 14))
+        results = [fn(s) for _, fn in GENERAL]
+        if counter_applicable(s):
+            results.append(balanced_brackets_counter(s))
+            counter_checked += 1
+        if any(r != results[0] for r in results):
+            ok = False
+            print(f"  STRESS DISAGREEMENT s={s!r} -> {results}")
+    for _ in range(500):
+        s = random_balanced(rng, rng.randint(1, 12))
+        results = [fn(s) for _, fn in GENERAL]
+        if any(r != results[0] for r in results) or results[0] is not True:
+            ok = False
+            print(f"  STRESS DISAGREEMENT (built valid) s={s!r} -> {results}")
+        else:
+            valid_seen += 1
+    print(
+        f"stress: 2000 random strings ({counter_checked} of them single-kind, so the counter "
+        f"was checked too) + {valid_seen} constructed-valid strings"
+    )
+
+    print()
+    print("ALL APPROACHES AGREED ON EVERY CASE." if ok else "APPROACHES DISAGREED - see above.")
+
+
+if __name__ == "__main__":
+    main()
+```
