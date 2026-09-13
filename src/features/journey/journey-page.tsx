@@ -377,7 +377,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                       onClick={j.nextButton.onClick}
                       className={cn(
                         j.nextButton.reveal &&
-                          "bg-chart-3 text-[var(--primary-foreground)] hover:bg-chart-3/90"
+                          "bg-chart-3 text-primary-foreground hover:bg-chart-3/90"
                       )}
                     >
                       {j.nextButton.label}

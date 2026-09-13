@@ -277,7 +277,7 @@ function Bars({ p }: { p: Extract<PanelModel, { kind: "bars" }> }) {
               : r.includes("anchor")
                 ? "bg-chart-4"
                 : r.includes("focus")
-                  ? "bg-[var(--yellow)]"
+                  ? "bg-yellow"
                   : r.includes("dim")
                     ? "bg-muted/60 opacity-40"
                     : "bg-chart-2/70"

@@ -15,7 +15,7 @@ const ROLE = {
   neutral: "border-border bg-card text-foreground",
   anchor: "border-chart-4 bg-chart-4/15 text-chart-4",
   focus:
-    "border-foreground bg-[var(--yellow)]/20 text-foreground ring-2 ring-foreground/80",
+    "border-foreground bg-yellow/20 text-foreground ring-2 ring-foreground/80",
   answer: "border-chart-3 bg-chart-3/20 text-chart-3",
   dim: "opacity-25",
 }
