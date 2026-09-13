@@ -6,25 +6,25 @@ Every problem has a page at [`docs/learn/<id>.md`](learn/) — that half is gene
 and cannot be missing. This is the state of the **authored** half: the teaching
 document in `docs/deep/`, and the sections [its spec](deep/README.md) requires.
 
-**81 of 127 problems have a teaching document.**
+**82 of 127 problems have a teaching document.**
 
 ## The gap, by section
 
 | Section | Have it | Missing | What a reader loses without it |
 |---|---|---|---|
-| Reading the Calculations | 4 | **123** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
-| How to Get Fluent | 4 | **123** | no drills: the page can be read and still not be practised |
-| Under the hood | 4 | **123** | a cost is taken on faith — what the language actually does is never shown |
-| Interview Priority | 81 | **46** | no guidance on which approaches to know cold |
-| The Overall Arc | 81 | **46** | the rungs never join into one story |
-| Comparison | 81 | **46** | no side-by-side of the trade-offs |
+| Reading the Calculations | 5 | **122** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
+| How to Get Fluent | 5 | **122** | no drills: the page can be read and still not be practised |
+| Under the hood | 5 | **122** | a cost is taken on faith — what the language actually does is never shown |
+| Interview Priority | 82 | **45** | no guidance on which approaches to know cold |
+| The Overall Arc | 82 | **45** | the rungs never join into one story |
+| Comparison | 82 | **45** | no side-by-side of the trade-offs |
 
-## Problems with no teaching document at all — 46
+## Problems with no teaching document at all — 45
 
 - **Stack** (2): calculator-basic, simplify-path
 - **Binary Search** (4): koko-bananas, find-peak-element, k-closest-values, ship-in-d-days
 - **Linked List** (4): add-two-numbers, odd-even-list, reorder-list, rotate-list
-- **Trees** (2): bst-ancestor, inorder-walk
+- **Trees** (1): bst-ancestor
 - **Heaps** (9): kth-largest-stream, k-closest-points, task-cooldown, last-stone-weight, kth-largest-element, sort-by-frequency, kth-smallest-matrix, top-k-frequent-words, ugly-number
 - **Graphs** (11): island-count, course-order, rotting-fruit, max-island-area, word-search, count-provinces, network-delay, surrounded-regions, flood-fill, pacific-atlantic, shortest-path-grid
 - **Dynamic Programming** (14): stair-ways, house-robber, coin-change-min, longest-increasing-run, max-subarray, longest-common-subsequence, counting-bits, partition-equal-subset, unique-paths, word-break, min-cost-stairs, decode-ways, jump-game, max-product-subarray
@@ -131,7 +131,7 @@ None.
 | [invert-tree](learn/invert-tree.md) | trees | yes | **no** | **no** | **no** | · | · | · |
 | [balanced-tree](learn/balanced-tree.md) | trees | yes | **no** | **no** | **no** | · | · | · |
 | [bst-ancestor](learn/bst-ancestor.md) | trees | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [inorder-walk](learn/inorder-walk.md) | trees | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [inorder-walk](learn/inorder-walk.md) | trees | yes | · | · | · | · | · | · |
 | [mirror-tree](learn/mirror-tree.md) | trees | yes | **no** | **no** | **no** | · | · | · |
 | [right-side-view](learn/right-side-view.md) | trees | yes | **no** | **no** | **no** | · | · | · |
 | [tree-diameter](learn/tree-diameter.md) | trees | yes | **no** | **no** | **no** | · | · | · |

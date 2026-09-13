@@ -20,13 +20,13 @@ import { audit } from "./learn-gaps.mjs"
 // Measured 2026-09-13. Lower these as documents are written; never raise them
 // without saying why in the commit.
 const BASELINE = {
-  untaught: 46, // problems with no teaching document at all
-  calculations: 123, // missing "Reading the Calculations"
-  fluent: 123, // missing "How to Get Fluent"
-  hood: 123, // missing an "Under the hood" callout
-  interview: 46,
-  arc: 46,
-  comparison: 46,
+  untaught: 45, // problems with no teaching document at all
+  calculations: 122, // missing "Reading the Calculations"
+  fluent: 122, // missing "How to Get Fluent"
+  hood: 122, // missing an "Under the hood" callout
+  interview: 45,
+  arc: 45,
+  comparison: 45,
   undisclosed: 0, // documents adding rungs without saying so — cleared 2026-09-13
 }
 
