@@ -1317,6 +1317,54 @@ describe(
       assert.ok(out.inViewport, "the narration is off screen")
     })
 
+    // Two bugs that shipped together, both about an in-page jump. Written
+    // after a user reported "the bar is hiding the text I want to see".
+    //
+    //   1. The ladder's "01 Brute Force" links were bare `#rung-…` hrefs. In a
+    //      HASH-ROUTED app that is a route change: location.hash became
+    //      "#rung-brute", the router parsed the route `rung-brute`, and the app
+    //      rendered HOME. The problem page you were reading was gone.
+    //   2. Even once it scrolled, the target landed at y=0 — under the phone's
+    //      61px `sticky top-0` bar. `scroll-padding-top` (index.css) fixes that
+    //      for every anchor in the app at once, which is why this asserts the
+    //      LANDING and not the CSS.
+    test("a jump to an approach scrolls, and lands clear of the sticky bar", async () => {
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const bar = document.querySelector('.sticky.top-0');
+        const barH = bar ? Math.round(bar.getBoundingClientRect().height) : 0;
+        const link = [...document.querySelectorAll('nav a')]
+          .find(a => /^0[0-9]/.test(a.innerText.trim()));
+        if (!link) return { noLink: true };
+        const target = document.getElementById(link.getAttribute('href').slice(1));
+        link.click();
+        await wait(900);
+        const heading = target.querySelector('b');
+        return {
+          barH,
+          route: location.hash,
+          stillHere: !!document.querySelector('[aria-label="approach ladder"]'),
+          headingTop: Math.round(heading.getBoundingClientRect().top),
+          moved: Math.round(target.getBoundingClientRect().top) !== 0,
+        };
+      `)
+      await page.resize(1440)
+      assert.ok(!out.noLink, "the ladder drew no jump links to test")
+      assert.equal(
+        out.route,
+        "#/p/arrays-hashing/pair-sum",
+        "a bare #id href hijacked the hash ROUTE — the reader was thrown off the page"
+      )
+      assert.ok(out.stillHere, "the problem page unmounted on an in-page jump")
+      assert.ok(
+        out.headingTop >= out.barH,
+        `the rung landed at ${out.headingTop}px, under a ${out.barH}px sticky bar`
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the reading-column toggle does not sit on top of the text (U8)", async () => {
       await page.goto(`${server.base}/#/journey/two-sum?act=recap&step=1`)
       const out = await page.run(`

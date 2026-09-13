@@ -117,7 +117,11 @@ export function LearnPageView({ id }: { id: string }) {
       {outline.length > 0 && (
         <nav
           aria-label="contents"
-          className="sticky top-6 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
+          // `top-16`, not `top-6`: the shell parks a fixed search control at
+          // `top-3 right-4`, and this rail is the only thing that shares that
+          // corner. At 1280 the button was measured painting over the rail's
+          // first entries — "Approach 6 — Direct indexing…" was unreachable.
+          className="sticky top-16 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
         >
           <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
             <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />

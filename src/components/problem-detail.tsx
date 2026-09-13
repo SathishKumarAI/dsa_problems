@@ -166,7 +166,23 @@ function ApproachLadder({
               <a
                 key={r.key}
                 href={`#${id(r)}`}
-                className="text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                onClick={(e) => {
+                  // A BARE `#id` href in a hash-routed app is a ROUTE change,
+                  // not a scroll. Measured before this guard: clicking
+                  // "01 Brute Force" set location.hash to "#rung-brute", the
+                  // router parsed that as the route `rung-brute`, and the app
+                  // rendered HOME — the problem page you were reading was
+                  // gone. `learn-page-view.tsx` has guarded this since it was
+                  // written; this call site never got the same treatment.
+                  //
+                  // Scroll instead, and let `scroll-padding-top` (index.css)
+                  // keep the landing clear of the phone's sticky bar.
+                  e.preventDefault()
+                  document
+                    .getElementById(id(r))
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }}
+                className="inline-flex min-h-11 items-center text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-0"
               >
                 <span className="font-mono">
                   {String(i + 1).padStart(2, "0")}

@@ -433,6 +433,26 @@
     color: var(--foreground);
   }
 
+  /* Anchors must not land under the bar that is covering the landing site.
+     Below `md` the shell's own bar is `sticky top-0` and measured 61px tall,
+     and every in-page jump — the approach ladder's "01 Brute Force" links, the
+     learn page's contents rail, a markdown heading — scrolled its target to
+     y=0, i.e. entirely beneath it. Measured on a 390px phone: heading top 0,
+     covered 61px.
+
+     `scroll-padding-top` on the scroll container is the fix for ALL of them at
+     once, rather than a `scroll-mt-*` retrofitted onto every anchor target and
+     forgotten on the next one. It is honoured by `scrollIntoView` as well as
+     by hash navigation, which is what the contents rail uses.
+
+     Scoped to the width where the bar exists: above `md` there is no top bar,
+     and padding the scroll there would throw anchors 72px low for no reason. */
+  @media (width < 48rem) {
+    html {
+      scroll-padding-top: 4.5rem;
+    }
+  }
+
   html {
     caret-color: var(--primary);
     /* checkboxes, radios and the speed range in the settings dialog are real
