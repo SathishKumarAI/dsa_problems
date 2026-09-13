@@ -628,6 +628,8 @@ vector<vector<int>> threeSum(const vector<int>& nums) {
 
 ## Rung 2 — Hash per anchor
 
+> **Why now.** The cubic version tries every triple, including the vast majority that a moment of arithmetic rules out: once two values are chosen the third is forced, so searching for it is a lookup rather than a loop. Fixing an anchor and hashing the rest turns the inner two loops into one.
+
 Fix one element, solve two-sum with a hash set on the rest. Same O(n²) time as the pointer version but extra memory and fiddlier dedup — pointers are cleaner once the array is sorted anyway.
 
 ```python
@@ -698,6 +700,8 @@ vector<vector<int>> threeSum(vector<int> nums) {
 ---
 
 ## Rung 3 — The one to remember
+
+> **Why now.** The hash rung pays O(n) memory per anchor and then has to fight duplicates with a set of triples, because an unsorted array can reach the same answer by several routes. Sorting first buys both missing pieces at once: the converging pointers need no extra memory, and equal values land next to each other, so a repeat is skipped with one comparison instead of a set.
 
 Sort the array. For each index k (skipping values equal to the previous one), run the two-pointer pair search on the suffix for target -nums[k]. When a triplet is found, advance both pointers past duplicate values before continuing so no repeated triplet is emitted. A small cutoff: once nums[k] > 0, no triplet can sum to zero.
 
@@ -798,8 +802,8 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n³) time · O(n) for dedup space | the baseline — nothing before it |
-| 2 | Hash per anchor | O(n²) time · O(n) space | Fix one element, solve two-sum with a hash set on the rest. |
-| 3 | The one to remember | O(n²) time · O(1) beyond output space | Sort the array. |
+| 2 | Hash per anchor | O(n²) time · O(n) space | The cubic version tries every triple, including the vast majority that a moment of arithmetic rules out: once two values are chosen the third is forced, so searching for it is a lookup rather than a loop. Fixing an anchor and hashing the rest turns the inner two loops into one. |
+| 3 | The one to remember | O(n²) time · O(1) beyond output space | The hash rung pays O(n) memory per anchor and then has to fight duplicates with a set of triples, because an unsorted array can reach the same answer by several routes. Sorting first buys both missing pieces at once: the converging pointers need no extra memory, and equal values land next to each other, so a repeat is skipped with one comparison instead of a set. |
 
 ---
 

@@ -965,6 +965,8 @@ vector<int> pairSum(const vector<int>& nums, int target) {
 
 ## Rung 2 — Sort + two pointers
 
+> **Why now.** Brute force re-reads the whole array for every element, asking the same question n times. Sorting answers it once: on ordered values, comparing the two ends tells you which end can never reach the target, so a single comparison retires a whole row of the table.
+
 Sort (value, index) pairs and run the converging-pointer scan. Beats brute force, but sorting costs the O(n log n) and the original indices must be carried along — the hash map wins on both counts.
 
 ```python
@@ -1031,6 +1033,8 @@ vector<int> pairSum(const vector<int>& nums, int target) {
 
 ## Rung 3 — The one to remember
 
+> **Why now.** The sort exists only to make searching fast, and the question is not a comparison at all: it is whether the value target - x is present, and where. That is a lookup, which a map answers in one step with no ordering. Sorting also destroys the indices the answer is made of, so they have to be carried along separately.
+
 Walk the array once, keeping a map from value to index. At each element, compute the complement target - nums[i]. If the complement is already in the map, the current index and the stored index are the answer. Otherwise record the current value and move on. One pass, one lookup and one insert per element.
 
 ```python
@@ -1088,8 +1092,8 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |
-| 2 | Sort + two pointers | O(n log n) time · O(n) space | Sort (value, index) pairs and run the converging-pointer scan. |
-| 3 | The one to remember | O(n) time · O(n) space | Walk the array once, keeping a map from value to index. |
+| 2 | Sort + two pointers | O(n log n) time · O(n) space | Brute force re-reads the whole array for every element, asking the same question n times. Sorting answers it once: on ordered values, comparing the two ends tells you which end can never reach the target, so a single comparison retires a whole row of the table. |
+| 3 | The one to remember | O(n) time · O(n) space | The sort exists only to make searching fast, and the question is not a comparison at all: it is whether the value target - x is present, and where. That is a lookup, which a map answers in one step with no ordering. Sorting also destroys the indices the answer is made of, so they have to be carried along separately. |
 
 ---
 

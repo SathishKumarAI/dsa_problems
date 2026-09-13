@@ -775,6 +775,8 @@ int singleNumber(const vector<int>& nums) {
 
 ## Rung 2 — Sort & scan
 
+> **Why now.** The map counts every value in order to find the one whose count is odd: n entries of bookkeeping for a single answer, which is exactly the O(n) space the follow-up forbids. Sorting puts twins next to each other instead, so the pairing becomes visible without storing anything.
+
 Sort, then twins are adjacent: walk in steps of two until a pair breaks. No map, but the sort costs O(n log n).
 
 ```python
@@ -818,6 +820,8 @@ int singleNumber(vector<int> nums) {
 ---
 
 ## Rung 3 — The one to remember
+
+> **Why now.** Sorting spends O(n log n) arranging data whose ORDER the answer never uses. The only fact that matters is that pairs cancel, and XOR cancels them in place: one pass, one integer of state, no rearrangement.
 
 Fold the array with XOR. Because x ^ x = 0 and the operation is commutative and associative, every paired value cancels regardless of position, leaving the single value in the accumulator. One pass, one integer of state. The trick leans entirely on the promise that exactly one value is unpaired.
 
@@ -866,8 +870,8 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Hash map | O(n) time · O(n) space | the baseline — nothing before it |
-| 2 | Sort & scan | O(n log n) time · O(1) space | Sort, then twins are adjacent: walk in steps of two until a pair breaks. |
-| 3 | The one to remember | O(n) time · O(1) space | Fold the array with XOR. |
+| 2 | Sort & scan | O(n log n) time · O(1) space | The map counts every value in order to find the one whose count is odd: n entries of bookkeeping for a single answer, which is exactly the O(n) space the follow-up forbids. Sorting puts twins next to each other instead, so the pairing becomes visible without storing anything. |
+| 3 | The one to remember | O(n) time · O(1) space | Sorting spends O(n log n) arranging data whose ORDER the answer never uses. The only fact that matters is that pairs cancel, and XOR cancels them in place: one pass, one integer of state, no rearrangement. |
 
 ---
 
