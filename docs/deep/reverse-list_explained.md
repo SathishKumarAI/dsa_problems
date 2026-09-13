@@ -2,16 +2,16 @@
 
 ## Understanding the Problem
 
-You are handed the first node of a chain. Each node holds a value and a single arrow pointing at the
-next node; the last node's arrow points at nothing. You must turn the whole chain around, so the node
-that was last is now first and every arrow points the other way, and hand back the node that is now
-first.
+Picture a paper chain where each link is glued to the one in front of it and to nothing else. You can
+see which link comes next; you cannot see which link came before. You must turn the whole chain around
+so the last link is now first and every glue joint points the other way, and hand back the link that is
+now at the front.
 
 **The core question: can you flip every arrow without ever losing your grip on the part of the chain
-you have not flipped yet?** The naive approach is slow in space, not in time — the instinct is to
-copy all the values out into an array and build a brand-new chain backwards, which walks the list
-once but allocates a second list of the same size, and the problem asked you to reverse the one you
-were given.
+you have not flipped yet?** The naive approach is not slow in time, it is wasteful in space — the
+instinct is to copy all the values into an array and build a brand-new chain backwards, which walks the
+list once but allocates a second list the same size. The problem asked you to reverse the one you were
+given.
 
 Two pieces of vocabulary, expanded once:
 
@@ -19,16 +19,22 @@ Two pieces of vocabulary, expanded once:
   node objects come back, wired differently.
 - **Singly linked** means each node knows only its successor. There is no arrow backwards, which is
   exactly why this problem is not trivial: once you step off a node, nothing points back to it unless
-  you kept a variable pointing at it yourself.
+  you kept a variable pointing there yourself.
 
 ### The constraints, and what each one unlocks
 
 | Constraint | What it forces or permits |
 |---|---|
-| `0 <= list length <= 5000` | This is the constraint that **kills the recursive version**. Five thousand nodes means five thousand nested calls; Python's default recursion limit is 1000, and a JVM stack will not reliably hold 5000 frames either. The iterative loop is unlocked by nothing — it is required by this. |
-| `-5000 <= node value <= 5000` | Values are ordinary small integers with no sentinel meaning. Nothing here rules out a value-marking trick, but there is no reason to want one: reversal does not need to remember which nodes it has seen. |
-| `an empty list is legal input` | Every approach must return `None` for `None` without crashing. The three-pointer version gets this for free — starting `prev` at `None` means the empty case returns `None` before the loop body ever runs. |
-| "reverse it **in place**" (from the statement) | This is the real reason the copy-to-array version loses. It is not slower in time; it is disqualified by the requirement. |
+| `0 <= list length <= 5000` | This is the constraint that **kills the recursive version.** Five thousand nodes means five thousand nested calls; Python's default recursion limit is 1000, and a JVM stack will not reliably hold 5000 frames either. The iterative loop is unlocked by nothing — it is *required* by this. |
+| `-5000 <= node value <= 5000` | Values are ordinary small integers with no **sentinel** meaning. Nothing here rules out a value-marking trick, but there is no reason to want one: reversal never needs to remember which nodes it has seen. |
+| `an empty list is legal input` | Every approach must return `None` for `None` without crashing. The three-pointer version gets this free — starting `prev` at `None` means the empty case returns `None` before the loop body ever runs. |
+| "reverse it **in place**" (from the statement) | This is the real reason the copy-to-array version loses. It is not slower in time; it is **disqualified by the requirement.** |
+
+The worked example traced in every section below:
+
+```
+1 → 2 → 3 → 4 → ∅        answer: 4 → 3 → 2 → 1 → ∅
+```
 
 ---
 
@@ -39,22 +45,23 @@ Two pieces of vocabulary, expanded once:
 *What is the most direct thing that could possibly work?* Read every value into a Python list, then
 build a fresh chain by pushing those values onto the front of a growing list one at a time — pushing
 front-to-back onto the front is itself a reversal. *Why is that not the answer?* Because it allocates
-`n` brand-new nodes and returns a different list than the one you were given, which is precisely what
+`n` brand-new nodes and returns a different list from the one you were given, which is precisely what
 "in place" forbids.
 
 ### How to think about it
 
-Think of the linked list as an awkward container and the array as a comfortable one. The shape of the
-reasoning is: escape to the comfortable container, do the easy thing there, and come back. The "easy
-thing" is not even `vals.reverse()` — it is the observation that a linked list built by repeatedly
-prepending comes out backwards for free, because the first value you prepend ends up deepest. You are
-paying `O(n)` memory to buy yourself an indexable structure, and then not even using the indexing.
-That last part is the tell that this approach is wasteful: it takes a detour and then does not use
-what the detour bought.
+> **Intuition.** The linked list is an awkward container and the array is a comfortable one, so the
+> move is: escape to the comfortable container, do the easy thing there, come back. Except the "easy
+> thing" is not even `vals.reverse()` — it is noticing that a chain built by repeatedly **prepending**
+> comes out backwards for free, because the first value you prepend ends up deepest. You paid `O(n)`
+> memory to buy an indexable structure and then never indexed into it.
+
+That last part is the tell that this rung is wasteful: it takes a detour and then does not use what the
+detour bought.
 
 ### Worked example
 
-Input: `1 → 2 → 3 → 4 → ∅`. (This same list is traced in every approach below.)
+Input: `1 → 2 → 3 → 4 → ∅`.
 
 **Pass 1 — drain the values:**
 
@@ -76,8 +83,8 @@ Input: `1 → 2 → 3 → 4 → ∅`. (This same list is traced in every approac
 | 3 | 3 | `ListNode(3, →2)` | `3 → 2 → 1 → ∅` |
 | 4 | 4 | `ListNode(4, →3)` | `4 → 3 → 2 → 1 → ∅` |
 
-Return `new_head`, the node holding 4. Note that all four original nodes still exist, untouched and
-still pointing forwards. Eight nodes now live where four did.
+Return `new_head`, the node holding 4. All four original nodes still exist, untouched and still
+pointing forwards — **eight** nodes now live where four did.
 
 ### Code
 
@@ -95,23 +102,25 @@ def reverse_list_copy_to_array(head: ListNode | None) -> ListNode | None:
 
 ### Common mistake
 
-Writing `for v in reversed(vals)` because "we want it reversed". That reverses twice and hands back a
-copy of the **original** order. The reversal here lives in the prepending, not in the iteration
-order — every prepend buries what came before, so walking the values forwards is correct and walking
-them backwards undoes the effect. If you find yourself reaching for `reversed()`, you have not
-noticed that prepending is already a reversal.
+> **Watch out.** The misconception is that the reversal has to appear *somewhere you can see it*, so
+> the loop should read `reversed(vals)`. The reversal is already there, hidden in the **prepend** —
+> and two reversals are no reversal at all.
+
+Writing `for v in reversed(vals)` because "we want it reversed" returns **`[1, 2, 3, 4]`** on the
+worked example: a faithful copy of the *original* order, allocated fresh. Nothing raises, because both
+the iteration and the construction are individually correct. If you find yourself reaching for
+`reversed()` here, you have not noticed that prepending is already a reversal.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(n)`.** Time is one walk to drain plus one loop to rebuild — two linear passes.
-Space is the `vals` array of `n` integers plus `n` freshly allocated nodes; nothing here is
-proportional to anything but the list length.
+**Time** `O(n)`, **space** `O(n)`. Time is one walk to drain plus one loop to rebuild — two linear
+passes. Space is the `vals` array of `n` integers **plus** `n` freshly allocated nodes.
 
 Use it when the nodes are not yours to modify — a shared or immutable structure another part of the
-program is still reading, or a list you were handed a const pointer to. Building a reversed copy is
-then the only correct move, and the allocation is the price of not mutating someone else's data. For
-this problem as stated, it is the honest baseline you should be able to write in thirty seconds and
-then explain why you are not shipping it.
+program is still reading, or a list you hold a const pointer to. Building a reversed copy is then the
+only correct move, and the allocation is the price of not mutating someone else's data. For this
+problem as stated it is the honest baseline: write it in thirty seconds, then say why you are not
+shipping it.
 
 ---
 
@@ -120,22 +129,24 @@ then explain why you are not shipping it.
 ### The idea
 
 *The array version allocated a whole second list — can we rewire the nodes that are already there?*
-Yes: assume a helper can reverse everything after the head, then all that remains is to hook the head
-onto the back of that reversed remainder. *What does it fix, and what does it still cost?* It fixes
-the allocation — no new nodes are created, the original nodes are rewired in place — but it replaces
-the array with a stack of `n` function calls, so the memory moved rather than disappeared.
+Yes: assume a helper can reverse everything after the head, then all that remains is hooking the head
+onto the back of that reversed remainder. *What does it fix, and what does it still cost?* It fixes the
+allocation — no new nodes, the originals rewired in place — but it replaces the array with a stack of
+`n` calls, so the memory moved rather than disappeared.
 
 ### How to think about it
 
-The shape is: **shrink the problem by one node, trust the smaller answer, then do one node's worth of
-work.** Say the list is `head` followed by a tail `T`. Recursively reverse `T`; you now have a chain
-ending at the node that used to be `T`'s head — and that node is still `head.next`, because you never
-changed `head`'s arrow. So `head.next` is the *last* node of the reversed remainder, and hooking
-`head` on is one assignment: `head.next.next = head`. Then `head.next = None`, because `head` is now
-the tail and a tail points at nothing. The new head never changes as the recursion unwinds — it is
-whatever the deepest call returned — so you pass it straight up. The trick to holding this in your
-head is the double `.next`: `head.next` is the node you handed to the recursion, and after that call
-it is the reversed chain's final node.
+> **Intuition.** You are last in a queue and you want the queue turned around. Rather than do it
+> yourself, you tap the person in front and say "turn everyone ahead of you around, then tell me who
+> ended up at the front." When they hand that back, the queue ahead of you is reversed and the person
+> you tapped is now standing at its *back* — so you walk around and stand behind them, and the
+> name you were handed is still the front of the whole queue. That is the entire function: one tap,
+> one step, pass the name along unchanged.
+
+Concretely, `head.next` is the node you handed to the recursion, and after the call it is the reversed
+chain's **final** node — because you never changed `head`'s own arrow. So hooking `head` on is one
+assignment, `head.next.next = head`, followed by `head.next = None` because `head` is now the tail and
+a tail points at nothing. The trick to holding this in your head is that double `.next`.
 
 ### Worked example
 
@@ -158,7 +169,8 @@ Input: `1 → 2 → 3 → 4 → ∅`.
 | `reverse(2)` | node 4 | node 3 | `3 → 2` | `2 → ∅` | `4 → 3 → 2 → ∅` |
 | `reverse(1)` | node 4 | node 2 | `2 → 1` | `1 → ∅` | `4 → 3 → 2 → 1 → ∅` |
 
-Final return: node 4. Four stack frames were live at the deepest point.
+Final return: node 4. Four stack frames were live at the deepest point, and `new_head` never changed
+once set.
 
 ### Code
 
@@ -174,25 +186,35 @@ def reverse_list_recursive(head: ListNode | None) -> ListNode | None:
 
 ### Common mistake
 
-Forgetting `head.next = None`. Every other line still looks right and the function still returns the
-correct head, but the last two nodes now point at each other: after `head.next.next = head`, node 1
-still points at node 2 *and* node 2 now points at node 1. You have built a two-node infinite loop at
-the end of the list. The bug does not raise an exception — it hangs the first thing that tries to
-walk the result, which is usually your test helper, and it looks like an infinite loop somewhere else
-entirely. The reason the line is needed: after you hook `head` onto the back, `head` is the tail, and
-a tail's `next` must be `None`.
+> **Watch out.** The misconception is that `head.next = None` is **cleanup** — tidying a pointer that
+> is about to be overwritten anyway. It is not cleanup, it is the *second half of one edit*:
+> `head.next.next = head` adds an arrow without removing the one pointing the other way, and a pair of
+> nodes pointing at each other is a cycle, not a list.
+
+Forgetting it leaves every other line looking right and the function still returning the correct head.
+But after `head.next.next = head`, node 1 still points at node 2 *and* node 2 now points at node 1.
+Walking the result on the worked example yields:
+
+```
+4, 3, 2, 1, 2, 1, 2, 1, …        forever
+```
+
+Nothing raises — it hangs the first thing that tries to walk the result, which is usually your own test
+helper, and it looks like an infinite loop somewhere else entirely. Under this document's guarded
+`to_list` it surfaces as `RuntimeError: cycle detected while reading the list back`, which is the whole
+reason that step limit is in the harness.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(n)` on the call stack.** Time is one frame per node, each doing constant work.
-The space is not an array you can see — it is the interpreter's stack, one frame per node, all live
-at once at the deepest point. That is why the `0 <= list length <= 5000` constraint disqualifies it:
-5000 frames blows Python's default 1000-frame limit outright.
+**Time** `O(n)`, **space** `O(n)` on the call stack. Time is one frame per node, each doing constant
+work. The space is not an array you can see — it is the interpreter's **stack**, one frame per node,
+all live at once at the deepest point. That is why `0 <= list length <= 5000` disqualifies it: 5000
+frames blows Python's default 1000-frame limit outright.
 
-Use it when the list is guaranteed short and the recursive form is genuinely clearer to the reader —
-or when you are working in a language with tail-call elimination and can restructure it to exploit
-that (this shape is not tail-recursive as written; the work happens after the call). In an interview,
-write it to show you can, then say the sentence about stack depth before anyone asks.
+Use it when the list is guaranteed short and the recursive form is genuinely clearer to the reader, or
+in a language with tail-call elimination *after* restructuring it to exploit that — as written it is
+not tail-recursive, because the work happens after the call. In an interview, write it to show you can,
+then say the sentence about stack depth before anyone asks.
 
 ---
 
@@ -202,23 +224,27 @@ write it to show you can, then say the sentence about stack depth before anyone 
 
 *Recursion's only real job was to remember the node behind the current one — can a variable do that
 instead of a stack frame?* Yes, and that collapses the whole thing into a loop: hold the node behind
-you (`prev`), the node you are on (`curr`), and — because you are about to destroy the forward arrow
-— a saved copy of the node ahead (`nxt`). *What does it fix?* It fixes recursion's `O(n)` stack: the
-same rewiring happens with exactly three variables alive at any moment, no matter how long the list.
+you (`prev`), the node you are on (`curr`), and — because you are about to destroy the forward arrow —
+a saved copy of the node ahead (`nxt`). *What does it fix?* Recursion's `O(n)` stack: the same rewiring
+happens with exactly three variables alive at any moment, no matter how long the list.
 
 ### How to think about it
 
-Picture yourself walking the chain with a rope you are re-tying behind you. At each node you do three
-things in a fixed order: **remember where you were going, point backwards, step forward.** The order
-is the whole algorithm — you must save `curr.next` *before* you overwrite it, because overwriting it
-is how you point backwards, and once it is overwritten the rest of the list is unreachable.
+> **Intuition.** You are walking the chain re-tying a rope behind you. At each node you do three things
+> in a fixed order: **remember where you were going, point backwards, step forward.** The order *is*
+> the algorithm — you must save `curr.next` before you overwrite it, because overwriting it is how you
+> point backwards, and once it is gone the rest of the list is unreachable.
 
-The second insight is what `prev` starts as. It starts as `None`, and that `None` is not a placeholder
-— it is the value that ends up in the original head's `next` field, which is exactly what the new
-tail needs. The empty-list case falls out of the same choice: with `head` being `None`, `curr` is
-`None`, the loop never runs, and `prev` (still `None`) is returned. No special case, no `if`
-statement, just a well-chosen starting value. And when the loop ends, `curr` is `None` and `prev` is
-sitting on the last node you visited — the original tail — which is the new head.
+> **Why it works.** One loop invariant, true before and after every iteration: **`prev` heads a fully
+> reversed prefix, `curr` heads the still-untouched suffix in its original order, and the two halves
+> are not connected to each other.** It holds at the start — `prev` is `None`, an empty reversed
+> prefix, and `curr` is the whole list. Each iteration moves exactly one node across the boundary and
+> restores it, which is why `nxt` has to exist at all: `curr.next = prev` is the move, and it destroys
+> the only reference to the suffix, so you save it on the line before. When the loop ends `curr` is
+> `None` — the suffix is empty, so the reversed prefix is the whole list — and `prev` is sitting on the
+> last node visited, the original tail, which is the new head. The initial `None` in `prev` does
+> double duty: it becomes the original head's `next`, exactly what the new tail needs, and it is the
+> answer returned for an empty list without a single `if`.
 
 ### Worked example
 
@@ -232,10 +258,8 @@ Input: `1 → 2 → 3 → 4 → ∅`. State is shown *after* each full iteration
 | 3 | node 4 | node 2 | node 3 | node 4 | `3 → 2 → 1 → ∅` | `4 → ∅` |
 | 4 | `None` | node 3 | node 4 | `None` | `4 → 3 → 2 → 1 → ∅` | — |
 
-The loop test `while curr` now fails. Return `prev` = node 4. Notice the invariant that held after
-every single row: **everything behind `prev` is already reversed, everything from `curr` onward is
-still in original order, and the two halves are not connected.** That invariant is the thing to say
-out loud in an interview.
+The loop test `while curr` now fails. Return `prev` = node 4. Read the last two columns as the
+invariant: they never overlap, and every row moves exactly one node from right to left.
 
 ### Code
 
@@ -252,6 +276,11 @@ def reverse_list_three_pointer(head: ListNode | None) -> ListNode | None:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that `nxt = curr.next` **reads** something durable, so its
+> position among the three lines is a matter of taste. `curr.next` is the only reference to the rest of
+> the list, and `curr.next = prev` is what overwrites it — so the two lines are ordered by *necessity*,
+> not style.
+
 Writing `curr.next = prev` before saving `nxt`:
 
 ```python
@@ -261,43 +290,43 @@ while curr is not None:
     prev, curr = curr, nxt
 ```
 
-After the first iteration `curr` becomes `prev`, which is `None`, so the loop exits immediately and
-you return a one-node list holding the original head. Nodes 2, 3 and 4 still exist but nothing points
-at them. The failure is silent — no exception, no crash, just a list of length 1 — which is why this
-is the bug that survives a quick eyeball review. The fix is not a fix so much as a discipline: in any
+`nxt` now reads back the `prev` that was just written, so after the first iteration `curr` becomes
+`None` and the loop exits. On the worked example this returns **`[1]`** — nodes 2, 3 and 4 still exist
+but nothing points at them. No exception, no crash, just a list of length 1, which is why this bug
+survives a quick eyeball review. The discipline it teaches generalises past this problem: in any
 pointer rewiring, save what you are about to overwrite on the line before you overwrite it.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(1)`.** Time is one visit per node doing three constant-time assignments.
+**Time** `O(n)`, **space** `O(1)`. Time is one visit per node doing three constant-time assignments.
 Space is genuinely constant: `prev`, `curr` and `nxt` are the only extra storage, and there are three
-of them whether the list has 4 nodes or 5000.
+of them whether the list holds 4 nodes or 5000.
 
-This is the one to ship. It satisfies the in-place requirement, survives the 5000-node upper bound
-that the recursion cannot, and handles the empty list without a special case. There is no scenario
-in this problem where another approach beats it — the others exist to explain why this one is shaped
-the way it is.
+**This is the one to ship.** It satisfies the in-place requirement, survives the 5000-node upper bound
+that the recursion cannot, and handles the empty list without a special case. There is no scenario in
+this problem where another approach beats it — the others exist to explain why this one is shaped the
+way it is.
 
 ---
 
 ## The Overall Arc
 
-Every step of this ladder chases one principle: **the only thing reversal actually needs to remember
-is the node you just came from, and each approach differs only in how expensively it remembers it.**
-The array version remembers everything — all `n` values, all at once, in a structure it then barely
-uses — and pays for that with `n` new nodes and a result that is a copy rather than the list you were
-asked to reverse; its weakness is that it treats "I need the previous node" as "I need the whole
-history". Recursion notices that the history is not needed, only the immediate predecessor, and lets
-the call stack hold it: each frame's `head` *is* the predecessor of the sublist below it, so no new
-nodes are allocated and the rewiring happens in place. But the stack is still `O(n)` memory that
-happens to be invisible, one frame per node, and with 5000 nodes allowed it is memory the runtime
-will refuse to give you. The last step is the observation that a stack frame storing one pointer can
-be replaced by a variable storing one pointer: `prev` is the predecessor, carried forward explicitly
-instead of being rebuilt by unwinding. Once you say it that way the loop writes itself — save the
-successor, flip the arrow, shift both pointers — and the `None` you initialised `prev` with turns out
-to do double duty as the terminator for the new tail and as the answer for the empty list. The whole
-progression is one idea being sharpened: from *store the past*, to *let the runtime store the past*,
-to *the past is one pointer, hold it in your hand*.
+Every step of this ladder chases one principle: **the only thing reversal actually needs to remember is
+the node you just came from, and each approach differs only in how expensively it remembers it.** The
+array version remembers everything — all `n` values, at once, in a structure it then barely uses — and
+pays with `n` new nodes and a result that is a copy rather than the list you were asked to reverse; its
+weakness is treating "I need the previous node" as "I need the whole history". Recursion notices that
+the history is not needed, only the immediate predecessor, and lets the call stack hold it: each
+frame's `head` *is* the predecessor of the sublist below it, so no new nodes are allocated and the
+rewiring happens in place. But the stack is still `O(n)` memory that merely happens to be invisible,
+one frame per node, and with 5000 nodes allowed it is memory the runtime will refuse to give you. The
+last step is the observation that a stack frame storing one pointer can be replaced by a variable
+storing one pointer: `prev` is the predecessor, carried forward explicitly instead of rebuilt by
+unwinding. Once you say it that way the loop writes itself — save the successor, flip the arrow, shift
+both pointers — and the `None` you initialised `prev` with turns out to do double duty as the
+terminator for the new tail and as the answer for the empty list. The whole progression is one idea
+being sharpened: from *store the past*, to *let the runtime store the past*, to *the past is one
+pointer, hold it in your hand*.
 
 ---
 
@@ -307,36 +336,49 @@ to *the past is one pointer, hold it in your hand*.
 |---|---|---|---|---|
 | Copy to array | `O(n)` | `O(n)` | Buys an easy mental model with `n` extra nodes; returns a copy, not the original list | The input must not be mutated — shared, immutable, or const-borrowed data |
 | Recursive | `O(n)` | `O(n)` stack | In-place rewiring, but memory moved from the heap to an invisible call stack | The list is provably short and the recursive form reads better to your team |
-| Three pointers | `O(n)` | `O(1)` | None worth naming — three variables, one pass, no allocation | Always, for this problem |
+| **Three pointers** | **`O(n)`** | **`O(1)`** | **None worth naming — three variables, one pass, no allocation** | **Always, for this problem** |
 
 ---
 
 ## Interview Priority
 
-**Memorize cold: the three-pointer loop.** It is five lines, it is asked directly at least as often as
-any other linked-list question, and — this is the real reason — it is a *subroutine* inside half the
-harder list problems. Palindrome-check reverses the second half. Reorder-list reverses the second
-half. Reverse-in-k-groups reverses a window at a time. If you have to think about `prev, curr, nxt`
-during one of those, you have spent your thinking budget before reaching the actual problem.
+> **In an interview.** State the invariant before you write the loop: *"`prev` heads the reversed part,
+> `curr` heads the untouched part, and I save `curr.next` first because the very next line destroys
+> it."* That one sentence pre-empts the two things an interviewer probes for — whether you know why
+> `nxt` exists, and whether the empty list needs a special case (it does not, because `prev` starts
+> `None`). The standard follow-up is **"now do it recursively"**, so have `head.next.next = head`
+> ready along with its `O(n)` stack cost; the sharper follow-up is **"reverse only nodes `m` through
+> `n`"**, which is this same loop run on a window behind a dummy head.
 
-**Memorize cold: the recursive version, as a second answer.** Not because you would ship it, but
-because "can you do it recursively?" is the standard follow-up, and the `head.next.next = head`
-line is the kind of thing that is obvious once seen and impossible to derive under pressure. Being
-able to write it *and* immediately name its `O(n)` stack cost is a stronger signal than either alone.
+**Memorize cold — the three-pointer loop.** Five lines, asked directly at least as often as any other
+linked-list question, and — the real reason — it is a **subroutine** inside half the harder list
+problems. Palindrome-check reverses the second half. Reorder-list reverses the second half.
+Reverse-in-k-groups reverses a window at a time. If you have to think about `prev, curr, nxt` during
+one of those, you have spent your thinking budget before reaching the actual problem.
 
-**Understand but do not drill: copy-to-array.** Its value is rhetorical. Opening with "the obvious
-thing is to dump the values and rebuild, which is `O(n)` time but allocates a second list and is not
-in place" shows you know what the requirement is *for* before you satisfy it. You will never need to
-recall its code — you can derive it in seconds — so spend the memorization budget elsewhere.
+**Memorize cold — the recursive version, as a second answer.** Not because you would ship it, but
+because "can you do it recursively?" is the standard follow-up and `head.next.next = head` is the kind
+of line that is obvious once seen and impossible to derive under pressure. Being able to write it *and*
+immediately name its `O(n)` stack cost is a stronger signal than either alone.
+
+**Not worth memorizing — copy-to-array.** Its value is rhetorical. Opening with "the obvious thing is
+to dump the values and rebuild, which is `O(n)` time but allocates a second list and is not in place"
+shows you know what the requirement is *for* before you satisfy it. You can derive the code in seconds,
+so spend the memorization budget elsewhere.
 
 ---
 
 ## Full Runnable Script
 
-`ListNode`, `build` and `to_list` below are **scaffolding, not part of the answer.** An interviewer
-hands you a `head` pointer and a node class that already exists; these helpers only exist so this
-file can construct inputs from ordinary Python lists and print results. None of the three solution
-functions calls them.
+`ListNode`, `build` and `to_list` are **scaffolding, not part of the answer.** An interviewer hands you
+a `head` pointer and a node class that already exists; these helpers exist only so this file can
+construct inputs from ordinary Python lists and read results back. None of the three solution functions
+calls them, and no approach touches another's internals.
+
+Two harness details the spec's trap table demands, both of which this problem walks into. First,
+**every approach consumes or rewires its input**, so the harness rebuilds the list before each run —
+cross-checking against a corrupted input proves nothing. Second, the classic missing `head.next = None`
+leaves a real cycle behind, so `to_list` carries a step limit and raises instead of hanging the suite.
 
 ```python
 """Reverse a Linked List — every approach in one file, cross-checked.

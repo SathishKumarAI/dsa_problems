@@ -46,16 +46,17 @@ at 10^4 nodes.
 
 ### How to think about it
 
-The shape is: **replace memory with recomputation.** Anything you could have stored, you can instead
-re-derive by walking the list again from a place you know. That trade is the crudest possible answer
-to "I am not allowed extra space", and it is worth seeing precisely because the optimal solution makes
-exactly the same trade — memory for re-walking — but pays for it with one extra pointer instead of one
-extra full traversal per node.
+> **Intuition.** Walking a corridor of numbered doors with no pen and no paper. At every door you
+> ask "have I been here before?", and with nothing written down the only way to answer is to run back
+> to the entrance and re-walk every door you have already opened, checking each one against the door
+> you are standing at. You are trading **memory** for **recomputation** — and it is worth seeing
+> precisely because the optimal solution makes exactly the same trade, paying with one extra pointer
+> instead of one extra full traversal per door.
 
 The subtle part is why this terminates at all when there *is* a cycle. The outer pointer never stops
 on its own — it goes round the loop forever. But the moment it lands on a node it has already
 occupied, that node also sits at some earlier index, so the inner scan finds it and the function
-returns. So the outer loop runs at most (tail length + cycle length) + 1 times, never forever.
+returns. The outer loop therefore runs at most `tail + loop + 1` times, never forever.
 
 ### Worked example
 
@@ -92,11 +93,14 @@ def cycle_detect_nested_walk(head: ListNode | None) -> bool:
 
 ### Common mistake
 
-Writing `if probe.val == node.val` instead of `if probe is node`. The function now reports a cycle for
-any list containing a duplicate value — `1 → 2 → 1 → ∅` is a perfectly terminating list and this
-version calls it cyclic. It is wrong because a cycle is a statement about *which node object* you are
-standing on, not about what is written in it. Nothing in the problem forbids repeated values, and the
-`-10^5 <= val <= 10^5` range with up to 10^4 nodes makes duplicates likely rather than exotic.
+> **Watch out.** The misconception is that two nodes "being the same" is a question about their
+> **contents**. It is a question about their **address**. A cycle says you are standing on a node you
+> already stood on, not on a node that happens to read the same.
+
+Writing `if probe.val == node.val` instead of `if probe is node`. The function now reports a cycle
+for any list holding a duplicate value: on `1 → 2 → 1 → ∅`, a list that plainly ends, the buggy
+version returns **`True`** — run, not assumed. Nothing in the problem forbids repeated values, and
+the `-10^5 <= val <= 10^5` range with up to 10^4 nodes makes duplicates likely rather than exotic.
 
 In Python the distinction is `is` versus `==`; in Java it is `==` versus `.equals`; in C++ it is
 comparing pointers versus comparing what they point at. Every language has this trap in a slightly
@@ -104,8 +108,9 @@ different spelling.
 
 ### Complexity and when to use this
 
-**Time `O(n²)`, space `O(1)`.** The time comes from the inner scan running once per outer node with
-an ever-growing prefix — the sum `0 + 1 + 2 + … + n` is `n²/2`. Space is two pointers and an integer.
+**Time** `O(n²)`, **space** `O(1)`. The time comes from the inner scan running once per outer node
+with an ever-growing prefix — the sum `0 + 1 + 2 + … + n` is `n²/2`. Space is two pointers and an
+integer.
 
 Use it essentially never for this problem. It earns its place in one situation: you are debugging a
 data structure by hand, you need an obviously-correct oracle to check a clever implementation against,
@@ -125,15 +130,16 @@ re-scanning to one constant-time lookup per node, turning `O(n²)` into `O(n)`. 
 
 ### How to think about it
 
-The shape is **trading the crude resource for the cheap one**: the nested walk spent time to avoid
-memory; the set spends memory to avoid time. This is the single most common move in algorithm design
-and it is almost always the right first improvement to propose out loud.
+> **Intuition.** The same corridor, but now you carry a pot of chalk and mark each door as you pass
+> through it. "Have I been here?" stops being a search and becomes a glance. You have swapped the
+> **crude** resource for the **cheap** one — the nested walk spent time to avoid memory, the set
+> spends memory to avoid time — which is the most common move in algorithm design and almost always
+> the right first improvement to say out loud.
 
-The one thing to be careful about is *what* goes in the set. It must be something that identifies the
-node object, not its contents — either the node object itself (in Python, Java and C++, default
-hashing of an object or pointer is identity-based) or its address, which Python exposes as `id(node)`.
-Put values in the set and you have written a duplicate-value detector wearing a cycle detector's
-clothes.
+The one thing to be careful about is *what* goes in the set. It must identify the node **object**,
+not its contents — either the node itself (in Python, Java and C++, default hashing of an object or
+pointer is identity-based) or its address, which Python exposes as `id(node)`. Put values in the set
+and you have written a duplicate-value detector wearing a cycle detector's clothes.
 
 Termination is also worth a thought: on a cyclic list this loop stops the first time it comes back
 round to any previously visited node, which is at most `n` steps. It does not run forever.
@@ -168,9 +174,12 @@ def cycle_detect_visited_set(head: ListNode | None) -> bool:
 
 ### Common mistake
 
-`seen.add(head.val)` instead of the node's identity. Same bug as approach 1's, and it is even easier
-to make here because `head.val` is an `int`, which is obviously hashable, while "can I put a node in a
-set?" makes you hesitate. The result is a function that returns `True` for `1 → 2 → 1 → ∅`.
+> **Watch out.** The misconception is that the set's job is to hold something **hashable** — and an
+> `int` obviously is, while "can I even put a node in a set?" makes you hesitate. The set's job is to
+> hold something **identifying**. Hashability is a precondition, not the requirement.
+
+`seen.add(head.val)` instead of the node's identity, the same bug as approach 1's and made easier by
+that hesitation. On `1 → 2 → 1 → ∅` the buggy version returns **`True`** — run, not assumed.
 
 A second, subtler trap specific to the `id()` spelling: `id()` is only a valid identity as long as the
 object is alive. It is safe here because every node stays reachable from `head` for the whole call —
@@ -181,7 +190,7 @@ identity set is the only safe choice.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(n)`.** Time is one visit and one hash lookup per node, each constant on
+**Time** `O(n)`, **space** `O(n)`. Time is one visit and one hash lookup per node, each constant on
 average. Space is the set, which reaches `n` entries on an acyclic list.
 
 Use it when you need more than a yes/no. The set can be upgraded to a dict of node → index, which
@@ -205,16 +214,19 @@ space, same `O(n)` time, and nothing is remembered between steps except two posi
 
 ### How to think about it
 
-Two runners on a track. If the track is a straight road, the faster runner reaches the end and the
-race is over. If the track has a loop in it, both runners eventually enter the loop and never leave —
-and now the faster one is gaining on the slower one.
+> **Intuition.** Two runners set off together round a track. If the track is a straight road the
+> faster one reaches the end and the race is over. If the track has a loop in it, both eventually
+> enter the loop and never leave — and from that moment the faster one is gaining, lap after lap,
+> until he is running alongside the slower one. Nobody wrote anything down: the **evidence** of a
+> repeat is simply that the two runners are in the same place.
 
-The whole proof lives in one sentence: **once both are inside the loop, the gap between them shrinks
-by exactly one node per step.** Slow advances 1, fast advances 2, so fast closes 1 per step. A gap
-that decreases by exactly one can never skip over zero — it must land on zero. That is why they are
-guaranteed to meet and not merely pass each other, and it is why the step sizes are 1 and 2 rather
-than 1 and 3: with a gap closing by two per step you would have to argue about parity and the loop
-length. The 1-and-2 version needs no such argument.
+> **Why it works.** Once both pointers are inside the loop, the gap between them — measured forward
+> from `fast` to `slow` around the loop — shrinks by **exactly one** node per step, because `slow`
+> advances 1 and `fast` advances 2. A quantity that decreases by exactly one can never step *over*
+> zero; it has to land on it. That is why they are guaranteed to meet rather than merely pass, and it
+> is why the step sizes are 1 and 2 rather than 1 and 3: a gap closing by two per step could skip
+> zero, leaving you to argue about the parity of the loop length. The 1-and-2 version needs no such
+> argument.
 
 The loop condition `while fast is not None and fast.next is not None` is doing two jobs. It is the
 no-cycle exit — an acyclic list eventually gives `fast` a `None` to stand on or to step from — and it
@@ -258,6 +270,11 @@ def cycle_detect_floyd(head: ListNode | None) -> bool:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that `slow is fast` *means* "a cycle exists", so where you
+> test it is a matter of taste. It means no such thing. It is evidence of a cycle only once the two
+> pointers have travelled **different distances**, and at the top of the first iteration they have
+> travelled the same distance: none.
+
 Checking `if slow is fast` at the top of the loop, before either pointer moves:
 
 ```python
@@ -268,10 +285,11 @@ while fast is not None and fast.next is not None:
     fast = fast.next.next
 ```
 
-Both pointers are initialised to `head`, so this returns `True` for every list with at least two
-nodes, cycle or not. It is wrong because `slow is fast` is only *evidence* of a cycle when it happens
-after the pointers have been moved different distances; at the start they have moved the same
-distance, namely none.
+Both pointers start at `head`, so this returns **`True`** for every list with at least two nodes,
+cycle or not — measured on the acyclic `1 → 2 → ∅` and on a five-node straight list, both of which
+the buggy version calls cyclic. The empty list and the one-node list escape only because the loop
+condition rejects them before the check is ever reached, which is exactly the sort of accidental
+survival that hides a bug from a test suite.
 
 The usual attempted fix — starting `fast = head.next` — works, but then you must handle `head is None`
 separately before touching `head.next`, and the meeting point no longer has the clean distance
@@ -280,9 +298,9 @@ version to memorize.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(1)`.** The time bound is not obvious and is worth being able to defend: slow
-takes at most `tail + loop` steps to enter the loop and at most `loop` more before fast catches it, so
-the total is under `2n` steps. Space is two pointers, regardless of list length.
+**Time** `O(n)`, **space** `O(1)`. The time bound is not obvious and is worth being able to defend:
+`slow` takes at most `tail + loop` steps to enter the loop and at most `loop` more before `fast`
+catches it, so the total is under `2n` steps. Space is two pointers, regardless of list length.
 
 This is the one to ship. It is the only approach here that satisfies the `O(1)`-space requirement
 while staying linear, it never touches the list's data, and it extends: the same two pointers, after
@@ -310,10 +328,10 @@ approach is not merely suboptimal, it is incorrect.
 
 ### How to think about it
 
-The shape is: **the visited set, stored inside the data instead of beside it.** Approach 2 kept a
-separate structure recording which nodes were seen; this keeps the same information, one bit per node,
-written into a field the node already has. That is why the space drops to `O(1)` — the storage was
-already allocated, you are just overwriting what was in it.
+> **Intuition.** Back to the corridor and the chalk — except now the mark goes on the **door**
+> rather than in a notebook you carry. The information is identical, one mark per door, and the
+> notebook disappears because the doors were already there. That is why the space drops to `O(1)`:
+> the storage was allocated before you arrived, and you are only overwriting what was painted on it.
 
 This is a real technique with a real name (in-place marking), and it appears constantly in array
 problems where the values happen to be usable as indices or the sign bit is free. The reason it is the
@@ -354,11 +372,14 @@ def cycle_detect_value_marking(head: ListNode | None) -> bool:
 
 ### Common mistake
 
+> **Watch out.** The misconception is that a sentinel needs to be **unlikely**. It needs to be
+> **impossible**, and that is not a difference of degree: an unlikely sentinel is a bug lying in wait
+> for the one input that happens to contain it.
+
 Picking a sentinel inside the legal range — `0`, or `-1`, or `100000`. The instant a real node holds
-that value, the function reports a cycle on a perfectly straight list, and it does so for exactly one
-input in your test set, on a Tuesday. The sentinel must be provably impossible, which means it must be
-derived from the stated constraint (`|val| <= 10^5` ⟹ `100001` is free), not from a guess about what
-"probably won't appear".
+that value the function reports a cycle on a perfectly straight list, and it will do so for exactly
+one input in your test set, on a Tuesday. The sentinel has to be *derived* from the stated constraint
+(`|val| <= 10^5`, so `100001` is free), never guessed at.
 
 The second mistake is shipping this at all without saying it mutates. A function named `has_cycle`
 that silently erases the list is the kind of thing that passes review and then corrupts data in
@@ -366,9 +387,9 @@ production, because nothing in the signature warns anyone.
 
 ### Complexity and when to use this
 
-**Time `O(n)`, space `O(1)`.** Each node is visited at most twice (once to stamp, once to detect), and
-the only extra storage is one pointer. Same asymptotics as Floyd, with a smaller constant — roughly
-`n + 1` node visits versus Floyd's up-to-`3n` pointer dereferences.
+**Time** `O(n)`, **space** `O(1)`. Each node is visited at most twice — once to stamp, once to
+detect — and the only extra storage is one pointer. Same asymptotics as Floyd with a smaller
+constant: roughly `n + 1` node visits against Floyd's up-to-`3n` pointer dereferences.
 
 Use it when the list is genuinely yours to destroy and the constant factor matters — a one-shot
 validity check on a structure you are about to free anyway, or an embedded context where you are
@@ -415,6 +436,14 @@ winner is the only one that needs neither extra memory nor permission to destroy
 ---
 
 ## Interview Priority
+
+> **In an interview.** Open by naming the visited set and killing it in the same breath — *"a hash
+> set of node identities is `O(n)` time and `O(n)` space, and the space is the whole point of this
+> question, so let me get that to `O(1)`"* — then write Floyd. The follow-up is one of two, reliably:
+> **"why must they meet rather than pass each other?"** (the gap shrinks by exactly one per step, so
+> it cannot skip zero) or **"now give me the node where the cycle starts"** (reset one pointer to the
+> head, advance both by one, they meet at the entry). Have the first as a sentence and the second as
+> four lines.
 
 **Memorize cold: Floyd's tortoise and hare.** Five lines, and the two details that decide whether it
 works — the loop condition `while fast and fast.next`, and checking `slow is fast` *after* both move —

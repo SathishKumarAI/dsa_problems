@@ -2,10 +2,12 @@
 
 ## Understanding the Problem
 
-You get two strings: a short one, `s`, and a long one, `t`. Answer yes or no to a single question:
-can you produce `s` by crossing out some of the letters of `t` and leaving the rest exactly where
-they are? The letters of `s` must appear in `t` **in the same order**, but they are allowed to be
-scattered — nothing says they have to sit next to each other.
+Take a long sentence and a marker pen, and black out any letters you like. Whatever survives, read
+left to right, is a **subsequence** of what you started with. The question is whether one particular
+short string `s` is reachable that way from a long string `t` — yes or no.
+
+The letters of `s` must appear in `t` in the same **order**, but nothing says they sit next to each
+other. Blacking out is free; reordering is forbidden.
 
 **The core question is: for each letter of the pattern, where is its next available occurrence in
 the text?** The naive approach is slow because it answers that by starting a fresh search through
@@ -23,13 +25,8 @@ pattern of 100.
 | both are lowercase English letters | A 26-letter alphabet. Irrelevant to the one-pass answer, but it is exactly the constraint that makes the *follow-up* affordable: a table of "next occurrence of each letter after each position" costs 26 × 10⁴ entries, which is nothing. |
 | the empty string is a subsequence of anything, including of itself | The answer for `s = ""` is `true` no matter what `t` is, so the code must be correct when the pattern cursor starts already at the end. This is what the `i < len(s)` guard is for; it is not defensive clutter. |
 
-The third row is the one to internalise. It licenses the **exchange argument** that the fast
-version depends on: when you need a `b` and the text offers you one, taking it is never worse than
-waiting for a later `b`, because taking the earlier one leaves *strictly more* of the text
-available for everything that still has to be matched. Any solution that skips a match and
-succeeds can be rewritten to take that match and still succeed. So greed is not a heuristic here,
-it is provably optimal — and that is why one pass with no backtracking is correct rather than
-merely plausible.
+The third row is the one to internalise: it is what licenses **greed**, and the proof is spelled out
+where it is used, in Approach 2's `Why it works`.
 
 ---
 
@@ -45,13 +42,14 @@ definition into code: one search per pattern letter, each one resuming where the
 
 ### How to think about it
 
-Think of it as reading down a page with a finger, hunting one target letter at a time. You put
-your finger at the top, hunt for an `a`, and pin it. Then you start hunting for a `b` from the
-line *below* the pin — not from the top of the page, which is the whole game. When a hunt runs off
-the bottom of the page you stop and say no. The shape to notice is the bookkeeping: a variable
-holding the resume point, a sentinel to record whether the inner hunt succeeded, and an early
-return. Three moving parts to express what is really one idea, and each is a place to get it
-wrong.
+> **Intuition.** Reading down a page with a finger, hunting one target letter at a time. You put
+> your finger at the top, hunt for an `a`, and pin it there. Then you hunt for a `b` starting from
+> the line *below* the pin — never from the top of the page again, and that restriction is the whole
+> game. When a hunt runs off the bottom you stop and say no.
+>
+> The shape worth noticing is the **bookkeeping**: a variable holding the resume point, a sentinel
+> recording whether the inner hunt succeeded, and an early return. Three moving parts to express
+> what is really one idea, and each one is a separate place to be wrong.
 
 ### Worked example
 
@@ -86,27 +84,37 @@ def is_subsequence_restart_scan(s: str, t: str) -> bool:
 
 ### Common mistake
 
-Writing the inner scan as `for j in range(len(t))` — starting from the beginning of the text each
-time instead of from `at`. This is not merely slower, it is **wrong**, and it is wrong in a way
-the obvious test cases will not catch. With `s = "aa"` and `t = "ab"` it finds an `a` at index 0,
-then goes back and finds the same `a` at index 0 again, and reports `True` — but `"aa"` is not a
-subsequence of `"ab"`, because there is only one `a` to go round. The same bug says `"ba"` is a
-subsequence of `"ab"`. Both letters must come from *different, increasing* positions, and `at` is
-the only thing enforcing that. It is also the version that gives this approach its reputation for
-being quadratic: re-reading the text from zero for every pattern letter is 100 × 10⁴ reads.
+> **Watch out.** The misconception is that `at` is an **optimization** — a way to avoid re-reading
+> text you have already walked past. It is not; it is the only thing enforcing that two pattern
+> letters come from two *different* text positions. Delete it and the function does not become
+> slow, it becomes wrong.
 
-The quieter second mistake is using `found = 0` as the sentinel instead of `-1`. Zero is a
-perfectly legal match position, so a match at the very front of the text becomes indistinguishable
-from "not found".
+Writing the inner scan as `for j in range(len(t))`, restarting at the beginning of the text each
+time instead of at `at`. With `s = "aa"` and `t = "ab"` it finds an `a` at index `0`, goes back,
+finds the same `a` at index `0` again, and reports **`True`** — but `"aa"` is not a subsequence of
+`"ab"`, because there is only one `a` to go round. The same bug reports **`True`** for `"ba"`
+against `"ab"`, where the letters exist but the order does not.
+
+It is also the version that earns this approach its reputation for being quadratic: re-reading the
+text from zero for every pattern letter is `100 × 10^4` reads.
+
+> **Watch out.** The second misconception is that any **falsy** value will serve as "not found".
+> Zero is a perfectly legal match position — the first character of the text — so `found = 0` makes
+> a match at the front indistinguishable from a failed hunt.
+
+With `found = 0` as the sentinel and the guard written `if found == 0`, the worked example below
+returns **`False`** instead of `True`: the very first hunt finds its `a` at index `0`, and the guard
+reads that as failure.
 
 ### Complexity and when to use this
 
-**Time O(|s| + |t|), space O(1)** — as written. This is worth being precise about, because the
-figure usually quoted for this approach is O(|s| · |t|). That quadratic figure belongs to the
-broken variant above, the one that restarts each scan at index 0. As written here, each successful
-hunt scans the stretch of `t` from `at` to the match and then sets `at` past it, so the stretches
-never overlap: added up, all the successful hunts together read each character of `t` at most
-once, and the single failing hunt reads at most the rest of it. Space is three integers.
+**Time** `O(|s| + |t|)`, **space** `O(1)` — as written. That is worth being precise about, because
+the figure usually quoted for this approach is `O(|s| · |t|)`, and that quadratic figure belongs to
+the **broken** variant above, the one restarting each scan at index `0`.
+
+As written here, each successful hunt scans `t` from `at` to its match and then sets `at` past it,
+so the stretches never overlap; added up, all the successful hunts together read each character of
+`t` at most once, and the single failing hunt reads at most the rest. Space is three integers.
 
 So the reason to move past this rung is not asymptotic — it is that it needs a nested loop, a
 sentinel value, an early return and a manually maintained resume pointer to say something the next
@@ -131,15 +139,23 @@ the nested loop collapses into a single `if`.
 
 ### How to think about it
 
-Two cursors, but — unlike the rest of this family — walking **two different sequences**. One
-cursor sweeps the whole text, left to right, one character per step, and never goes back. The
-other sits on the pattern at the character you are still waiting for, and only ever moves when the
-text hands it a match. Picture a queue of people filing past a checklist: everyone in the queue
-gets looked at exactly once, and you tick the next box only when the person walking past is the
-one that box names. If every box ends up ticked, the answer is yes. The pattern cursor is the
-family's "writer" in disguise — it does not write anything, it marks how much of the pattern has
-been satisfied, and the gap between it and the text cursor is exactly the number of text
-characters discarded.
+> **Intuition.** A queue of people filing past a bouncer holding a guest list. Everyone in the
+> queue is looked at exactly once and nobody is called back; the bouncer ticks the **next** name on
+> the list only when the person walking past happens to be that name, and waves everyone else
+> through. If the queue empties with every name ticked, the answer is yes.
+>
+> Two cursors, then — but unlike the rest of this family, walking **two different sequences**. The
+> text cursor sweeps `t` one character per step and never goes back; the pattern cursor sits on the
+> character still being waited for and moves only when the text hands it a match. The gap between
+> them is exactly the number of text characters thrown away.
+
+> **Why it works.** Greed is safe here by an **exchange argument**. Suppose some successful matching
+> skips the occurrence of the needed character at position `j` and uses a later one at `j' > j`.
+> Rewrite it to use `j` instead: everything still to be matched now has the whole of `t[j+1..]` to
+> work with, which is a *superset* of `t[j'+1..]`, so nothing that used to fit can stop fitting.
+> Any winning matching can therefore be rewritten into the earliest-match one — so if an answer
+> exists at all, the greedy sweep finds it, and a single forward pass with **no backtracking** is
+> complete rather than merely plausible.
 
 ### Worked example
 
@@ -175,34 +191,41 @@ def is_subsequence_two_pointers(s: str, t: str) -> bool:
 
 ### Common mistake
 
-Dropping the `i < len(s)` guard. Once the pattern has been fully matched, `i` equals `len(s)` and
-`s[i]` is an index-out-of-range crash on the very next character of the text — so the function
-works perfectly whenever the last match happens to land on the last character of `t`, and blows up
-otherwise. `s = "abc"`, `t = "abcd"` crashes; `s = "abc"`, `t = "abc"` does not. That is the worst
-kind of bug, the one whose test case passes.
+> **Watch out.** The misconception is that `i < len(s)` is a **defensive** check — belt-and-braces,
+> droppable once the logic is right. It is not defensive, it is the **termination condition**: the
+> moment the pattern is fully matched, `i` equals `len(s)` and `s[i]` is off the end of the string.
 
-The other one worth naming is returning `True` from inside the loop the moment `i` reaches
-`len(s)`. That is not a bug — it is a legitimate early exit and it is faster — but people
-frequently write it as `return i == len(s)` *inside* the loop, which returns `False` on the first
-non-matching character instead of skipping it. And for the empty pattern the early-exit version
-must still answer `True` without ever entering the loop, which the version above gets right for
-free: `i` starts at `0`, `len(s)` is `0`, and `0 == 0`.
+Drop the guard and the function works perfectly whenever the last match lands on the last character
+of `t`, and crashes otherwise. Measured: `s = "abc"`, `t = "abc"` returns **`True`**; `s = "abc"`,
+`t = "abcd"` raises **`IndexError: string index out of range`**. That is the worst kind of bug — the
+one whose obvious test case passes.
+
+> **Watch out.** The second misconception is that the early exit and the final verdict are the
+> **same expression**, so the `return` can simply be moved inside the loop. `i == len(s)` is a claim
+> about the completed walk; asked early, it is a claim about nothing.
+
+Returning `True` the moment `i` reaches `len(s)` is a legitimate speed-up. Writing it as
+`return i == len(s)` *inside* the loop is not: on the worked example below it returns **`False`** at
+the first character, because a pattern that is not yet complete gets reported as one that never will
+be. And the empty pattern must still answer `True` without entering the loop at all, which the
+version above gets for free — `i` starts at `0`, `len(s)` is `0`, and `0 == 0`.
 
 ### Complexity and when to use this
 
-**Time O(|t|), space O(1).** Every character of the text is examined exactly once and does a
-single comparison; the pattern cursor only ever moves forward and never more than `|s|` times in
+**Time** `O(|t|)`, **space** `O(1)`. Every character of the text is examined exactly once and does
+a single comparison; the pattern cursor only ever moves forward, never more than `|s|` times in
 total, so it contributes nothing extra. Space is one integer.
 
 This is the right answer for the question as asked, and for any single-query version of it. Where
-it stops being right is the follow-up an interviewer will reach for: *you are given one fixed text
-and a stream of ten thousand different patterns to check against it.* Now paying O(|t|) per query
-is the bottleneck, and the fix is to preprocess the text once — build, for every position and every
-one of the 26 letters, the index of that letter's next occurrence at or after that position. Each
-query then walks only its own pattern, jumping straight to the next occurrence, and costs O(|s|)
-(or O(|s| log |t|) if you store per-letter position lists and binary-search them instead of a full
-table). The preprocessing is O(26 · |t|) once. That trade — pay a lot once so each of many queries
-is cheap — is the actual lesson hiding behind an easy problem.
+it stops being right is the follow-up an interviewer will reach for: *one fixed text, and a stream
+of ten thousand different patterns to check against it.* Now `O(|t|)` per query is the bottleneck.
+
+The fix is to preprocess the text once — for every position and every one of the `26` letters, store
+the index of that letter's next occurrence at or after that position. Each query then walks only its
+own pattern, jumping straight to the next occurrence, at `O(|s|)` (or `O(|s| log |t|)` if you keep
+per-letter position lists and binary-search them instead of a full table). The build is
+`O(26 · |t|)`, paid once. That trade — pay a lot once so each of many queries is cheap — is the
+actual lesson hiding behind an easy problem.
 
 ---
 
@@ -256,24 +279,25 @@ cheap per query, and never the same walk twice.
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Search for each character in turn | O(\|s\| + \|t\|) as written (O(\|s\|·\|t\|) if the scan wrongly restarts at 0) | O(1) | Mirrors the definition directly, but needs a nested loop, a sentinel and a hand-maintained resume pointer — three places to be subtly wrong | The "find the next occurrence" step is genuinely more than a character compare, e.g. a binary search into a precomputed table |
-| Two cursors, one pass | O(\|t\|) | O(1) | One loop, one index, no sentinel; the resume position is the loop variable and cannot be lost | Any single-query version of this question — the intended answer |
-| *(follow-up)* Precomputed next-occurrence table | O(26·\|t\|) once, then O(\|s\|) per query | O(26·\|t\|) | Pays real memory and a setup pass to make each of many queries independent of the text's length | One fixed text, many patterns to test against it |
+| Search for each character in turn | `O(\|s\| + \|t\|)` as written (`O(\|s\|·\|t\|)` if the scan wrongly restarts at `0`) | `O(1)` | Mirrors the definition directly, but needs a nested loop, a sentinel and a hand-maintained resume pointer — three places to be subtly wrong | The "find the next occurrence" step is genuinely more than a character compare, e.g. a binary search into a precomputed table |
+| **Two cursors, one pass** | **`O(\|t\|)`** | **`O(1)`** | **One loop, one index, no sentinel; the resume position is the loop variable and cannot be lost** | **Any single-query version of this question — the intended answer** |
+| *(follow-up)* Precomputed next-occurrence table | `O(26·\|t\|)` once, then `O(\|s\|)` per query | `O(26·\|t\|)` | Pays real memory and a setup pass to make each of many queries independent of the text's length | One fixed text, many patterns to test against it |
 
 ---
 
 ## Interview Priority
 
-**Know cold: the two-cursor pass, and the exchange argument that justifies it.** The code is four
-lines and you should be able to write it without thinking, including the `i < len(s)` guard, which
-is the single most common way this gets broken in an interview. What separates a good answer from
-a recited one is being able to say *why greed is safe here* — taking the earliest match leaves the
-longest possible remainder of the text, so it can never lose — in one sentence, unprompted. Then be
-ready for the follow-up, because on this problem it is the real question: **many patterns against
-one fixed text**, answered by precomputing the next occurrence of each letter from each position.
-You do not need to code that table under time pressure, but you should be able to describe its
-shape (26 × |t|), its build cost, and the per-query cost it buys, and to name the binary-search
-variant that trades a smaller table for a log factor.
+> **In an interview.** Say the exchange argument **before** the code, unprompted: *"taking the
+> earliest match is never worse, because it leaves strictly more of the text for everything still to
+> be matched."* One sentence, and it is what separates understanding from recital. Then expect the
+> real question, which on this problem is always the follow-up: **"now I hand you one fixed text and
+> ten thousand patterns."** Answer with precomputed next-occurrence — `26 × |t|` entries, `O(|s|)`
+> per query — and name the binary-search variant that trades a smaller table for a `log` factor.
+
+**Know cold — the two-cursor pass and the exchange argument under it.** Four lines you should be
+able to write without thinking, `i < len(s)` guard included; that guard is the single most common
+way this gets broken under pressure. You do not need to code the next-occurrence table live, but you
+should be able to describe its shape, its build cost, and the per-query cost it buys.
 
 **Understand but do not drill: the per-letter search.** Say it in the first fifteen seconds to show
 you have read the definition correctly, name the trap in it out loud — *if I restarted each search
@@ -292,9 +316,11 @@ longer than the text, repeated characters, a greedy trap and a right-letters-wro
 a randomised stress test against an independent oracle written a completely different way — one
 shared iterator over the text, consumed left to right.
 
-This problem answers with a boolean rather than a length, so there is no unspecified tail to be
-careful about, and neither approach mutates its arguments. Each approach is still called with its
-own arguments so that no approach can be helped or hurt by another's leftovers.
+`reference`, `run_case` and `APPROACHES` are **scaffolding**, not answers. `reference` is an
+independent oracle written a deliberately different way — one shared iterator over `t`, consumed
+left to right — and the other two are the harness that prints and compares. This problem answers
+with a boolean rather than a length, so there is no unspecified tail to be careful about, and
+neither approach mutates its arguments.
 
 ```python
 """Is One String Hidden in the Other? - every approach in one file, cross-checked.
