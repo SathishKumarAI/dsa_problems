@@ -1,0 +1,119 @@
+// Named for the failures they catch, not for the functions they call. Every
+// case here is a construct that actually occurs in `docs/deep/*_explained.md`.
+import assert from "node:assert/strict"
+import { test } from "node:test"
+import { inlineSpans, outlineOf, parseMarkdown, slugify, titleOf } from "./markdown.ts"
+
+test("a snake_case identifier is not italics", () => {
+  // the reason `_` is not an emphasis marker here: the corpus is full of these
+  const spans = inlineSpans("call max_depth_paths on _bug_root_only")
+  assert.deepEqual(spans, [
+    { kind: "text", text: "call max_depth_paths on _bug_root_only" },
+  ])
+})
+
+test("asterisks are italics, and double asterisks win over single", () => {
+  assert.deepEqual(inlineSpans("*one* and **two**"), [
+    { kind: "italic", text: "one" },
+    { kind: "text", text: " and " },
+    { kind: "bold", text: "two" },
+  ])
+})
+
+test("a star inside a code span stays literal", () => {
+  assert.deepEqual(inlineSpans("`a ** b` is **bold**"), [
+    { kind: "code", text: "a ** b" },
+    { kind: "text", text: " is " },
+    { kind: "bold", text: "bold" },
+  ])
+})
+
+test("a hard-wrapped paragraph rejoins into one sentence", () => {
+  const [block] = parseMarkdown("Depth is defined\nin terms of itself.")
+  assert.deepEqual(block, {
+    kind: "paragraph",
+    text: "Depth is defined in terms of itself.",
+  })
+})
+
+test("a fence keeps its indentation and is not parsed as markdown", () => {
+  const blocks = parseMarkdown("```python\nif x:\n    # **not bold**\n    y = 1\n```")
+  assert.deepEqual(blocks, [
+    { kind: "code", lang: "python", code: "if x:\n    # **not bold**\n    y = 1" },
+  ])
+})
+
+test("a dashed line inside a fence is not a horizontal rule", () => {
+  const blocks = parseMarkdown("```python\n# ---------------- scaffolding\nx = 1\n```")
+  assert.equal(blocks.length, 1)
+  assert.equal(blocks[0].kind, "code")
+})
+
+test("a table keeps its header and every row", () => {
+  const [block] = parseMarkdown(
+    "| Approach | Time |\n|---|---|\n| BFS | `O(n)` |\n| DFS | `O(n)` |"
+  )
+  assert.deepEqual(block, {
+    kind: "table",
+    head: ["Approach", "Time"],
+    rows: [
+      ["BFS", "`O(n)`"],
+      ["DFS", "`O(n)`"],
+    ],
+  })
+})
+
+test("a callout keeps its label separate from its prose", () => {
+  const [block] = parseMarkdown("> **Watch out.** The base case belongs at `None`.")
+  assert.deepEqual(block, {
+    kind: "quote",
+    label: "Watch out.",
+    paragraphs: ["The base case belongs at `None`."],
+  })
+})
+
+test("a multi-line callout is one paragraph, not one line per source line", () => {
+  const [block] = parseMarkdown("> **Intuition.** A ripple\n> spreading out from the root.")
+  assert.deepEqual(block, {
+    kind: "quote",
+    label: "Intuition.",
+    paragraphs: ["A ripple spreading out from the root."],
+  })
+})
+
+test("an unlabelled quote has no label rather than an empty one", () => {
+  const [block] = parseMarkdown("> This rung is an addition to the ladder.")
+  assert.deepEqual(block, {
+    kind: "quote",
+    paragraphs: ["This rung is an addition to the ladder."],
+  })
+})
+
+test("CRLF input still finds its fences and headings", () => {
+  const blocks = parseMarkdown("## Heading\r\n\r\n```python\r\nx = 1\r\n```\r\n")
+  assert.deepEqual(blocks, [
+    { kind: "heading", level: 2, text: "Heading" },
+    { kind: "code", lang: "python", code: "x = 1" },
+  ])
+})
+
+test("a bullet list keeps wrapped continuation lines in the same item", () => {
+  const [block] = parseMarkdown("- **Time — `O(n)`.** One visit\n  per node.\n- **Space.**")
+  assert.deepEqual(block, {
+    kind: "list",
+    items: ["**Time — `O(n)`.** One visit per node.", "**Space.**"],
+  })
+})
+
+test("the outline skips the title and keeps the section headings", () => {
+  const blocks = parseMarkdown("# The Title\n\n## Approach 1\n\n### The idea\n")
+  assert.equal(titleOf(blocks), "The Title")
+  assert.deepEqual(outlineOf(blocks), [
+    { id: "approach-1", text: "Approach 1", level: 2 },
+    { id: "the-idea", text: "The idea", level: 3 },
+  ])
+})
+
+test("a slug drops backticks rather than turning them into separators", () => {
+  assert.equal(slugify("Approach 3: one `O(n)` pass"), "approach-3-one-o-n-pass")
+})

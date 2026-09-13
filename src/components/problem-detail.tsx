@@ -9,7 +9,12 @@
 // `ladderOf` caps the rungs a started journey has not earned, and MiniPlayer
 // caps the walkthrough the same way. Hints stay collapsed because that gate
 // belongs to the learner, not to the page.
-import { ArrowLeftIcon, ExternalLinkIcon, RouteIcon } from "lucide-react"
+import {
+  ArrowLeftIcon,
+  BookOpenIcon,
+  ExternalLinkIcon,
+  RouteIcon,
+} from "lucide-react"
 import {
   Accordion,
   AccordionContent,
@@ -34,6 +39,7 @@ import { ladderOf, leetcodeUrl } from "@/lib/ladder"
 import type { Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href } from "@/lib/route"
+import { hasDeepDoc } from "@/lib/deep-docs"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
 import { difficultyClass } from "@/lib/difficulty"
@@ -199,6 +205,26 @@ function ApproachLadder({
             <span className="font-semibold text-foreground">The arc.</span>{" "}
             {problem.arc}
           </p>
+        )}
+        {/* The long-form document, when one is written. Gated exactly as the
+            arc is: it walks the whole ladder, so offering it while a journey
+            still has unearned rungs would hand over the ending. */}
+        {hasDeepDoc(problem.id) && !capped && (
+          <a
+            href={href(`/deep/${problem.id}`)}
+            className="flex max-w-[35em] items-center gap-3 rounded-lg border bg-card/40 px-4 py-3 text-body transition-colors hover:border-chart-1/60 hover:bg-card"
+          >
+            <BookOpenIcon className="size-4 shrink-0 text-chart-1" />
+            <span className="text-muted-foreground">
+              {/* a <b> here joins the rung names the UI test reads out of this
+                  container — the arc's label is a span for the same reason */}
+              <span className="font-semibold text-foreground">
+                Read the deep dive
+              </span>{" "}
+              — how someone who cannot yet see the answer gets there: worked
+              traces, the bug you are about to write, and a runnable script.
+            </span>
+          </a>
         )}
         {capped && journey && (
           <p className="text-ui max-w-[35em] text-muted-foreground">

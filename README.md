@@ -57,6 +57,7 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | **HTTP API** — every endpoint | `src/api/routes.ts` (contract: `docs/API.md`) |
 | API transport (HTTP vs in-process) | `src/api/client.ts` |
 | Standalone API server / Vite `/api` middleware | `server/index.ts` / `server/vite-api.ts` |
+| Read a deep document in the app (`#/deep/<id>`) | `src/components/deep-doc-view.tsx` · markdown → blocks: `src/lib/markdown.ts` · blocks → UI: `src/components/markdown.tsx` · which ids exist: `src/lib/deep-docs.ts` |
 | Journey page layout | `src/features/journey/journey-page.tsx` |
 | Journey policy (unlock, quiz, predict, hints, XP, deep links, keys) | `src/features/journey/use-journey.ts` |
 | Generic play / pause / seek over frames | `src/features/journey/use-player.ts` |

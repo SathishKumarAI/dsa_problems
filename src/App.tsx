@@ -30,6 +30,10 @@ const AlgorithmsPage = lazy(() =>
     default: m.AlgorithmsPage,
   }))
 )
+// the deep documents are fetched per problem, so the reader itself is lazy too
+const DeepDocView = lazy(() =>
+  import("@/components/deep-doc-view").then((m) => ({ default: m.DeepDocView }))
+)
 const Loading = () => (
   <div className="py-16 text-center text-ui text-muted-foreground">
     loading…
@@ -49,6 +53,7 @@ function View() {
     if (j) return <JourneyPage key={j.slug} journey={j} />
   }
   if (root === "algorithms") return <AlgorithmsPage />
+  if (root === "deep" && a) return <DeepDocView key={a} id={a} />
   if (root === "sql") return <SqlView />
   if (root === "flashcards") return <FlashcardsView />
   if (root === "p") {

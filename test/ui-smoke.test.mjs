@@ -1668,6 +1668,96 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    test("a deep document renders as a page, not as raw markdown", async () => {
+      // The reader parses `docs/deep/<id>_explained.md` in the browser, so the
+      // things that can break are exactly the things node cannot see: an
+      // unclosed fence swallowing the rest of the file, a table that never
+      // became a table, a `#` heading printed literally.
+      await page.goto(`${server.base}/#/deep/max-depth`)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+      const out = await page.run(`
+        // The PROSE elements only, each read live. Two things this had to
+        // learn: a Python comment inside a code block legitimately starts
+        // with '# ', so code is excluded rather than filtered; and innerText
+        // on a DETACHED clone silently degrades to textContent — no layout,
+        // so no line breaks — which made a per-line check see one long line.
+        const prose = [...document.querySelectorAll(
+          'article h2, article h3, article p, article li, article td, article th'
+        )].map(el => el.innerText);
+        // built from a string with NO backslashes on purpose: this whole
+        // script is sent as a template literal, which eats them — '\\s' arrives
+        // as 's' and '\\|' as '|', which turned an earlier version of this
+        // pattern into one that matched every line
+        const marker = new RegExp('^[ ]*(#{1,3}[ ]|[|][ ]*-{3})');
+        return {
+          h1: (document.querySelector('h1') || {}).textContent || '',
+          headings: document.querySelectorAll('h2, h3').length,
+          tables: document.querySelectorAll('table').length,
+          codeBlocks: document.querySelectorAll('pre code').length,
+          callouts: document.querySelectorAll('blockquote').length,
+          // a literal marker on screen means a block was never parsed
+          rawMarkers: prose.filter(line => marker.test(line)).slice(0, 5),
+          rawFence: prose.some(line => line.includes('\`\`\`')),
+          scrollW: document.documentElement.scrollWidth,
+          clientW: document.documentElement.clientWidth,
+        };
+      `)
+      assert.match(out.h1, /maximum depth/i, "the document title is missing")
+      assert.ok(out.headings > 20, `only ${out.headings} section headings`)
+      assert.ok(out.tables >= 4, `only ${out.tables} tables rendered`)
+      assert.ok(out.codeBlocks >= 5, `only ${out.codeBlocks} code blocks`)
+      assert.ok(out.callouts >= 4, `only ${out.callouts} callouts`)
+      assert.deepEqual(
+        out.rawMarkers,
+        [],
+        "markdown syntax reached the screen"
+      )
+      assert.equal(out.rawFence, false, "a code fence marker reached the screen")
+      assert.equal(out.scrollW, out.clientW, "the deep document scrolls sideways")
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("the deep-dive link appears only where a document exists", async () => {
+      // The link is the one door, and it is gated exactly as the arc is. A
+      // problem with no document must not advertise one.
+      await page.goto(`${server.base}/#/p/trees/max-depth`)
+      const withDoc = await page.run(`
+        return !![...document.querySelectorAll('a')]
+          .find(a => /deep dive/i.test(a.textContent || ''));
+      `)
+      await page.goto(`${server.base}/#/p/trees/right-side-view`)
+      const withoutDoc = await page.run(`
+        return !![...document.querySelectorAll('a')]
+          .find(a => /deep dive/i.test(a.textContent || ''));
+      `)
+      assert.ok(withDoc, "max-depth has a deep document and offers no link")
+      assert.equal(
+        withoutDoc,
+        false,
+        "a problem with no deep document offered the link"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("390 px wide: a deep document does not scroll sideways", async () => {
+      // Its tables are the widest things in the app; they must scroll inside
+      // their own box rather than taking the page with them.
+      await page.resize(390)
+      await page.goto(`${server.base}/#/deep/balanced-tree`)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+      const out = await page.run(`
+        return {
+          scrollW: document.documentElement.scrollWidth,
+          clientW: document.documentElement.clientWidth,
+          tables: document.querySelectorAll('table').length,
+        };
+      `)
+      await page.resize(1440)
+      assert.ok(out.tables >= 4, "the document did not render its tables")
+      assert.equal(out.scrollW, out.clientW, "the page scrolls sideways at 390 px")
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("390 px wide: no horizontal scroll on the journey page", async () => {
       await page.resize(390)
       await page.goto(`${server.base}/#/journey/two-sum?act=hash&step=6`)
