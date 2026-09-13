@@ -1697,6 +1697,9 @@ describe(
           callouts: document.querySelectorAll('blockquote').length,
           // a literal marker on screen means a block was never parsed
           rawMarkers: prose.filter(line => marker.test(line)).slice(0, 5),
+          // a backtick on screen means an inline span was not parsed — it is
+          // how nested code inside bold ("**Time — \`O(n)\`.**") showed up
+          backticks: prose.filter(line => line.includes('\`')).slice(0, 3),
           rawFence: prose.some(line => line.includes('\`\`\`')),
           scrollW: document.documentElement.scrollWidth,
           clientW: document.documentElement.clientWidth,
@@ -1713,6 +1716,11 @@ describe(
         "markdown syntax reached the screen"
       )
       assert.equal(out.rawFence, false, "a code fence marker reached the screen")
+      assert.deepEqual(
+        out.backticks,
+        [],
+        "a backtick reached the screen — an inline code span was not parsed"
+      )
       assert.equal(out.scrollW, out.clientW, "the deep document scrolls sideways")
       assert.deepEqual(page.errors(), [])
     })

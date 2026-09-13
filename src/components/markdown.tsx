@@ -28,16 +28,19 @@ function Inline({ text }: { text: string }) {
               {span.text}
             </code>
           )
+        // Bold and italic re-enter, because the corpus nests code inside them
+        // — "**Time — `O(n)`.**" is how every complexity bullet is written.
+        // Without this the inner backticks render as literal characters.
         if (span.kind === "bold")
           return (
             <b key={i} className="font-semibold text-foreground">
-              {span.text}
+              <Inline text={span.text} />
             </b>
           )
         if (span.kind === "italic")
           return (
             <i key={i} className="italic">
-              {span.text}
+              <Inline text={span.text} />
             </i>
           )
         return <Fragment key={i}>{span.text}</Fragment>
