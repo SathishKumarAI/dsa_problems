@@ -321,6 +321,8 @@ ListNode* removeElements(ListNode* head, int val) {
 
 ## The arc
 
+Every rung applies one unlinking rule — point a node's predecessor past it — and the ladder is a sequence of things that turn out to be unnecessary. Restarting the scan after each removal re-checks nodes it has already cleared, which is quadratic on a list of nothing but matches; a deleted node cannot come back, so nothing behind you can change and one pass is enough. Rebuilding from the surviving values is linear and replaces every node you were handed with a copy. Recursion keeps the real nodes and keeps ten thousand frames along with them. Stripping the leading matches first and then looping is one pass in constant space, and writes the same test twice — the head loop being the one people forget, which is exactly the loop that a list of nothing but matches depends on. The dummy node deletes that duplication: with a node in front of the head, the head is an ordinary node, one loop covers everything, and dummy.next is right whether nothing went, the front went, or all of it did. The other habit worth keeping is not advancing prev after a removal, because the node that slid into place may match too.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Restart the scan after every removal | O(n^2) time · O(1) space | the baseline — nothing before it |

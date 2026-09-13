@@ -153,6 +153,8 @@ bool isValidBST(const TreeNode* root) {
 
 ## The arc
 
+The classic wrong answer — compare each node with its two children — fails because the BST rule is not local: a node buried in a left subtree is bounded by every ancestor above it, not merely by its parent. Both rungs here get that right, and they differ in whether they say so. The in-order walk leans on a consequence, that a BST read in order is strictly increasing, and comparing each value with the one before it is correct, short, and leaves the rule looking like a coincidence you are trusting rather than an invariant you are enforcing. Carrying an allowed open interval down the tree states the invariant itself: a node must lie inside (low, high), and it hands its left child (low, val) and its right child (val, high), which is every ancestor constraint enforced at once. Know that bounds-passed-down shape cold — information travelling DOWN the recursion is the counterpart to the post-order return travelling up, and between them they cover most tree questions. One trap here is real: the values reach the 32-bit limits, so the opening sentinels have to be true infinities, not an int you hoped was big enough.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | In-order traversal | O(n) time · O(h) space | the baseline — nothing before it |

@@ -479,6 +479,8 @@ ListNode* reorderList(ListNode* head) {
 
 ## The arc
 
+The fold pairs node i with node n − 1 − i, so every rung is answering one question: how do you reach the BACK of a list that only points forwards. Recursing in from the ends hunts for the tail at every level and pays a frame for each, which at fifty thousand nodes is a stack overflow rather than a slow answer. Walking from the head to reach each position drops the stack and keeps the hunting, so it stays quadratic. Copying the values out gives every position in one step, then writes the answer back into nodes that never moved — which reorders what the list PRINTS, not what it is. Holding the nodes and consuming them from both ends genuinely relinks, at the price of a second copy of a list that can already do this for itself. The answer is composition: find the middle with the fast and slow pair, reverse the back half in place, weave the two halves together. Three earlier problems used as subroutines, which is why middle-of-list and reverse-list are the two to know cold. On an odd length the middle node belongs to the FRONT half, and the weave then ends by itself when the reversed half runs out.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Recursive fold from the ends | O(n^2) time · O(n) stack space | the baseline — nothing before it |

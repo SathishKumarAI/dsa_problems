@@ -453,6 +453,8 @@ ListNode* rotateRight(ListNode* head, int k) {
 
 ## The arc
 
+Rotating right by k moves nothing at all when k is n: the list comes back identical, so the real work is k % n and the real edit is a single cut. Doing it one node at a time reads the definition literally and repeats work that cancels out — k runs to two billion against five hundred nodes. The array rebuild is linear and hands you n, which is what makes the modulus available in the first place, but it discards every original node to produce a list holding the same values. Three reversals allocate nothing and touch every node three times, with three chances at an off-by-one. Measuring and then walking to the cut is two pointer writes of real work, hidden behind a third walk to re-find a tail the counting pass already stood on. Closing the list into a ring before cutting is the version to keep: one walk gives both n and the tail, one assignment joins them, and cutting n − k % n steps along means a rotation of zero cuts the link it just made, so it needs no special case. The empty list still does — there is no modulus to take.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Rotate by one, k times | O(n * k) time · O(1) space | the baseline — nothing before it |

@@ -163,6 +163,8 @@ string frequencySort(const string& s) {
 
 ## The arc
 
+The counting is the algorithm, and both rungs agree on it: one pass tallies the characters, and everything after that works on a few dozen pairs rather than half a million characters. That collapse is the transferable part — reduce the input to its distinct keys before sorting anything, because the cost then scales with the alphabet rather than with the text. The two rungs genuinely tie at n + k log k, and pretending otherwise would be dishonest; the heap earns its place because the same shape answers 'the top k' without ordering the rest, which is what you need when the alphabet is large or the stream never ends. What is not optional is the explicit tie-break. Order by falling count and then by the character itself, or the output depends on the heap's internal arrangement and two correct-looking implementations disagree on the same input. Top-k-frequent-elements is this problem with the emission step removed.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort the counted pairs | O(n + k log k) time · O(n) space | the baseline — nothing before it |

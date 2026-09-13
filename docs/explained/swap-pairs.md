@@ -333,6 +333,8 @@ ListNode* swapPairs(ListNode* head) {
 
 ## The arc
 
+The requirement is that the NODES move, and the bottom rung is the one that fails it: exchanging payloads is two lines, leaves every node where it was, and is wrong the moment a node carries more than an int or anything outside holds a pointer into the list. Everything above it really relinks, and the rungs differ only in how they get hold of the node after the pair. The array buys a second copy of the list to see one node ahead, which the pair already points at. Recursion asks the tail to swap itself and costs a frame per pair. A prev pointer does the same three assignments in a loop, but with nothing in front of the head it must remember the answer before it starts and skip the relink on the first pair — two branches that exist only because the head has no predecessor. A dummy node supplies one, and then every pair is an ordinary pair and dummy.next is the new head for free. That is the piece to take away: the same dummy turns remove-nth-from-end, remove-list-elements and merge-two-sorted into single-branch loops, and a guard testing both the node and its successor is what leaves an odd tail alone.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Swap the values | O(n) time · O(1) space | the baseline — nothing before it |

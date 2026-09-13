@@ -141,6 +141,8 @@ vector<int> countBits(int n) {
 
 ## The arc
 
+The naive rung is not wrong, it is forgetful: it walks up to seventeen bit positions for every number while the array it is filling already holds the answer for a smaller one. The DP move is to find that smaller number, and the arithmetic hands it over — shifting right drops the lowest bit and lands on i >> 1, which is strictly smaller and therefore already written down, so each entry costs a shift, an and, and one lookup. That is the pattern in miniature: an overlapping subproblem is just a smaller instance you can name, and naming it is the entire creative step. Entry 0 needs no special case because it is the base every other entry rests on. Worth knowing alongside it is the other decomposition, best[i] = best[i & (i − 1)] + 1, which strips the LOWEST SET bit rather than the last bit; the same identity drives Brian Kernighan's popcount loop, and recognising i & (i − 1) on sight pays across every bit problem.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Count each number's bits | O(n log n) time · O(n) space | the baseline — nothing before it |

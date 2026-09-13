@@ -28,6 +28,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Quickselect is expected linear, but it needs every point in memory at once and degrades on unlucky pivots. A heap bounded at k streams the input and gives the same answer at a cost you can promise.",
+  arc:
+    "Ordering is the expense, and none of it was asked for — any k points will do, in any order. Sorting ranks all n to hand back k, so the first real idea is to stop ranking: partitioning around a pivot drives the k closest to the front without putting them in any order, which is quickselect, expected linear and the asymptotic winner. What it gives up is a promise, since an unlucky run of pivots goes quadratic, and it wants every point in memory to shuffle them. Bounding a heap at k trades the linear headline for a cost you can state in advance and a working set of k, so it survives input that arrives as a stream. Know the size-k heap and the partition step cold. The squared distance is the small habit worth keeping too: the square root is monotone, so comparing without it is the same ordering with none of the floating-point trouble — the same sidestep works anywhere distances are only ever compared.",
   approach:
     "Keep a heap of the k closest points seen so far, keyed by negative squared distance so the worst kept point sits at the root. For each point beyond the first k, compare against that root: closer means replace (one pushpop), farther means skip. n log k beats sorting when k is small.",
   complexity: { time: "O(n log k)", space: "O(k)" },

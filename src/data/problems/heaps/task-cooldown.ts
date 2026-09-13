@@ -29,6 +29,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "The formula gives the length in one line but never says what actually runs when, and it has to special-case the tasks tied for most frequent. Simulating with a max-heap produces the schedule itself, which is what the follow-up asks for.",
+  arc:
+    "Both rungs rest on one observation: only the most frequent task can force an idle, so the schedule's length is decided by that task and by how many others tie with it. The formula says so directly — maxCount − 1 gaps of width n + 1, plus a slot for each task tied at that count, floored by the number of tasks when the queue is dense enough to fill every gap — and it is constant work after the tally. What it will not tell you is what actually runs at minute seven. The heap simulation answers that by making the same greedy choice explicit: run the task with the most copies left, then park it in a cooldown queue stamped with the tick it becomes legal again. Know the formula for the count and the heap-plus-cooldown-queue for the schedule, because the second is the one that survives when tasks gain priorities, or durations, or the cooldown stops being uniform. Twenty-six labels is what keeps the heap cheap; the shape holds for any bounded alphabet.",
   approach:
     "Max-heap of remaining counts (negated for Python). Each tick: pop the most frequent available task, run it, and if copies remain, park it in a queue stamped with when its cooldown ends. Move queue heads back into the heap as their timestamps expire. When both structures are empty, the clock is the answer. Running the most frequent task first is safe because it is the one that forces idles if postponed.",
   complexity: { time: "O(total ticks × log 26)", space: "O(26)" },

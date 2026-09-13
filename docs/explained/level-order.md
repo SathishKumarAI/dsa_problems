@@ -179,6 +179,8 @@ vector<vector<int>> levelOrder(TreeNode* root) {
 
 ## The arc
 
+Both rungs produce the same nested lists, and the difference is whether the grouping is a property of the walk or a lucky by-product of it. Recursing with a depth and appending each value to out[depth] works because a pre-order visit reaches the nodes of a level left to right — true, and a fact about pre-order rather than about levels, so you are left trusting an accident you would have to re-derive under pressure. A queue makes the grouping structural: record the queue's length at the top of each round and pop exactly that many nodes, and you have consumed precisely one level, because everything pushed during the round belongs to the next one. That length snapshot is the whole technique and it is worth knowing cold — it is what turns plain BFS into level BFS, and it is what the rest of the family is built on: zigzag order, the right-side view, per-level averages, bottom-up order. The memory bill flips as well, since BFS holds the widest level and DFS holds the height, and which is cheaper is a fact about the tree.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | DFS with depth | O(n) time · O(h) space | the baseline — nothing before it |

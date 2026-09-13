@@ -251,6 +251,8 @@ vector<vector<int>> kClosest(const vector<vector<int>>& points, int k) {
 
 ## The arc
 
+Ordering is the expense, and none of it was asked for — any k points will do, in any order. Sorting ranks all n to hand back k, so the first real idea is to stop ranking: partitioning around a pivot drives the k closest to the front without putting them in any order, which is quickselect, expected linear and the asymptotic winner. What it gives up is a promise, since an unlucky run of pivots goes quadratic, and it wants every point in memory to shuffle them. Bounding a heap at k trades the linear headline for a cost you can state in advance and a working set of k, so it survives input that arrives as a stream. Know the size-k heap and the partition step cold. The squared distance is the small habit worth keeping too: the square root is monotone, so comparing without it is the same ordering with none of the floating-point trouble — the same sidestep works anywhere distances are only ever compared.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort all | O(n log n) time · O(n) space | the baseline — nothing before it |

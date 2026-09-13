@@ -233,6 +233,8 @@ int minCoins(const vector<int>& coins, int amount) {
 
 ## The arc
 
+The first rung is a trap and belongs in memory as one: largest coin first spends three coins on 6 with [1, 3, 4] when 3 + 3 does it in two, so greedy is safe only for coin systems that happen to be canonical, and nothing in the constraints promises that. What replaces it is the observation that an amount is a state and a coin is an edge out of it, after which two standard machines apply. BFS explores by number of coins, so the first time it touches 0 that count is minimal — a concrete demonstration that shortest-path and DP-minimisation are the same search. The table computes it in the pattern's own idiom, one entry per amount, each the cheapest of 1 + best(amount − coin), and it wins on what it leaves behind: the answer for every amount rather than only the one asked. Know the table and know the counterexample. Coin-change-II counts combinations over the same table with the loops swapped, and that swap is worth understanding before you need it.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Greedy (broken) | O(amount) time · O(1) space | the baseline — nothing before it |

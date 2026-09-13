@@ -343,6 +343,8 @@ int countIslands(const vector<vector<int>>& grid) {
 
 ## The arc
 
+The grid IS the graph — cells are the vertices, four-way adjacency is the edge set — and once that lands, counting islands is counting connected components. Every rung agrees on the outer loop: scan for unclaimed land, claim everything reachable from it, add one. What differs is only where the frontier lives and when a cell is marked seen. Recursion puts the frontier on the call stack, which is the shortest code and the one that overflows on a grid shaped like a long snake; a queue puts it in memory you control, the same linear work, and is what to reach for on a big grid. Union-find is a different bet: it maintains the answer as edges appear instead of deriving it afterwards, so it is overkill on a static grid and exactly right when cells arrive one at a time. Mark on discovery, never on removal — a cell marked late is enqueued by two neighbours and the frontier swells. Max-island-area and surrounded-regions are this fill counting something else.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | BFS flood fill | O(rows × cols) time · O(min(rows, cols)) frontier space | the baseline — nothing before it |

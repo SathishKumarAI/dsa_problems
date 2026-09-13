@@ -202,6 +202,8 @@ ListNode* mergeSorted(ListNode* a, ListNode* b) {
 
 ## The arc
 
+One fact carries all three rungs: at any moment the smallest node left anywhere is one of the two heads, so the whole merge is a sequence of single comparisons and no node is ever looked at twice. Dumping both lists into an array and sorting throws that fact away and pays n log n to rediscover an order that arrived for free. Recursion keeps the fact — the smaller head owns the merge of everything behind it — and reads beautifully at a stack frame per node. The loop keeps the fact and drops the frames: a dummy node to hang the result from, a tail pointer to append to, and one assignment at the end to splice on whichever list still has nodes, because that remainder is already sorted. The dummy is the piece to know cold. It removes the question of whether this is the first node from this problem, from merge-k-lists, from remove-list-elements, and from every builder that would otherwise special-case its own head.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Collect and sort | O((n+m) log (n+m)) time · O(n+m) space | the baseline — nothing before it |

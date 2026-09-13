@@ -169,6 +169,8 @@ int lowestCommonAncestor(const TreeNode* root, int p, int q) {
 
 ## The arc
 
+The general lowest-common-ancestor routine descends into both subtrees at every node, and it has to: in an arbitrary tree nothing says where the targets are, so you learn a side was wrong only by searching it and finding nothing. A search tree answers that before you move. Compare both target values against the current node and the answer is a direction — both smaller means go left, both larger means go right, and anything else means they straddle this node, either one on each side or one of them being the node itself. Straddling is precisely what lowest common ancestor means, so the first node that straddles is the answer and there is nothing to backtrack. Both rungs are worth holding: the comparison-driven descent is the shape of every BST operation, from plain search to insert, floor and ceiling and range sum, and the both-sides version is the fallback for a tree with no ordering to exploit. The costs tell the story — O(h) down one path with no stack at all, against O(n) spent exploring subtrees the ordering had already ruled out.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Search both sides, ignoring the ordering | O(n) time · O(h) space | the baseline — nothing before it |

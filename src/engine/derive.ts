@@ -220,7 +220,17 @@ export function deriveJourney<C extends Cell = number>(
             : f.list
               ? {
                   kind: "list",
-                  label: f.list.label ?? "list",
+                  // A frame may carry one SHAPE, and the list takes the panel —
+                  // so a `state` written beside it used to be dropped on the
+                  // floor. Measured 2026-09-12: 46 frames across five journeys
+                  // were writing counters nobody could ever see, including the
+                  // "nodes moved: 0" that is the entire proof of swap-pairs'
+                  // value-swap rung. The state is not a second picture, it is a
+                  // reading of this one, so it belongs in the caption.
+                  label: [
+                    f.list.label ?? "list",
+                    ...(f.state ?? []).map((s) => `${s.label} ${s.value}`),
+                  ].join(" · "),
                   cycleTo: f.list.cycleTo,
                   nodes: f.list.values.map((value, i) => ({
                     key: `l${i}`,

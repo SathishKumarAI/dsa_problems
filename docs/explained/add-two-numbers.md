@@ -459,6 +459,8 @@ ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
 
 ## The arc
 
+Every rung is school addition — one column at a time, least significant first, carrying the tens digit — so the ladder is really a list of things you can stop keeping. Reading each list into an integer keeps the whole number, which is why it dies at the twentieth digit rather than the hundredth: a long holds nineteen. Digit arrays never build the number, but they keep three copies of data the two lists already hold in exactly the right order. Recursion drops the arrays and keeps a frame per digit instead. Padding drops the frames and keeps the damage — a pass writing nothing but zeros, into inputs it does not own. What survives is the loop worth knowing cold: a dummy head, a running carry, and a condition reading l1 or l2 or carry. A missing node is a zero, not the end, and that trailing carry is a real digit, because 999 plus 1 is four nodes long. The same dummy-and-carry shape solves the most-significant-first variant, once a stack or a reversal lines the digits up.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Turn both lists into numbers | O(n + m) time · O(1) beyond the answer space | the baseline — nothing before it |

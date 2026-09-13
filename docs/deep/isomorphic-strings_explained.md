@@ -1,0 +1,863 @@
+# Same Shape, Different Letters — explained
+
+## Understanding the Problem
+
+You are given two strings of the same length. Decide whether the first can be turned into the second
+by *relabelling* its characters — picking a replacement for each character and applying it
+everywhere. Two rules govern the relabelling, and the second is the one people forget: each
+character of the first string must always become the **same** character of the second, and no two
+different characters may be sent to the **same** target. A character is allowed to map to itself.
+
+**The core question is: do the two strings repeat themselves in exactly the same places?** That is
+what "same shape" means — if positions 1 and 4 hold the same character in one string, they must hold
+the same character in the other, and if they differ in one, they must differ in the other. The naive
+approach is slow because it checks that literally, comparing every pair of positions against every
+other pair — about n²/2 comparisons.
+
+The constraints, and what each one buys:
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= s.length <= 5 * 10^4`, and `t` has the same length | Quadratic work is ~1.25 × 10⁹ comparisons, well past a one-second budget, so the pairwise approach will not survive at full size. Equal lengths being promised means a length check is a cheap guard rather than the main event — but write it anyway, because the same function is usually reused somewhere the promise does not hold. |
+| **`s` and `t` consist of any ASCII characters** | The alphabet is bounded at 256. This is what lets the two-map solution be called **constant** space: the maps can never hold more than 256 entries each, however long the strings get. It is also what unlocks the final rung, where the two dictionaries become two fixed 256-slot integer arrays with no hashing at all. Replace ASCII with arbitrary Unicode and the maps are still correct but the space is no longer bounded by a small constant. |
+| the mapping must be consistent in **both** directions | This is the definition doing real work. A single forward map permits two characters to collapse onto one, which the statement forbids — `"badc"` and `"baba"` is the counter-example the problem hands you, and it is the entire reason the instinctive one-map solution is wrong. |
+| a character may map to itself | Do not add a "the characters must differ" check. `"abc"` and `"abc"` are isomorphic under the identity relabelling, and so is any string with itself. |
+
+Before writing a line of code, it is worth writing the definition down properly: *a bijection between
+the characters of `s` and the characters of `t` that preserves position*. "Bijection" is the formal
+word for a pairing where nothing is shared and nothing is left over — it maps each character to
+exactly one, and each target comes from exactly one source. Say that out loud and the missing half
+of the naive solution announces itself: one hash map gives you a *function*, and a function is only
+half of a bijection.
+
+---
+
+## Approach 1 — Compare every pair of positions
+
+### The idea
+
+*What does "same shape" mean, exactly?* It means the two strings agree about which positions hold
+equal characters. *So how do I check it?* Take every pair of positions and confirm that the two
+strings give the same verdict: equal in both, or different in both. This is the definition
+transcribed with nothing left out — in particular, it gets both directions for free, because
+"agreement about sameness" is symmetric by construction.
+
+### How to think about it
+
+Forget characters entirely and think about *partitions*. A string of length n carves its positions
+into groups — all the positions holding an `a`, all the positions holding a `b`, and so on.
+Isomorphism says nothing about which letters were used; it says the two strings carve the positions
+into the **same groups**. Comparing every pair of positions is the direct way to check that two
+partitions match: for each pair, ask "same group?" of both strings and require the same answer.
+
+That framing is why this rung needs no maps, no encoding, and no care about direction. It is also
+why it costs n²/2 questions: it interrogates the partition one pair at a time instead of reading it
+off in one pass.
+
+### Worked example
+
+Input: `s = "badc"`, `t = "baba"`. The answer is **false**.
+
+| Positions | `s[i]`, `s[j]` | same in `s`? | `t[i]`, `t[j]` | same in `t`? | Verdict |
+|---|---|---|---|---|---|
+| (0, 1) | `b`, `a` | no | `b`, `a` | no | agree — continue |
+| (0, 2) | `b`, `d` | no | `b`, `b` | **yes** | **disagree — return false** |
+
+Two pair checks and it is over. The pair `(0, 2)` is the whole story of this problem: `s` puts
+positions 0 and 2 in different groups (a `b` and a `d`), while `t` puts them in the same group (two
+`b`s). So `t` has collapsed two of `s`'s characters into one, which the definition forbids. Hold on
+to that pair — every later approach has to catch it, and one of them will not.
+
+### Code
+
+```python
+def is_isomorphic_brute_force(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    for i in range(len(s)):
+        for j in range(i + 1, len(s)):
+            if (s[i] == s[j]) != (t[i] == t[j]):  # the two strings must agree on sameness
+                return False
+    return True
+```
+
+### Common mistake
+
+Checking only one implication: `if s[i] == s[j] and t[i] != t[j]: return False`. That catches "one
+character of `s` had to become two different things" and misses the mirror case, "two characters of
+`s` were merged into one". On the worked example it finds no violation at all — `s = "badc"` has four
+distinct characters, so `s[i] == s[j]` is never true, and the loop returns **true** on an input that
+is plainly false. The condition has to be an *if-and-only-if*, which `!=` between two booleans
+expresses exactly: the two strings must agree, whichever way the agreement goes.
+
+### Complexity and when to use this
+
+**Time O(n²), space O(1).** The cost is the pair enumeration: n(n−1)/2 pairs, each costing two
+character comparisons and a boolean comparison. The space is two loop indices, independent of the
+alphabet and the length.
+
+It is too slow to ship at 50,000 characters, but it is the best oracle in the file — it is the
+definition, it treats both directions symmetrically without anyone having to remember to, and it has
+no map to seed or encoding to get right. That is exactly the job it does in the stress test below.
+
+---
+
+## Approach 2 — Group the positions, then compare the groupings
+
+### The idea
+
+*The pairwise check asks about the partition one pair at a time — why not just build the partition?*
+Walk each string once, collecting for every character the list of positions where it occurs, and then
+compare the two collections of position-lists. If the groupings are identical, the strings carve
+their positions the same way and they are isomorphic. This fixes the brute force's n² questioning by
+constructing the thing it was interrogating.
+
+### How to think about it
+
+Two costs again, and they are worth pricing separately. The **restructuring** is the grouping pass:
+one walk per string, dropping each position into a bucket named by its character, `O(n)`. The
+**search** is the comparison of the two bucket collections, which needs them in a canonical order —
+sorting the buckets, `O(m log m)` where m is the number of distinct characters (at most 256 here) —
+and then one element-by-element comparison, `O(n)`.
+
+The buckets must be compared as *sets of position lists*, not as a map keyed by character, because
+the character names are exactly what the problem says to ignore. `"egg"` gives buckets
+`{(0,), (1, 2)}` and `"add"` gives `{(0,), (1, 2)}`: the names `e`, `g`, `a`, `d` are gone, and what
+is left is the shape.
+
+### Worked example
+
+Input: `s = "badc"`, `t = "baba"`.
+
+Grouping `s = "badc"` — every character occurs once:
+
+| Character | Positions |
+|---|---|
+| `b` | (0,) |
+| `a` | (1,) |
+| `d` | (2,) |
+| `c` | (3,) |
+
+Grouping `t = "baba"` — two characters, each occurring twice:
+
+| Character | Positions |
+|---|---|
+| `b` | (0, 2) |
+| `a` | (1, 3) |
+
+Sorted and stripped of the character names: `s` gives `[(0,), (1,), (2,), (3,)]` and `t` gives
+`[(0, 2), (1, 3)]`. Four groups against two — not equal, so the answer is **false**. The mismatch is
+visible before any pair is examined: `s` split four positions four ways and `t` split them two ways,
+so no relabelling could line them up.
+
+### Code
+
+```python
+def _groups(s: str) -> list[tuple[int, ...]]:
+    positions: dict[str, list[int]] = {}
+    for i, ch in enumerate(s):
+        positions.setdefault(ch, []).append(i)
+    return sorted(tuple(v) for v in positions.values())
+
+
+def is_isomorphic_grouped(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    return _groups(s) == _groups(t)
+```
+
+### Common mistake
+
+Comparing group **sizes** instead of group **positions** — collecting `{a: 2, b: 1}` from each string
+and checking the sorted counts match. That is the test for anagrams, not isomorphism, and it throws
+away the only thing that matters: *where* the repeats are. On `s = "aba"`, `t = "aab"` both strings
+have one character twice and one character once, so the sorted counts `[1, 2]` match and the function
+says true — but `"aba"` repeats at positions 0 and 2 while `"aab"` repeats at positions 0 and 1, so
+no relabelling can turn one into the other. Isomorphism is a statement about position; a frequency
+tally has already forgotten position by the time you compare it.
+
+### Complexity and when to use this
+
+**Time O(n + m log m), space O(n).** The grouping is two linear walks; the sort is over at most 256
+buckets, so in practice the whole thing is linear. The space is the buckets, which hold every
+position of both strings — genuinely `O(n)`, and the largest memory footprint of any approach here.
+
+You would not ship this for this problem — it is linear but with the worst constants and the worst
+space in the file. Its value is conceptual and transferable: **canonicalise, then compare** is the
+move behind grouping anagrams (sort each word's letters and use that as a key), behind detecting
+duplicate files by hash, and behind any "are these two things the same up to some relabelling?"
+question. When the relabelling is more complicated than a character swap, building the canonical form
+is often the only approach that stays simple.
+
+---
+
+## Approach 3 — One forward map (the instinctive version)
+
+### The idea
+
+*Building whole groupings to compare them seems heavy — can the relabelling just be recorded as it is
+discovered?* Yes: walk the two strings together, and the first time you see a character of `s`, write
+down what it became; every later time, check it became the same thing. This fixes the grouping rung's
+memory and its two-pass structure, decides the answer at the first contradiction — and is **wrong**,
+in a way worth seeing clearly.
+
+### How to think about it
+
+You are filling in a translation table as you read. Position by position, `s[i]` is the word and
+`t[i]` is its translation; a contradiction is a word that already has a *different* translation on
+file. This is a correct check for the rule "each character maps to exactly one character" — but that
+is only the first of the two rules. Nothing in a forward table notices when two *different* words are
+given the *same* translation, because a table keyed by word has no reason to look at what other words
+were sent to. A function is allowed to collapse; a bijection is not.
+
+### Worked example
+
+Input: `s = "badc"`, `t = "baba"`. The true answer is false; this returns **true**.
+
+| Step | `s[i]` → `t[i]` | Already in the table? | Action | Table after |
+|---|---|---|---|---|
+| 1 | `b` → `b` | no | record | `{b: b}` |
+| 2 | `a` → `a` | no | record | `{b: b, a: a}` |
+| 3 | `d` → `b` | no | record | `{b: b, a: a, d: b}` |
+| 4 | `c` → `a` | no | record | `{b: b, a: a, d: b, c: a}` |
+
+No contradiction, so it reports true. Look at the finished table: `b` and `d` both map to `b`, and
+`a` and `c` both map to `a`. The table is a perfectly consistent *function* and not a bijection — two
+sources sharing a target is exactly what the statement forbids, and nothing in the loop was ever in a
+position to notice.
+
+### Code
+
+```python
+def is_isomorphic_one_map(s: str, t: str) -> bool:
+    """WRONG: a forward map alone lets two characters collapse onto one."""
+    if len(s) != len(t):
+        return False
+    forward: dict[str, str] = {}
+    for a, b in zip(s, t):
+        if forward.setdefault(a, b) != b:
+            return False
+    return True
+```
+
+### Common mistake
+
+The tempting repair is to swap the direction — map `t`'s characters back to `s`'s instead, on the
+theory that you picked the wrong way round. It does fix this input: running the map from `"baba"` to
+`"badc"` finds that `b` must become both `b` and `d`, and correctly returns false. But it has only
+moved the blind spot. Whichever single direction you choose, the input that defeats it is *the same
+pair with `s` and `t` swapped* — a one-directional check cannot see collapsing, and collapsing can
+happen on either side. One map is not the wrong map; it is half a solution, and the missing half is
+the other map.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1)** — one pass, and a table bounded by the 256-character alphabet. The cost
+profile is identical to the correct solution below, which is precisely what makes it dangerous: it is
+not slow, it is wrong, and it passes the majority of test inputs. Any input where `s` has more
+distinct characters than `t` is a potential counter-example, and `"egg"`/`"add"`-style examples never
+touch the bug.
+
+There is exactly one situation where this code is the right answer, and it is a different question:
+when you genuinely want "is there a consistent forward substitution?" without requiring it to be
+reversible. That question has a name — a *homomorphism* rather than an *isomorphism* — and if the
+problem you are solving really is that one, this is the loop. For this problem it is a bug.
+
+---
+
+## Approach 4 — Encode both strings as first-occurrence patterns
+
+### The idea
+
+*The one-map version failed because it recorded the character names — what if the names were thrown
+away instead?* Rewrite each string so that every character is replaced by the position where that
+character first appeared. `"egg"` becomes `[0, 1, 1]` and `"add"` becomes `[0, 1, 1]`: the names are
+gone, the shape remains. Two strings are isomorphic exactly when their patterns are identical, and
+because the encoding is computed independently for each string, there is no direction to get wrong —
+which is what fixes the previous rung.
+
+### How to think about it
+
+This is the canonical-form idea from the grouping rung, done in a single cheap pass and producing
+something you can compare element by element instead of set against set. The encoding answers, at
+every position, the question "where did this character *first* show up?" — and that question is
+purely about the pattern of repeats. The character names never enter the output, so two strings with
+completely disjoint alphabets can still encode identically, which is the whole point.
+
+Symmetry is what buys correctness here. The one-map version was asymmetric — it read `s` as keys and
+`t` as values — and asymmetric checks miss asymmetric failures. Encoding treats both strings exactly
+alike, so a collapse in either one shows up as a difference in the patterns.
+
+### Worked example
+
+Input: `s = "badc"`, `t = "baba"`.
+
+Encoding `s = "badc"`, recording the first position of each character:
+
+| Position | Character | First seen at | Output so far |
+|---|---|---|---|
+| 0 | `b` | 0 (new) | `[0]` |
+| 1 | `a` | 1 (new) | `[0, 1]` |
+| 2 | `d` | 2 (new) | `[0, 1, 2]` |
+| 3 | `c` | 3 (new) | `[0, 1, 2, 3]` |
+
+Encoding `t = "baba"`:
+
+| Position | Character | First seen at | Output so far |
+|---|---|---|---|
+| 0 | `b` | 0 (new) | `[0]` |
+| 1 | `a` | 1 (new) | `[0, 1]` |
+| 2 | `b` | **0** (seen before) | `[0, 1, 0]` |
+| 3 | `a` | **1** (seen before) | `[0, 1, 0, 1]` |
+
+`[0, 1, 2, 3]` against `[0, 1, 0, 1]` — they differ at index 2, so the answer is **false**. That index
+is the same position 2 the brute force flagged: `t` pointed back to an earlier occurrence there and
+`s` did not.
+
+### Code
+
+```python
+def _encode(s: str) -> list[int]:
+    first: dict[str, int] = {}
+    out: list[int] = []
+    for i, ch in enumerate(s):
+        if ch not in first:  # only the FIRST sighting is recorded
+            first[ch] = i
+        out.append(first[ch])
+    return out
+
+
+def is_isomorphic_pattern(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    return _encode(s) == _encode(t)
+```
+
+### Common mistake
+
+Dropping the `if ch not in first` guard and writing `first[ch] = i` unconditionally. Now the map
+records the *latest* sighting rather than the first, so `first[ch]` is always `i` and the encoding of
+every string is just `[0, 1, 2, ..., n-1]` — the same output for every input of a given length.
+`"aba"` and `"abb"` both encode to `[0, 1, 2]` and the function reports true for a pair that is
+plainly false. The bug is quiet because the encodings still *look* like plausible patterns and still
+compare equal for genuinely isomorphic inputs; it only ever produces false positives. First-occurrence
+is not an arbitrary choice of representative — it is what makes the encoding canonical, meaning every
+string with a given shape maps to one and the same pattern.
+
+### Complexity and when to use this
+
+**Time O(n), space O(n).** The time is two linear passes, one per string, with a constant-expected-cost
+map operation per character. The space is the two encoded lists — one integer per character — which is
+where it loses to the approach below: the answer is a single boolean, and this materialises two full
+sequences before comparing anything.
+
+Use it when the "characters" are not characters. The encoding generalises untouched to *word pattern*
+problems — does `"dog cat cat dog"` follow the pattern `"abba"`? — and to any sequence of tokens where
+you care about the shape of the repeats rather than the tokens themselves: request traces, event
+sequences, shapes of arrays. It is also the version to reach for when you must compare many strings
+pairwise, because each one's pattern can be computed once and reused as a dictionary key, turning
+`O(n²)` comparisons into one grouping pass.
+
+---
+
+## Approach 5 — Two maps, forward and backward (optimal)
+
+### The idea
+
+*The encoding is correct but builds two whole sequences before comparing them — can the answer be
+decided during the walk?* Yes: keep the forward table from the instinctive version, and add the
+backward one that it was missing. At each position, reject if `s[i]` already maps somewhere else, and
+reject if `t[i]` is already claimed by a different source. That is the bijection, checked in both
+directions, deciding at the first contradiction rather than at the end.
+
+### How to think about it
+
+Two ledgers facing each other. The forward ledger says what each character of `s` has committed to
+becoming; the backward ledger says which character of `s` has already claimed each character of `t`.
+A valid relabelling is a set of exclusive pairings, so a new pairing `(a, b)` is legal only if `a` is
+unspoken for or already paired with `b`, **and** `b` is unspoken for or already paired with `a`. Keep
+both ledgers and every rule in the statement is enforced by construction.
+
+The reason this is the version to write is not speed — it is the same `O(n)` as the encoding — but
+that it decides *early* and allocates *nothing that grows with n*. A pair of strings that contradict
+at position 3 costs three steps, whatever their length, and the two ledgers can never exceed 256
+entries each because the alphabet is ASCII. That last fact is the whole basis for calling the space
+constant.
+
+### Worked example
+
+Input: `s = "badc"`, `t = "baba"`.
+
+| Step | `s[i]`, `t[i]` | forward check | backward check | Forward after | Backward after |
+|---|---|---|---|---|---|
+| 1 | `b`, `b` | `b` unseen — fine | `b` unclaimed — fine | `{b: b}` | `{b: b}` |
+| 2 | `a`, `a` | `a` unseen — fine | `a` unclaimed — fine | `{b: b, a: a}` | `{b: b, a: a}` |
+| 3 | `d`, `b` | `d` unseen — fine | **`b` is already claimed by `b`, not `d`** | — | — |
+
+**Return false at step 3.** Note which of the two checks fired: the forward table was perfectly happy
+to add `d → b`, exactly as it was in the one-map version. The backward table is the only thing in the
+file's linear approaches that catches this, and it catches it two characters before the string ends.
+
+### Code
+
+```python
+def is_isomorphic_two_maps(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    forward: dict[str, str] = {}
+    backward: dict[str, str] = {}
+    for i in range(len(s)):
+        a, b = s[i], t[i]
+        if a in forward and forward[a] != b:
+            return False
+        if b in backward and backward[b] != a:  # the half people forget
+            return False
+        forward[a] = b
+        backward[b] = a
+    return True
+```
+
+### Common mistake
+
+Collapsing the presence check into the comparison: `if forward.get(a) != b or backward.get(b) != a:
+return False`. On a character's **first** sighting `get` returns `None`, `None != b` is true, and the
+function returns false immediately — `"egg"` against `"add"` fails at position 0. Every pair of
+strings is now reported non-isomorphic, including identical ones. The `a in forward and ...` shape is
+load-bearing: "not recorded yet" and "recorded as something else" are different states, and only the
+second is a contradiction. If you prefer `get`, the correct spelling supplies a default that cannot
+conflict — `forward.get(a, b) != b` — which is the same trick as `setdefault`, and which is exactly
+what makes the one-map version in approach 3 read so plausibly.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** One pass with two constant-expected-time lookups and two inserts per
+character. The space is the two maps, and because the alphabet is ASCII they are capped at 256
+entries each no matter how long the strings are — so the space does not grow with the input, which is
+what "constant" means here. Strictly it is `O(min(n, alphabet size))`.
+
+This is the answer to ship. It is the only approach here that is simultaneously linear, non-allocating
+in proportion to the input, symmetric by construction, and early-exiting. Say the bijection argument
+when you write it — *one map gives a function, two maps give a bijection* — because it is the sentence
+that explains why the code has the shape it does.
+
+---
+
+## Approach 6 — Two fixed arrays, exploiting the ASCII alphabet
+
+### The idea
+
+*Hash maps over a 256-character alphabet are a lot of machinery — can the characters index straight
+into an array?* Yes, if every character fits in a byte, which the constraints promise. Replace the
+two dictionaries with two 256-slot integer arrays holding *the position where this character was last
+seen*, and the whole bijection check collapses into a single equality: the two sides must have last
+appeared at the same position.
+
+### How to think about it
+
+If `a` and `b` are genuinely paired, then every occurrence of one is an occurrence of the other, so
+their "last seen" positions march in lockstep and must always be equal. If they are not paired —
+either `a` has been seen with some other partner, or `b` has been claimed by some other source — then
+one of the two counters is ahead of the other, and the comparison catches it. One integer comparison
+per character does the work of two map lookups, with no hashing, no allocation, and perfect cache
+behaviour.
+
+The one piece of bookkeeping that has to be right: the arrays start at zero and zero has to mean
+"never seen", so positions are stored **1-based**. Otherwise a character genuinely appearing at
+position 0 is indistinguishable from one that has not appeared at all.
+
+### Worked example
+
+Input: `s = "badc"`, `t = "baba"`. Positions are stored 1-based.
+
+| Step (1-based) | `s[i]`, `t[i]` | `forward[s[i]]` | `backward[t[i]]` | Equal? | Action |
+|---|---|---|---|---|---|
+| 1 | `b`, `b` | 0 (unseen) | 0 (unseen) | yes | stamp both with 1 |
+| 2 | `a`, `a` | 0 (unseen) | 0 (unseen) | yes | stamp both with 2 |
+| 3 | `d`, `b` | 0 (`d` unseen) | **1** (`b` last seen at step 1) | **no** | **return false** |
+
+Step 3 is the same catch as before, expressed arithmetically instead of with a lookup: `d` has never
+been seen, so its counter reads 0, while `b` on the other side was already spoken for at step 1 and
+reads 1. Mismatched counters mean the two characters do not move together, which means they are not a
+pair.
+
+### Code
+
+```python
+def is_isomorphic_fixed_arrays(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    forward = [0] * 256
+    backward = [0] * 256  # 0 means "never seen"; positions are stored 1-based
+    for i, (a, b) in enumerate(zip(s, t), start=1):
+        ai, bi = ord(a), ord(b)
+        if forward[ai] != backward[bi]:  # both must have last appeared at the same position
+            return False
+        forward[ai] = i
+        backward[bi] = i
+    return True
+```
+
+### Common mistake
+
+Leaving the enumeration 0-based — `for i, (a, b) in enumerate(zip(s, t))` — so that a character first
+seen at position 0 stamps a `0`, which is the same value the array uses for "never seen". Now the
+very first character is permanently indistinguishable from an unseen one, and every check involving
+it silently passes. On `s = "ab"`, `t = "aa"` the function returns true: at step 1 both sides stamp
+`0`, at step 2 `b` reads 0 (never seen) and `a` reads 0 (seen, but stamped 0), they match, and the
+collapse of `a` and `b` onto a single `a` goes unnoticed. Any sentinel works — `-1` for unseen, or
+1-based positions as above — but the sentinel must be a value a real position can never take.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** The time is one pass with two array reads, one comparison and two array
+writes per character — no hashing at all, which in a compiled language is several times faster than
+the dictionary version in wall-clock terms even though the asymptotics are identical. The space is
+two fixed 512-byte arrays, allocated once, independent of everything.
+
+**The assumption is a small, integer-indexable alphabet**, and here the constraints hand it over:
+ASCII means `ord(c) < 256`. Take that away and the approach does not get slower, it breaks — on
+arbitrary Unicode, `ord` reaches past 1.1 million, so the arrays are either enormous or indexed out of
+range, and "character" stops being a well-defined unit once combining marks are in play. The fallback
+is the two-dictionary version, which is correct for any alphabet at the cost of hashing. This is the
+version to reach for in tight loops, embedded code, or any hot path over bounded-alphabet text — and
+the one to abandon the moment the input specification says anything other than ASCII.
+
+---
+
+## The Overall Arc
+
+The principle every rung chases is *write the definition down before you write the code, and then
+make the code symmetric the way the definition is*. The brute force gets that for free by being the
+definition: it asks of every pair of positions whether the two strings agree about sameness, and
+because "agree" is symmetric it cannot possibly miss a failure in one direction — but it interrogates
+the structure one pair at a time and pays n²/2 for the privilege. Grouping the positions is the first
+real idea: stop asking about the partition and *build* it, throw the character names away, and compare
+the canonical forms — correct, symmetric, linear, and heavy, since it materialises every position of
+both strings to answer a yes-or-no question. Then comes the version instinct produces, a single
+forward map recording what each character became, and it is fast and elegant and wrong; the reason it
+is wrong is worth more than the reason the others are right, because it is a *definitional* error
+rather than a coding one. A map from `s` to `t` enforces "each character maps to exactly one
+character" and is structurally incapable of noticing "two characters were merged into one", so it
+accepts `"badc"` against `"baba"` — and swapping which string you key on does not fix it, it just
+moves the blind spot to the mirrored input. Pattern encoding repairs that by removing the asymmetry
+altogether: each string is encoded on its own terms, into the positions where its characters first
+appeared, so no direction exists to get wrong — at the cost of building two sequences you then discard.
+The two-map version keeps the encoding's symmetry and the one-map version's single pass by simply
+being honest about what a bijection is: two ledgers, one per direction, each rejecting a pairing that
+contradicts what it has already recorded, deciding at the first contradiction rather than at the end
+and never allocating anything that grows with the input. And the last rung is what happens when you
+read the constraints rather than the statement: ASCII means characters are small integers, small
+integers index arrays, and two 256-slot arrays of last-seen positions do the same work with a single
+comparison and no hashing — right up until someone hands you Unicode, at which point the assumption
+that made it fast is the assumption that makes it wrong. Symmetric problem, symmetric check; and
+every cheap trick is a constraint being cashed in.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Compare every pair | O(n²) | O(1) | The definition itself; symmetric for free, quadratic in cost | You need an oracle to cross-check a faster version, or n is tiny |
+| Group the positions | O(n + m log m) | O(n) | Builds a canonical form and compares it; heaviest memory here | The relabelling is more complex than a character swap, or you are grouping many items by shape |
+| One forward map | O(n) | O(1) | **Incorrect** — enforces a function, not a bijection | Only when the question really is one-directional substitution (a homomorphism) |
+| Pattern encoding | O(n) | O(n) | Symmetric by construction; materialises two sequences | Tokens are words or events, not characters, or one string is compared against many |
+| Two maps | O(n) | O(1) | Both directions, one pass, early exit, nothing allocated per element | The general case — the answer to ship |
+| Two fixed arrays | O(n) | O(1) | No hashing at all; needs a small integer-indexable alphabet | ASCII or another bounded alphabet, in a hot path — breaks on Unicode |
+
+---
+
+## Interview Priority
+
+**Know cold: the two-map version, and the pattern encoding.** Write the two maps without hesitating,
+with the backward check present on the first attempt rather than after the `"badc"`/`"baba"` test
+fails — that test exists specifically to catch the one-map answer, so producing the two-map version
+unprompted is the whole signal the question is looking for. Say why, in one sentence: *one map is a
+function, two maps are a bijection, and the statement asks for a bijection*. Keep the pattern encoding
+ready as the second answer, because it is the one that generalises — the standard follow-up is "now
+do it for `word pattern`, where `"abba"` must match `"dog cat cat dog"`", and the encoding handles that
+with the tokens swapped and nothing else changed.
+
+**Understand but do not drill: the pairwise brute force, the grouping, the fixed arrays, and the
+one-map version — though that last one for a different reason.** Name the brute force in a sentence to
+put the baseline on the table, and mention the grouping only if canonical forms come up. The fixed
+arrays are a good thing to *offer* rather than to lead with: "the alphabet is ASCII, so I can replace
+the maps with two 256-slot arrays of last-seen positions and drop the hashing entirely" is a strong
+closing remark that shows you read the constraints, and it invites the useful follow-up about what
+happens with Unicode. The one-map version deserves ten seconds of your attention for the opposite
+reason to all the others: know it as the trap, be able to produce the input that defeats it on demand,
+and never write it.
+
+---
+
+## Full Runnable Script
+
+Every approach in one file, checked against all three statement examples — including the
+backward-clash case that the one-map version fails — the smallest legal inputs in both their
+identical and relabelled forms, duplicates on one side only and on both, an identity mapping, and
+non-letter ASCII. The single forward map is run separately on inputs where it is *expected* to
+disagree, and the script fails loudly if it ever agrees there. The stress run draws the two strings
+from disjoint alphabets in one round and from the same alphabet in another, so characters mapping to
+themselves are covered too.
+
+```python
+"""Same Shape, Different Letters — every approach in one file, cross-checked.
+
+Run: python isomorphic_strings.py
+"""
+
+from __future__ import annotations
+
+import random
+
+
+def is_isomorphic_brute_force(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    for i in range(len(s)):
+        for j in range(i + 1, len(s)):
+            if (s[i] == s[j]) != (t[i] == t[j]):  # the two strings must agree on sameness
+                return False
+    return True
+
+
+def _groups(s: str) -> list[tuple[int, ...]]:
+    positions: dict[str, list[int]] = {}
+    for i, ch in enumerate(s):
+        positions.setdefault(ch, []).append(i)
+    return sorted(tuple(v) for v in positions.values())
+
+
+def is_isomorphic_grouped(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    return _groups(s) == _groups(t)
+
+
+def is_isomorphic_one_map(s: str, t: str) -> bool:
+    """WRONG: a forward map alone lets two characters collapse onto one."""
+    if len(s) != len(t):
+        return False
+    forward: dict[str, str] = {}
+    for a, b in zip(s, t):
+        if forward.setdefault(a, b) != b:
+            return False
+    return True
+
+
+def _encode(s: str) -> list[int]:
+    first: dict[str, int] = {}
+    out: list[int] = []
+    for i, ch in enumerate(s):
+        if ch not in first:  # only the FIRST sighting is recorded
+            first[ch] = i
+        out.append(first[ch])
+    return out
+
+
+def is_isomorphic_pattern(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    return _encode(s) == _encode(t)
+
+
+def is_isomorphic_two_maps(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    forward: dict[str, str] = {}
+    backward: dict[str, str] = {}
+    for i in range(len(s)):
+        a, b = s[i], t[i]
+        if a in forward and forward[a] != b:
+            return False
+        if b in backward and backward[b] != a:  # the half people forget
+            return False
+        forward[a] = b
+        backward[b] = a
+    return True
+
+
+def is_isomorphic_fixed_arrays(s: str, t: str) -> bool:
+    if len(s) != len(t):
+        return False
+    forward = [0] * 256
+    backward = [0] * 256  # 0 means "never seen"; positions are stored 1-based
+    for i, (a, b) in enumerate(zip(s, t), start=1):
+        ai, bi = ord(a), ord(b)
+        if forward[ai] != backward[bi]:  # both must have last appeared at the same position
+            return False
+        forward[ai] = i
+        backward[bi] = i
+    return True
+
+
+APPROACHES: list[tuple[str, object]] = [
+    ("brute force pairs", is_isomorphic_brute_force),
+    ("grouped positions", is_isomorphic_grouped),
+    ("pattern encoding", is_isomorphic_pattern),
+    ("two maps", is_isomorphic_two_maps),
+    ("fixed ASCII arrays", is_isomorphic_fixed_arrays),
+]
+
+
+def run_case(label: str, s: str, t: str) -> bool:
+    results = [(name, fn(s, t)) for name, fn in APPROACHES]
+    agree = all(r == results[0][1] for _, r in results)
+    print(label)
+    print(f"  s={s!r} t={t!r}")
+    for name, r in results:
+        print(f"    {name:<20} -> {r}")
+    print(f"    all agree: {agree}")
+    return agree
+
+
+def main() -> None:
+    ok = True
+
+    # All three examples from the statement.
+    ok &= run_case("statement example 1", "egg", "add")
+    ok &= run_case("statement example 2", "foo", "bar")
+    ok &= run_case("statement example 3 (backward clash)", "badc", "baba")
+
+    # Minimal legal input.
+    ok &= run_case("minimal, identical", "a", "a")
+    ok &= run_case("minimal, relabelled", "a", "b")
+
+    # Duplicates on one side only.
+    ok &= run_case("duplicates one side", "ab", "aa")
+    ok &= run_case("all duplicates both sides", "aaa", "bbb")
+
+    # A character mapping to itself is allowed.
+    ok &= run_case("identity mapping", "abc", "abc")
+
+    # Non-letter ASCII, which the constraints permit.
+    ok &= run_case("punctuation and digits", "1-1", "#/#")
+
+    # The single forward map: right on most inputs, wrong on the one that defines the problem.
+    print()
+    print("one forward map only (the instinctive version)")
+    for s, t in [("egg", "add"), ("foo", "bar")]:
+        got = is_isomorphic_one_map(s, t)
+        want = is_isomorphic_two_maps(s, t)
+        print(f"    s={s!r} t={t!r} -> one map {got}, truth {want}, "
+              f"{'agrees' if got == want else 'DISAGREES'}")
+        ok &= got == want
+    got = is_isomorphic_one_map("badc", "baba")
+    want = is_isomorphic_two_maps("badc", "baba")
+    print(f"    s='badc' t='baba' -> one map {got}, truth {want}, "
+          f"{'wrong as predicted' if got != want else 'UNEXPECTEDLY AGREED'}")
+    ok &= got != want  # the failure is the point of the rung
+
+    # Randomised stress over tiny alphabets so collisions are common. The second round
+    # draws both strings from the SAME alphabet, so characters mapping to themselves,
+    # and to each other's letters, are covered too.
+    random.seed(5)
+    checked = 0
+    for alphabet_s, alphabet_t in [("abc", "xyz"), ("abc", "abc")]:
+        for _ in range(2000):
+            n = random.randint(1, 8)
+            s = "".join(random.choice(alphabet_s) for _ in range(n))
+            t = "".join(random.choice(alphabet_t) for _ in range(n))
+            checked += 1
+            results = [fn(s, t) for _, fn in APPROACHES]
+            if any(r != results[0] for r in results):
+                ok = False
+                print(f"  STRESS DISAGREEMENT s={s!r} t={t!r} -> {results}")
+    print()
+    print(f"stress: {checked} random equal-length pairs (disjoint and overlapping "
+          f"alphabets), all five correct approaches cross-checked")
+
+    print()
+    print("ALL APPROACHES AGREED ON EVERY CASE (and the single forward map failed exactly "
+          "where predicted)." if ok else "APPROACHES DISAGREED — see above.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Output when run
+
+```
+statement example 1
+  s='egg' t='add'
+    brute force pairs    -> True
+    grouped positions    -> True
+    pattern encoding     -> True
+    two maps             -> True
+    fixed ASCII arrays   -> True
+    all agree: True
+statement example 2
+  s='foo' t='bar'
+    brute force pairs    -> False
+    grouped positions    -> False
+    pattern encoding     -> False
+    two maps             -> False
+    fixed ASCII arrays   -> False
+    all agree: True
+statement example 3 (backward clash)
+  s='badc' t='baba'
+    brute force pairs    -> False
+    grouped positions    -> False
+    pattern encoding     -> False
+    two maps             -> False
+    fixed ASCII arrays   -> False
+    all agree: True
+minimal, identical
+  s='a' t='a'
+    brute force pairs    -> True
+    grouped positions    -> True
+    pattern encoding     -> True
+    two maps             -> True
+    fixed ASCII arrays   -> True
+    all agree: True
+minimal, relabelled
+  s='a' t='b'
+    brute force pairs    -> True
+    grouped positions    -> True
+    pattern encoding     -> True
+    two maps             -> True
+    fixed ASCII arrays   -> True
+    all agree: True
+duplicates one side
+  s='ab' t='aa'
+    brute force pairs    -> False
+    grouped positions    -> False
+    pattern encoding     -> False
+    two maps             -> False
+    fixed ASCII arrays   -> False
+    all agree: True
+all duplicates both sides
+  s='aaa' t='bbb'
+    brute force pairs    -> True
+    grouped positions    -> True
+    pattern encoding     -> True
+    two maps             -> True
+    fixed ASCII arrays   -> True
+    all agree: True
+identity mapping
+  s='abc' t='abc'
+    brute force pairs    -> True
+    grouped positions    -> True
+    pattern encoding     -> True
+    two maps             -> True
+    fixed ASCII arrays   -> True
+    all agree: True
+punctuation and digits
+  s='1-1' t='#/#'
+    brute force pairs    -> True
+    grouped positions    -> True
+    pattern encoding     -> True
+    two maps             -> True
+    fixed ASCII arrays   -> True
+    all agree: True
+
+one forward map only (the instinctive version)
+    s='egg' t='add' -> one map True, truth True, agrees
+    s='foo' t='bar' -> one map False, truth False, agrees
+    s='badc' t='baba' -> one map True, truth False, wrong as predicted
+
+stress: 4000 random equal-length pairs (disjoint and overlapping alphabets), all five correct approaches cross-checked
+
+ALL APPROACHES AGREED ON EVERY CASE (and the single forward map failed exactly where predicted).
+```

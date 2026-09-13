@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "The table version is already linear, but each entry is read only by the next two steps and never again. Two variables hold exactly that much history, so the array disappears and the memory becomes constant — the same recurrence with nothing kept that is not still needed.",
+  arc:
+    "A short ladder, because the recurrence is short and the difficulty is in reading the statement precisely. You may START on either of the first two stairs, so both are seeded at their own price with nothing before them, and the goal is PAST the top, so the answer is the cheaper of the final two stairs rather than the last one. Get either wrong and the algorithm stays correct while the answer does not — which is the real lesson, that most failures in this pattern are boundary readings and not recurrences. The rest is the standard descent: a table writes down the cheapest way to stand on each stair, built from the two before it, and since nothing older than two steps is ever read again, two rolling variables replace the array and the space goes constant. Keep the table version when the route itself has to be reconstructed. Stair-ways is this structure counting routes instead of pricing them, and house-robber is it with a max and a skip rule.",
   approach:
     "Carry the cheapest cost to stand on the previous stair and on the one before that. For each new stair, the cost to stand on it is its own price plus the cheaper of those two. Shift the pair forward and continue. Both starting stairs cost only themselves, which seeds the pair. Since finishing means stepping PAST the top, the answer is the cheaper of the final two stairs rather than the last one.",
   complexity: { time: "O(n)", space: "O(1)" },

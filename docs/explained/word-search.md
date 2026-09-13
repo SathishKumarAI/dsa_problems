@@ -221,6 +221,8 @@ bool exist(vector<string> board, const string& word) {
 
 ## The arc
 
+Two ideas carry this, and the second is where the problem is usually lost. The first is pruning: generating every walk of the word's length and checking it afterwards explores enormous numbers of paths that stopped spelling the word at the second letter, so the match has to happen as you step, killing a branch the instant a character is wrong. The second is the SCOPE of the visited mark. A cell may not be reused within one path, but it must be free again for the next path, so the blank-out before recursing has to be undone on the way back out. The rung above the answer is a warning rather than a step — the same code minus one restore, it reads as correct, and it fails on any board where a path backs out of a dead end and needs a cell it already touched. Read the two line by line. Restoring state on the way out of a branch is the whole of backtracking, and it is the same discipline as n-queens, sudoku and permutations.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Mark used cells and never unmark | O(rows · cols · 4^L) time · O(L) space | the baseline — nothing before it |

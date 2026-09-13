@@ -240,6 +240,8 @@ vector<vector<int>> solve(vector<vector<int>> board) {
 
 ## The arc
 
+Both rungs are linear, and the whole difference is in what the traversal has to carry. Filling each interior region and asking afterwards whether it touched the border means every fill collects its cells and drags a verdict along, then goes back and rewrites them when the verdict says survive. Starting from the border removes the verdict entirely: reachability from the border IS the definition of not being enclosed, so everything the fill reaches is safe, everything it misses is captured, and one sweep at the end decides it with nothing to undo. That inversion — solve for the complement when the complement needs no per-case bookkeeping — is the transferable part. The temporary third mark is what keeps the final sweep to a single pass: safe cells carry it, captured cells do not, and one walk restores the one and flips the other. Pacific-atlantic water flow is this arc run twice, once from each shore.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Fill each region and check afterwards | O(rows · cols) time · O(rows · cols) space | the baseline — nothing before it |

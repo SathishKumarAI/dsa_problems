@@ -153,6 +153,8 @@ bool wordBreak(const string& s, const vector<string>& words) {
 
 ## The arc
 
+Three ideas stack here. Greedy is wrong first: taking the longest matching word and continuing dies on catsandog, where an early long match ruins a later split, and that counterexample is worth keeping. Backtracking fixes correctness and then re-solves the same suffix along every path that reaches it, which is the familiar exponential. The real move is storing reachability rather than the split itself — two different segmentations ending at the same position are interchangeable from there on, so one boolean per position holds everything the later positions need. Entry 0 is true because the empty prefix needs nothing, and the last entry is the answer. Know the double loop, for each end looking back at every reachable start and testing the text between, and know the dictionary belongs in a set because that inner test is the hot line. Word-break-II asks for the actual sentences, and there the boolean table can no longer stand alone.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Backtrack over every split | O(2^n) time · O(n) space | the baseline — nothing before it |

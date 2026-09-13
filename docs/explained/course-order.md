@@ -228,6 +228,8 @@ vector<int> courseOrder(int num, const vector<vector<int>>& prereqs) {
 
 ## The arc
 
+Both rungs compute the same object — an order in which every edge points forwards — and differ only in which end they build from. DFS post-order finishes a course only after everything it unlocks has finished, so the reversed finishing order is a schedule; Kahn's takes courses whose prerequisites are already done, which builds the order forwards and needs no reversal. The real separator is the failure case. A cycle means no order exists, and DFS finds it only with a third colour marking in-progress nodes, where meeting a grey node is the back edge; Kahn's gets it by counting — if fewer than numCourses came off the queue, the ones left over are exactly the ones stuck in the cycle. Know Kahn's cold: in-degree table, a queue of the free, decrement on release, compare the count at the end. It is the machinery behind alien dictionary, build order and any dependency schedule, and the in-degree count is what turns 'is there a cycle' into arithmetic.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | DFS post-order | O(V + E) time · O(V + E) space | the baseline — nothing before it |

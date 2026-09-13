@@ -160,6 +160,8 @@ TreeNode* invertTree(TreeNode* root) {
 
 ## The arc
 
+Mirroring is a per-node operation — swap this node's two children, then do the same inside each subtree — so the only real question is what carries the traversal. The explicit stack is not a worse algorithm, it is the same walk with the container written out by hand, and it is the right answer when a tree is deep enough to exhaust the call stack. At a hundred nodes the recursion says what the operation means in three lines and the call stack IS the container, which is why the iterative rung sits here as a fallback rather than an improvement. The detail worth noticing is that the swap can happen before or after the recursive calls with no change to the result, because each call only rearranges nodes inside its own subtree — no ordering constraint means nothing to get wrong, which is rarer than it sounds. Keep two things: an empty node returning immediately is a base case and not an error, so an empty tree inverts to an empty tree with no guard at the call site, and this same swap-then-recurse walk is exactly what symmetric-tree checks.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Iterative with an explicit stack | O(n) time · O(n) space | the baseline — nothing before it |

@@ -32,6 +32,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Stripping the head first is a second loop running the same test, and it is the loop people forget — a list that is entirely matches is handled only there. A dummy node in front of the head makes the head an ordinary node, so one loop covers the whole list.",
+  arc:
+    "Every rung applies one unlinking rule — point a node's predecessor past it — and the ladder is a sequence of things that turn out to be unnecessary. Restarting the scan after each removal re-checks nodes it has already cleared, which is quadratic on a list of nothing but matches; a deleted node cannot come back, so nothing behind you can change and one pass is enough. Rebuilding from the surviving values is linear and replaces every node you were handed with a copy. Recursion keeps the real nodes and keeps ten thousand frames along with them. Stripping the leading matches first and then looping is one pass in constant space, and writes the same test twice — the head loop being the one people forget, which is exactly the loop that a list of nothing but matches depends on. The dummy node deletes that duplication: with a node in front of the head, the head is an ordinary node, one loop covers everything, and dummy.next is right whether nothing went, the front went, or all of it did. The other habit worth keeping is not advancing prev after a removal, because the node that slid into place may match too.",
   approach:
     "Put a dummy node in front of the head and walk a prev pointer from it. If prev.next matches, splice it out and leave prev where it is, because the node that slid into place may match as well. Otherwise step prev forward. Returning dummy.next gives the right answer whether nothing was removed, the head was removed, or everything was.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -63,39 +65,6 @@ export const problem: Problem = {
     }
     return dummy->next;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [1, 2, 6, 3, 4, 5, 6],
-        marks: { 0: "window" },
-        labels: { 0: "prev" },
-      },
-      caption:
-        "A dummy sits in front of 1 (not drawn). prev starts on it; 1 does not match 6, so step forward.",
-    },
-    {
-      cells: {
-        values: [1, 2, 6, 3, 4, 5, 6],
-        marks: { 1: "window", 2: "focus" },
-        labels: { 1: "prev" },
-      },
-      caption: "prev is on 2 and prev.next is 6 — a match. Splice it out.",
-    },
-    {
-      cells: {
-        values: [1, 2, 3, 4, 5, 6],
-        marks: { 1: "window", 2: "compare" },
-        labels: { 1: "prev" },
-      },
-      caption:
-        "prev does NOT move. The node that slid into place is 3, which does not match, so now we advance.",
-    },
-    {
-      cells: { values: [1, 2, 3, 4, 5], marks: { 4: "done" } },
-      caption:
-        "The trailing 6 goes the same way, and prev.next becomes null. dummy.next is [1,2,3,4,5].",
-    },
-  ],
   alternatives: [
     {
       name: "Restart the scan after every removal",

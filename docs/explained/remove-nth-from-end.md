@@ -172,6 +172,8 @@ ListNode* removeNthFromEnd(ListNode* head, int n) {
 
 ## The arc
 
+A forward-only list cannot address anything from the end, so both rungs are doing the same conversion: turning nth from the back into a position measurable from the front. Counting does it arithmetically — one walk to find the length, another to reach length minus n — which is correct and cannot move until the whole list has been measured. Holding two pointers a fixed n apart does it geometrically: when the leader falls off the end, that gap has already parked the follower exactly where it is needed, and one pass with two variables was enough. The real trap is neither of those. It is that removing the HEAD is legal, and any version walking with a prev pointer has nothing in front of the head to relink. A dummy node before the head settles that for good, which is why returning dummy.next is the habit to carry away: it is the same move that makes remove-list-elements and swap-pairs a single loop instead of a loop plus a head case.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Count, then walk forward | O(n) time · O(1) space | the baseline — nothing before it |

@@ -241,6 +241,8 @@ int maxAreaOfIsland(vector<vector<int>> grid) {
 
 ## The arc
 
+The rescanning rung fails for a reason worth naming: it has no frontier. Sweeping the whole grid for any land cell touching the island so far re-reads every cell once per growth step, so a fifty-cell island costs fifty full sweeps. A traversal carries its frontier implicitly — in the recursion stack, or in a queue — so each cell is visited exactly once and the sweeping disappears. The other half is when the mark goes down. Claim the cell on ENTRY, before recursing, and the mark doubles as the visited set; claim it on the way out and two neighbours both descend into it, which is duplicated work at best and a loop between two adjacent cells at worst. Everything else is bookkeeping: one plus the sum of what the four neighbours return, and the largest value the outer scan ever sees. A grid of all water answers 0, which is an answer. Island-count is this fill counting starts rather than cells, and surrounded-regions is it started from the border.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Grow by rescanning | O((m · n)²) time · O(m · n) space | the baseline — nothing before it |

@@ -195,6 +195,8 @@ int maxTake(const vector<int>& nums) {
 
 ## The arc
 
+The state is the whole problem, and it is smaller than it looks: standing at element i, the only thing the past can still tell you is the best total using everything before it, so best(i) is either best(i−1) with i skipped or nums[i] plus best(i−2) with i taken. Nothing about WHICH elements were chosen ever matters again, and that collapse from a subset to one number per position is what turns an exponential choice tree into a linear walk. The rest is the usual descent. Memoising asks each position once but leaves a call stack in the way; the explicit table removes the stack and makes the fill order visible, and it is the version to keep when a follow-up asks which elements were taken; and since the recurrence reads only two cells back, two rolling variables finish it in constant space. Know the two-variable version cold and practise naming the state out loud — the circular and tree variants are this recurrence with a different neighbour rule.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Recursion + memo | O(n) time · O(n) space | the baseline — nothing before it |

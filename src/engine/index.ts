@@ -89,6 +89,11 @@ import { maxDepth } from "../data/journeys/max-depth.ts"
 import { mergeTwoSorted } from "../data/journeys/merge-two-sorted.ts"
 import { validateBst } from "../data/journeys/validate-bst.ts"
 import { maxSubarray } from "../data/journeys/max-subarray.ts"
+import { reorderList } from "../data/journeys/reorder-list.ts"
+import { rotateList } from "../data/journeys/rotate-list.ts"
+import { oddEvenList } from "../data/journeys/odd-even-list.ts"
+import { addTwoNumbers } from "../data/journeys/add-two-numbers.ts"
+import { removeListElements } from "../data/journeys/remove-list-elements.ts"
 import type { AnyJourney } from "./types.ts"
 
 export const JOURNEYS: AnyJourney[] = [
@@ -180,6 +185,11 @@ export const JOURNEYS: AnyJourney[] = [
   validateBst as unknown as AnyJourney,
   reverseList as unknown as AnyJourney,
   swapPairs as unknown as AnyJourney,
+  reorderList as unknown as AnyJourney,
+  rotateList as unknown as AnyJourney,
+  oddEvenList as unknown as AnyJourney,
+  addTwoNumbers as unknown as AnyJourney,
+  removeListElements as unknown as AnyJourney,
 ]
 
 export const journeyBySlug = (slug: string) =>

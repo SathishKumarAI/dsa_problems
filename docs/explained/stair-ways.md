@@ -185,6 +185,8 @@ int climbWays(int n) {
 
 ## The arc
 
+The whole standard route in one easy problem, which is why it is worth doing slowly. The recurrence is the only piece of thinking: a route to step n arrives from n−1 or from n−2, the two sets never overlap, so the counts add — Fibonacci wearing a different hat. Naive recursion translates that literally and recomputes the same step exponentially often. Memoising answers each step once at the price of a table of n and a stack of n. Tabulating upward removes the stack and keeps the table. Then you notice the recurrence reads exactly two cells back, so everything older is dead storage, and two variables rolling forward hold all of it. Brute force, memoise, tabulate, roll — every problem in this pattern walks that ladder, and the last step is always the same question: how far back does the recurrence actually look? Know the rolling version cold, because min-cost-stairs and house-robber are this recurrence accumulating something else.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Naive recursion | O(2ⁿ) time · O(n) stack space | the baseline — nothing before it |

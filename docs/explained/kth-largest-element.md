@@ -193,6 +193,8 @@ int findKthLargest(const vector<int>& nums, int k) {
 
 ## The arc
 
+One principle, three answers: do not order what you will not read. Sorting ranks every element to report one of them, so the first escape is to stop comparing at all — the values live in a band twenty thousand wide, and tallying them lets you walk the range downward subtracting counts until k runs out, linear in n with no comparison anywhere. That trade is honest about its price: the table is sized by the RANGE, so it collapses the moment values are unbounded or sparse. The heap keeps the escape without the assumption. A min-heap capped at k holds exactly the values that could still be the answer and evicts the rest on arrival, so its root is the kth largest by construction — a min-heap answering a max question, which is the piece worth rehearsing out loud. Know the bounded heap and the counting table, and know which constraint chooses between them. Quickselect is the fourth answer when an interviewer wants expected linear with no range to lean on.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort and index | O(n log n) time · O(n) space | the baseline — nothing before it |

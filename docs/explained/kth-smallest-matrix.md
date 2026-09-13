@@ -146,6 +146,8 @@ int kthSmallest(const vector<vector<int>>& matrix, int k) {
 
 ## The arc
 
+Flattening throws away the only thing that makes this matrix special. The rows and columns arrive already sorted, and sorting the flattened list spends n² log n rediscovering an order that was half given. Use it instead: at any moment only n values can be the next smallest — the front of each row — so a heap holding those n fronts has the global minimum at its top, and popping one while pushing its right neighbour keeps that true. Stop after k pops and most of the matrix was never touched. The habit to carry is the k-way merge underneath it, the same structure that merges sorted lists or sorted files and the reason external sorting works at all. Worth knowing alongside it is the rival shape: binary search on the VALUE, counting cells no larger than a midpoint by walking the staircase from a corner, which gets there in n log(range) and wins when k is close to n². The size of k is what picks between them.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Flatten and sort | O(n^2 log n) time · O(n^2) space | the baseline — nothing before it |

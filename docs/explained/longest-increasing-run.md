@@ -229,6 +229,8 @@ int lengthOfLis(const vector<int>& nums) {
 
 ## The arc
 
+Three rungs, and each one shrinks what a position has to remember. The recursion remembers the entire run built so far, which is why the same suffix is re-solved once per path that reaches it. The quadratic table remembers one number per index — the longest run ending exactly there — and that is the key collapse: two runs ending at the same index with the same length are interchangeable from that point on. What it still does is scan every earlier index looking for a feeder, and that inner loop is the whole n². The tails list removes it by storing one number per achievable LENGTH instead of per index: the smallest value a run of that length can end with. That list is sorted by construction, so the slot is a binary search. Be clear that the list is not itself a subsequence — it is a ledger of what is achievable, and only its length is the answer. Know the n² version for the variants that count or rebuild runs, and the tails version for the n log n.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every subsequence | O(2^n) time · O(n) space | the baseline — nothing before it |

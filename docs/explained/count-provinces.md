@@ -211,6 +211,8 @@ int findCircleNum(const vector<vector<int>>& matrix) {
 
 ## The arc
 
+Connected components again, only the graph arrives as an adjacency matrix rather than a grid, and the statement turns on one word: connection is TRANSITIVE, so a and c share a province through b with no direct link between them. Flood fill makes that happen by walking it — start at an unvisited city, mark everything reachable, add one per fill started. Union-find makes it happen by construction: merging at every edge collapses the chain without anyone walking it, and the answer is the count of cities still acting as their own representative. Neither wins on speed, and the honest reason to know both is the shape of the input. A static matrix favours the fill, which is less code; edges arriving over time favour union-find, because there is nothing to re-traverse — the answer is maintained rather than derived. Path compression in find and the count of roots at the end are the two lines to write from memory. Redundant-connection is this with the edges streaming.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Flood fill from each city | O(n²) time · O(n) space | the baseline — nothing before it |

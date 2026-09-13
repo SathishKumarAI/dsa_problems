@@ -140,6 +140,8 @@ int minCostClimbingStairs(const vector<int>& cost) {
 
 ## The arc
 
+A short ladder, because the recurrence is short and the difficulty is in reading the statement precisely. You may START on either of the first two stairs, so both are seeded at their own price with nothing before them, and the goal is PAST the top, so the answer is the cheaper of the final two stairs rather than the last one. Get either wrong and the algorithm stays correct while the answer does not — which is the real lesson, that most failures in this pattern are boundary readings and not recurrences. The rest is the standard descent: a table writes down the cheapest way to stand on each stair, built from the two before it, and since nothing older than two steps is ever read again, two rolling variables replace the array and the space goes constant. Keep the table version when the route itself has to be reconstructed. Stair-ways is this structure counting routes instead of pricing them, and house-robber is it with a max and a skip rule.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | A table of costs | O(n) time · O(n) space | the baseline — nothing before it |

@@ -246,6 +246,8 @@ int minutesToRot(vector<vector<int>>& grid) {
 
 ## The arc
 
+Minutes and BFS levels are the same thing, and seeing that is the problem. The simulation makes it literal but pays for it, rescanning every cell every minute including the ones that will never change again, which is how a long thin corridor of fruit goes quadratic. A queue holds only the cells actually rotting this minute, so each cell is touched once and the elapsed minutes fall out of the level count for free. The step that surprises people is the seeding: every rotten cell goes in before the first level runs, because the spread is simultaneous, and multi-source BFS is just BFS with more than one start — no extra machinery, one extra loop. Mark a fresh cell rotten as it is ENQUEUED, not as it is dequeued, or it joins the queue from two neighbours and the level count stops meaning a minute. The two answers off the happy path deserve rehearsal: no fresh fruit at all is 0, and any fresh cell the queue never reached is −1.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Simulate whole grid | O((rows × cols)²) worst time · O(rows × cols) space | the baseline — nothing before it |

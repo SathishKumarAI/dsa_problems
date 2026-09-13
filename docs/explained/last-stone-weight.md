@@ -151,6 +151,8 @@ int lastStoneWeight(const vector<int>& stones) {
 
 ## The arc
 
+Each round asks one small question — what are the two heaviest stones — and a full sort answers a far larger one, ranking the whole pile when only the top two get read, then doing it again after a single value changed. That gap between the question asked and the order computed is the entire ladder. A heap maintains exactly the invariant a round needs, that the top is the largest, and nothing more, so a smash costs two pops, one push and a logarithm instead of another n log n. The detail worth carrying is that the remainder drops straight back in: a structure that only promises its root absorbs a changed value without re-deriving everything else, which is why heaps suit simulations where the pile keeps mutating. The other thing to know cold is the negation trick — Python hands you a min-heap only, and negating on the way in and out is how you get a max-heap anywhere.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Re-sort every round | O(n² log n) time · O(n) space | the baseline — nothing before it |

@@ -129,6 +129,8 @@ int uniquePaths(int m, int n) {
 
 ## The arc
 
+The recursion asks each cell's question once per path that reaches it, and since the number of paths is the very thing being counted, that is as exponential as it sounds. Writing each cell down once makes the work m × n, and the recurrence could hardly be smaller: paths to a cell are paths to the cell above plus paths to the cell on the left, with the top row and left column at one because there is only one way to travel in a straight line. Then the compression is unusually neat — a cell needs the row above and the value to its left, and a single row swept left to right holds both at the moment they are needed, since the slot still carries the row above while the slot behind it has already been updated for this row. Adding them in place IS the recurrence. Know that in-place row trick, because it shrinks the LCS and knapsack tables the same way. This problem also has a closed form, the paths being a choice of which moves go down — and unique-paths-II kills the formula and leaves the table.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Branch at every cell | O(2^(m+n)) time · O(m + n) space | the baseline — nothing before it |

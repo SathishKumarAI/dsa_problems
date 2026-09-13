@@ -163,6 +163,8 @@ bool canPartition(const vector<int>& nums) {
 
 ## The arc
 
+One reframing does all the work: stop asking which elements go in which group and start asking which SUMS are reachable. Two subsets with the same total are indistinguishable from there on, so the 2^n choice tree collapses into one boolean per sum and the state space becomes the total — at most twenty thousand here — instead of the number of elements. That is the classic subset-sum move, and rejecting an odd total is the free line that comes before it. What decides correctness is the direction of the inner sweep. Update sums DOWNWARD so a sum marked by the current number is not read again in the same pass; go upward and the number gets reused within one pass, which silently solves the unbounded version rather than this one. Know the 0/1 knapsack shape and know which way the loop runs, because coin-change-II, target sum and every 'can I hit exactly this total' question are this row swept in one of the two directions.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Try every subset | O(2^n) time · O(n) space | the baseline — nothing before it |

@@ -30,6 +30,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "Counting the bits of each number separately re-walks up to 32 positions for every entry, and it re-derives facts the array already holds. Removing one bit lands on a smaller number whose answer is written down — so each entry costs a shift, an and, and a lookup, and the whole array is one pass.",
+  arc:
+    "The naive rung is not wrong, it is forgetful: it walks up to seventeen bit positions for every number while the array it is filling already holds the answer for a smaller one. The DP move is to find that smaller number, and the arithmetic hands it over — shifting right drops the lowest bit and lands on i >> 1, which is strictly smaller and therefore already written down, so each entry costs a shift, an and, and one lookup. That is the pattern in miniature: an overlapping subproblem is just a smaller instance you can name, and naming it is the entire creative step. Entry 0 needs no special case because it is the base every other entry rests on. Worth knowing alongside it is the other decomposition, best[i] = best[i & (i − 1)] + 1, which strips the LOWEST SET bit rather than the last bit; the same identity drives Brian Kernighan's popcount loop, and recognising i & (i − 1) on sight pays across every bit problem.",
   approach:
     "Fill left to right with best[i] = best[i >> 1] + (i & 1). Shifting right removes the lowest bit and lands on a strictly smaller index, which has already been computed — that is the whole recurrence, and it is why a single loop suffices. The `& 1` recovers the bit that the shift discarded. Entry 0 is 0 and needs no special case beyond being the starting point.",
   complexity: { time: "O(n)", space: "O(n)" },

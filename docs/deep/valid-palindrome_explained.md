@@ -1,0 +1,448 @@
+# Palindrome, Ignoring the Noise — explained
+
+## Understanding the Problem
+
+You are handed a string. Throw away everything that is not a letter or a digit, treat upper and
+lower case as the same thing, and say whether what is left reads identically forwards and
+backwards. `"A man, a plan, a canal: Panama"` becomes `amanaplanacanalpanama`, which does, so the
+answer is true.
+
+**The core question is: does the k-th surviving character from the front match the k-th surviving
+character from the back, for every k?** That is a question about *pairs of positions*, and the
+naive approach answers it by first building a whole second string — a cleaned, lowercased copy —
+and then building a *third* one, its reverse, before comparing anything. It is not slow in the
+big-O sense, and it is worth being honest about that: it is O(n) time, the same as the best answer.
+What it wastes is memory and early exits. It allocates two copies of a string that can be 200,000
+characters long, and it reads every character of the input even when the very first and very last
+letters already disagree.
+
+The constraints, and what each one buys:
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= s.length <= 2 * 10^5` | Linear time is both required and sufficient. It also guarantees the string is never empty, so index `0` and index `len(s) - 1` always exist and no special-casing of an empty input is needed. |
+| The string may hold letters, digits, spaces and punctuation | Filtering is *part of the problem*, not something a preprocessing step is entitled to hide. The whole difficulty of the fast version is doing the filter and the comparison in the same walk. |
+| A string with no alphanumeric characters at all is an **empty palindrome** — true | The degenerate case has a defined answer, and it is `true`, not `false` and not a crash. Any version whose pointers cross before a single comparison happens must fall through to `true`. |
+| Case is not part of the comparison | `'A'` and `'a'` are the same character. Both sides must be normalised, every time — folding one side and not the other is the most common way to get this wrong on an input the examples never cover. |
+
+There is one more thing that unlocks the optimisation, and it is not a constraint on the input at
+all — it is a property of the *question*. A palindrome check is a statement about mirrored pairs:
+the first kept character against the last, the second against the second-to-last, inward until you
+meet in the middle. Nothing in that statement requires the kept characters to exist as a
+contiguous string. You only need to be able to find the *next* kept character from either end on
+demand, and a pointer that skips forward over punctuation does exactly that. The cleaned copy is
+convenience, never necessity.
+
+---
+
+## Approach 1 — Clean, then reverse
+
+### The idea
+
+*How do I compare a string to its own reverse when punctuation and capitals are in the way?*
+Remove them first. Walk the input once, keep only the alphanumeric characters, lowercase each one
+as you keep it, and you now hold a string in which the question is trivially askable. *And how do I
+ask it?* Build the reverse of that cleaned string and check the two for equality. This is the
+baseline: it separates the two jobs — filtering and comparing — into two passes that never have to
+think about each other.
+
+### How to think about it
+
+Think of transcribing a noisy handwritten line onto a fresh sheet, copying only the letters and
+digits and writing every one in lower case. Now you have a clean line, and you hold it up to a
+mirror: if the reflection reads the same as the original, it is a palindrome. The strength of this
+picture is that each job is simple on its own and nearly impossible to get subtly wrong. The
+weakness is visible in the picture too — you needed a fresh sheet, and then you needed the mirror
+image written out as well, so you are holding three versions of a line you are going to look at
+once.
+
+### Worked example
+
+Input: `s = "Ab, ba!"` — the same input is traced through every approach in this document. Its
+characters sit at these indices:
+
+| index | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| char | `A` | `b` | `,` | (space) | `b` | `a` | `!` |
+
+**Pass one — build the cleaned list:**
+
+| Reading index | Char | `isalnum()`? | `cleaned` after this step |
+|---|---|---|---|
+| 0 | `A` | yes | `['a']` |
+| 1 | `b` | yes | `['a', 'b']` |
+| 2 | `,` | no | `['a', 'b']` (unchanged) |
+| 3 | (space) | no | `['a', 'b']` (unchanged) |
+| 4 | `b` | yes | `['a', 'b', 'b']` |
+| 5 | `a` | yes | `['a', 'b', 'b', 'a']` |
+| 6 | `!` | no | `['a', 'b', 'b', 'a']` (unchanged) |
+
+**Pass two — build the reverse and compare:**
+
+```
+cleaned       = ['a', 'b', 'b', 'a']
+cleaned[::-1] = ['a', 'b', 'b', 'a']     <- a second list of the same size
+equal?        = True
+```
+
+Seven reads, one four-element list allocated, one more four-element list allocated for the
+reverse, then a four-element comparison. Eight list slots of storage to answer a question about a
+seven-character input — and that ratio holds at every size, so a 200,000-character input costs two
+extra structures of roughly that length.
+
+### Code
+
+```python
+def valid_palindrome_clean_then_reverse(s: str) -> bool:
+    cleaned: list[str] = [c.lower() for c in s if c.isalnum()]
+    return cleaned == cleaned[::-1]  # [::-1] builds a second list of the same size
+```
+
+### Common mistake
+
+Writing the filter as a *negative* test — `if c != ' '`, dropping spaces but keeping punctuation.
+`"A man, a plan, a canal: Panama"` then keeps the commas and the colon, the comparison fails, and a
+textbook palindrome is reported as false. The rule to carry is that **the filter must be a positive
+test for what you keep (`isalnum`), never a list of what you drop**, because the drop list is
+always incomplete — there is no end to the punctuation you did not think of.
+
+The quieter sibling of that bug is forgetting `.lower()`. `"Aa"` then compares `'A'` against `'a'`,
+finds them different, and returns false for a string that is plainly a palindrome under the stated
+rules. Here the lowercasing happens inside the comprehension, at the moment a character is kept,
+which is the safest place for it: one site, unmissable.
+
+### Complexity and when to use this
+
+**Time O(n), space O(n).** The time is two linear passes — one to filter, one to compare — plus the
+cost of materialising the reverse, which is itself linear. The space is the real story: the cleaned
+copy holds up to n characters and the reversed copy holds the same again, so peak extra memory is
+about 2n.
+
+Use it when clarity beats everything, when the cleaned string is needed for something else anyway
+(you are about to index into it, hash it, or log it), or as a reference implementation to check a
+clever version against — which is exactly its role in the test script at the bottom of this file.
+In real production code this two-line version is very often the correct engineering answer; the
+optimisation below matters when n is large or the check sits in a hot loop.
+
+---
+
+## Approach 2 — Two pointers that skip in place (optimal)
+
+### The idea
+
+*The cleaned copy exists only so that position k and position n−1−k line up — but if I could find
+the next kept character from each end on demand, I would never need to build it. Can I?* Yes. Put
+one index at the front and one at the back of the **original** string. Before comparing, walk each
+index inward past anything that is not alphanumeric. Then compare the two characters, case-folded.
+This fixes the exact weakness of the cleaned version — the two allocated copies and the inability
+to stop early — by making the filter something the cursors do while they walk, rather than a pass
+that has to finish first.
+
+### How to think about it
+
+Two readers start at opposite ends of the same line and walk toward each other. Each is under
+orders to ignore anything that is not a letter or a digit, so when a reader lands on a comma it
+simply takes another step without saying anything. Only when *both* readers are standing on real
+characters do they call them out and check that they match. A mismatch ends the exercise
+immediately. When the two readers meet or pass each other, every mirrored pair has been checked and
+the string is a palindrome. The thing to hold on to is that **skipping is not failing** — a comma
+is not a mismatch, it is a non-event, and conflating the two is the bug this problem is built to
+catch.
+
+The promise the loop keeps, stated in prose: *every mirrored pair of kept characters lying strictly
+outside the current `i..j` window has already been compared and found equal.* That is why falling
+out of the loop means `true`, and why the all-punctuation input — where the pointers cross before a
+single comparison happens — is `true` as well: the set of pairs checked is empty, and every member
+of an empty set agrees.
+
+### Worked example
+
+Input: `s = "Ab, ba!"` — the same string as above, the same index layout.
+
+| Step | Action | `i` | `j` | Compared | Result |
+|---|---|---|---|---|---|
+| start | — | 0 (`A`) | 6 (`!`) | — | — |
+| skip | `s[6] = '!'` is not alphanumeric, so `j` retreats | 0 (`A`) | 5 (`a`) | — | — |
+| 1 | compare | 0 (`A`) | 5 (`a`) | `'a'` vs `'a'` | match → `i → 1`, `j → 4` |
+| 2 | compare | 1 (`b`) | 4 (`b`) | `'b'` vs `'b'` | match → `i → 2`, `j → 3` |
+| skip | `s[2] = ','` is not alphanumeric, so `i` advances to 3 — and now `i < j` is false, so the skip loop stops right there | 3 (space) | 3 (space) | — | — |
+| 3 | compare | 3 (space) | 3 (space) | `' '` vs `' '` | equal (it is the same character) → `i → 4`, `j → 2` |
+| end | `i = 4`, `j = 2`, so `i < j` fails | 4 | 2 | — | loop exits → **`true`** |
+
+Three comparisons, one skip on each side, two integers of storage, and the input string never
+copied. Step 3 is worth staring at: because the inner skip loops are guarded by `i < j`, they stop
+the moment the pointers land on each other, which means the final comparison can be a
+*non-alphanumeric character against itself*. That is always equal, so it is harmless — and it is
+precisely why the guard must be there. Remove `i < j` from the inner loops and on an input with no
+letters at all `i` runs straight past `j`, off the end of the string, and into an index error.
+
+Compare the totals with approach 1: it read all 7 characters and allocated 8 list slots; this reads
+7 characters and allocates nothing. And on an input like `"ab"`, where the first and last characters
+already disagree, this version returns after a single comparison while the cleaned version must
+still filter the entire string before it can compare anything at all.
+
+### Code
+
+```python
+def valid_palindrome_two_pointers(s: str) -> bool:
+    i, j = 0, len(s) - 1
+    while i < j:
+        while i < j and not s[i].isalnum():  # the i < j guard stops i overrunning j
+            i += 1
+        while i < j and not s[j].isalnum():
+            j -= 1
+        if s[i].lower() != s[j].lower():  # fold case on BOTH sides, not one
+            return False
+        i += 1
+        j -= 1
+    return True
+```
+
+### Common mistake
+
+Comparing before skipping. Written this way round:
+
+```python
+while i < j:
+    if s[i].lower() != s[j].lower():        # WRONG: runs before the skip loops
+        return False
+    while i < j and not s[i].isalnum():
+        i += 1
+    ...
+```
+
+the very first thing the code does on `"Ab, ba!"` is compare `'a'` against `'!'`, find them
+different, and return `false` for a perfectly good palindrome. **Punctuation is not a mismatch, it
+is something to step over**, and the order of the two operations inside the loop body is what
+encodes that. Skip first, compare second.
+
+The second bug in the same family is dropping the `i < j` guard from the inner skip loops. On
+`".,;:!?-"` — a legal input whose answer is `true` — the first skip loop finds nothing alphanumeric
+anywhere, walks `i` clean off the end of the string, and raises an index error instead of returning
+`true`. The guard is what makes the all-punctuation case work; it is not decoration.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** Each pointer only ever moves inward and the loop ends when they meet, so
+across the whole run the two of them take at most n steps between them and every character is
+examined a constant number of times. Space is two integers — no cleaned string, no reversed string,
+nothing that grows with the input.
+
+This is the right choice whenever the input is large, whenever the check sits in a hot path, or
+whenever the environment is memory-constrained. It is also the version to write in an interview,
+because it demonstrates the transferable idea: **a filter does not have to be its own pass — a
+cursor can skip while it walks.** That same move is what makes `is-subsequence`,
+`backspace-compare` and `remove-element` work, and it is worth considerably more than this
+particular problem.
+
+---
+
+## The Overall Arc
+
+The only thing genuinely at stake here is *how much data you are willing to copy in order to ask a
+simple question*. The cleaned-then-reversed version is honest, readable and two lines long, and it
+answers the question by first constructing the object the question is easiest to ask about: a
+contiguous, lowercased, alphanumeric-only string, plus its mirror image. But look at what that
+construction is for. The comparison it enables touches each cleaned character exactly once and then
+throws the whole structure away — a 200,000-character scaffold built to support a single walk
+across it. The two-pointer version notices that the scaffold was never the point: the question is
+about *mirrored pairs*, and a pair can be located by two indices that skip over the noise as they
+move, so the filter dissolves into the walk instead of preceding it. That one shift — from "clean,
+then ask" to "ask while cleaning" — buys three things at once: constant memory instead of linear,
+one pass instead of two, and an early exit the copying version structurally cannot have, because it
+must finish filtering before it can compare anything. The two details that actually fail people on
+this supposedly easy question are both consequences of doing the filter inline: the pointers can
+cross before any comparison happens (the all-punctuation string, where the answer is `true` because
+an empty set of checked pairs is a satisfied set of checked pairs), and each side must be
+case-folded at the moment of comparison rather than once up front (`"0P"` is the input that proves
+it, and no friendly example ever does). Get those right and the pattern generalises immediately:
+any time you are about to materialise a filtered copy so that two positions line up, ask first
+whether a cursor could have skipped instead.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Clean, then reverse | O(n) | O(n) | Two extra copies of the string buy maximum clarity and zero index arithmetic | Readability matters more than memory, the cleaned form is needed anyway, or you want a trustworthy oracle to cross-check a faster version against |
+| Two pointers, skipping in place | O(n) | O(1) | Folds the filter into the walk and gains an early exit; costs careful loop guards and strict ordering | Large inputs, hot paths, memory limits — and any interview, because it shows the transferable idea |
+
+---
+
+## Interview Priority
+
+**Know cold: the two-pointer version.** In interview terms this is a one-approach problem, and the
+in-place skipping walk is the approach. Write it without hesitating, get all three details right on
+the first pass — skip before comparing, guard both inner loops with `i < j`, lowercase both sides —
+and be ready to say in one sentence why an all-punctuation input returns `true` rather than
+crashing or returning `false`. The follow-ups are predictable: "what if one character may be
+deleted?" (the `valid-palindrome-ii` variant, which forks into two sub-checks at the first
+mismatch) and "what if this were a linked list?" (you lose random access from the back, so you
+reverse the second half or use fast and slow pointers). Both are only reachable if the base version
+is automatic.
+
+**Know as your opening line: clean-then-reverse.** Say it in the first twenty seconds — "the
+obvious version builds a filtered copy and compares it to its reverse; that is linear time, but it
+allocates two extra strings and cannot exit early" — and then improve it. Naming the baseline
+together with the specific thing wrong with it is what makes the optimisation read as reasoning
+rather than recall. It is also the version you should usually ship in production code, and saying
+*that* out loud counts in your favour, not against you.
+
+---
+
+## Full Runnable Script
+
+Every approach in one file, checked against the statement's example, the smallest legal input in
+both its forms, an input with no alphanumeric characters at all, an all-one-character case, the
+`"0P"` case-folding trap, and a randomised stress test that mixes purely random strings with
+deliberately mirrored ones so that real palindromes actually occur. Neither approach mutates its
+input — the answer is a boolean — but the oracle is built independently of both, so agreement means
+something.
+
+```python
+"""Palindrome, Ignoring the Noise — every approach in one file, cross-checked.
+
+Run: python valid_palindrome.py
+"""
+
+from __future__ import annotations
+
+import random
+import string
+from typing import Callable
+
+
+def valid_palindrome_clean_then_reverse(s: str) -> bool:
+    cleaned: list[str] = [c.lower() for c in s if c.isalnum()]
+    return cleaned == cleaned[::-1]  # [::-1] builds a second list of the same size
+
+
+def valid_palindrome_two_pointers(s: str) -> bool:
+    i, j = 0, len(s) - 1
+    while i < j:
+        while i < j and not s[i].isalnum():  # the i < j guard stops i overrunning j
+            i += 1
+        while i < j and not s[j].isalnum():
+            j -= 1
+        if s[i].lower() != s[j].lower():  # fold case on BOTH sides, not one
+            return False
+        i += 1
+        j -= 1
+    return True
+
+
+APPROACHES: list[tuple[str, Callable[[str], bool]]] = [
+    ("clean then reverse", valid_palindrome_clean_then_reverse),
+    ("two pointers", valid_palindrome_two_pointers),
+]
+
+
+def reference(s: str) -> bool:
+    """Deliberately dumb oracle: build the filtered string, compare it to its reverse."""
+    kept = "".join(c.lower() for c in s if c.isalnum())
+    return kept == kept[::-1]
+
+
+def run_case(label: str, s: str) -> bool:
+    results = [(name, fn(s)) for name, fn in APPROACHES]
+    expected = reference(s)
+    agree = all(r == expected for _, r in results)
+    print(label)
+    print(f"  s={s!r}")
+    for name, r in results:
+        print(f"    {name:<20} -> {r}")
+    print(f"    reference={expected}  all agree: {agree}")
+    return agree
+
+
+def main() -> None:
+    ok = True
+
+    ok &= run_case("example from the statement", "A man, a plan, a canal: Panama")
+    ok &= run_case("worked example used in the prose", "Ab, ba!")
+    ok &= run_case("not a palindrome", "race a car")
+    ok &= run_case("smallest legal input (n = 1)", "a")
+    ok &= run_case("smallest legal input, non-alphanumeric", " ")
+    ok &= run_case("no alphanumerics at all", ".,;:!?-")
+    ok &= run_case("all one character", "aaaaaa")
+    ok &= run_case("case folding trap", "0P")
+    ok &= run_case("digits and letters mixed", "1a2b2a1")
+
+    random.seed(7)
+    alphabet = string.ascii_letters + string.digits + " .,:;!?-_"
+    mismatches = 0
+    for _ in range(3000):
+        n = random.randint(1, 24)
+        s = "".join(random.choice(alphabet) for _ in range(n))
+        if random.random() < 0.4:  # half-and-mirror, so real palindromes actually occur
+            half = "".join(random.choice(alphabet) for _ in range(n // 2))
+            s = half + random.choice(alphabet) + half[::-1]
+        expected = reference(s)
+        for name, fn in APPROACHES:
+            if fn(s) != expected:
+                mismatches += 1
+                ok = False
+                print(f"  STRESS DISAGREEMENT {name} s={s!r} expected={expected}")
+    print(f"stress: 3000 random strings (plain and mirrored), {mismatches} disagreements")
+
+    print()
+    print("ALL APPROACHES AGREED ON EVERY CASE." if ok else "APPROACHES DISAGREED — see above.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Output when run
+
+```
+example from the statement
+  s='A man, a plan, a canal: Panama'
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+worked example used in the prose
+  s='Ab, ba!'
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+not a palindrome
+  s='race a car'
+    clean then reverse   -> False
+    two pointers         -> False
+    reference=False  all agree: True
+smallest legal input (n = 1)
+  s='a'
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+smallest legal input, non-alphanumeric
+  s=' '
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+no alphanumerics at all
+  s='.,;:!?-'
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+all one character
+  s='aaaaaa'
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+case folding trap
+  s='0P'
+    clean then reverse   -> False
+    two pointers         -> False
+    reference=False  all agree: True
+digits and letters mixed
+  s='1a2b2a1'
+    clean then reverse   -> True
+    two pointers         -> True
+    reference=True  all agree: True
+stress: 3000 random strings (plain and mirrored), 0 disagreements
+
+ALL APPROACHES AGREED ON EVERY CASE.
+```

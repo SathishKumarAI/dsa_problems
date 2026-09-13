@@ -193,6 +193,8 @@ bool isPalindrome(ListNode* head) {
 
 ## The arc
 
+The whole difficulty is one sentence: a singly linked list has no way to be read backwards, so a palindrome check has to manufacture one. Copying the values into an array manufactures it by buying a second copy of the data — the honest first answer, and O(n) memory to hold what the list is already holding. The alternative is to make the list itself readable from the back: walk a fast and a slow pointer to the middle, reverse the second half in place, and the two halves can then be compared head to head with nothing but pointers. That is two techniques you already have, composed — the fast/slow split from middle-of-list and the prev/curr rewiring from reverse-list — which is why both are worth knowing cold rather than merely recognising. An odd length needs no branch: the lone middle node has no partner and the shorter half simply runs out first. Note what the in-place version costs, though. The list comes back modified, and restoring it is one more reversal.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Copy into an array | O(n) time · O(n) space | the baseline — nothing before it |

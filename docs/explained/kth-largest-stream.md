@@ -241,6 +241,8 @@ public:
 
 ## The arc
 
+A stream turns every cost into a per-add cost, and that is what exposes the waste: re-sorting rebuilds an order that was already correct a moment ago, so inserting into the sorted list is the obvious repair — but keeping the whole list ordered still maintains n values when the caller only ever reads one of them, and the shifting is linear either way. The fix is to stop storing what will never be returned. Only the k largest values seen can ever be the answer, so a heap bounded at k holds exactly the candidates and its root IS the kth largest, with no search at all. Know that bounded-heap invariant cold, including the part that reads backwards — a MIN-heap answers a max question, because its weakest member is the rank being asked for. It is the same move behind kth-largest-element, k-closest-points and top-k-frequent, and it is what makes those problems work on input that never ends.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort per add | O(n log n) per add time · O(n) space | the baseline — nothing before it |

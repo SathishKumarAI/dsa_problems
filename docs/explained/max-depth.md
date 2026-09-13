@@ -209,6 +209,8 @@ int maxDepth(const TreeNode* root) {
 
 ## The arc
 
+Depth is defined in terms of itself — a node is one more than the deeper of its two subtrees, and a missing node is zero — so the shortest correct program is that sentence typed out. The two iterative rungs earn their place by showing what the recursion is quietly using: the call stack IS the traversal, and managing a container by hand only makes the same walk explicit. Counting BFS rounds holds a whole level at once, so its memory is the widest part of the tree; an explicit stack of node-and-depth pairs holds one root-to-leaf path, which is the height. That trade is the thing to remember, because the recursion inherits the second half of it — O(h), which on a tree degenerated into a linked list is a frame per node, and the reason to reach for the iterative version at all. Know the post-order return cold: ask both children, combine, hand one value up. It is the same shape that answers balanced-tree, tree-diameter, and every question where a node's answer is a function of its subtrees' answers.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Iterative BFS | O(n) time · O(w) widest level space | the baseline — nothing before it |

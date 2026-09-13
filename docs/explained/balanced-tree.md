@@ -174,6 +174,8 @@ bool isBalanced(const TreeNode* root) {
 
 ## The arc
 
+The condition has to hold at EVERY node, so the naive reading asks each node for its two subtree heights and then recurses — and measuring a height means walking that whole subtree, which happens again for every ancestor above it. On a skewed tree that is quadratic: the same nodes measured over and over. The fix is noticing that the second measurement has nothing new to learn. One post-order walk already visits each node once, and a node can hand its height up to its parent, so every height is computed exactly once on the way out. The second half of the trick is fusing both questions into that one return value: a sentinel of −1 means unbalanced, and because an unbalanced subtree makes the whole tree unbalanced no matter what sits above it, the sentinel propagates upward on its own and no separate flag is needed. Know the post-order return cold — it is the same move as max-depth, tree-diameter and the maximum path sum — and note that here it also short-circuits, since once −1 appears every caller above simply passes it on.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Measure the height at every node | O(n^2) time · O(h) space | the baseline — nothing before it |

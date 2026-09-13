@@ -200,6 +200,8 @@ Node* reverseList(Node* head) {
 
 ## The arc
 
+Every rung is chasing the same thing — turning each next pointer around without the list losing its grip on the rest of itself. The array copy manages it by giving up: it reads the values out and builds a second list, which answers a different question, since not one of the original nodes was reversed. Recursion keeps the real nodes and rewires them, but it has to reach the end before it can rewire anything, so a five-thousand-node list is five thousand live frames. The loop notices that the only thing a frame was holding is the node behind you — and one variable holds that. prev, curr and the saved next are the whole algorithm, and they are worth knowing cold, because in-place reversal is a subroutine inside palindrome-list, reorder-list, rotate-list by triple reversal and every reverse-in-k-groups variant. The starting None is not a detail either: it is what terminates the reversed list without a special case.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Copy to array | O(n) time · O(n) space | the baseline — nothing before it |

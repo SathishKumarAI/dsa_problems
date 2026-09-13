@@ -144,6 +144,8 @@ bool isSameTree(TreeNode* p, TreeNode* q) {
 
 ## The arc
 
+Identical means identical in SHAPE as much as in values, and the ladder is really about how easily the shape gets lost. Serialising both trees and comparing the strings works only if the serialisation records the empty children too — leave those out and a tree leaning left compares equal to its mirror, a bug that passes every test built from balanced examples. It also builds two whole strings before it is allowed to disagree. Comparing structurally has no such ambiguity, because the recursion walks the two trees in lockstep and three cases are the entire program: both empty is true, exactly one empty is false, otherwise the values must match and both pairs of subtrees must match in turn. Short-circuiting means a difference at the root costs one comparison rather than a traversal. That lockstep, two-pointers-into-two-trees recursion is the piece to carry: symmetric-tree is this function with the child pairs crossed over, and subtree-of-another-tree calls it at every node.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Serialise and compare | O(n) time · O(n) space | the baseline — nothing before it |

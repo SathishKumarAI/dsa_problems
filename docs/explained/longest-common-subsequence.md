@@ -152,6 +152,8 @@ int longestCommonSubsequence(const string& a, const string& b) {
 
 ## The arc
 
+Two rungs, one collapse: the recursion branches twice on every mismatch and so reaches the same pair of prefixes along many different routes, spending exponential work on a merely quadratic number of distinct questions. Indexing by how much of each string is left asks each question once. The recurrence is worth stating without looking — equal characters at the ends contribute one to the answer for the two shorter prefixes; unequal characters mean at least one of those ends goes unused, so take the better of dropping either. The zero row and zero column are not a base case bolted on, they are the claim that an empty string shares nothing, and they are what makes the table self-starting. Know this grid cold: edit distance, shortest common supersequence and the diff behind every version control tool are the same cells with a different rule. And since a cell reads only the row above and its left neighbour, the usual last step applies — two rows are enough.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Branch on every mismatch | O(2^(n+m)) time · O(n + m) space | the baseline — nothing before it |

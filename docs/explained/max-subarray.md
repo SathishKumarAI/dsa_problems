@@ -197,6 +197,8 @@ int maxSubArray(const vector<int>& nums) {
 
 ## The arc
 
+The same collapse as the rest of the pattern, compressed into two steps. The double loop re-adds prefixes it has already summed; writing down the best run ending at each position builds each entry from its predecessor in constant time, because a run ending at i either extends the run ending at i−1 or starts fresh — and it starts fresh exactly when the carried sum is negative, which is the one decision the algorithm ever makes. Then the table turns out to be read only by the very next step, and a value read once and never again does not need storing, so n cells become one running number. That move is mechanical and worth naming: see how far back the recurrence reaches, keep that much, throw the rest away. The edge case is where implementations quietly break — seed both numbers with the first element rather than with zero, because an empty run is not legal and an all-negative array must return its largest element.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every subarray | O(n²) time · O(1) space | the baseline — nothing before it |

@@ -227,6 +227,8 @@ int networkDelayTime(const vector<vector<int>>& times, int n, int k) {
 
 ## The arc
 
+Every rung computes the shortest distance from one source to everyone and then reads the largest of them, because 'when has everyone heard it' is a maximum over minima — that reframing is half the problem, and the unreachable node is the other half, since an infinity left in the table is the −1 answer rather than a bug. Bellman-Ford gets there by brute repetition: sweep the whole edge list n − 1 times, long enough for the longest shortest path to settle. What it wastes is visible once you look, since it keeps re-examining edges whose endpoints stopped changing several sweeps ago. Positive weights buy the stronger claim Dijkstra runs on: the nearest unsettled node is already final, so settling in that order relaxes each edge once from a distance that will never improve. Know that claim, and know it dies the moment a weight can be negative — which is when Bellman-Ford stops being the slow rung and becomes the only correct one.
+
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Relax every edge, n − 1 times | O(V · E) time · O(V) space | the baseline — nothing before it |

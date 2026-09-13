@@ -103,6 +103,9 @@ import { loneValue, singleInSorted } from "./single-in-sorted.ts"
 import { cheapestClimb, minCostStairs } from "./min-cost-stairs.ts"
 import { removeKDigits, smallestAfterRemoving } from "./remove-k-digits.ts"
 import { reversed, reverseList } from "./reverse-list.ts"
+import { rotated, rotateList } from "./rotate-list.ts"
+import { swapped, swapPairs } from "./swap-pairs.ts"
+import { folded, reorderList } from "./reorder-list.ts"
 import { rotatedMin, rotatedMinimum } from "./rotated-minimum.ts"
 import { holdsTarget, search2dMatrix } from "./search-2d-matrix.ts"
 import { findRotated, rotatedSearch } from "./rotated-search.ts"
@@ -1213,6 +1216,33 @@ const TABLE: {
     reference: (d) => reversed(d.nums as number[]),
     input: (rand) => ({
       nums: Array.from({ length: rand(8) }, () => rand(9) - 4),
+    }),
+  },
+  {
+    journey: swapPairs as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => swapped(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: rand(9) }, () => rand(9) + 1),
+    }),
+  },
+  {
+    journey: reorderList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => folded(d.nums as number[]),
+    input: (rand) => ({
+      nums: Array.from({ length: rand(9) + 1 }, () => rand(9) + 1),
+    }),
+  },
+  {
+    journey: rotateList as unknown as AnyJourney,
+    skip: ["story"],
+    reference: (d) => rotated(d.nums as number[], d.k as number),
+    // k is deliberately allowed to dwarf the list: that is the whole problem,
+    // and a rung that forgets k % n passes every small-k input
+    input: (rand) => ({
+      nums: Array.from({ length: rand(7) }, () => rand(9) + 1),
+      k: rand(4) ? rand(30) : 1_999_999_999,
     }),
   },
 ]

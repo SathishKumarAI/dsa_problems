@@ -25,6 +25,8 @@ export const problem: Problem = {
   ],
   whyNow:
     "The recursion is that same merge with a stack frame per node. A dummy head and a tail pointer do it in a loop, in constant space.",
+  arc:
+    "One fact carries all three rungs: at any moment the smallest node left anywhere is one of the two heads, so the whole merge is a sequence of single comparisons and no node is ever looked at twice. Dumping both lists into an array and sorting throws that fact away and pays n log n to rediscover an order that arrived for free. Recursion keeps the fact — the smaller head owns the merge of everything behind it — and reads beautifully at a stack frame per node. The loop keeps the fact and drops the frames: a dummy node to hang the result from, a tail pointer to append to, and one assignment at the end to splice on whichever list still has nodes, because that remainder is already sorted. The dummy is the piece to know cold. It removes the question of whether this is the first node from this problem, from merge-k-lists, from remove-list-elements, and from every builder that would otherwise special-case its own head.",
   approach:
     "Create a dummy node and a tail pointer at it. While both lists are non-empty, attach the smaller head to tail and advance that list. When one empties, attach the survivor's remainder in one assignment. Return dummy.next. The dummy means the first comparison needs no special handling.",
   complexity: { time: "O(n + m)", space: "O(1)" },
