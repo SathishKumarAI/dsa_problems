@@ -540,7 +540,7 @@ def main() -> None:
         ("statement example 1", "anagram", "nagaram"),
         ("statement example 2 (no answer)", "rat", "car"),
         ("different lengths", "ab", "abc"),
-        ("below the constraint: both empty", "", ""),
+        ("shortest legal input, no answer", "a", "b"),
         ("shortest legal input: one letter each", "a", "a"),
         ("same letters, wrong counts", "aab", "abb"),
         ("identical strings", "zzz", "zzz"),
@@ -563,14 +563,14 @@ def main() -> None:
     rng = random.Random(5)
     mismatches = 0
     for _ in range(500):
-        n = rng.randint(0, 8)
+        n = rng.randint(1, 8)  # 1, not 0: the constraints promise a non-empty string
         s = "".join(rng.choice("abcde") for _ in range(n))
         if rng.random() < 0.5:
             chars = list(s)
             rng.shuffle(chars)
             t = "".join(chars)
         else:
-            t = "".join(rng.choice("abcde") for _ in range(rng.randint(0, 8)))
+            t = "".join(rng.choice("abcde") for _ in range(rng.randint(1, 8)))
         answers = {fn(s, t) for _, fn in APPROACHES}
         if len(answers) != 1:
             mismatches += 1
