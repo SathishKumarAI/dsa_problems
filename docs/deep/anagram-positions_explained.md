@@ -30,17 +30,17 @@ naming before any code:
 
 ### The constraints, and what each one unlocks
 
-| Constraint | What it means for you |
-|---|---|
-| text and pattern up to `3 · 10^4`, **lowercase letters only** | **This is the constraint that unlocks the fixed 26-slot array** in place of a hash map, and it is why every approach below is `O(1)` space rather than `O(k)`: the alphabet is bounded and known, so a plain array indexed by `ord(ch) - 97` replaces a dictionary and the comparison of two tallies is a fixed 26 steps regardless of the input. It is also the constraint whose *absence* would change the answer — Unicode text would need a map and the "compare 26" step would become "compare however many distinct letters exist". |
-| every candidate has the pattern's length | **This is the constraint that makes it a fixed-width window.** There are at most `len(text) − len(pattern) + 1` candidates, all the same size, so nothing ever grows or shrinks — the only move is "slide by one", which changes exactly two letters. |
-| an anagram is about **counts**, not order | **This is the constraint that kills sorting.** Sorting produces an order nobody asked for, at `k log k` per window, and throws it away immediately. Two tallies answer the same question in a fixed 26 comparisons. |
-| windows overlap; `"aaaa"` with `"aa"` answers three times | Do not advance past a match. The step is always one. |
-| a pattern longer than the text has no windows at all | The answer is an empty list, and the two sliding approaches need an explicit guard for it — otherwise they compare a tally that was never filled. The two per-window approaches get it for free from an empty loop range. |
+| Constraint                                                            | What it means for you                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| text and pattern up to`3 · 10^4`, **lowercase letters only** | **This is the constraint that unlocks the fixed 26-slot array** in place of a hash map, and it is why every approach below is `O(1)` space rather than `O(k)`: the alphabet is bounded and known, so a plain array indexed by `ord(ch) - 97` replaces a dictionary and the comparison of two tallies is a fixed 26 steps regardless of the input. It is also the constraint whose *absence* would change the answer — Unicode text would need a map and the "compare 26" step would become "compare however many distinct letters exist". |
+| every candidate has the pattern's length                              | **This is the constraint that makes it a fixed-width window.** There are at most `len(text) − len(pattern) + 1` candidates, all the same size, so nothing ever grows or shrinks — the only move is "slide by one", which changes exactly two letters.                                                                                                                                                                                                                                                                                          |
+| an anagram is about**counts**, not order                        | **This is the constraint that kills sorting.** Sorting produces an order nobody asked for, at `k log k` per window, and throws it away immediately. Two tallies answer the same question in a fixed 26 comparisons.                                                                                                                                                                                                                                                                                                                              |
+| windows overlap;`"aaaa"` with `"aa"` answers three times          | Do not advance past a match. The step is always one.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| a pattern longer than the text has no windows at all                  | The answer is an empty list, and the two sliding approaches need an explicit guard for it — otherwise they compare a tally that was never filled. The two per-window approaches get it for free from an empty loop range.                                                                                                                                                                                                                                                                                                                               |
 
 The worked example used in every section below is the statement's own:
 
-```
+```Python
 text = "cbaebabacd", pattern = "abc"        answer: [0, 6]
 ```
 
@@ -71,16 +71,16 @@ pattern once, then sort each window of the text and check for equality.
 
 `text = "cbaebabacd"`, `pattern = "abc"`, so `target = ['a', 'b', 'c']` and `k = 3`.
 
-| start | window | sorted window | equals target? |
-|---|---|---|---|
-| **0** | `cba` | `abc` | **yes → record 0** |
-| 1 | `bae` | `abe` | no |
-| 2 | `aeb` | `abe` | no |
-| 3 | `eba` | `abe` | no |
-| 4 | `bab` | `abb` | no |
-| 5 | `aba` | `aab` | no |
-| **6** | `bac` | `abc` | **yes → record 6** |
-| 7 | `acd` | `acd` | no |
+| start       | window  | sorted window | equals target?            |
+| ----------- | ------- | ------------- | ------------------------- |
+| **0** | `cba` | `abc`       | **yes → record 0** |
+| 1           | `bae` | `abe`       | no                        |
+| 2           | `aeb` | `abe`       | no                        |
+| 3           | `eba` | `abe`       | no                        |
+| 4           | `bab` | `abb`       | no                        |
+| 5           | `aba` | `aab`       | no                        |
+| **6** | `bac` | `abc`       | **yes → record 6** |
+| 7           | `acd` | `acd`       | no                        |
 
 Answer `[0, 6]`. Eight windows, eight sorts of three characters each. Rows 1, 2 and 3 are worth
 staring at: three different windows that all sort to `abe`, because they are the same three letters
@@ -169,16 +169,16 @@ ordering away without ever using it.**
 `text = "cbaebabacd"`, `pattern = "abc"`, so `want = {a: 1, b: 1, c: 1}` and every other slot 0.
 Only the non-zero slots of each window's tally are shown; every unshown slot is 0 in both tallies.
 
-| start | window | tally built from scratch | equals `want`? |
-|---|---|---|---|
-| **0** | `cba` | `a:1 b:1 c:1` | **yes → record 0** |
-| 1 | `bae` | `a:1 b:1 e:1` | no — `c` is 0, `e` is 1 |
-| 2 | `aeb` | `a:1 b:1 e:1` | no |
-| 3 | `eba` | `a:1 b:1 e:1` | no |
-| 4 | `bab` | `a:1 b:2` | no — `b` is 2, `c` is 0 |
-| 5 | `aba` | `a:2 b:1` | no |
-| **6** | `bac` | `a:1 b:1 c:1` | **yes → record 6** |
-| 7 | `acd` | `a:1 c:1 d:1` | no |
+| start       | window  | tally built from scratch | equals`want`?             |
+| ----------- | ------- | ------------------------ | --------------------------- |
+| **0** | `cba` | `a:1 b:1 c:1`          | **yes → record 0**   |
+| 1           | `bae` | `a:1 b:1 e:1`          | no —`c` is 0, `e` is 1 |
+| 2           | `aeb` | `a:1 b:1 e:1`          | no                          |
+| 3           | `eba` | `a:1 b:1 e:1`          | no                          |
+| 4           | `bab` | `a:1 b:2`              | no —`b` is 2, `c` is 0 |
+| 5           | `aba` | `a:2 b:1`              | no                          |
+| **6** | `bac` | `a:1 b:1 c:1`          | **yes → record 6**   |
+| 7           | `acd` | `a:1 c:1 d:1`          | no                          |
 
 Answer `[0, 6]`. Twenty-four character reads (eight windows × three characters) plus eight
 twenty-six-slot comparisons. Compare rows 3 and 4: the tally changed by exactly two slots — `e`
@@ -271,18 +271,18 @@ its predecessor by exactly two letters.**
 `text = "cbaebabacd"`, `pattern = "abc"`, `k = 3`, `want = {a: 1, b: 1, c: 1}`. One loop over the
 text; the window is `text[i-k+1 .. i]` once `i >= 2`.
 
-| `i` | letter in | letter out (`text[i-3]`) | tally after both updates | window | verdict |
-|---|---|---|---|---|---|
-| 0 | `c` | — | `c:1` | — | too early |
-| 1 | `b` | — | `b:1 c:1` | — | too early |
-| **2** | `a` | — | `a:1 b:1 c:1` | `cba` | **equals want → record 0** |
-| 3 | `e` | `c` | `a:1 b:1 e:1` | `bae` | no |
-| 4 | `b` | `b` | `a:1 b:1 e:1` | `aeb` | no |
-| 5 | `a` | `a` | `a:1 b:1 e:1` | `eba` | no |
-| 6 | `b` | `e` | `a:1 b:2` | `bab` | no |
-| 7 | `a` | `b` | `a:2 b:1` | `aba` | no |
-| **8** | `c` | `a` | `a:1 b:1 c:1` | `bac` | **equals want → record 6** |
-| 9 | `d` | `b` | `a:1 c:1 d:1` | `acd` | no |
+| `i`       | letter in | letter out (`text[i-3]`) | tally after both updates | window  | verdict                           |
+| ----------- | --------- | -------------------------- | ------------------------ | ------- | --------------------------------- |
+| 0           | `c`     | —                         | `c:1`                  | —      | too early                         |
+| 1           | `b`     | —                         | `b:1 c:1`              | —      | too early                         |
+| **2** | `a`     | —                         | `a:1 b:1 c:1`          | `cba` | **equals want → record 0** |
+| 3           | `e`     | `c`                      | `a:1 b:1 e:1`          | `bae` | no                                |
+| 4           | `b`     | `b`                      | `a:1 b:1 e:1`          | `aeb` | no                                |
+| 5           | `a`     | `a`                      | `a:1 b:1 e:1`          | `eba` | no                                |
+| 6           | `b`     | `e`                      | `a:1 b:2`              | `bab` | no                                |
+| 7           | `a`     | `b`                      | `a:2 b:1`              | `aba` | no                                |
+| **8** | `c`     | `a`                      | `a:1 b:1 c:1`          | `bac` | **equals want → record 6** |
+| 9           | `d`     | `b`                      | `a:1 c:1 d:1`          | `acd` | no                                |
 
 Answer `[0, 6]`. Rows 4 and 5 are the payoff: the incoming and outgoing letters happen to be the same
 letter, the tally is untouched, and the window still had to be judged — twenty-six comparisons to
@@ -363,7 +363,6 @@ when only the letters whose own counts changed could possibly have flipped their
 
 ### How to think about it
 
-
 > **Intuition.** Keep a scoreboard reading *"23 of 26 letters are currently correct"* rather than
 > re-reading all twenty-six boxes. When a letter's count changes, its verdict is the only one that
 > can move, so the update is mechanical: before you touch a letter, check whether it *was* correct
@@ -391,18 +390,18 @@ generalises anywhere a verdict is a conjunction of many independent small verdic
 and the letters that already agree are the 23 letters the pattern does not use: **`agree` starts at
 23.**
 
-| `i` | in | out | what moved | `agree` after | window | verdict |
-|---|---|---|---|---|---|---|
-| 0 | `c` | — | `c` 0→1, now correct | 24 | — | too early |
-| 1 | `b` | — | `b` 0→1, now correct | 25 | — | too early |
-| **2** | `a` | — | `a` 0→1, now correct | **26** | `cba` | **26 → record 0** |
-| 3 | `e` | `c` | `e` 0→1 breaks (25); `c` 1→0 breaks (24) | 24 | `bae` | no |
-| 4 | `b` | `b` | `b` 1→2 breaks (23); `b` 2→1 fixes (24) | 24 | `aeb` | no |
-| 5 | `a` | `a` | `a` 1→2 breaks (23); `a` 2→1 fixes (24) | 24 | `eba` | no |
-| 6 | `b` | `e` | `b` 1→2 breaks (23); `e` 1→0 fixes (24) | 24 | `bab` | no |
-| 7 | `a` | `b` | `a` 1→2 breaks (23); `b` 2→1 fixes (24) | 24 | `aba` | no |
-| **8** | `c` | `a` | `c` 0→1 fixes (25); `a` 2→1 fixes (**26**) | **26** | `bac` | **26 → record 6** |
-| 9 | `d` | `b` | `d` 0→1 breaks (25); `b` 1→0 breaks (24) | 24 | `acd` | no |
+| `i`       | in    | out   | what moved                                             | `agree` after | window  | verdict                  |
+| ----------- | ----- | ----- | ------------------------------------------------------ | --------------- | ------- | ------------------------ |
+| 0           | `c` | —    | `c` 0→1, now correct                                | 24              | —      | too early                |
+| 1           | `b` | —    | `b` 0→1, now correct                                | 25              | —      | too early                |
+| **2** | `a` | —    | `a` 0→1, now correct                                | **26**    | `cba` | **26 → record 0** |
+| 3           | `e` | `c` | `e` 0→1 breaks (25); `c` 1→0 breaks (24)         | 24              | `bae` | no                       |
+| 4           | `b` | `b` | `b` 1→2 breaks (23); `b` 2→1 fixes (24)          | 24              | `aeb` | no                       |
+| 5           | `a` | `a` | `a` 1→2 breaks (23); `a` 2→1 fixes (24)          | 24              | `eba` | no                       |
+| 6           | `b` | `e` | `b` 1→2 breaks (23); `e` 1→0 fixes (24)          | 24              | `bab` | no                       |
+| 7           | `a` | `b` | `a` 1→2 breaks (23); `b` 2→1 fixes (24)          | 24              | `aba` | no                       |
+| **8** | `c` | `a` | `c` 0→1 fixes (25); `a` 2→1 fixes (**26**) | **26**    | `bac` | **26 → record 6** |
+| 9           | `d` | `b` | `d` 0→1 breaks (25); `b` 1→0 breaks (24)         | 24              | `acd` | no                       |
 
 Answer `[0, 6]`. Compare this table with Approach 3's: identical tallies underneath, but the verdict
 column now costs one integer comparison instead of twenty-six. Rows 4 and 5 — where the same letter
@@ -516,12 +515,12 @@ answer three times for `"aa"`.
 
 ## Comparison
 
-| Approach | Time | Space | Core trade-off | Best used when |
-|---|---|---|---|---|
-| Sort every window | `O(n · k log k)` | `O(k)` | Computes an ordering the question never asked about, then throws it away | Candidates are scattered strings with no sliding structure; as a readable oracle |
-| Count every window | `O(n · k)` | `O(1)` | Drops the ordering for a tally, but rebuilds the tally from zero every window | Very short patterns; non-adjacent candidate windows |
-| Slide the tally, compare 26 | `O(26n)` | `O(1)` | Updates the tally instead of rebuilding it, but still re-runs the whole comparison | **Small fixed alphabet — fast enough here, and the shortest correct code** |
-| **Slide the tally + agreement counter** | **`O(n)`** | **`O(1)`** | **Maintains a summary of the comparison; costs one extra invariant to keep correct** | **Large alphabets, or any per-step verdict made of many independent parts** |
+| Approach                                      | Time                | Space              | Core trade-off                                                                             | Best used when                                                                    |
+| --------------------------------------------- | ------------------- | ------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Sort every window                             | `O(n · k log k)` | `O(k)`           | Computes an ordering the question never asked about, then throws it away                   | Candidates are scattered strings with no sliding structure; as a readable oracle  |
+| Count every window                            | `O(n · k)`       | `O(1)`           | Drops the ordering for a tally, but rebuilds the tally from zero every window              | Very short patterns; non-adjacent candidate windows                               |
+| Slide the tally, compare 26                   | `O(26n)`          | `O(1)`           | Updates the tally instead of rebuilding it, but still re-runs the whole comparison         | **Small fixed alphabet — fast enough here, and the shortest correct code** |
+| **Slide the tally + agreement counter** | **`O(n)`**  | **`O(1)`** | **Maintains a summary of the comparison; costs one extra invariant to keep correct** | **Large alphabets, or any per-step verdict made of many independent parts** |
 
 ---
 

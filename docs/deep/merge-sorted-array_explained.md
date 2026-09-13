@@ -2,11 +2,12 @@
 
 ## Understanding the Problem
 
-You have two lists of numbers, each already arranged from smallest to largest. The first list,
-`a`, has been handed to you deliberately oversized: its first `m` slots hold its own values and the
-last `n` slots are **padding**, junk you are free to scribble on. The second list, `b`, holds `n`
-values. Fill `a` so it holds all `m + n` values in sorted order, without allocating a second array
-to do it.
+Two shelves of books, each shelf already in order. The first shelf is longer than it needs to
+be — its left end holds `m` books and its right end is `n` slots of **empty space** you are welcome
+to use. The second shelf holds `n` books. Reshelve everything onto the first shelf, still in order,
+without wheeling in a third shelf to sort on.
+
+That empty space at the right-hand end is not incidental. It is the whole problem.
 
 **The core question is: at each output position, which of the two lists offers the next value?**
 Answering it is easy — compare the two front values and take the smaller. What makes the problem
@@ -44,12 +45,14 @@ length grows by one. This is insertion sort's inner step, applied `n` times.
 
 ### How to think about it
 
-Filing paper into a ring binder that already has the right number of blank pages at the back.
-For each new sheet you flick through from the front until you reach the point it belongs, then you
-shove every sheet from there onward back one position to open a slot, and drop it in. The filing
-is always correct, and it is always *expensive*, because moving one sheet into the middle means
-touching every sheet behind it. The cost you should feel in your hands is that the same sheets get
-shoved back again and again — `a`'s largest value is moved once per insertion that lands before it.
+> **Intuition.** Filing paper into a ring binder that already has the right number of blank pages
+> at the back. For each new sheet you flick through from the front until you reach the point it
+> belongs, shove every sheet from there onward back one position to open a slot, and drop it in.
+>
+> The filing is always correct and it is always **expensive**, because moving one sheet into the
+> middle means touching every sheet behind it. The cost you should feel in your hands is the same
+> sheets being shoved back again and again — `a`'s largest value moves once for every insertion
+> that lands before it.
 
 ### Worked example
 
@@ -62,9 +65,13 @@ Every approach in this document traces this same input.
 | 2 | `5` | 4 | index 4 (past everything live) | none | `[1, 2, 2, 3, 5, _]` | 5 |
 | 3 | `6` | 5 | index 5 (past everything live) | none | `[1, 2, 2, 3, 5, 6]` | 6 |
 
-Result `[1, 2, 2, 3, 5, 6]`. This example is kind to the approach — only one value had to be
-shifted. Feed it `a = [4, 5, 6, _, _, _]`, `b = [1, 2, 3]` instead and every single insertion lands
-at the front, shifting the entire live tail each time: 3 + 4 + 5 = 12 moves to place 3 values.
+Result `[1, 2, 2, 3, 5, 6]`. This example is kind to the approach — only one value had to move.
+
+Feed it `a = [4, 5, 6, _, _, _]`, `b = [1, 2, 3]` instead and every insertion lands near the front,
+shifting most of the live tail each time: **9** shift-moves to place three values, measured by
+counting them. Worth being precise about why it is 9 and not `3 + 4 + 5 = 12`: after the first
+insertion the already-placed small values sit *in front* of the next one, so `at` is no longer `0`
+and the tail being shoved is one shorter than the live length each time — `3 + 3 + 3`.
 
 ### Code
 
@@ -86,20 +93,30 @@ def merge_sorted_array_insert_one_at_a_time(
 
 ### Common mistake
 
-Sliding the gap open **left to right** instead of right to left — writing
-`for k in range(at, live): a[k + 1] = a[k]`. Each step copies the value you just wrote one slot
-further along, so instead of shifting the tail you smear `a[at]` across the entire rest of the
-array: `[1, 2, 3, _, _, _]` inserting a `2` at index 2 becomes `[1, 2, 2, 2, _, _]` and the `3` is
-gone forever. A shift right must be performed right-to-left, from the far end back toward the gap,
-so that every cell is read before it is overwritten. That is the same "which direction is safe"
-question the last approach in this document answers on a larger scale — and it is worth noticing
-that the naive rung already contains it.
+> **Watch out.** The misconception is that a shift is a **set** of independent copies, so the order
+> you perform them in is a matter of taste. It is not: consecutive copies overlap, and going
+> left-to-right means every step reads a cell the previous step already overwrote. A shift right
+> must run **right-to-left**, from the far end back toward the gap, so each cell is read before it
+> is written.
+
+Writing the slide as `for k in range(at, live): a[k + 1] = a[k]` smears `a[at]` along the tail
+instead of moving it. The trap is how *quietly* it does that. On this document's own worked example
+the buggy version returns the fully correct `[1, 2, 2, 3, 5, 6]` — because every shift there is
+exactly one cell long, and a one-cell shift cannot smear.
+
+It needs a tail of two or more to show. Measured on `a = [1, 2, 3, 4, _, _]` with `m = 4`,
+inserting `b = [2]`: the buggy slide gives **`[1, 2, 2, 3, 3, 0]`**, where the `4` has been
+overwritten by a duplicated `3`, against the correct `[1, 2, 2, 3, 4]`. The smallest failing input
+at all is `a = [1, 2, _]`, `m = 2`, `b = [0]` — **`[0, 1, 1]`** instead of `[0, 1, 2]`.
+
+This is the same "which direction is safe" question the last approach answers on a larger scale, and
+it is worth noticing that the naive rung already contains it.
 
 ### Complexity and when to use this
 
-**Time O(n · (m + n)), space O(1).** Each of the `n` values from `b` does a linear scan to find its
-position and then shifts up to the whole live tail, and the live tail grows to `m + n`. Space is
-three integers — the shifting all happens inside `a`, so nothing is allocated.
+**Time** `O(n · (m + n))`, **space** `O(1)`. Each of the `n` values from `b` does a linear scan to
+find its position and then shifts up to the whole live tail, and that tail grows to `m + n`. Space
+is three integers — all the shifting happens inside `a`, so nothing is allocated.
 
 It is the right choice in one situation: when `n` is very small compared to `m`, and especially
 when `n` is 1. Inserting a single value into a mostly-sorted array is genuinely cheaper as one
@@ -121,12 +138,14 @@ value, just `n` blind writes and one library call.
 
 ### How to think about it
 
-Tip both piles of paper into one heap and put the heap through the sorting machine. You are
-deliberately throwing away the one useful fact you had — that each pile was already ordered — in
-exchange for never having to think about the interleaving. It is the shortest code in this
-document by a wide margin, it is almost impossible to get wrong, and it is the right instinct in
-most real programs. It is also the rung that a merge exists to improve on: the sort spends
-`log(m + n)` comparisons per element rediscovering the order that was sitting in front of it.
+> **Intuition.** Tip both piles of paper into one heap and put the heap through the sorting machine.
+> You are deliberately throwing away the one useful fact you had — that each pile arrived already
+> ordered — in exchange for never having to think about the interleaving at all.
+>
+> It is the shortest code in this document by a wide margin, almost impossible to get wrong, and the
+> right instinct in most real programs. It is also the rung a merge exists to improve on: the sort
+> spends `log(m + n)` comparisons per element rediscovering an order that was sitting in front of
+> it.
 
 ### Worked example
 
@@ -156,23 +175,33 @@ def merge_sorted_array_append_and_sort(
 
 ### Common mistake
 
-Writing `a.extend(b)` (or `a += b`) instead of overwriting the padding. `a` already *has* `n`
-spare slots — appending adds `n` more, so the array ends up `m + 2n` long and the `n` padding
-zeros are still sitting inside it. Sorting then produces a longer array with phantom zeros
-scattered through the middle: `[1, 2, 3, 0, 0, 0]` plus `[2, 5, 6]` becomes
-`[0, 0, 0, 1, 2, 2, 3, 5, 6]` instead of `[1, 2, 2, 3, 5, 6]`. The padding is space to be *filled*,
-not a prefix to be appended after. The same bug in a different costume is rebinding the name —
-`a = sorted(a[:m] + b)` — which produces the right list and assigns it to a local variable, leaving
-the caller's array exactly as it was.
+> **Watch out.** The misconception is that `a` is a list with `m` things in it, so `b` has to be
+> **added** to it. `a` is a list with `m + n` slots, `n` of them reserved for exactly this. Space to
+> be *filled*, not a prefix to be appended after.
+
+Writing `a.extend(b)` (or `a += b`) makes the array `m + 2n` long with the `n` padding zeros still
+inside it, and the sort then scatters phantom zeros through the answer. Measured on the worked
+example: `[1, 2, 3, 0, 0, 0]` plus `[2, 5, 6]` gives **`[0, 0, 0, 1, 2, 2, 3, 5, 6]`** instead of
+`[1, 2, 2, 3, 5, 6]`.
+
+> **Watch out.** The second misconception is that computing the right answer and *delivering* it
+> are the same act. In an in-place problem the return value is not the deliverable; the caller's
+> array is.
+
+Rebinding the name — `a = sorted(a[:m] + b)` — is the same bug in a different costume. Measured: it
+returns the perfectly correct **`[1, 2, 2, 3, 5, 6]`** while the caller's array is still
+**`[1, 2, 3, 0, 0, 0]`**, untouched. In a language whose signature returns `void` the same mistake
+produces silence and a wrong array.
 
 ### Complexity and when to use this
 
-**Time O((m + n) log(m + n)), space O(1) in principle.** The time is dominated by the sort; the
-`n` copies are linear and disappear into it. The space claim deserves an asterisk: the `n` writes
-allocate nothing, but whether the *sort* is in place depends on the language. C++'s `std::sort` is
-in place, Java's primitive sort is in place, and Python's Timsort uses up to O(n) auxiliary memory
-in the worst case. If the problem's space bound is being enforced strictly, say so out loud rather
-than claiming O(1) and hoping.
+**Time** `O((m + n) log(m + n))`, **space** `O(1)` in principle. The time is dominated by the sort;
+the `n` copies are linear and vanish into it.
+
+The space claim deserves an asterisk. The `n` writes allocate nothing, but whether the **sort** is
+in place is a property of the language: C++'s `std::sort` is, Java's primitive sort is, and Python's
+Timsort uses up to `O(n)` auxiliary memory in the worst case. If a space bound is being enforced
+strictly, say that out loud rather than claiming `O(1)` and hoping.
 
 Use it in production code where `m + n` is small and clarity beats constant factors — it is two
 lines and cannot be got wrong in an interesting way. Use it in an interview as the thing you offer
@@ -194,12 +223,19 @@ back over `a` at the end.
 
 ### How to think about it
 
-Two sorted decks of cards face up, and one empty space to build the result in. Look at the top
-card of each deck, take the smaller, place it, and look again. Because both decks are sorted, the
-smaller of the two tops is the smallest card remaining anywhere — there is no need to look deeper
-into either deck, ever. When one deck runs out, the other is already in order and can be poured
-straight down. The problem is the empty space: you have borrowed a whole extra table to do it on,
-and half of it is being used to hold values that already sit in `a`.
+> **Intuition.** Two sorted decks of cards face up, and one empty space to build the result in.
+> Look at the top card of each deck, take the smaller, place it, look again. When one deck runs out,
+> the other is already in order and can be poured straight down.
+>
+> The problem is the empty space. You have borrowed a whole extra table to work on, and half of it
+> is holding values that already sit in `a`.
+
+> **Why it works.** The invariant is that **the smaller of the two exposed values is the smallest
+> value remaining anywhere**. Each deck is sorted, so every card still buried under a cursor is at
+> least as large as the card on top of it; the minimum of the whole remainder therefore has to be one
+> of the two tops, and taking the smaller one places it permanently. There is never a reason to look
+> deeper into either run, which is why one comparison retires one value and the whole merge is
+> linear rather than `log`-factored.
 
 ### Worked example
 
@@ -240,24 +276,36 @@ def merge_sorted_array_scratch_merge(
 
 ### Common mistake
 
-Getting the order of the exhaustion checks wrong — writing the condition as
-`if a[i] <= b[j] or j >= n`. Python evaluates left to right, so `a[i] <= b[j]` is reached with
-`j == n` the moment `b` runs dry, and the whole thing dies with an `IndexError` (in C++ it reads
-past the end of the vector and silently compares garbage). The exhaustion tests must come *first*,
-short-circuiting before any indexing happens: `j >= n or (i < m and a[i] <= b[j])` reads as "if
-`b` has nothing left, take from `a`; otherwise take from `a` only if it has something and that
-something is not larger."
+> **Watch out.** The misconception is that `or` is **symmetric**, so the two halves of the condition
+> can go in either order. In a short-circuiting language it is not symmetric at all: the left half is
+> always evaluated, so a bounds test placed second is a bounds test that never protects anything.
 
-The other classic here is forgetting the copy-back loop and returning `out`. In Python that hands
-the caller a correct-looking list while the array they actually passed in is untouched — the
-function has not merged anything in place, it has merely computed the answer somewhere else. In a
-language where the signature returns `void`, the same bug produces silence and a wrong array.
+Writing the condition as `if a[i] <= b[j] or j >= n` indexes before it checks. It fails two
+different ways depending on the input, and the quieter one is worse:
+
+| Input | What the broken order does | Correct |
+|---|---|---|
+| the worked example, `a = [1, 2, 3, _, _, _]`, `b = [2, 5, 6]` | silently returns **`[1, 2, 2, 3, 0, 0]`** — it runs off `a`'s live prefix into the padding and merges the zeros | `[1, 2, 2, 3, 5, 6]` |
+| `a = [4, 5, 6, _, _, _]`, `b = [1, 2, 3]` | raises **`IndexError: list index out of range`** | `[1, 2, 3, 4, 5, 6]` |
+| smallest failing input, `a = [_]`, `m = 0`, `b = [1]` | silently returns **`[0]`** | `[1]` |
+
+So "it crashes" is only half the story, and the half that does not crash is the dangerous one. The
+exhaustion tests must come **first**, short-circuiting before any indexing: `j >= n or (i < m and
+a[i] <= b[j])` reads as *"if `b` has nothing left, take from `a`; otherwise take from `a` only if it
+has something and that something is not larger."*
+
+> **Watch out.** The second misconception is that a function returning the right value has done its
+> job. Here the deliverable is the caller's array, not the return value.
+
+Forgetting the copy-back loop and returning `out` hands back a correct-looking
+**`[1, 2, 2, 3, 5, 6]`** while the caller's array is still **`[1, 2, 3, 0, 0, 0]`** — measured. The
+function has not merged in place, it has computed the answer somewhere else.
 
 ### Complexity and when to use this
 
-**Time O(m + n), space O(m + n).** Every value is compared once and written twice — once into the
-scratch array, once on the way back — so the time is two linear passes. The space is the scratch
-array, exactly the size of the finished result.
+**Time** `O(m + n)`, **space** `O(m + n)`. Every value is compared once and written **twice** —
+once into the scratch array, once on the way back — so the time is two linear passes. The space is
+the scratch array, exactly the size of the finished result.
 
 This is the right shape whenever you are merging two sorted runs and you *do* have somewhere to
 put the answer: it is the merge step of merge sort, it is what `heapq.merge` and `std::merge` do,
@@ -279,13 +327,16 @@ copy-back disappears entirely.
 
 ### How to think about it
 
-Same two decks, same comparison, but now you lift only `a`'s live cards off the table and rebuild
-the result directly onto the space they came from. The freed row in front of you is exactly as long
-as the answer, and you fill it left to right. The reason it is safe is worth stating precisely: the
-write cursor `w` advances one slot per value placed, and it can only ever be as far along as the
-number of values already taken — of which at most `i` came from the buffer — so `w` never runs
-ahead of information you still need. It does not need to: the values at risk are already in your
-hand.
+> **Intuition.** Same two decks and the same comparison, but now you lift only `a`'s live cards off
+> the table and rebuild the answer directly onto the space they came from. The freed row in front of
+> you is exactly as long as the answer, and you fill it left to right. Nothing you write can hurt
+> you, because everything `a` had is already in your hand.
+
+> **Why it works.** The invariant is that **`a` holds nothing that is still needed**. Its live
+> prefix was copied wholesale into `left` before the first write, so every read comes from `left` or
+> from `b` and every write goes to `a` — reads and writes touch disjoint memory, and the direction
+> of travel stops mattering. That is the entire reason this rung can fill forwards where the next one
+> cannot; it bought the freedom with `O(m)` of copying.
 
 ### Worked example
 
@@ -297,7 +348,7 @@ cursors `i` into `left`, `j` into `b`, `w` the write position in `a`.
 | 0 | — | — | copy `left ← a[:3] = [1, 2, 3]` | — | `[1, 2, 3, _, _, _]` |
 | 1 | 0 (`1`) | 0 (`2`) | `1 <= 2` → buffer | `a[0] ← 1`, `i → 1` | `[1, 2, 3, _, _, _]` |
 | 2 | 1 (`2`) | 0 (`2`) | tie → buffer | `a[1] ← 2`, `i → 2` | `[1, 2, 3, _, _, _]` |
-| 3 | 2 (`3`) | 0 (`2`) | `3 > 2` → `b` | `a[2] ← 2`, `j → 1` | `[1, 2, **2**, _, _, _]` |
+| 3 | 2 (`3`) | 0 (`2`) | `3 > 2` → `b` | `a[2] ← 2`, `j → 1` | `[1, 2, 2, _, _, _]` ← the `3` is overwritten |
 | 4 | 2 (`3`) | 1 (`5`) | `3 <= 5` → buffer | `a[3] ← 3`, `i → 3` | `[1, 2, 2, 3, _, _]` |
 | 5 | — (spent) | 1 (`5`) | buffer exhausted | `a[4] ← 5`, `j → 2` | `[1, 2, 2, 3, 5, _]` |
 | 6 | — | 2 (`6`) | buffer exhausted | `a[5] ← 6`, `j → 3` | `[1, 2, 2, 3, 5, 6]` |
@@ -326,19 +377,23 @@ def merge_sorted_array_copy_prefix(
 
 ### Common mistake
 
-Copying the whole array instead of the prefix — `left = a[:]` or `left = list(a)`. Now the buffer
-contains the `n` padding cells as if they were real values, and since padding is conventionally
-zero, those zeros are *smaller* than most real values and get merged in first. On the worked
-example the buffer becomes `[1, 2, 3, 0, 0, 0]`, the merge treats it as a sorted run (it is not
-sorted, which breaks the merge's precondition outright), and the result is garbage. The bound
-that matters is `m`, not `len(a)`, and every loop condition in this approach must test `i < m`
-rather than `i < len(left)`.
+> **Watch out.** The misconception is that the buffer should hold **`a`**. It should hold `a`'s
+> *live prefix*. Copying the whole array drags the padding in as if it were data, and since padding
+> is conventionally zero, those zeros are smaller than most real values and get merged in first.
+
+Writing `left = a[:]` or `left = list(a)` also breaks the merge's own precondition — `[1, 2, 3, 0,
+0, 0]` is not a sorted run — so the algorithm is being fed an input it is not allowed to assume.
+Measured on the worked example, the result is **`[1, 2, 2, 3, 0, 0]`**: the two real values `5` and
+`6` are dropped and two padding zeros are promoted into the answer.
+
+The bound that matters is `m`, never `len(a)`, and every loop condition in this approach must test
+`i < m` rather than `i < len(left)`.
 
 ### Complexity and when to use this
 
-**Time O(m + n), space O(m).** One comparison and one write per output slot, no copy-back pass, so
-it is strictly half the writes of the scratch version. The memory is the saved prefix, which is as
-big as `a`'s live portion.
+**Time** `O(m + n)`, **space** `O(m)`. One comparison and one write per output slot with no
+copy-back pass, so strictly **half** the writes of the scratch version. The memory is the saved
+prefix, as big as `a`'s live portion and no bigger.
 
 This is genuinely the best you can do when the spare room is in the *wrong place* — if `a` had its
 padding at the front rather than the back, or if you were merging into a buffer that overlapped
@@ -362,16 +417,30 @@ all.
 
 ### How to think about it
 
-Three cursors on the same row of boxes: `i` on the last live value of `a`, `j` on the last value of
-`b`, and `w` on the last box of all. At each step the larger of the two values under `i` and `j` is
-the largest value not yet placed anywhere — so it belongs in box `w`. Write it, step that value's
-cursor back, step `w` back. The safety property is one inequality and it is the whole proof:
-**`w` is always strictly to the right of `i`**, because `w` has consumed `(m − 1 − i) + (n − 1 − j)`
-slots' worth of values from *both* arrays while only `(m − 1 − i)` of them came from `a`. The gap
-between them is exactly the number of `b`'s values placed so far, and it can only grow. So the
-write cursor is forever chasing the read cursor from behind, never overtaking it, and every cell
-it lands on is either original padding or a cell whose value has already been copied to its final
-home.
+> **Intuition.** Loading a van, working from the far wall forward. The heaviest crate goes in
+> first, against the back of the van, and each lighter one stacks in front of it — so you are always
+> putting something down in space that is already clear, and you never have to shuffle a crate you
+> have already placed. The van's empty half is at the back; that is why you start at the back.
+>
+> Three cursors on the same row of boxes: `i` on the last live value of `a`, `j` on the last value
+> of `b`, and `w` on the last box of all. The larger of the two values under `i` and `j` is the
+> largest value not yet placed anywhere, so it belongs in box `w`. Write it, step that value's
+> cursor back, step `w` back.
+
+> **Why it works.** Two claims, and the second is the one that makes it legal.
+>
+> **Correctness:** the larger of the two exposed values is the maximum of everything unplaced, by
+> the same argument as the forward merge read in a mirror — so writing it into the highest unfilled
+> slot is right, and one comparison retires one value.
+>
+> **Safety:** the write cursor is **always strictly to the right of `a`'s read cursor**, `w > i`.
+> Both start at `w = m + n − 1` and `i = m − 1`, so the gap starts at `n`; each step decrements `w`
+> and decrements at most one of `i` or `j`, so the gap `w − i` equals the number of `b`'s values
+> already placed and can only grow. Every cell `w` lands on is therefore original padding or a cell
+> whose value has already been copied to its final home — never a live value still waiting its turn.
+> Fill **forwards** instead and the very first write is `a[0] ←`, landing on a live value with
+> `w = i = 0`: the inequality fails at step one, which is exactly why the previous two rungs needed
+> a buffer.
 
 ### Worked example
 
@@ -415,27 +484,41 @@ def merge_sorted_array_backward_two_pointers(
 
 ### Common mistake
 
-Dropping the `i >= 0` guard and writing just `if a[i] > b[j]`. When `a` is pure padding (`m = 0`)
-or when `a`'s values run out before `b`'s, `i` reaches `-1` — and in Python `a[-1]` is not an error,
-it is the **last element of the array**, which at that moment holds the largest value you have
-already placed. So the comparison silently succeeds, that value gets copied a second time, and `b`'s
-remaining values are lost. Feed it `a = [0]`, `m = 0`, `b = [1]`, `n = 1`: with the guard you get
-`[1]`, without it you get `[0]`, no exception, no warning. In Java and C++ the same line reads out
-of bounds instead — a crash if you are lucky, garbage if you are not.
+> **Watch out.** The misconception is that `i >= 0` protects against an **out-of-range read**. In
+> Python there is no out-of-range read to protect against — `a[-1]` is the perfectly legal *last*
+> element of the array, which at that moment holds the largest value you have already placed. The
+> guard is not there to stop a crash; it is there to stop `a` being compared against a value that is
+> no longer input.
 
-The second mistake is looping `while i >= 0 and j >= 0` and stopping there. That is the natural
-thing to write and it is half right: if `a` runs out first, `b` still has values left and they are
-all smaller than everything placed, so they must be copied down into `a[0..j]` — and that drain
-loop is missing. Looping on `j >= 0` alone, as above, makes the drain automatic (the `else` branch
-handles it) and makes the *other* leftover case — `b` runs out first — free, because the rest of
-`a` needs no work at all.
+Drop the guard and the comparison wrongly succeeds, that already-placed value is copied a second
+time, and `i` keeps walking negative while `j` stands still — so the loop cannot end. Measured over
+every input up to `m + n = 6`: the unguarded version either returns the right answer or raises
+**`IndexError: list index out of range`**, in 1082 of the cases tried, and **never once** returns a
+silently wrong array.
+
+That last point corrects a tempting way to state this. It is *not* true that `a = [0]`, `m = 0`,
+`b = [1]`, `n = 1` exposes the bug — measured, that input returns **`[1]`** with the guard and
+**`[1]`** without it, because `a[-1] = 0` is not greater than `1`, so the `else` branch runs and
+happens to be right. The smallest input that actually breaks it is `a = [_, _]`, `m = 0`,
+`b = [0, 1]`, `n = 2`, which raises `IndexError`. In Java and C++ the same line is a genuine
+out-of-bounds read, and there it *can* be silent garbage.
+
+> **Watch out.** The second misconception is that the loop should stop when **either** array runs
+> dry, because a merge needs two things to compare. It needs to stop when `b` runs dry, and only
+> then — whatever is left of `a` is already home, but whatever is left of `b` still has to be moved.
+
+Looping `while i >= 0 and j >= 0` leaves the drain out. Measured on the all-of-`b`-is-smaller case
+`a = [4, 5, 6, _, _, _]`, `b = [1, 2, 3]`: it returns **`[4, 5, 6, 4, 5, 6]`** instead of
+`[1, 2, 3, 4, 5, 6]` — `a`'s values duplicated into the padding and every value of `b` lost. On the
+worked example it returns the correct `[1, 2, 2, 3, 5, 6]`, which is why this one survives casual
+testing. Looping on `j >= 0` alone makes the drain automatic (the `else` branch handles it) and makes
+the *other* leftover case free, because the rest of `a` needs no work at all.
 
 ### Complexity and when to use this
 
-**Time O(m + n), space O(1).** Each iteration writes one output slot and retires one input value,
-and no index ever moves backwards, so the loop runs at most `m + n` times — often fewer, since it
-stops the moment `b` is exhausted. Space is three integers: nothing is allocated no matter how big
-the arrays are.
+**Time** `O(m + n)`, **space** `O(1)`. Each iteration writes one output slot and retires one input
+value, and no cursor ever reverses, so the loop runs at most `m + n` times — often fewer, since it
+stops the moment `b` is exhausted. Space is three integers, whatever the size of the arrays.
 
 This is the intended answer, and the reason to know it is not this problem — it is the move. **When
 in-place writing collides with reading, reverse the direction of travel.** The same trick is what
@@ -503,26 +586,29 @@ is: **when writing collides with reading, turn around and write into the space y
 
 | Approach | Time | Space | Core trade-off | Best used when |
 |---|---|---|---|---|
-| Insert one at a time | O(n · (m + n)) | O(1) | No extra memory, but every insertion re-shifts a growing tail — pure motion, no comparisons | `n` is tiny relative to `m`, especially `n = 1` |
-| Append and sort | O((m + n) log(m + n)) | O(1)* | Shortest and safest code; discards the sortedness the input handed you and pays a log factor to relearn it | Small inputs, production code where clarity beats constant factors (*if the language's sort is in place) |
-| Merge into a scratch array | O(m + n) | O(m + n) | Exploits both runs being sorted, but borrows a full-size array and writes every value twice | Merging two sorted runs when you genuinely have an output buffer — the merge step of merge sort |
-| Copy only `a`'s prefix | O(m + n) | O(m) | Halves the writes and the buffer by saving only what a forward write could destroy | The spare room is in the wrong place for a backward walk, or `m ≪ n` |
-| Backward two pointers | O(m + n) | O(1) | Nothing allocated, every value written once — but only legal because the padding is at the back | The intended answer whenever the free space sits at the end of the destination |
+| Insert one at a time | `O(n · (m + n))` | `O(1)` | No extra memory, but every insertion re-shifts a growing tail — pure motion, no comparisons | `n` is tiny relative to `m`, especially `n = 1` |
+| Append and sort | `O((m + n) log(m + n))` | `O(1)`* | Shortest and safest code; discards the sortedness the input handed you and pays a `log` factor to relearn it | Small inputs, production code where clarity beats constant factors (*if the language's sort is in place) |
+| Merge into a scratch array | `O(m + n)` | `O(m + n)` | Exploits both runs being sorted, but borrows a full-size array and writes every value twice | Merging two sorted runs when you genuinely have an output buffer — the merge step of merge sort |
+| Copy only `a`'s prefix | `O(m + n)` | `O(m)` | Halves the writes and the buffer by saving only what a forward write could destroy | The spare room is in the wrong place for a backward walk, or `m ≪ n` |
+| **Backward two pointers** | **`O(m + n)`** | **`O(1)`** | **Nothing allocated, every value written once — but only legal because the padding is at the back** | **The intended answer whenever the free space sits at the end of the destination** |
 
 ---
 
 ## Interview Priority
 
-**Know cold: the backward two-pointer merge, and the forward scratch merge it comes from.** They
-are a matched pair, and the interview is about the step between them. Write the forward merge
-without thinking — it is the merge step of merge sort and it will come up again in a dozen other
-questions — then be able to say in one sentence why it cannot be done in place forwards (`a[0]` is
-a live value) and what changes that (the free room is at the back, so walk backwards). Get three
-things right under pressure: initialise `write` to `m + n − 1`, guard the comparison with
-`i >= 0`, and loop on `j >= 0` rather than on both cursors so the drain case handles itself.
-Volunteering the invariant — *the write cursor is always to the right of `a`'s read cursor, and the
-gap is the number of `b`'s values already placed* — is what turns a memorised loop into a
-demonstrated one, and it is the thing an interviewer will push on.
+> **In an interview.** Write the forward merge first, then say the one sentence the whole question
+> is about: *"I cannot do that in place forwards, because the first write lands on `a[0]`, which is
+> a live value — but the free room is at the back, so I will walk backwards instead."* Then
+> volunteer the invariant before being asked: *"the write cursor stays strictly right of `a`'s read
+> cursor, and the gap is exactly the number of `b`'s values already placed."* The push-back is
+> always one of three: **why `m + n − 1`**, **why the `i >= 0` guard**, and **why loop on `j` alone**
+> — have all three ready.
+
+**Know cold — the backward two-pointer merge, and the forward scratch merge it comes from.** They
+are a matched pair and the interview is about the step between them. Write the forward merge without
+thinking; it is the merge step of merge sort and it recurs in a dozen other questions. Get three
+things right under pressure: initialise `write` to `m + n − 1`, guard the comparison with `i >= 0`,
+and loop on `j >= 0` rather than on both cursors so the drain handles itself.
 
 **Understand but do not drill: append-and-sort, insert-one-at-a-time, and the prefix copy.**
 Append-and-sort is worth thirty seconds at the start as the honest baseline and is genuinely what
@@ -543,10 +629,14 @@ that exercises `a`'s leftover tail, the all-of-`b`-is-larger case where `a` neve
 all-ties case, negatives, and a randomised stress test against an independent oracle that ignores
 in-place-ness entirely and just sorts the union.
 
-Here the answer really is the whole array — `a` has exactly `m + n` slots and every one of them is
-specified once the merge is done — so unlike the compaction problems in this family there is no
-unspecified tail to avoid comparing. Each approach still gets its **own copy** of `a`, because
-every one of them writes into it.
+`reference`, `run_case` and `APPROACHES` are **scaffolding**, not answers: `reference` is an
+independent oracle that ignores in-place-ness entirely and just sorts the union, and the other two
+are the harness that prints and compares.
+
+Here the answer really is the whole array — `a` has exactly `m + n` slots and every one is specified
+once the merge is done — so unlike the compaction problems in this family there is no unspecified
+tail to avoid comparing. Every approach mutates `a`, so each one is handed its **own copy**; without
+that the cross-check would be comparing data the previous approach had already rewritten.
 
 ```python
 """Merge the Second Array Into the First - every approach in one file, cross-checked.
