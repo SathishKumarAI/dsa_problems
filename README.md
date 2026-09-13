@@ -73,6 +73,10 @@ journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WOR
 | FLIP morph | `src/features/journey/use-flip.ts` |
 | Algorithm visualizer page / bars + graph drawing | `src/features/algorithms/algorithms-page.tsx` / `views.tsx` |
 | Every localStorage key (progress, XP, prefs) · export / import / erase | `src/lib/store.ts` |
+| A small number said as a SHAPE — difficulty ticks, the complexity growth mark | `src/components/ui/tick-meter.tsx` (the classifier: `src/lib/complexity.ts`, with its own test) |
+| The parts a list ROW is built from — the hover nudge, the progress hairline | `src/components/ui/row.tsx` (the motion itself lives in `src/index.css` under `[data-affordance="nudge"]`) |
+| Outbound reading per pattern (`read further`) | `src/data/patterns.ts` `references` → `ReadFurther` in `src/components/problem-list.tsx`; shape gated by `src/data/problems.test.ts` |
+| Whether a problem has an AUTHORED `docs/deep/` document, not just a generated page | `src/lib/learn-pages.ts` (`hasDeepDoc`) |
 | Whether a pattern's name may be shown yet | `src/lib/disclosure.ts` (journeys declare `reveals`) |
 | Help / shortcuts / settings dialogs | `src/components/app-dialogs.tsx` (open state: `src/lib/dialogs.ts`) |
 | Keyboard map (`?` renders it) · app-wide keys `?` `f` | `src/lib/shortcuts.ts` · `src/components/global-keys.tsx` |
