@@ -1010,6 +1010,44 @@ describe(
 
     // ---------- 3b. the catalogue keeps the secret ----------
 
+    test("the reading list is masked with the pattern it would name", async () => {
+      // A references panel is a pattern name written five different ways —
+      // "Hash table", "Dijkstra's algorithm", "Binary search tree". It is a
+      // NEW surface on the catalogue page and nothing was checking it, so it
+      // could have leaked the exact word B45 exists to withhold.
+      const read = `
+        const panel = [...document.querySelectorAll('section')]
+          .find(s => /read further/i.test(s.innerText || ''));
+        return {
+          panel: !!panel,
+          rows: panel ? panel.querySelectorAll('a[href^="http"]').length : 0,
+          text: panel ? panel.innerText : '',
+        };
+      `
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const shown = await page.run(read)
+      assert.ok(shown.panel, "no reading list on an unmasked pattern")
+      assert.ok(shown.rows >= 3, `only ${shown.rows} readings`)
+
+      // mid-journey: the panel goes entirely, not merely its heading
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
+      )
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const masked = await page.run(read)
+      assert.equal(
+        masked.panel,
+        false,
+        "the reading list rendered while the pattern was masked"
+      )
+
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:two-sum'); return 1`)
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
       const read = `
         return {
