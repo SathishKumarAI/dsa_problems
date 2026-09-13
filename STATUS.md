@@ -17,10 +17,30 @@ depends on in two checks.
 
 ## Where it stopped
 
-`master` holds everything through **#87**. On top of it, uncommitted: the **2030 pass** — a command
+`master` holds everything through **#88**; **PR #89** is open with the deep documents, the six linked-list journeys and the arcs. On top of it, uncommitted: the **2030 pass** — a command
 palette and list filters (B69), the home rebuilt as a raised dock plus panels of rows, and the
 first B67 journey (`swap-pairs`). Two subagents wrote the first two of those in parallel with
 strict file ownership; the journey was written in the main session.
+
+**Deep documents, journeys and arcs (2026-09-12, PR #89).** `docs/deep/<id>_explained.md` is the
+authored counterpart to the generated explainer: worked traces, mental models, the bug you are
+about to write, interview priority, and a runnable script. **32 of 127 written**, and
+`node scripts/verify-deep.mjs` executes every one of them — 32/32 run clean and report that their
+approaches agreed. Six linked-list journeys landed (B67, 6 of 22), taking journeys to **93** and
+problems-without-one to **34**; all six are pinned in `derived.test.ts` against a reference on
+random inputs. The `arc` is now on **all 127** problems — it was on 82, and PR #86 claimed
+otherwise.
+
+Two defects found by subagents, both real: a frame that draws a list silently discarded its
+`state`, so 46 frames across five journeys wrote counters nobody could see; and
+`scripts/register-journey.mjs` duplicated a problem file instead of trimming it, because
+`"
+  ],
+"` never matches CRLF. Both fixed, both commented where they happened.
+
+**Eleven subagents wrote most of this, and nine were killed mid-task by the session API limit.**
+Several files were on disk with nobody having checked them, which is why `verify-deep.mjs` exists
+and why every gate below was re-run in the main session rather than quoted from an agent.
 
 **Batch 7 (B65).** Twenty problems filling the thinnest patterns first — four trees, three graphs,
 three dp, two each of heaps, stack, sliding-window, binary-search and arrays-hashing. **127
@@ -55,7 +75,7 @@ before the batch landed.
 
 | Gate | Command | State |
 |---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **686 tests** |
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **719 tests** |
 | The interface, in a real browser | `npm run test:ui` | **154 checks**, 0 failed (re-run after the type scale moved) — including the panel audit, which asserts now (B60) |
 | Every Java and C++ block compiles | `npm run verify:code` | **752 blocks**, 0 failed |
 | …and agrees with the Python | `npm run verify:run` | **4294 comparisons**, 0 disagreed (2026-09-12, batch 7 included) — and **nothing** it cannot marshal: `NOT_YET_RUNNABLE` is empty (B30, B62) |

@@ -11,6 +11,7 @@
 import assert from "node:assert/strict"
 import { after, before, describe, test } from "node:test"
 import { JOURNEYS } from "../src/engine/index.ts"
+import { PROBLEMS } from "../src/data/index.ts"
 import { chromePath, launch, startServer } from "./browser.mjs"
 
 const exe = chromePath()
@@ -313,12 +314,19 @@ describe(
     // first run in which `step-player.tsx` is reachable at all. If the
     // decision was wrong, it is wrong here.
     test("a problem with no journey draws its static walkthrough (B61, batch 6)", async () => {
-      const unjourneyed = [
-        ["arrays-hashing", "rotate-array"],
-        ["arrays-hashing", "first-missing-positive"],
-        ["two-pointers", "backspace-compare"],
-        ["linked-list", "reorder-list"],
-      ]
+      // COMPUTED, not hard-coded. This list used to name four problems by id,
+      // and B67 falsified it the moment one of them (reorder-list) got a
+      // journey — which correctly deleted the very walkthrough this asserts.
+      // A fixture that goes stale every time the product improves is a gate
+      // that cries wolf, so ask the data which problems still have no journey.
+      const journeyed = new Set(JOURNEYS.map((j) => j.problemId))
+      const unjourneyed = PROBLEMS.filter((p) => !journeyed.has(p.id))
+        .slice(0, 4)
+        .map((p) => [p.pattern, p.id])
+      assert.ok(
+        unjourneyed.length > 0,
+        "every problem has a journey now — this test, and B61's static player, are done"
+      )
       for (const [pattern, id] of unjourneyed) {
         await page.goto(`${server.base}/#/p/${pattern}/${id}`)
         const out = await page.run(`

@@ -648,8 +648,7 @@ function* walkBoth({ nums }: W): Generator<DFrame> {
       width,
       0
     ),
-    state: [{ label: "passes", value: 1 }],
-    note: `${chain(got)} — ${spell(a)} + ${spell(b)} = ${spell(got)}. One pass, three variables, both inputs untouched, and the only nodes made are the answer's own.`,
+    note: `${spell(a)} + ${spell(b)} = ${spell(got)}${got.length > 10 ? ` — ${got.length} nodes` : `, handed back ones digit first: ${got.join(" → ")}`}. One pass, three variables, both inputs untouched, and the only nodes made are the answer's own.`,
   }
 }
 
