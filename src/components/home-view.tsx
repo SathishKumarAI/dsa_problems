@@ -12,12 +12,15 @@
 import { useState } from "react"
 import {
   ChevronDownIcon,
+  CircleCheckIcon,
   FlameIcon,
   PlayIcon,
   RouteIcon,
   SlidersHorizontalIcon,
+  StarIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { RowNudge, RowProgress } from "@/components/ui/row"
 import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
 import { JOURNEYS } from "@/engine"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
@@ -50,7 +53,11 @@ function ActTicks({ earned }: { earned: Earned }) {
           key={i}
           className={cn(
             "h-1 w-6 rounded-full",
-            i < earned.earned ? "bg-primary" : "bg-border"
+            // an EARNED tick draws itself in, left to right, on the same
+            // 320ms edge the dock's accent bar uses — so the shape of "how
+            // far you got" is the thing that moves when you come back, and
+            // the unearned ones sit still. Reduced motion zeroes it globally.
+            i < earned.earned ? "animate-edge-in-x bg-primary" : "bg-border"
           )}
         />
       ))}
@@ -80,7 +87,7 @@ function Dock() {
       href={href(`/journey/${journey.slug}?act=${act.key}`)}
       data-surface="raised"
       data-testid="dock"
-      className="relative flex flex-col gap-4 overflow-hidden rounded-xl border border-primary/25 bg-card p-5 md:p-6"
+      className="group relative flex flex-col gap-4 overflow-hidden rounded-xl border border-primary/25 bg-card p-5 md:p-6"
     >
       {/* the authored moment: the accent edge draws itself down the surface */}
       <span
@@ -95,6 +102,7 @@ function Dock() {
         <span className="ml-auto font-mono text-meta text-dim tabular-nums">
           {earned.long}
         </span>
+        <RowNudge as="arrow" />
       </div>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <b className="font-heading text-title font-semibold">{journey.title}</b>
@@ -130,7 +138,7 @@ function JourneyRow({
     <li>
       <a
         href={href(`/journey/${slug}`)}
-        className="relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
+        className="group relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
       >
         <RouteIcon className="size-4 shrink-0 text-chart-1" />
         <span className="min-w-0 flex-1 truncate text-ui font-medium md:w-52 md:flex-none md:shrink-0">
@@ -142,11 +150,8 @@ function JourneyRow({
         <span className="ml-auto shrink-0 font-mono text-meta text-dim tabular-nums">
           {earned.done ? "complete" : `${earned.short} earned`}
         </span>
-        <span
-          aria-hidden
-          className="absolute bottom-0 left-0 h-px bg-primary"
-          style={{ width: `${earned.pct}%` }}
-        />
+        <RowNudge />
+        <RowProgress pct={earned.pct} />
       </a>
     </li>
   )
@@ -177,9 +182,14 @@ function PatternRow({
 }) {
   const pct = total ? (done / total) * 100 : 0
   return (
-    <li className="border-t sm:even:border-l">
+    // `min-w-0`: a grid item's default `min-width: auto` makes the column no
+    // narrower than the row's MIN-CONTENT — glyph + text + count + chevron —
+    // and adding the chevron pushed that floor past half the container, taking
+    // the whole page 10px sideways at 1440 (scrollWidth 1440 vs clientWidth
+    // 1430, measured). Same trap, same fix, as the markdown column.
+    <li className="min-w-0 border-t sm:even:border-l">
       <button
-        className="relative flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/40"
+        className="group relative flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/40"
         onClick={() => onOpen(id)}
       >
         <span className="w-20 shrink-0 pt-0.5 font-mono text-meta text-primary">
@@ -204,11 +214,8 @@ function PatternRow({
         <span className="shrink-0 pt-0.5 font-mono text-meta text-dim tabular-nums">
           {done}/{total}
         </span>
-        <span
-          aria-hidden
-          className="absolute bottom-0 left-0 h-px bg-chart-3"
-          style={{ width: `${pct}%` }}
-        />
+        <RowNudge className="mt-0.5" />
+        <RowProgress pct={pct} tone="done" />
       </button>
     </li>
   )
@@ -254,8 +261,12 @@ export function HomeView({
               <FlameIcon className="size-3.5 text-chart-4" />
               {streak} day streak
             </span>
-            <span className="pl-3">★ {xp} XP</span>
-            <span className="pl-3">
+            <span className="inline-flex items-center gap-1.5 pl-3">
+              <StarIcon className="size-3.5" aria-hidden />
+              {xp} XP
+            </span>
+            <span className="inline-flex items-center gap-1.5 pl-3">
+              <CircleCheckIcon className="size-3.5" aria-hidden />
               {done}/{total} solved
             </span>
           </div>
@@ -316,15 +327,16 @@ export function HomeView({
 
       <a
         href={href("/algorithms")}
-        className="flex items-center gap-3 rounded-xl border border-dashed bg-card/50 px-4 py-3 text-ui"
+        className="group flex items-center gap-3 rounded-xl border border-dashed bg-card/50 px-4 py-3 text-ui"
       >
         <SlidersHorizontalIcon className="size-4 shrink-0 text-chart-2" />
-        <span>
+        <span className="min-w-0">
           <b>Algorithm visualizer</b>{" "}
           <span className="text-muted-foreground">
             — six sorts, binary search, BFS / DFS / Dijkstra, step by step
           </span>
         </span>
+        <RowNudge as="arrow" className="ml-auto" />
       </a>
 
       <section className="overflow-hidden rounded-xl border bg-card">

@@ -159,7 +159,10 @@ export function Markdown({ blocks }: { blocks: Block[] }) {
                   </thead>
                   <tbody>
                     {block.rows.map((row, j) => (
-                      <tr key={j} className="border-b last:border-0">
+                      <tr
+                        key={j}
+                        className="border-b transition-colors last:border-0 hover:bg-muted/40"
+                      >
                         {row.map((cell, k) => (
                           <td
                             key={k}
@@ -198,7 +201,7 @@ export function Markdown({ blocks }: { blocks: Block[] }) {
                 key={i}
                 className="max-w-[35em] rounded-lg border bg-card/40 px-4 py-3 [&[open]]:max-w-full"
               >
-                <summary className="cursor-pointer text-body font-medium text-foreground marker:text-muted-foreground">
+                <summary className="cursor-pointer text-body font-medium text-foreground transition-colors marker:text-muted-foreground hover:text-chart-1">
                   <Inline text={block.summary} />
                 </summary>
                 <div className="pt-3">
