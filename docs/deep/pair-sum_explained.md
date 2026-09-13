@@ -408,6 +408,83 @@ asked for.**
 > the element you are standing on. That is the single subtlety of this rung, and it is exactly what
 > the next rung removes.
 
+### Where does each value actually go? The bucket arithmetic
+
+The sentence "record every value's position" hides the step people get stuck on. A hash map is an
+**array of slots**, and the slot a value lands in is **computed from the value itself**. Not from
+the order it arrived in.
+
+That is the misconception worth killing first:
+
+> **Watch out.** `nums[0] = 3` does **not** go into the first slot. There is no "first" element in a
+> hash map. Arrival order decides nothing; `hash(value) % number_of_slots` decides everything. A map
+> built from the same four numbers in any order ends up with the same four values in the same four
+> slots.
+
+Here is the table with the lid off — eight slots, our four values, every step printed by the script
+at the foot of this document:
+
+| Insert | `hash(v)` | slot = `hash(v) % 8` | The table afterwards |
+|---|---|---|---|
+| `3` at `i = 0` | `3` | `3 % 8 = 3` | `0:· 1:· 2:· 3:3→0 4:· 5:· 6:· 7:·` |
+| `6` at `i = 1` | `6` | `6 % 8 = 6` | `0:· 1:· 2:· 3:3→0 4:· 5:· 6:6→1 7:·` |
+| `1` at `i = 2` | `1` | `1 % 8 = 1` | `0:· 1:1→2 2:· 3:3→0 4:· 5:· 6:6→1 7:·` |
+| `5` at `i = 3` | `5` | `5 % 8 = 5` | `0:· 1:1→2 2:· 3:3→0 4:· 5:5→3 6:6→1 7:·` |
+
+Read the last row. The value `3` — the *first* number in the array — sits in **slot 3**. Slot `0` is
+empty and stays empty. The arrow means *value → position in the array*: `3→0` says "the value 3 was
+found at index 0 of `nums`".
+
+Two facts make that arithmetic work at all:
+
+1. **`hash(v)` of a small integer is the integer itself.** `hash(3) == 3`, `hash(0) == 0`. Nothing
+   clever happens for ints; the hash function only has real work to do for strings and objects.
+2. **`% 8` folds any number into a legal slot.** The table has eight slots, so the remainder after
+   dividing by eight is always `0..7`. CPython writes it as `hash(v) & 7`, which is the same thing
+   for a power-of-two size and faster — both printed by the script so you can see they agree.
+
+### Looking a value up is the same arithmetic, run again
+
+This is the part that makes the whole approach `O(1)`. To answer *"where is 5?"* the map does not
+search. It recomputes: `hash(5) % 8 = 5`, jumps **straight** to slot 5, and finds `5→3` sitting
+there. One multiplication-free step, no scanning, no comparison with the other three values.
+
+So pass two of this rung reads, in full:
+
+```
+i = 0, nums[i] = 3
+  need = 8 - 3 = 5
+  hash(5) % 8 = 5            <- jump straight to slot 5
+  slot 5 holds 5 -> 3        <- the value 5 lives at index 3 of nums
+  j = 3, and j != i (3 != 0) <- different slots, so it is a legal pair
+  answer: [0, 3]
+```
+
+And if the partner is absent, the jump lands on an **empty slot**, which is the answer "not here" —
+also in one step. That is why a missing key costs the same as a present one.
+
+### What happens when two values want the same slot
+
+They can. `3`, `11` and `19` all compute `% 8 = 3`. The table does not give up; it puts the
+newcomer in the next free slot and remembers to keep looking when asked:
+
+| Insert | slot wanted | What happens | The table afterwards |
+|---|---|---|---|
+| `3` | `3` | empty, sit down | `3:3` |
+| `11` | `3` | taken by `3`, step to `4` | `3:3  4:11` |
+| `19` | `3` | taken, step to `4`, taken, step to `5` | `3:3  4:11  5:19` |
+
+Those extra steps are called **probing**, and they are the entire reason `O(1)` is an *average*
+rather than a promise. With ordinary integers the values spread out and probing is rare. Force every
+key into one slot and the lookups degrade to a linear scan — measured, in the callout below.
+
+> **Under the hood.** You never see slot numbers in real code, and you should never rely on one: a
+> dict **resizes** when it gets about two-thirds full, which recomputes the slot of every key it
+> already holds. `3` might sit in slot `3` of an eight-slot table and slot `3` of a sixteen-slot one
+> by coincidence, or somewhere else entirely. The slot is an implementation detail; *the value is
+> the address*, and that is the only thing to remember.
+
+
 > **Under the hood.** "In one step" is the claim the whole rung rests on, so here is what actually
 > happens when you write `index_of.get(5)`. Python computes `hash(5)`, which for a small integer
 > **is the integer itself** — `hash(5) == 5`, `hash(0) == 0`. It takes that number modulo the
@@ -942,6 +1019,92 @@ def unique_pair_case(size: int, spread: int, rng: random.Random) -> tuple[list[i
 # ------------------------------------------- measurements, not answers
 # Everything the "Reading the Calculations" and "Under the hood" sections
 # quote is printed here, so no number in this document is remembered.
+
+
+class TinyMap:
+    """A hash map with the lid off. NOT an answer — it exists so the bucket
+    arithmetic in "Where does each value actually go?" is printed rather than
+    drawn. It does in miniature what CPython's dict does: compute a slot from
+    the key, and probe forward when that slot is taken.
+    """
+
+    __slots__ = ("slots", "last")
+
+    def __init__(self, slots: int = 8) -> None:
+        self.slots: list[tuple[int, int] | None] = [None] * slots
+        self.last = ""
+
+    def _home(self, key: int) -> int:
+        """The slot a key BELONGS in, computed from the key and nothing else."""
+        return hash(key) % len(self.slots)
+
+    def put(self, key: int, value: int) -> None:
+        i = self._home(key)
+        probes = 0
+        while self.slots[i] is not None and self.slots[i][0] != key:
+            i = (i + 1) % len(self.slots)        # linear probing
+            probes += 1
+        self.slots[i] = (key, value)
+        self.last = (f"hash({key}) = {hash(key)}, {hash(key)} % {len(self.slots)} = "
+                     f"{self._home(key)}"
+                     + (f", taken, probed {probes} -> slot {i}" if probes else f" -> slot {i}"))
+
+    def get(self, key: int, default: int = -1) -> int:
+        i = self._home(key)
+        probes = 0
+        while self.slots[i] is not None:
+            if self.slots[i][0] == key:
+                self.last = (f"hash({key}) % {len(self.slots)} = {self._home(key)}"
+                             + (f", probed {probes} -> slot {i}" if probes else "")
+                             + f": FOUND, the value {key} sits at index {self.slots[i][1]}")
+                return self.slots[i][1]
+            i = (i + 1) % len(self.slots)
+            probes += 1
+            if probes >= len(self.slots):
+                break
+        self.last = f"hash({key}) % {len(self.slots)} = {self._home(key)}: empty slot, so ABSENT"
+        return default
+
+    def picture(self) -> str:
+        return "  ".join(
+            f"{i}:{'  .  ' if s is None else f'{s[0]}->{s[1]}'}"
+            for i, s in enumerate(self.slots)
+        )
+
+
+def show_buckets(nums: list[int], target: int) -> None:
+    """Print the table after every insertion, then every lookup of pass two."""
+    print("\n=== PASS ONE: each value is filed by its OWN value, not by its turn ===")
+    table = TinyMap(8)
+    for i, x in enumerate(nums):
+        table.put(x, i)
+        print(f"  put {x:>3} (at index {i}): {table.last}")
+        print(f"      {table.picture()}")
+    print(f"  nums[0] = {nums[0]} did NOT go into slot 0: the slot is decided by the VALUE")
+
+    print("\n=== PASS TWO: each partner looked up in the finished table ===")
+    for i, x in enumerate(nums):
+        need = target - x
+        j = table.get(need)
+        print(f"  i={i} nums[i]={x}: need = {target} - {x} = {need}")
+        print(f"      {table.last}")
+        if j != -1 and j != i:
+            print(f"      j = {j}, and j != i, so the answer is [{i}, {j}]")
+            break
+
+    print("\n=== when two values want the same slot ===")
+    clash = TinyMap(8)
+    for v in (3, 11, 19):
+        clash.put(v, v)
+        print(f"  put {v:>3}: {clash.last}")
+        print(f"      {clash.picture()}")
+    print("  probing is why O(1) is an average and not a promise")
+
+    print("\n=== and the same arithmetic in CPython's real dict ===")
+    for x in nums:
+        print(f"    hash({x}) = {hash(x):>3}   {hash(x)} % 8 = {hash(x) % 8}   "
+              f"{hash(x)} & 7 = {hash(x) & 7}   (the same, for a power-of-two size)")
+
 def explain_arithmetic(nums: list[int], target: int) -> None:
     """The one piece of arithmetic, at every slot."""
     print(f"\n=== need = target - nums[i], for nums={nums}, target={target} ===")
@@ -1080,6 +1243,7 @@ def main() -> None:
             all_agreed = False
             print(f"  DISAGREEMENT (agreed={agreed}, valid={valid})")
 
+    show_buckets([3, 6, 1, 5], 8)
     explain_arithmetic([3, 6, 1, 5], 8)
     count_work(random.Random(7))
     measure_lookup()
