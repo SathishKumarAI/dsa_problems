@@ -122,7 +122,7 @@ broken.
 
 ---
 
-## Approach 2 — Divide the total product (the instinctive move the problem bans)
+## Approach 2 — Divide the total product (the instinctive move the problem bans)  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

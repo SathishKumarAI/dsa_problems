@@ -258,7 +258,7 @@ in array work.
 
 ---
 
-## Approach 3 — The same walk, swapping instead of writing
+## Approach 3 — The same walk, swapping instead of writing  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

@@ -76,7 +76,7 @@ s = "anagram", t = "nagaram"        answer: True
 
 ---
 
-## Approach 1 — Brute force: cross off each letter of `s` inside a copy of `t`
+## Approach 1 — Brute force: cross off each letter of `s` inside a copy of `t`  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -227,7 +227,7 @@ check once, in glue code, and `n log n` on short words is invisible.
 
 ---
 
-## Approach 3 — Two hash maps of counts
+## Approach 3 — Two hash maps of counts  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

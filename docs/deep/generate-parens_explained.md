@@ -134,7 +134,7 @@ interview, name it, price it at `4^n`, and move on.
 
 ---
 
-## Approach 2 — Recurse over both choices, test at the leaf
+## Approach 2 — Recurse over both choices, test at the leaf  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -359,7 +359,7 @@ directly explainable. The only reason to reach past it is the constant factor, w
 
 ---
 
-## Approach 4 — A mutable buffer with an explicit undo
+## Approach 4 — A mutable buffer with an explicit undo  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -469,7 +469,7 @@ transfers to N-Queens, subsets, permutations and word search.
 
 ---
 
-## Approach 5 — Compose from the unique first-bracket split
+## Approach 5 — Compose from the unique first-bracket split  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

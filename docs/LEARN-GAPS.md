@@ -29,34 +29,12 @@ document in `docs/deep/`, and the sections [its spec](deep/README.md) requires.
 - **Graphs** (11): island-count, course-order, rotting-fruit, max-island-area, word-search, count-provinces, network-delay, surrounded-regions, flood-fill, pacific-atlantic, shortest-path-grid
 - **Dynamic Programming** (14): stair-ways, house-robber, coin-change-min, longest-increasing-run, max-subarray, longest-common-subsequence, counting-bits, partition-equal-subset, unique-paths, word-break, min-cost-stairs, decode-ways, jump-game, max-product-subarray
 
-## Documents that add approaches without saying so — 23
+## Documents that add approaches without saying so — 0
 
 `docs/deep/README.md` allows a document to teach a rung the data file lacks, and
 requires it to say that it is an addition. These do not:
 
-- `pair-sum` — the data has 3 rungs, the document has 6
-- `top-k-frequent` — the data has 3 rungs, the document has 5
-- `longest-consecutive-run` — the data has 2 rungs, the document has 5
-- `single-number` — the data has 3 rungs, the document has 5
-- `contains-duplicate` — the data has 3 rungs, the document has 5
-- `valid-anagram` — the data has 2 rungs, the document has 4
-- `product-except-self` — the data has 3 rungs, the document has 4
-- `subarray-sum-k` — the data has 3 rungs, the document has 4
-- `majority-element` — the data has 2 rungs, the document has 4
-- `longest-common-prefix` — the data has 2 rungs, the document has 5
-- `isomorphic-strings` — the data has 2 rungs, the document has 6
-- `move-zeroes` — the data has 2 rungs, the document has 3
-- `sorted-squares` — the data has 2 rungs, the document has 3
-- `best-trade` — the data has 2 rungs, the document has 4
-- `longest-unique-substring` — the data has 3 rungs, the document has 5
-- `min-cover-substring` — the data has 2 rungs, the document has 4
-- `char-replacement` — the data has 2 rungs, the document has 3
-- `generate-parens` — the data has 2 rungs, the document has 5
-- `asteroid-collision` — the data has 2 rungs, the document has 5
-- `valid-parenthesis-string` — the data has 2 rungs, the document has 5
-- `decode-string` — the data has 2 rungs, the document has 5
-- `cycle-detect` — the data has 2 rungs, the document has 4
-- `middle-of-list` — the data has 2 rungs, the document has 4
+None.
 
 ## Every problem
 

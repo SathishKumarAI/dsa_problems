@@ -183,7 +183,7 @@ cost but a side benefit.
 
 ---
 
-## Approach 3 — Build the whole set, then compare sizes
+## Approach 3 — Build the whole set, then compare sizes  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -354,7 +354,7 @@ brute force only for toy-sized inputs.
 
 ---
 
-## Approach 5 — Direct indexing when the values are small and bounded
+## Approach 5 — Direct indexing when the values are small and bounded  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

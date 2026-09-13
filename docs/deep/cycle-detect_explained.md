@@ -34,7 +34,7 @@ Two pieces of vocabulary, expanded once:
 
 ---
 
-## Approach 1: Nested walk — re-scan from the head at every step
+## Approach 1: Nested walk — re-scan from the head at every step  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -310,7 +310,7 @@ behind find-the-duplicate-number and several cycle-finding tricks in number theo
 
 ---
 
-## Approach 4: Value-marking — trading the list's data for speed
+## Approach 4: Value-marking — trading the list's data for speed  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

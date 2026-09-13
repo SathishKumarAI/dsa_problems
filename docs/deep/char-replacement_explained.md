@@ -135,7 +135,7 @@ other side of a cross-check, and that is its job in the test suite below.
 
 ---
 
-## Approach 2 — One window, most-frequent count recomputed each step
+## Approach 2 — One window, most-frequent count recomputed each step  *(an addition — not in the data file's ladder)*
 
 > Not in the repo's data file for this problem; added here because it is the version almost everyone
 > writes before the final one, and because the single line of difference between it and Approach 3 is

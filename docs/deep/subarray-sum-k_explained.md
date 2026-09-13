@@ -204,7 +204,7 @@ answer each query in `O(1)`.
 
 ---
 
-## Approach 3 — The sliding window (the instinct that fails here)
+## Approach 3 — The sliding window (the instinct that fails here)  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

@@ -169,7 +169,7 @@ it.
 
 ---
 
-## Approach 2 — Recurse, branching three ways at every blank
+## Approach 2 — Recurse, branching three ways at every blank  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -273,7 +273,7 @@ it is the version to be able to write on demand.
 
 ---
 
-## Approach 3 — Memoise on (position, open count)
+## Approach 3 — Memoise on (position, open count)  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -381,7 +381,7 @@ prefer it.
 
 ---
 
-## Approach 4 — Two stacks of positions
+## Approach 4 — Two stacks of positions  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

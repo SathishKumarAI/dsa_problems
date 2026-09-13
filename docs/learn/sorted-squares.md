@@ -151,7 +151,7 @@ file. In an interview it is the right first sentence and the wrong last one.
 
 ---
 
-## Approach 2 — Split at zero, merge two runs
+## Approach 2 — Split at zero, merge two runs  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

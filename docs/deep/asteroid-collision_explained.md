@@ -143,7 +143,7 @@ to submit, fast enough to test with.
 
 ---
 
-## Approach 2 — One pass, backing up one slot after each crash
+## Approach 2 — One pass, backing up one slot after each crash  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -339,7 +339,7 @@ the last rung.
 
 ---
 
-## Approach 4 — The same stack, written with `break` / `else`
+## Approach 4 — The same stack, written with `break` / `else`  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -430,7 +430,7 @@ knowing in a language-agnostic interview.
 
 ---
 
-## Approach 5 — The input array as its own stack
+## Approach 5 — The input array as its own stack  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

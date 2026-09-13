@@ -182,7 +182,7 @@ document.
 
 ---
 
-## Approach 2 — One window, validity re-checked against the whole table
+## Approach 2 — One window, validity re-checked against the whole table  *(an addition — not in the data file's ladder)*
 
 > Not in the repo's data file for this problem; added here because it is the version most people write
 > first, and because the step from it to Approach 3 is the entire lesson.
@@ -381,7 +381,7 @@ the most transferable idea in the sliding-window family.
 
 ---
 
-## Approach 4 — The same window over a fixed array
+## Approach 4 — The same window over a fixed array  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

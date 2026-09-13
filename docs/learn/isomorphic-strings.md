@@ -71,7 +71,7 @@ half of a bijection.
 
 ---
 
-## Approach 1 — Compare every pair of positions
+## Approach 1 — Compare every pair of positions  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -141,7 +141,7 @@ no map to seed or encoding to get right. That is exactly the job it does in the 
 
 ---
 
-## Approach 2 — Group the positions, then compare the groupings
+## Approach 2 — Group the positions, then compare the groupings  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -230,7 +230,7 @@ is often the only approach that stays simple.
 
 ---
 
-## Approach 3 — One forward map (the instinctive version)
+## Approach 3 — One forward map (the instinctive version)  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -481,7 +481,7 @@ that explains why the code has the shape it does.
 
 ---
 
-## Approach 6 — Two fixed arrays, exploiting the ASCII alphabet
+## Approach 6 — Two fixed arrays, exploiting the ASCII alphabet  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

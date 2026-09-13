@@ -35,7 +35,7 @@ nums = [2, 2, 1, 1, 1, 2, 2]        answer: 2   (four 2s out of seven)
 
 ---
 
-## Approach 1 — Count each value by rescanning
+## Approach 1 — Count each value by rescanning  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -112,7 +112,7 @@ to establish the baseline you are about to beat.
 
 ---
 
-## Approach 2 — Sort, then take the middle
+## Approach 2 — Sort, then take the middle  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

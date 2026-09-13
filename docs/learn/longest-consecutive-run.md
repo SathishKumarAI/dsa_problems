@@ -87,7 +87,7 @@ def _run_length_from(start: int, present: list[int] | set[int]) -> int:
 
 ---
 
-## Approach 1 — Brute force: walk each run, searching the array for every step
+## Approach 1 — Brute force: walk each run, searching the array for every step  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -240,7 +240,7 @@ and impossible to get subtly wrong once duplicates are handled.
 
 ---
 
-## Approach 3 — A hash set, but walking from every value
+## Approach 3 — A hash set, but walking from every value  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -409,7 +409,7 @@ cannot hold a hash set.
 
 ---
 
-## Approach 5 — Direct indexing, the version this problem's constraints forbid
+## Approach 5 — Direct indexing, the version this problem's constraints forbid  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

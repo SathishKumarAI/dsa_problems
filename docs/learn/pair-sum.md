@@ -251,7 +251,7 @@ cost, and improve on it — starting from brute force is not a weakness, staying
 
 ---
 
-## Approach 2 — Sort, then binary search for each partner
+## Approach 2 — Sort, then binary search for each partner  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -426,7 +426,7 @@ and the hash map is not.
 
 ---
 
-## Approach 4 — Hash map, two passes
+## Approach 4 — Hash map, two passes  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -707,7 +707,7 @@ rung only when memory is scarcer than time, or when the array arrives sorted.
 
 ---
 
-## Approach 6 — Direct indexing when the values are small and bounded
+## Approach 6 — Direct indexing when the values are small and bounded  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

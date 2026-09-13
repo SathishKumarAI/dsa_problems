@@ -79,7 +79,7 @@ one left out.
 
 ---
 
-## Approach 1 — Brute force: count by rescanning, then pick the maxima
+## Approach 1 — Brute force: count by rescanning, then pick the maxima  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -476,7 +476,7 @@ every situation.
 
 ---
 
-## Approach 5 — A counting array when the values are small and bounded
+## Approach 5 — A counting array when the values are small and bounded  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

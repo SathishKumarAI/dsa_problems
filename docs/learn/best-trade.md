@@ -143,7 +143,7 @@ rather than reciting.
 
 ---
 
-## Approach 2 — Ask a local question: what if I sell TODAY?
+## Approach 2 — Ask a local question: what if I sell TODAY?  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -220,7 +220,7 @@ it has been said and invisible until it has.
 
 ---
 
-## Approach 3 — Precompute the cheapest-so-far table
+## Approach 3 — Precompute the cheapest-so-far table  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

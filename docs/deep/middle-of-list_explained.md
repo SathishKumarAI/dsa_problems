@@ -39,7 +39,7 @@ distinction for you — there is no `if` anywhere in this problem.
 
 ---
 
-## Approach 1: Copy into an array and index it
+## Approach 1: Copy into an array and index it  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -324,7 +324,7 @@ pointers with a comparison added.
 
 ---
 
-## Approach 4: Walk `n // 2` when the length is already known
+## Approach 4: Walk `n // 2` when the length is already known  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

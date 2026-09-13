@@ -27,7 +27,7 @@ const BASELINE = {
   interview: 46,
   arc: 46,
   comparison: 46,
-  undisclosed: 23, // documents adding rungs without saying so
+  undisclosed: 0, // documents adding rungs without saying so — cleared 2026-09-13
 }
 
 const rows = audit()
@@ -56,7 +56,10 @@ test("the number of problems with no teaching document does not grow", () => {
   )
 })
 
-test("no NEW document adds an approach without saying it is an addition", () => {
+test("no document adds an approach without saying it is an addition", () => {
+  // This one is at zero, so it is a real gate rather than a ratchet: 45 of 81
+  // documents teach a rung the data file lacks, and every one of them now says
+  // so. The next document that does not will fail here.
   const now = rows.filter((r) => r.taught && r.extra > 0 && !r.disclosed)
   assert.ok(
     now.length <= BASELINE.undisclosed,

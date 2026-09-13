@@ -35,7 +35,7 @@ sequencing is visible, and its second count is **two digits**.
 
 ---
 
-## Approach 1 — Expand the innermost group, over and over
+## Approach 1 — Expand the innermost group, over and over  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -235,7 +235,7 @@ the stack, which is precisely the argument for making the stack explicit.
 
 ---
 
-## Approach 3 — Precompute the matching bracket, then recurse over ranges
+## Approach 3 — Precompute the matching bracket, then recurse over ranges  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -467,7 +467,7 @@ rather than the interpreter's, and the two things it pushes are the whole idea.
 
 ---
 
-## Approach 5 — The same pass, building into chunk lists
+## Approach 5 — The same pass, building into chunk lists  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

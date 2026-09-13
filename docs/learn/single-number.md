@@ -76,7 +76,7 @@ nums = [4, 1, 2, 1, 2]        answer: 4
 
 ---
 
-## Approach 1 — Brute force: for each value, count its occurrences
+## Approach 1 — Brute force: for each value, count its occurrences  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -402,7 +402,7 @@ three times except one breaks XOR entirely, and the replacement is counting each
 
 ---
 
-## Approach 5 — Direct indexing: one toggle per possible value
+## Approach 5 — Direct indexing: one toggle per possible value  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

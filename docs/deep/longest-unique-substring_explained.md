@@ -119,7 +119,7 @@ that it is hard to get wrong, which is exactly the property you want in a refere
 
 ---
 
-## Approach 2 — Grow from each start until a repeat appears
+## Approach 2 — Grow from each start until a repeat appears  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -390,7 +390,7 @@ for it.
 
 ---
 
-## Approach 5 — Last-seen jump over a fixed table
+## Approach 5 — Last-seen jump over a fixed table  *(an addition — not in the data file's ladder)*
 
 ### The idea
 

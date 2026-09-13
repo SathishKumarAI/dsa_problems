@@ -34,7 +34,7 @@ words = ["flower", "flow", "flight"]        answer: "fl"
 
 ---
 
-## Approach 1 — Guess a prefix, test it, shorten
+## Approach 1 — Guess a prefix, test it, shorten  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -113,7 +113,7 @@ with", which is exactly what you want the clever versions checked against at the
 
 ---
 
-## Approach 2 — Sort the list, then compare only the ends
+## Approach 2 — Sort the list, then compare only the ends  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -375,7 +375,7 @@ comparing the two ends is `O(k)` and ignores the middle entirely.
 
 ---
 
-## Approach 5 — Binary search on the length
+## Approach 5 — Binary search on the length  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
