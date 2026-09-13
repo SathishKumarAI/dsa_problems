@@ -1,0 +1,599 @@
+# Invert a Binary Tree — Explained
+
+## Understanding the Problem
+
+Swap every node's two children. That is the whole specification, and it is one of the few problems
+where the hard part is not the algorithm — it is noticing what the operation does to the tree you
+were handed.
+
+```
+        4                          4
+       / \                        / \
+      2   7      inverted ->     7   2
+     / \ / \                    / \ / \
+    1  3 6  9                  9  6 3  1
+```
+
+**The core question:** *is this a transformation of the tree, or the construction of a new one?* Both
+are legitimate answers with different costs, and every serious bug here comes from writing the first
+while thinking about the second.
+
+> **Intuition.** "Invert the tree" is not an operation on the tree as a whole. It is one swap, at
+> one node, applied everywhere — and because each swap only rearranges links **inside** its own
+> subtree, no swap can interfere with any other. That independence is the reason this problem has no
+> ordering constraint, which is rarer than it sounds.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it unlocks |
+|---|---|
+| `0 <= number of nodes <= 100` | Tiny. Recursion depth is genuinely not a concern here, so the iterative rungs below are alternatives, **not** improvements — and this document says so rather than inventing a danger |
+| `-100 <= node.val <= 100` | Values are carried, never compared. Nothing here reads a value to decide anything |
+| an empty tree inverts to an empty tree | The base case is a legal answer, not an error. No guard is needed at the call site |
+| the swap is at **every** node | The recursion is the specification; a single swap at the root is a different function |
+
+Throughout: `root = [4, 2, 7, 1, 3, 6, 9]`, which inverts to `[4, 7, 2, 9, 6, 3, 1]`.
+
+---
+
+## Approach 1: Swap the children, then invert each side
+
+### The idea
+
+*Read the specification as code.* Swap this node's two children; invert what is now on the left;
+invert what is now on the right. An empty node has nothing to swap, so it returns immediately and
+every branch terminates.
+
+### How to think about it
+
+> **Intuition.** Give the order "everyone swap your two hands" to the root, then pass the same order
+> down both arms. Nobody needs to know where they are in the tree, and nobody needs to wait for
+> anybody else.
+
+### Worked example
+
+| Step | At node | Before | After |
+|---|---|---|---|
+| 1 | `4` | `left=2, right=7` | `left=7, right=2` |
+| 2 | `7` | `left=6, right=9` | `left=9, right=6` |
+| 3 | `9`, `6` | leaves | unchanged |
+| 4 | `2` | `left=1, right=3` | `left=3, right=1` |
+| 5 | `3`, `1` | leaves | unchanged |
+
+Reading level by level afterwards: `[4, 7, 2, 9, 6, 3, 1]`.
+
+### Code
+
+```python
+def invert_swap_first(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Swap here, then recurse into both sides."""
+    if root is None:
+        return None
+    root.left, root.right = root.right, root.left
+    invert_swap_first(root.left)
+    invert_swap_first(root.right)
+    return root
+```
+
+### Common mistake
+
+> **Watch out.** Assigning the two children one at a time instead of simultaneously:
+>
+> ```python
+> root.left = invert(root.right)
+> root.right = invert(root.left)     # root.left is ALREADY the new one
+> ```
+>
+> The first line overwrites the very thing the second line needs, so the right subtree is inverted
+> twice and the original left subtree is lost. Both children end up referencing the same nodes. Run on
+> the statement example it returns **`[4, 7, 7, 9, 9, 9, 9]`** — the `2` branch has vanished entirely
+> and the `7` branch appears on both sides.
+
+The misconception is that `a = b; b = a` swaps. It does not, in any language: the first assignment
+destroys `a`. Python's `a, b = b, a` builds the right-hand side first, which is exactly why it is
+safe here.
+
+> **Watch out.** Swapping the *values* rather than the *links* — `left.val, right.val = right.val,
+> left.val` at every node. It produces something that looks plausible and is not the inversion:
+> measured, **`[4, 7, 2, 3, 1, 9, 6]`** against the expected `[4, 7, 2, 9, 6, 3, 1]`. The top two
+> levels are right, which is exactly why it survives a glance. Swapping values moves labels between
+> fixed positions; inverting moves whole subtrees.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`,** one swap per node.
+- **Space — `O(h)`** call frames.
+
+**When it is right:** by default. Three lines that say what the operation is.
+
+---
+
+## Approach 2: Swap on the way back up
+
+### The idea
+
+*Does the swap have to happen before the recursive calls?* No — and checking that is more instructive
+than assuming it. Invert both subtrees first, then attach them crossed over.
+
+### How to think about it
+
+> **Intuition.** Approach 1 rearranges on the way down; this one rearranges on the way up. They agree
+> because a swap at a node only touches that node's own two links, and the recursive calls only touch
+> links strictly below them. Two operations that never touch the same field cannot depend on order.
+
+> **Why it works.** That is the general rule worth extracting: **order is free exactly when the
+> operations are disjoint.** Most tree problems are not like this — post-order exists precisely
+> because a parent usually needs its children's answers. Here it needs nothing, so both orders are
+> correct, and the freedom is a fact about this problem rather than a habit to carry.
+
+The claim is checked rather than asserted: on **2 000 random trees**, swap-before and swap-after
+produce identical trees on every one.
+
+### Code
+
+```python
+def invert_swap_last(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Invert both subtrees, then attach them crossed over."""
+    if root is None:
+        return None
+    left = invert_swap_last(root.left)
+    right = invert_swap_last(root.right)
+    root.left, root.right = right, left
+    return root
+```
+
+Written this way the simultaneous assignment is no longer strictly required — `left` and `right` are
+already held in local names — which makes this version the safer one to write under pressure.
+
+### Common mistake
+
+> **Watch out.** Assuming this generalises. It does not: the moment a node's work depends on what its
+> children computed (a height, a sum, a verdict) the order stops being free. `balanced-tree` and
+> `tree-diameter` are the same walk with a real ordering constraint, and "it worked for invert" is not
+> a reason.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`.** **Space — `O(h)`.** Identical to approach 1 in every measurable way.
+
+**When it is right:** when you want the local names, or when the return value of each subtree is used
+for something else too.
+
+---
+
+## Approach 3: An explicit stack or queue
+
+### The idea
+
+*The recursion's only job is to visit every node once; any container can do that.* Push the root, pop
+a node, swap its children, push both children, repeat.
+
+### How to think about it
+
+> **Intuition.** A to-do list of nodes still to be swapped. Because the swaps are independent, the
+> order the list is drained in cannot change the outcome — a stack and a queue give the same tree,
+> which is not true of most tree algorithms.
+
+With `100` nodes there is no recursion-depth danger to solve here. The honest reason to know this
+version is that the same rewrite is *required* on a problem where the tree can be deep, and this is
+the easiest place to learn it.
+
+### Worked example
+
+Stack, top on the right:
+
+| Step | Stack | Popped | Swapped to | Pushed |
+|---|---|---|---|---|
+| 1 | `[4]` | `4` | `7, 2` | `7`, `2` |
+| 2 | `[7, 2]` | `2` | `3, 1` | `3`, `1` |
+| 3 | `[7, 3, 1]` | `1` | leaf | — |
+| 4 | `[7, 3]` | `3` | leaf | — |
+| 5 | `[7]` | `7` | `9, 6` | `9`, `6` |
+| 6 | `[9, 6]` | … | leaves | — |
+
+### Code
+
+```python
+def invert_stack(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Depth-first, with the container written out by hand."""
+    stack = [root] if root else []
+    while stack:
+        node = stack.pop()
+        node.left, node.right = node.right, node.left
+        if node.left:
+            stack.append(node.left)
+        if node.right:
+            stack.append(node.right)
+    return root
+```
+
+Swap `stack.pop()` for `queue.popleft()` and it becomes breadth-first with an identical result. Both
+are in the script below, and both are cross-checked against the recursion on 500 random trees.
+
+### Common mistake
+
+> **Watch out.** Pushing the children **before** swapping and expecting the same tree. It still works
+> — the children are the same two nodes either way, only their roles change — but the reasoning that
+> makes it safe is the disjointness above, not luck. If you cannot say why it is safe, write the swap
+> first.
+
+> **Watch out.** `stack = [root]` without the emptiness guard. An empty tree then puts `None` on the
+> stack and `node.left` raises `AttributeError` on the first pop. The statement says an empty tree
+> inverts to an empty tree; that is an input, not an error case.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`.**
+- **Space — `O(h)`** for the stack, `O(w)` for the queue.
+
+**When it is right:** when recursion is unavailable or the tree may be deep — neither of which is true
+here, which is the point worth being honest about.
+
+---
+
+## Approach 4: Build a new inverted tree
+
+### The idea
+
+*Every approach so far modifies the caller's tree.* Sometimes that is unacceptable — the caller still
+needs the original. Construct a new tree instead, taking the right child as the new left.
+
+### How to think about it
+
+> **Intuition.** Not a rearrangement but a transcription: copy each node, and write its children down
+> in the other order. The input is read and never touched.
+
+This is the rung that names the thing the others do quietly. `invert_swap_first(root) is root` is
+**`True`** — the function returns the same object it was given, mutated. `invert_copy(root) is root`
+is `False`, and the original still reads `[4, 2, 7, 1, 3, 6, 9]` afterwards. Both printed by the run.
+
+### Worked example
+
+| New node | Left child taken from | Right child taken from |
+|---|---|---|
+| `4` | old `7` subtree | old `2` subtree |
+| `7` | old `9` | old `6` |
+| `2` | old `3` | old `1` |
+
+### Code
+
+```python
+def invert_copy(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """A NEW tree. The caller's tree is untouched."""
+    if root is None:
+        return None
+    return TreeNode(root.val, invert_copy(root.right), invert_copy(root.left))
+```
+
+### Common mistake
+
+> **Watch out.** Believing you have this when you have approach 1. A function that returns a tree
+> looks like a function that made one. The test is one line — `result is root` — and the consequence
+> of getting it wrong is a caller whose data changed under it. `mirror-tree` shows exactly that
+> failure: an in-place inversion used to test symmetry reports `True` for every tree *and* corrupts
+> the input.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`.**
+- **Space — `O(n)`** for the new tree, plus `O(h)` of frames.
+
+**When it is right:** whenever the caller keeps the original — testing a property, comparing against
+the inverse, or working with a shared structure.
+
+---
+
+## The Overall Arc
+
+Mirroring is a per-node operation, so there is no clever algorithm to find: swap two links, do the
+same inside each subtree, stop at the empty node. What the ladder is really about is a property most
+tree problems do not have — each swap touches only the two links belonging to one node, and the
+recursive calls touch only links strictly below, so no two operations in the whole computation ever
+write the same field. That is why the swap may happen before or after the recursion with no change to
+the result (checked on two thousand random trees, not assumed), why a stack and a queue produce the
+same tree, and why there is genuinely nothing to get wrong about ordering here — which makes it worth
+noticing consciously, because the very next tree problem you meet will need post-order and the habit
+does not transfer. The one thing that *is* easy to get wrong is simultaneity: assigning the two
+children one at a time destroys the second one's input, and the tree that comes back has whole
+branches duplicated and others missing. The last rung asks the question the others answer silently —
+whether the operation rearranges the caller's tree or builds a new one. Both are correct, they differ
+by `O(n)` of memory, and choosing the wrong one is how a symmetry check ends up quietly corrupting the
+tree it was asked about.
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Swap, then recurse | `O(n)` | `O(h)` | Says the specification in three lines; mutates | Default |
+| Recurse, then swap | `O(n)` | `O(h)` | Identical cost; local names make the swap safer | You want the subtree results in hand |
+| Explicit stack or queue | `O(n)` | `O(h)` / `O(w)` | No frames; the container is yours | Recursion unavailable, or a deep tree |
+| Build a new tree | `O(n)` | `O(n)` | The caller's tree survives | The original is still needed |
+
+## Interview Priority
+
+**Know cold:** the three-line recursion, and the simultaneous swap. If you write `root.left, root.right
+= root.right, root.left` without pausing, you have already avoided the only real bug.
+
+**Know to say:** that this mutates the input and returns the same object, and that a copying version
+exists if the caller needs the original. That single sentence separates someone who has thought about
+the function's contract from someone who has memorised its body.
+
+**Understand, do not memorise:** the iterative versions. They are the same walk, and here they solve
+no problem the recursion has — say so rather than claiming a benefit that a hundred-node constraint
+does not support.
+
+> **In an interview.** Note out loud that the swap can go before or after the recursive calls because
+> the operations are disjoint, then note that this is unusual and that the next problem probably needs
+> post-order. Expect the follow-up "is this tree symmetric?", which is this operation's close cousin —
+> and the good answer there does **not** invert anything, because comparing a tree with its own
+> in-place inversion compares it with itself.
+
+## Full Runnable Script
+
+`TreeNode`, `build`, `to_values`, `clone` and `random_tree` are **scaffolding, not part of the
+answer.** Every approach is handed its own `clone` of the input, because four of the five mutate what
+they are given — without that, each approach would be inverting the previous approach's output and
+they would appear to disagree at random.
+
+`to_values` carries a step limit: the sequential-assignment bug can leave two links pointing at the
+same subtree, and a read-back with no guard would keep walking it.
+
+```python
+"""Invert a Binary Tree — every approach in one file, cross-checked.
+
+Run:  python invert_tree.py
+"""
+
+from __future__ import annotations
+
+import random
+from collections import deque
+from typing import Callable, Optional
+
+
+# ---------------------------------------------------------------- scaffolding
+class TreeNode:
+    """The node an interviewer hands you. Scaffolding, not part of any answer."""
+
+    __slots__ = ("val", "left", "right")
+
+    def __init__(self, val: int = 0, left: "TreeNode | None" = None,
+                 right: "TreeNode | None" = None) -> None:
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def build(values: list[Optional[int]]) -> Optional[TreeNode]:
+    """Level-order list with `None` holes -> tree, so tests can be written as lists."""
+    if not values or values[0] is None:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        for side in ("left", "right"):
+            if i >= len(values):
+                break
+            v = values[i]
+            i += 1
+            if v is not None:
+                child = TreeNode(v)
+                setattr(node, side, child)
+                queue.append(child)
+    return root
+
+
+def to_values(root: Optional[TreeNode]) -> list[Optional[int]]:
+    """Tree -> level-order list, trimmed. Step-limited: a buggy invert can share a subtree."""
+    if root is None:
+        return []
+    out: list[Optional[int]] = []
+    queue: deque[Optional[TreeNode]] = deque([root])
+    steps = 0
+    while queue:
+        steps += 1
+        if steps > 100_000:
+            return ["<shared subtree: read-back gave up>"]
+        node = queue.popleft()
+        if node is None:
+            out.append(None)
+            continue
+        out.append(node.val)
+        queue.append(node.left)
+        queue.append(node.right)
+    while out and out[-1] is None:
+        out.pop()
+    return out
+
+
+def clone(node: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Every approach gets its own copy — four of the five mutate their input."""
+    if node is None:
+        return None
+    return TreeNode(node.val, clone(node.left), clone(node.right))
+
+
+def random_tree(n: int, rng: random.Random) -> Optional[TreeNode]:
+    """A tree of exactly n nodes with an arbitrary shape — the stress-test input."""
+    if n == 0:
+        return None
+    root = TreeNode(rng.randint(-100, 100))
+    open_slots = [root]
+    for _ in range(n - 1):
+        parent = rng.choice(open_slots)
+        node = TreeNode(rng.randint(-100, 100))
+        if parent.left is None and (parent.right is not None or rng.random() < 0.5):
+            parent.left = node
+        else:
+            parent.right = node
+        if parent.left is not None and parent.right is not None:
+            open_slots.remove(parent)
+        open_slots.append(node)
+    return root
+
+
+# ------------------------------- approach 1: swap here, then recurse both ways
+def invert_swap_first(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Swap here, then recurse into both sides."""
+    if root is None:
+        return None
+    root.left, root.right = root.right, root.left
+    invert_swap_first(root.left)
+    invert_swap_first(root.right)
+    return root
+
+
+# --------------------------------- approach 2: invert both sides, then attach
+def invert_swap_last(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Invert both subtrees, then attach them crossed over."""
+    if root is None:
+        return None
+    left = invert_swap_last(root.left)
+    right = invert_swap_last(root.right)
+    root.left, root.right = right, left
+    return root
+
+
+# ------------------------------------- approach 3: the container, written out
+def invert_stack(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Depth-first, with the container written out by hand."""
+    stack = [root] if root else []
+    while stack:
+        node = stack.pop()
+        node.left, node.right = node.right, node.left
+        if node.left:
+            stack.append(node.left)
+        if node.right:
+            stack.append(node.right)
+    return root
+
+
+def invert_queue(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """The same walk, breadth-first. Identical result: the swaps are independent."""
+    queue: deque[TreeNode] = deque([root] if root else [])
+    while queue:
+        node = queue.popleft()
+        node.left, node.right = node.right, node.left
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return root
+
+
+# ------------------------------------ approach 4: build a new tree, read-only
+def invert_copy(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """A NEW tree. The caller's tree is untouched."""
+    if root is None:
+        return None
+    return TreeNode(root.val, invert_copy(root.right), invert_copy(root.left))
+
+
+# --------------------------------------------------------- the buggy variants
+def _bug_sequential_assignment(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """No simultaneous swap: the first assignment destroys what the second needs."""
+    if root is None:
+        return None
+    root.left = _bug_sequential_assignment(root.right)
+    root.right = _bug_sequential_assignment(root.left)
+    return root
+
+
+def _bug_swaps_values(root: Optional[TreeNode]) -> Optional[TreeNode]:
+    """Swaps the values held by the two children instead of the links."""
+    if root is None:
+        return None
+    if root.left and root.right:
+        root.left.val, root.right.val = root.right.val, root.left.val
+    _bug_swaps_values(root.left)
+    _bug_swaps_values(root.right)
+    return root
+
+
+APPROACHES: list[tuple[str, Callable[[Optional[TreeNode]], Optional[TreeNode]]]] = [
+    ("swap-first", invert_swap_first),
+    ("swap-last", invert_swap_last),
+    ("stack", invert_stack),
+    ("queue", invert_queue),
+    ("copy", invert_copy),
+]
+
+EXAMPLE: list[Optional[int]] = [4, 2, 7, 1, 3, 6, 9]
+EXPECTED: list[Optional[int]] = [4, 7, 2, 9, 6, 3, 1]
+
+
+def main() -> None:
+    cases: list[tuple[str, list[Optional[int]], list[Optional[int]]]] = [
+        ("statement example", EXAMPLE, EXPECTED),
+        ("empty tree", [], []),
+        ("single node", [1], [1]),
+        ("left child only", [1, 2], [1, None, 2]),
+        ("right child only", [1, None, 2], [1, 2]),
+        ("left spine of three", [1, 2, None, 3], [1, None, 2, None, 3]),
+        ("duplicate values", [1, 1, 1, 1], [1, 1, 1, None, None, None, 1]),
+        ("negative values", [-1, -2, -3], [-1, -3, -2]),
+    ]
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+
+    for label, values, expected in cases:
+        results = {name: to_values(fn(build(values))) for name, fn in APPROACHES}
+        print(f"\n{label}: {values} -> expected {expected}")
+        for name, got in results.items():
+            print(f"  {name:<{width}} -> {got}")
+        unique = {tuple(v) for v in results.values()}
+        if len(unique) != 1:
+            all_agreed = False
+            print(f"  DISAGREEMENT: {results}")
+        elif list(next(iter(unique))) != expected:
+            all_agreed = False
+            print("  WRONG: unanimous, but not the expected tree")
+
+    rng = random.Random(20260913)
+    for _ in range(500):
+        tree = random_tree(rng.randint(0, 30), rng)
+        before = to_values(tree)
+        results = {name: to_values(fn(clone(tree))) for name, fn in APPROACHES}
+        if len({tuple(v) for v in results.values()}) != 1:
+            all_agreed = False
+            print(f"  DISAGREEMENT on {before}: {results}")
+        twice = to_values(invert_swap_first(invert_swap_first(clone(tree))))
+        if twice != before:                        # inverting twice is the identity
+            all_agreed = False
+            print(f"  NOT AN INVOLUTION on {before}: {twice}")
+
+    print("\n=== does the swap order matter? the data file says no ===")
+    check = random.Random(11)
+    agree = 0
+    for _ in range(2000):
+        tree = random_tree(check.randint(0, 20), check)
+        agree += to_values(invert_swap_first(clone(tree))) == to_values(invert_swap_last(clone(tree)))
+    print(f"  {agree}/2000 random trees: swap-before and swap-after produce the same tree")
+
+    print("\n=== what this document claims about wrong code, run ===")
+    print(f"  sequential assignment: {to_values(_bug_sequential_assignment(build(EXAMPLE)))}")
+    print(f"  swapping values:       {to_values(_bug_swaps_values(build(EXAMPLE)))}")
+    print(f"  the answer:            {EXPECTED}")
+
+    print("\n=== rearranged in place, or newly built? ===")
+    original = build(EXAMPLE)
+    print(f"  invert_swap_first(root) is root: {invert_swap_first(original) is original}")
+    untouched = build(EXAMPLE)
+    copied = invert_copy(untouched)
+    print(f"  invert_copy(root) is root:       {copied is untouched}")
+    print(f"  and the original still reads:    {to_values(untouched)}")
+
+    print(f"\n{len(cases)} listed cases + 500 random trees, {len(APPROACHES)} approaches.")
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()
+```
