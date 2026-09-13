@@ -1456,6 +1456,52 @@ describe(
       assert.equal(out.scrollW, 390)
     })
 
+    // The stage is the product. On a 390x844 phone it used to get 197px — 23%
+    // of the viewport — because the reading column sat under it at
+    // `max-h-[45svh]`, nearly twice the stage's size, to keep four tabs
+    // permanently on screen. Below lg those four are a 53px bottom bar now and
+    // each opens the same DrawerTabs in a sheet. This asserts the SHARE, not
+    // the pixels, so it survives a different phone.
+    test("on a phone the stage gets the screen, and reading is a bottom bar", async () => {
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/journey/two-sum?act=story`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const h = el => el ? Math.round(el.getBoundingClientRect().height) : 0;
+        const stage = document.querySelector('[aria-label=stage]');
+        const nav = document.querySelector('nav[aria-label=reading]');
+        const btns = nav ? [...nav.querySelectorAll('button')] : [];
+        btns[2]?.click();
+        await wait(700);
+        return {
+          stagePct: Math.round(h(stage) / window.innerHeight * 100),
+          navH: h(nav),
+          buttons: btns.length,
+          allTouch: btns.every(b => b.getBoundingClientRect().height >= 44),
+          columnHidden: h(document.querySelector('aside[aria-label="approach"]')) === 0,
+          sheetOpened: !!document.querySelector('[role=dialog]'),
+          landedOnEdges: !!document.querySelector('[aria-label="corner cases"]'),
+          scrollW: document.documentElement.scrollWidth,
+        };
+      `)
+      await page.resize(1440)
+      assert.equal(out.buttons, 4, "the reading bar lost a destination")
+      assert.ok(out.allTouch, "a reading-bar button is under the 44px touch target")
+      assert.ok(out.columnHidden, "the reading COLUMN is still rendered on a phone")
+      assert.ok(
+        out.navH <= 80,
+        `the reading bar is ${out.navH}px — it is a bar, not a column`
+      )
+      assert.ok(
+        out.stagePct >= 50,
+        `the stage gets only ${out.stagePct}% of a phone screen`
+      )
+      assert.ok(out.sheetOpened, "a reading-bar button did not open its sheet")
+      assert.ok(out.landedOnEdges, "the sheet did not open on the tab that was tapped")
+      assert.equal(out.scrollW, 390)
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the visualizer fills the viewport it is given (U9)", async () => {
       await page.goto(`${server.base}/#/algorithms?algo=quick`)
       const out = await page.run(`

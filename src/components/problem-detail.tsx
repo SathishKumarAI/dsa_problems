@@ -107,7 +107,9 @@ function LanguageStrip({ langs }: { langs: (keyof Code)[] }) {
           aria-selected={l.key === lang}
           onClick={() => setPref("codeTab", l.key)}
           className={cn(
-            "rounded-md px-2.5 py-1 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+            // the language tabs are tapped repeatedly while reading a rung, so
+            // they take the touch target below lg (measured at 390px: 26px)
+            "inline-flex min-h-11 items-center rounded-md px-2.5 py-1 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:min-h-7",
             l.key === lang
               ? "bg-accent text-foreground"
               : "text-muted-foreground hover:text-foreground"
@@ -279,7 +281,9 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="-ml-2 text-muted-foreground"
+          // 44px is the target ON TOUCH (DESIGN.md); the desktop keeps its
+          // density from lg up. Measured at 390px before this: 28px.
+          className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
         >
           <ArrowLeftIcon data-icon="inline-start" />
           {hidden ? MASKED_NAME : pattern.name}
@@ -324,7 +328,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
             href={leetcodeUrl(problem.leetcode)}
             target="_blank"
             rel="noopener"
-            className="btn-glow inline-flex min-h-9 items-center gap-2 rounded-lg bg-primary px-3 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px"
+            className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-3 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
           >
             Solve on LeetCode
             <ExternalLinkIcon className="size-4" />
@@ -332,7 +336,7 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
           {hasLearnPage(problem.id) && !ladder.capped && (
             <a
               href={href(`/learn/${problem.id}`)}
-              className="group inline-flex min-h-9 items-center gap-2 rounded-lg border bg-card px-3 text-ui font-medium hover:border-chart-1/60"
+              className="group inline-flex min-h-11 items-center gap-2 rounded-lg border bg-card px-3 text-ui font-medium hover:border-chart-1/60"
             >
               {deep ? (
                 <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
