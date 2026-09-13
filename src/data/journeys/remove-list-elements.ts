@@ -130,7 +130,7 @@ function* restart(d: N): Generator<DFrame> {
     answer: row,
     list: { values: row, label: "correct, and quadratic" },
     state: [{ label: "steps walked", value: steps }],
-    note: `${row.join(" → ") || "nothing"}. Never wrong, and it re-checks what it has already cleared: a list of nothing but matches costs about n²/2 steps. The information it keeps throwing away is where it had got to.`,
+    note: `${row.join(" → ") || "nothing"}. Never wrong, and it re-checks what it has already cleared. The worst shape is survivors first with the matches at the end — 419 inner steps at 40 nodes, measured — while a list of nothing but matches costs this loop nothing, because the head loop above already cleared it. The information it keeps throwing away is where it had got to.`,
   }
 }
 
@@ -490,7 +490,7 @@ export const removeListElements = deriveJourney(problem, {
       idea: problem.alternatives![0].summary,
       takeaways: [
         "obviously correct: after every removal it re-examines everything",
-        "and that is the cost — a list of nothing but matches walks about n²/2 nodes",
+        "and that is the cost — survivors first with the matches at the end walks 419 nodes at length 40, measured, while all-matches costs this loop nothing",
         "what it throws away each time is the one thing worth keeping: where it had got to",
       ],
       run: restart,

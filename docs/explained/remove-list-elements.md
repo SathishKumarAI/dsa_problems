@@ -36,7 +36,7 @@ Given the head of a linked list and a value, remove every node holding that valu
 
 ## 1. Restart the scan after every removal
 
-Strip the leading matches, then scan from the head, remove the first match you find, and start over. Never wrong, and it re-checks everything it has already cleared — a list of nothing but matches costs n^2/2 steps.
+Strip the leading matches, then scan from the head, remove the first match you find, and start over. Never wrong, and it re-checks everything it has already cleared. Measured, the worst shape is SURVIVORS FIRST with the matches at the end — 419 inner steps at n = 40, 929 at n = 60 — because a list of nothing but matches is cleared entirely by the head loop before this one runs, and costs it zero.
 
 ```python
 def remove_elements(head, val):
@@ -321,7 +321,7 @@ ListNode* removeElements(ListNode* head, int val) {
 
 ## The arc
 
-Every rung applies one unlinking rule — point a node's predecessor past it — and the ladder is a sequence of things that turn out to be unnecessary. Restarting the scan after each removal re-checks nodes it has already cleared, which is quadratic on a list of nothing but matches; a deleted node cannot come back, so nothing behind you can change and one pass is enough. Rebuilding from the surviving values is linear and replaces every node you were handed with a copy. Recursion keeps the real nodes and keeps ten thousand frames along with them. Stripping the leading matches first and then looping is one pass in constant space, and writes the same test twice — the head loop being the one people forget, which is exactly the loop that a list of nothing but matches depends on. The dummy node deletes that duplication: with a node in front of the head, the head is an ordinary node, one loop covers everything, and dummy.next is right whether nothing went, the front went, or all of it did. The other habit worth keeping is not advancing prev after a removal, because the node that slid into place may match too.
+Every rung applies one unlinking rule — point a node's predecessor past it — and the ladder is a sequence of things that turn out to be unnecessary. Restarting the scan after each removal re-checks nodes it has already cleared, which is quadratic when the survivors come first and the matches sit at the end; a deleted node cannot come back, so nothing behind you can change and one pass is enough. Rebuilding from the surviving values is linear and replaces every node you were handed with a copy. Recursion keeps the real nodes and keeps ten thousand frames along with them. Stripping the leading matches first and then looping is one pass in constant space, and writes the same test twice — the head loop being the one people forget, which is exactly the loop that a list of nothing but matches depends on entirely. The dummy node deletes that duplication: with a node in front of the head, the head is an ordinary node, one loop covers everything, and dummy.next is right whether nothing went, the front went, or all of it did. The other habit worth keeping is not advancing prev after a removal, because the node that slid into place may match too.
 
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
