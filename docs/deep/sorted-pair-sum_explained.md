@@ -25,6 +25,94 @@ The constraints, and what each one buys:
 Where sortedness is *not* available — the plain unsorted "two sum" — the hash map is the right
 answer and the converging pointers are simply unavailable. Everything below hinges on knowing
 which of those two worlds you are in.
+---
+
+## Reading the Calculations
+
+The optimal solution here is four lines and one decision. The decision is the whole problem, and it
+is the kind that looks arbitrary until you see what it throws away.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `lo` | a **position**, starting at the smallest value | The array is sorted, so `lo` is the cheapest element still in play | — |
+| `hi` | a **position**, starting at the largest | Likewise, the most expensive one still in play | — |
+| `nums[lo] + nums[hi]` | the sum of the **cheapest and dearest** pair still available | Not any pair — the two extremes, which is what makes the comparison informative | Comparing two arbitrary elements tells you nothing about the others |
+| `lo += 1` | "give up on `nums[lo]` **entirely**" | Not "try the next one" — the value at `lo` is gone for good, and the next section says why that is safe | Moving both pointers at once skips pairs that were never tested |
+| `hi -= 1` | "give up on `nums[hi]` entirely" | | |
+| `while lo < hi` | "there are still at least two different slots" | `<`, not `<=`: at `lo == hi` you would be pairing one element with itself | `<=` returns a pair of identical indices, which the statement forbids |
+
+### The one decision, and what it eliminates
+
+Everything rests on one comparison and three outcomes:
+
+| The sum is | What that means | What you do |
+|---|---|---|
+| **too small** | even the largest partner cannot lift `nums[lo]` to the target | discard `nums[lo]`: `lo += 1` |
+| **too big** | even the smallest partner cannot bring `nums[hi]` down to the target | discard `nums[hi]`: `hi -= 1` |
+| **equal** | done | return the pair |
+
+> **Why it works.** The move looks like a guess and is a proof. Suppose `nums[lo] + nums[hi] <
+> target`. `nums[hi]` is the **largest value still available**, so it is the best partner `nums[lo]`
+> could ever have — and it is not enough. Every other partner is smaller, so every remaining pair
+> containing `nums[lo]` is smaller still, and none of them can reach the target. One comparison
+> therefore eliminates **n − 1 pairs**, not one.
+
+On the running example, `nums = [1, 3, 6, 9]`, `target = 12` — the script prints this:
+
+```
+at lo=0 hi=3 the sum is 10 < 12, so nums[0] = 1 is discarded.
+What goes with it — every pair that uses it:
+    1 + 3 =  4  < 12   cannot be the answer
+    1 + 6 =  7  < 12   cannot be the answer
+    1 + 9 = 10  < 12   cannot be the answer
+```
+
+That is the entire idea. The sortedness is not a convenience; it is what makes one comparison speak
+for a whole row of the table.
+
+### The trace, in full
+
+| Step | `lo` | `hi` | `nums[lo] + nums[hi]` | vs `12` | Action |
+|---|---|---|---|---|---|
+| 1 | `0` | `3` | `1 + 9 = 10` | too small | `lo += 1` |
+| 2 | `1` | `3` | `3 + 9 = 12` | **equal** | return `[1, 3]` |
+
+Two comparisons on a four-element array where six pairs exist.
+
+### How to trace it by hand
+
+```
+  lo   hi   nums[lo]   nums[hi]   sum   vs target   move
+```
+
+1. Start `lo` at the far left, `hi` at the far right.
+2. Each row: add the two values, compare to the target, and move **exactly one** pointer inward.
+3. Never move both. Moving both skips the pair made of the two new positions, which you have not
+   tested.
+4. Stop when the sums match, or when `lo` and `hi` meet — at which point no pair exists.
+
+### Reading a complexity out loud
+
+Each step retires one position and no step ever revisits one, so the loop runs at most `n − 1`
+times: `O(n)`, with `O(1)` extra memory — two integers.
+
+Counted rather than argued, on `[1 … n]` with the answer at the far end — every row printed by the
+script:
+
+| `n` | Pairs that exist | Brute force examines | Two pointers compare |
+|---|---|---|---|
+| `4` | `6` | `6` | `3` |
+| `100` | `4 950` | `4 950` | `99` |
+| `1 000` | `499 500` | `499 500` | `999` |
+| `10 000` | `49 995 000` | `49 995 000` | `9 999` |
+
+Ten times the input multiplies the brute force by a hundred and the two-pointer walk by ten. That is
+`O(n²)` against `O(n)`, in numbers you can check.
+
+---
+
 
 ---
 
@@ -110,6 +198,30 @@ write the new arrival down and call the next one. One pass, one question per per
 answer to each question is already sitting in the book. The trade is explicit: the book grows to
 the size of the crowd. Note also what this approach does *not* use — it never once looks at the
 fact that the queue arrived in sorted order.
+
+> **Under the hood.** The hash rung's `O(n)` and the two-pointer rung's `O(n)` are not the same
+> `O(n)` — the map allocates a table, hashes every key, and rehashes the lot each time the load
+> crosses two thirds, while the pointer walk allocates nothing but two integers. So the walk must be
+> faster. **It is not, and that is the lesson.** Measured on this machine, per element:
+>
+> | `n` | building the dict | the two-pointer scan |
+> |---|---|---|
+> | `10 000` | `34.0 ns` | `38.8 ns` |
+> | `100 000` | `39.1 ns` | `38.7 ns` |
+>
+> Level, and at the smaller size the *allocating* version wins. The reason is that the dict
+> comprehension runs entirely inside the interpreter's C, while the `while` loop is Python bytecode
+> — an add, a compare and two name lookups per step, each costing more than the hash it is supposedly
+> saving. The pointer walk's real advantage in CPython is **memory**: `O(1)` against `O(n)`, which is
+> the difference between two integers and a table of `n` entries, and that gap does not close. In a
+> compiled language the time picture flips, because there the loop is three instructions and the
+> allocator is not.
+>
+> Two things worth taking from a table that refutes its own paragraph: a complexity class is a
+> statement about **growth**, never about speed at a given size; and the constant factors in an
+> interpreted language often run opposite to the algorithm's shape, which is why "I profiled it"
+> beats "it is O(n)" every time.
+
 
 ### Worked example
 
@@ -318,6 +430,36 @@ baseline reads as pattern-matching rather than reasoning.
 
 ---
 
+## How to Get Fluent
+
+1. **State the elimination out loud before writing the loop.** *"If the cheapest and the dearest
+   together fall short, the cheapest cannot reach the target with anyone, so it is gone."* **Done
+   when** you can say it without the array in front of you — that sentence is the algorithm, and
+   the code is four lines of transcription.
+
+2. **Hand-trace `[1, 3, 6, 9]` with `target = 12`, then with `target = 100`.** The second has no
+   answer; watch the pointers meet. **Done when** you can say what `while lo < hi` is protecting
+   against and why `<=` would be wrong here.
+
+3. **Break the promise.** Shuffle the array so it is no longer sorted and run the two-pointer rung.
+   It returns something, and it is wrong. **Done when** you can say exactly which line stops being
+   true — the comparison no longer tells you anything about the values you have not seen — and why
+   the hash rung does not care.
+
+4. **Count, do not time.** Instrument both rungs on `list(range(1, 10001))` with the answer at the
+   far end. **Done when** you have produced the `49 995 000` against `9 999` yourself.
+
+5. **Do the siblings.** *Three Sum* is this loop with an outer element fixed — and the reason it is
+   `O(n²)` and not `O(n³)`. *Container With Most Water* is the same two pointers with a different
+   reason for moving (always discard the shorter wall). *Sort Colors* is two pointers converging
+   with a third walking between them. **Done when** you can say, for each, what the comparison is
+   and what one move eliminates.
+
+6. **A month later, the one sentence that should come back:** *on sorted data, comparing the two
+   ends tells you about everything in between, so one comparison can retire a whole row of the
+   table.*
+
+
 ## Full Runnable Script
 
 Every approach in one file, checked against the statement's example, the smallest legal input,
@@ -395,6 +537,120 @@ def run_case(label: str, nums: list[int], target: int) -> bool:
     return agree
 
 
+
+
+# ------------------------------------ the arithmetic, printed rather than told
+# Every number "Reading the Calculations" and the under-the-hood callout quote
+# is produced here. None of this is an approach.
+def show_decisions(nums: list[int], target: int) -> None:
+    """One row per comparison: the two ends, their sum, and which end is retired."""
+    print(f"\n=== the decision at every step, nums={nums}, target={target} ===")
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        total = nums[lo] + nums[hi]
+        if total == target:
+            verdict = "EQUAL -> answer"
+        elif total < target:
+            verdict = "too small -> lo += 1"
+        else:
+            verdict = "too big   -> hi -= 1"
+        print(
+            f"  lo={lo} hi={hi}  {nums[lo]:>3} + {nums[hi]:>3} = {total:>4}  vs {target}  {verdict}"
+        )
+        if total == target:
+            return
+        if total < target:
+            lo += 1
+        else:
+            hi -= 1
+    print("  the pointers met: no pair sums to the target")
+
+
+def show_elimination(nums: list[int], target: int) -> None:
+    """What moving a pointer actually throws away — every pair, listed."""
+    lo, hi = 0, len(nums) - 1
+    total = nums[lo] + nums[hi]
+    print(f"\n=== why discarding is safe, not a guess ===")
+    print(f"  at lo={lo} hi={hi} the sum is {total} < {target}, so nums[{lo}] = {nums[lo]} is discarded.")
+    print("  What goes with it, every pair that uses it:")
+    for j in range(1, len(nums)):
+        pair = nums[0] + nums[j]
+        mark = "cannot be the answer" if pair != target else "<- WOULD HAVE BEEN"
+        print(f"    {nums[0]:>3} + {nums[j]:>3} = {pair:>4}  {'<' if pair < target else '>='} {target}   {mark}")
+    print(f"  nums[{hi}] = {nums[hi]} was the LARGEST partner available. If it is not enough,")
+    print(f"  nothing smaller is. One comparison, {len(nums) - 1} pairs gone.")
+
+
+def count_work() -> None:
+    """Comparisons made, against pairs that exist."""
+    def two_pointer(a: list[int], t: int) -> int:
+        lo, hi, seen = 0, len(a) - 1, 0
+        while lo < hi:
+            seen += 1
+            total = a[lo] + a[hi]
+            if total == t:
+                return seen
+            if total < t:
+                lo += 1
+            else:
+                hi -= 1
+        return seen
+
+    def brute(a: list[int], t: int) -> int:
+        seen = 0
+        for i in range(len(a)):
+            for j in range(i + 1, len(a)):
+                seen += 1
+                if a[i] + a[j] == t:
+                    return seen
+        return seen
+
+    print("\n=== comparisons made, with the answer at the far end ===")
+    print(f"  {'n':>7} {'pairs that exist':>18} {'brute force':>14} {'two pointers':>14}")
+    for size in (4, 100, 1000, 10000):
+        a = list(range(1, size + 1))
+        t = a[-2] + a[-1]
+        print(
+            f"  {size:>7} {size * (size - 1) // 2:>18,} {brute(a, t):>14,} {two_pointer(a, t):>14,}"
+        )
+
+
+def measure_allocation() -> None:
+    """Both rungs are O(n). Only one of them allocates."""
+    import time
+
+    def timed(fn, repeat=5):
+        best = float("inf")
+        for _ in range(repeat):
+            start = time.perf_counter()
+            fn()
+            best = min(best, time.perf_counter() - start)
+        return best
+
+    print("\n=== the same O(n), with and without an allocator in the loop ===")
+    print(f"  {'n':>8} {'build a dict':>16} {'two-pointer scan':>18}")
+    for size in (10_000, 100_000):
+        a = list(range(1, size + 1))
+        build = timed(lambda: {v: i for i, v in enumerate(a)}, repeat=3)
+
+        def scan() -> None:
+            lo, hi = 0, len(a) - 1
+            target = -1  # never found: forces the full walk
+            while lo < hi:
+                total = a[lo] + a[hi]
+                if total == target:
+                    return
+                if total < target:
+                    lo += 1
+                else:
+                    hi -= 1
+
+        walk = timed(scan, repeat=3)
+        print(
+            f"  {size:>8} {build / size * 1e9:>13.1f} ns {walk / size * 1e9:>15.1f} ns"
+            f"   (per element)"
+        )
+
 def main() -> None:
     ok = True
 
@@ -430,6 +686,11 @@ def main() -> None:
           f"all three approaches cross-checked")
 
     print()
+    show_decisions([1, 3, 6, 9], 12)
+    show_elimination([1, 3, 6, 9], 12)
+    count_work()
+    measure_allocation()
+
     print("ALL APPROACHES AGREED ON EVERY CASE." if ok else "APPROACHES DISAGREED — see above.")
 
 
