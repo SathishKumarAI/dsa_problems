@@ -596,6 +596,14 @@ library, has been for decades, and is a C implementation of exactly Approach 4.
 > there — left of them, or right of them — which is the same distinction as `<` versus `<=` in the
 > loop. Knowing this pairing is the point; the one-liner is just the reward.
 
+> **Why it works.** It halves, so it owes the same argument as Approach 4 — and it is literally the
+> same argument. CPython's `bisect_left` runs `while lo < hi` with `lo = mid + 1` / `hi = mid` over
+> `[0, len(a)]`, maintaining "everything left of `lo` is strictly smaller than the target, everything
+> from `hi` onward is not". A probe with `a[mid] < target` proves by sortedness that **no index at or
+> left of `mid` can be large enough**, so the discarded left block cannot hold the answer; a probe
+> with `a[mid] >= target` proves **no index right of `mid` can be too small**, so the discarded right
+> block cannot hold it either — and `mid` itself is kept, because it may be the seam.
+
 ### Worked example
 
 `nums = [1, 3, 5, 6]`, `target = 2`: `bisect_left(nums, 2)` → `1`. The internals are Approach 4's
