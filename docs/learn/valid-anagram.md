@@ -76,6 +76,86 @@ s = "anagram", t = "nagaram"        answer: True
 
 ---
 
+## Reading the Calculations
+
+Exactly one line in this problem is arithmetic, and it is the one every write-up prints without
+explaining: `ord(ch) - ord("a")`. If that expression is a black box, the optimal solution is a spell
+rather than an idea. It is also the only place this problem can go wrong silently, so it is worth the
+three minutes.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `ord(ch)` | the character's **code point** — its number | `"a"` is `97`, `"b"` is `98`, … `"z"` is `122`. The alphabet is *contiguous* in that numbering, which is the fact being exploited | — |
+| `ord(ch) - ord("a")` | a slot in `0..25` | Arrays start at `0` and the letters start at `97`. Subtracting the first letter **shifts the alphabet down to zero** | Drop the subtraction and `counts[97]` needs a 123-slot array; on a 26-slot one it is an `IndexError` |
+| `[0] * 26` | one counter per letter | Fixed size, known before reading a single character. This is what "`O(1)` space" means here | `[[0]] * 26` would share one object 26 times — not a bug in *this* problem, but the classic one next door |
+| `counts[…] += 1` for `s`, `-= 1` for `t` | **one** tally, walked from both sides | Two separate tables would need a comparison at the end; one table needs only a test against zero | — |
+| `all(c == 0 for c in counts)` | "did everything cancel?" | A letter appearing equally often in both strings nets to zero | `any(...)` inverts it; `sum(counts) == 0` passes `"ab"` against `"aa"`… **no**, it passes far worse: `+1 -1` anywhere cancels, so it is `True` for almost everything |
+| `len(s) != len(t)` first | the length guard | **Correctness, not speed.** See below | Without it the loop reads both strings at one index and silently reports `True` for `"ab"` vs `"aba"` |
+| `sorted(s) == sorted(t)` | canonical form, compared | Two bags are equal iff their sorted layouts are | `sorted(s) == sorted(t)` on *sets* — `set(s) == set(t)` — loses the counts and passes `"aab"` vs `"abb"` |
+
+### The one rearrangement
+
+Not an equation this time, but a merge. The obvious version keeps two tables and compares them:
+
+```
+counts_s = tally of s          counts_t = tally of t          return counts_s == counts_t
+```
+
+The optimal version keeps **one**, and moves the comparison inside it:
+
+```
+one table:   +1 for every letter of s          -1 for every letter of t
+             anagrams  <=>  every slot is 0
+```
+
+The step that makes it legal is noticing that `a == b` is the same statement as `a - b == 0`. Once
+the difference is what you store, the final comparison has already happened — the table *is* the
+comparison, carried as you go. That move (store the difference rather than both sides) recurs
+constantly: it is why prefix sums answer range queries, and why XOR answers `single-number`.
+
+### How `ord` arithmetic actually works
+
+```
+  'a'  ->  97      97 - 97  =  0     counts[0]
+  'b'  ->  98      98 - 97  =  1     counts[1]
+  'n'  -> 110     110 - 97  = 13     counts[13]
+  'z'  -> 122     122 - 97  = 25     counts[25]
+```
+
+Twenty-six letters, twenty-six slots, `0` through `25`, and the subtraction is doing one job:
+**rebasing**. The same trick with a different base appears in `top-k-frequent`'s counting array
+(`x - lo`, where `lo` is `-10^4`) and anywhere values are dense but do not start at zero. When it is
+wrong it is usually wrong by being *absent*, and the symptom is an `IndexError` rather than a wrong
+answer — which is the lucky case.
+
+### How to hand-trace it
+
+`s = "anagram"`, `t = "nagaram"`. One table, walked from both sides at once. Every row below is
+printed by the script at the foot of this document.
+
+| `i` | `s[i]` | slot | `t[i]` | slot | table afterwards (non-zero slots only) |
+|---|---|---|---|---|---|
+| 0 | `a` | 0 | `n` | 13 | `a:+1, n:-1` |
+| 1 | `n` | 13 | `a` | 0 | *(empty)* |
+| 2 | `a` | 0 | `g` | 6 | `a:+1, g:-1` |
+| 3 | `g` | 6 | `a` | 0 | *(empty)* |
+| 4 | `r` | 17 | `r` | 17 | *(empty)* |
+| 5 | `a` | 0 | `a` | 0 | *(empty)* |
+| 6 | `m` | 12 | `m` | 12 | *(empty)* |
+
+Every slot zero, so `True`. Watch rows 0 and 1: the table goes out of balance and comes back. That is
+the normal state of this algorithm — it is only the value at the **end** that means anything, and a
+tempting "bail out as soon as a slot goes negative" is wrong for exactly that reason.
+
+**The recipe, for any input:** check the lengths first; make 26 zeros; add one for each letter of the
+first string and subtract one for each letter of the second, at the same index; answer whether every
+slot is zero. If you find yourself comparing two tables, you have written approach 3 — which, as the
+measurement below shows, is not the mistake it looks like.
+
+---
+
 ## Approach 1 — Brute force: cross off each letter of `s` inside a copy of `t`  *(an addition — not in the data file's ladder)*
 
 ### The idea
@@ -424,6 +504,42 @@ the answer to the problem as stated. If the constraint is relaxed to arbitrary U
 the previous approach — it is the same algorithm with a hash map in place of the array, and you can
 keep the single-table `+1/-1` trick by checking the map is all zeros at the end.
 
+> **Under the hood.** Everything above is true and the rung is still, in Python, the **slowest real
+> rung on this page**. True anagrams of length `n`, best of five:
+>
+> | `n` | sort | two maps | **tally26** | `Counter(s) == Counter(t)` |
+> |---|---|---|---|---|
+> | `1,000` | 79 µs | 49 µs | 138 µs | **31 µs** |
+> | `10,000` | 1,182 µs | 523 µs | 1,057 µs | **316 µs** |
+> | `50,000` | 5,936 µs | 2,810 µs | 5,662 µs | **1,812 µs** |
+>
+> At the constraint's ceiling the `O(1)`-space linear rung is **3× slower** than a two-line
+> `Counter(s) == Counter(t)`, and no faster than the `O(n log n)` sort it replaced. The asymptotics
+> did not lie — they simply are not what is being measured. `sorted()` and `Counter()` run their loops
+> in compiled C; `tally26` runs its loop in the interpreter and pays for an `ord()` call, a
+> subtraction and an index on every character. At `n = 50,000` that is 100,000 interpreted iterations
+> against one bulk call.
+>
+> It gets sharper. Compare fifty thousand `a`s against strings that differ in one place:
+>
+> | `t` | sort | `Counter` | tally26 |
+> |---|---|---|---|
+> | differs at position 0 | **614 µs** | 1,686 µs | 4,747 µs |
+> | differs at the last position | **599 µs** | 1,683 µs | 4,762 µs |
+> | identical | **595 µs** | 1,670 µs | 4,770 µs |
+>
+> The *sort* is now the fastest rung by 8×, because Timsort detects an already-ordered run and does
+> almost nothing. Note also what does **not** happen: no column changes with the position of the
+> mismatch. Not one of these rungs can exit early, because every one of them must read both strings
+> in full before it knows anything — unlike `contains-duplicate`, where the early exit was the whole
+> story.
+>
+> **What to take from this.** The ladder ranks *algorithms*; the clock ranks *implementations*, and in
+> a language where the primitive is compiled and your loop is not, the two orders come apart. The
+> honest reading of `tally26` is that it is the right answer for the reasons the section above gives —
+> one pass, twenty-six integers, no allocation that grows, and it ports to C or Java or Rust where it
+> genuinely *is* the fastest thing here. In Python, reach for `Counter` and know why you did.
+
 ---
 
 ## The Overall Arc
@@ -488,6 +604,43 @@ thing is to cross letters of `s` off a copy of `t`, which is quadratic because e
 search plus a shift" — and a reliable oracle for random testing. Its other use is rhetorical: it is
 the version that makes clear *why* duplicate letters are the difficulty, which is exactly what the
 `set(s) == set(t)` one-liner misses.
+
+---
+
+## How to Get Fluent
+
+**1. Derive the slot arithmetic, do not memorise it.** Without looking, write the slot for `'n'`.
+*Done when:* you got `13` by computing `110 - 97` rather than by recalling that `n` is the fourteenth
+letter. The point is the *rebasing*, which transfers; the alphabet does not.
+
+**2. Write the single-table version from nothing.** Six lines including the length guard.
+*Done when:* the length check was the **first** line you wrote. If it arrived as an afterthought,
+go to drill 3 immediately.
+
+**3. Delete the length guard and watch it lie.** Run `("ab", "aba")`, `("a", "aa")`, `("abc",
+"abcabc")`.
+*Done when:* you have seen all three return `True` and can say exactly why — the loop indexes both
+strings together, so it never reads the tail of the longer one. This is correctness, not an
+optimisation, and it is the single most common way this solution ships broken.
+
+**4. Break the other one.** Replace the tally with `set(s) == set(t)` and run `("aab", "abb")`.
+*Done when:* you can state the difference between a set and a bag in one sentence and name which
+one this problem needs.
+
+**5. Time all four rungs yourself before reading the numbers again.** The script at the foot of this
+page does it.
+*Done when:* you can explain why the `O(1)`-space linear rung came last in Python, and why that
+would reverse in C. If your explanation is about the algorithm, it is wrong — it is about where the
+loop runs.
+
+**6. Answer the Unicode follow-up cold.** *"Now the strings can contain any character."*
+*Done when:* you say "same algorithm, hash map instead of the 26-slot array, keep the `+1/-1` and
+check every value is zero" without hesitating — and can add the harder half: that "same character"
+is not obvious in Unicode, since `é` has two encodings, so a real system normalises first.
+
+**The one sentence worth keeping a month from now:** *`a == b` is `a - b == 0`, so store the
+difference and the comparison happens for free* — and its shadow: *asymptotics rank the algorithm,
+the clock ranks the implementation, and in Python they disagree.*
 
 ---
 
@@ -646,6 +799,8 @@ Run:  python valid_anagram.py
 from __future__ import annotations
 
 import random
+import time
+from collections import Counter
 
 # --- the alphabet contract: change these two together, and nothing else -------
 
@@ -712,7 +867,95 @@ APPROACHES = [
 
 # --- test harness -------------------------------------------------------------
 
+def _best_of(fn, rounds: int = 5) -> float:
+    best = float("inf")
+    for _ in range(rounds):
+        start = time.perf_counter()
+        fn()
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
+def _anagram_pair(n: int, rng: random.Random) -> tuple[str, str]:
+    s = "".join(rng.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(n))
+    shuffled = list(s)
+    rng.shuffle(shuffled)
+    return s, "".join(shuffled)
+
+
+def _tally_no_length_guard(s: str, t: str) -> bool:
+    """Scaffolding: the optimal rung with its FIRST line removed, to show what breaks."""
+    counts = [0] * ALPHABET
+    for i in range(min(len(s), len(t))):
+        counts[_slot(s[i])] += 1
+        counts[_slot(t[i])] -= 1
+    return all(c == 0 for c in counts)
+
+
+def trace_the_single_table() -> None:
+    """Every row of the hand-trace table in 'Reading the Calculations'."""
+    s, t = "anagram", "nagaram"
+    print(f"=== s={s!r} t={t!r}, one table walked from both sides ===")
+    counts = [0] * ALPHABET
+    for i in range(len(s)):
+        counts[_slot(s[i])] += 1
+        counts[_slot(t[i])] -= 1
+        live = {chr(97 + j): c for j, c in enumerate(counts) if c}
+        print(
+            f"  i={i}  s[{i}]={s[i]} -> slot {_slot(s[i]):<2}"
+            f"  t[{i}]={t[i]} -> slot {_slot(t[i]):<2}"
+            f"  table {live if live else '(empty)'}"
+        )
+    print(f"  every slot zero? {all(c == 0 for c in counts)}")
+
+
+def measure() -> None:
+    """The numbers quoted in the 'Under the hood' callout. Timings are one machine's;
+    the ORDER of the columns is the claim, and it is the surprising part."""
+    rng = random.Random(20260913)
+
+    print("\n=== true anagrams, as n grows ===")
+    print(f"  {'n':>7} {'sort us':>9} {'two maps us':>12} {'tally26 us':>11} {'Counter us':>11}")
+    for n in (1000, 10000, 50000):
+        s, t = _anagram_pair(n, rng)
+        print(
+            f"  {n:>7}"
+            f" {_best_of(lambda: is_anagram_sort(s, t)) * 1e6:>9.0f}"
+            f" {_best_of(lambda: is_anagram_two_maps(s, t)) * 1e6:>12.0f}"
+            f" {_best_of(lambda: is_anagram(s, t)) * 1e6:>11.0f}"
+            f" {_best_of(lambda: Counter(s) == Counter(t)) * 1e6:>11.0f}"
+        )
+
+    print("\n=== fifty thousand 'a's, and where the mismatch sits ===")
+    n = 50000
+    s = "a" * n
+    print(f"  {'t':>30} {'sort us':>9} {'Counter us':>11} {'tally26 us':>11}")
+    for label, t in [
+        ("differs at position 0", "b" + "a" * (n - 1)),
+        ("differs at the last position", "a" * (n - 1) + "b"),
+        ("identical", "a" * n),
+    ]:
+        print(
+            f"  {label:>30}"
+            f" {_best_of(lambda: is_anagram_sort(s, t)) * 1e6:>9.0f}"
+            f" {_best_of(lambda: Counter(s) == Counter(t)) * 1e6:>11.0f}"
+            f" {_best_of(lambda: is_anagram(s, t)) * 1e6:>11.0f}"
+        )
+    print("  no column moves with the mismatch: not one rung can exit early")
+
+    print("\n=== the length guard is correctness, not an optimisation ===")
+    for a, b in (("ab", "aba"), ("a", "aa"), ("abc", "abcabc")):
+        print(
+            f"  s={a:<7} t={b:<7} guarded {is_anagram(a, b)!s:<6}"
+            f" unguarded {_tally_no_length_guard(a, b)!s:<6}"
+        )
+
+
 def main() -> None:
+    trace_the_single_table()
+    measure()
+    print()
+
     cases: list[tuple[str, str, str]] = [
         ("statement example 1", "anagram", "nagaram"),
         ("statement example 2 (no answer)", "rat", "car"),
