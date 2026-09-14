@@ -4,7 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "predev": "npm run docs:learn",
     "dev": "vite",
+    "prebuild": "npm run docs:learn",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
@@ -12,6 +14,7 @@
     "preview": "vite preview",
     "test": "node --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
     "api": "node server/index.ts",
+    "pretest:ui": "npm run docs:learn",
     "test:ui": "vite build && node --test \"test/**/*.test.mjs\"",
     "docs:learn": "node scripts/gen-learn.mjs",
     "verify:code": "node scripts/localsmith/verify.mjs",

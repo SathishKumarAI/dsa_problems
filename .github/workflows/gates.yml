@@ -74,12 +74,8 @@ jobs:
       - name: no undisclosed approach additions
         run: node scripts/learn-gaps.mjs --strict
 
-      # docs/learn/** is generated. If it is stale, the diff below is non-empty.
-      - name: docs/learn is regenerated, not hand-edited
-        run: |
-          npm run docs:learn
-          if ! git diff --quiet -- docs/learn; then
-            echo "::error::docs/learn is stale. Run 'npm run docs:learn' and commit the result."
-            git diff --stat -- docs/learn
-            exit 1
-          fi
+      # docs/learn/** is generated and no longer committed, so there is nothing to
+      # drift. What is still worth proving is that the generator RUNS: `predev`,
+      # `prebuild` and `pretest:ui` all depend on it, so a broken one breaks the app.
+      - name: the learn-page generator runs
+        run: npm run docs:learn
