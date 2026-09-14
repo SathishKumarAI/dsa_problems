@@ -1,0 +1,85 @@
+# The gates, run on every push and pull request.
+#
+# What this covers and what it does NOT, stated plainly so nobody reads a green tick
+# as more than it is:
+#
+#   covered here  — typecheck, lint, 758 node tests, the production build, all 82
+#                   teaching scripts, and the content-drift gate
+#   NOT covered   — `npm run test:ui` (real Chrome), `verify:code` (compiles every
+#                   Java and C++ block) and `verify:run` (checks they agree with the
+#                   Python). Those need a browser and a JDK/g++ toolchain, and they
+#                   are slow. Run them locally; the PR template asks for their output.
+#
+# So: a green tick here means "nothing obviously broke". It is not verification.
+# See CONTRIBUTING.md, "The gates" — none of the seven is sufficient alone.
+
+name: gates
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: typecheck · lint · tests · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: npm run check (tsc -b · eslint · node --test)
+        run: npm run check
+
+      - name: npm run build
+        run: npm run build
+
+  content:
+    name: teaching scripts · content drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: npm ci
+
+      # Every docs/deep/<id>_explained.md ends in one runnable script containing every
+      # approach. This extracts the last Python fence, runs it, and requires it to print
+      # ALL APPROACHES AGREED. It is the gate behind "nothing is stated that has not been run".
+      - name: every teaching script runs and its approaches agree
+        run: node scripts/verify-deep.mjs
+
+      # Fails if a document teaches a rung the data file does not have without saying so.
+      - name: no undisclosed approach additions
+        run: node scripts/learn-gaps.mjs --strict
+
+      # docs/learn/** is generated. If it is stale, the diff below is non-empty.
+      - name: docs/learn is regenerated, not hand-edited
+        run: |
+          npm run docs:learn
+          if ! git diff --quiet -- docs/learn; then
+            echo "::error::docs/learn is stale. Run 'npm run docs:learn' and commit the result."
+            git diff --stat -- docs/learn
+            exit 1
+          fi

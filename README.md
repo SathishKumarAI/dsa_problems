@@ -1,5 +1,6 @@
 # dsa.patterns — learn the insight, then the name
 
+[![gates](https://github.com/SathishKumarAI/dsa_problems/actions/workflows/gates.yml/badge.svg)](.github/workflows/gates.yml)
 [![MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![problems](https://img.shields.io/badge/problems-127-brightgreen.svg)](docs/PROBLEMS.md)
 [![journeys](https://img.shields.io/badge/journeys-93-brightgreen.svg)](docs/AUTHORING.md)
@@ -63,6 +64,11 @@ found exactly that way — while *writing about* the code, not while reading it.
 Each document is fully independent, so this work parallelises perfectly. One rule is absolute:
 **never copy text from LeetCode or anywhere else.** Everything here is written in our own words
 from each problem's public definition, which is what makes it MIT-licensable at all.
+
+Also: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). CI runs the fast gates on every PR
+([`gates.yml`](.github/workflows/gates.yml)) — but it deliberately does **not** run the browser
+suite or the Java/C++ toolchain, so a green tick means "nothing obviously broke", not verification.
+The PR template asks for the rest.
 
 ## Running it
 

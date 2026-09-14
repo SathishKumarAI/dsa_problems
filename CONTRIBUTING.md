@@ -86,6 +86,13 @@ point of having seven.
 Compiling is not correctness — that is why `verify:code` and `verify:run` are separate gates. A
 green diff is not verification either.
 
+**CI runs the fast subset** on every pull request ([`.github/workflows/gates.yml`](.github/workflows/gates.yml)):
+typecheck, lint, the 758 tests, the build, all 82 teaching scripts, the drift gate, and a check that
+`docs/learn/**` was regenerated. It deliberately does **not** run the browser suite or the Java/C++
+toolchain — those need Chrome and a JDK/g++, and they are slow. Run them locally; the PR template
+asks for their output. A green tick means *nothing obviously broke*, which is not the same as
+verified.
+
 ### The ratchet
 
 `scripts/learn-gaps.test.mjs` holds a baseline of how many documents are missing each required
@@ -195,6 +202,12 @@ file were found.
 | Where the last session stopped | `STATUS.md` |
 
 ---
+
+## Code of conduct
+
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). The short version: be decent, assume good faith, and
+**disagree with evidence** — which is the same standard the content is held to. If someone measures
+your work and it does not hold up, that is the process working, not an attack.
 
 ## Licence
 
