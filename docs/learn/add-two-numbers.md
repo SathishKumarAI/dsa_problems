@@ -232,7 +232,7 @@ ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
 
 > **Why now.** The two arrays are a third copy of an input the lists already hold in exactly the right order. Recursion adds one column per call and spills any carry into the node ahead, so nothing gets copied.
 
-Add the second digit into the first node, spill anything over nine into the next node, recurse on the tails. Neat and in place — and one stack frame per digit.
+Add the second list's digit into the first node, push anything over nine into the next node as a carry, and recurse on both tails. Compact, and it mutates one input in place. It costs a stack frame per digit, and when one list runs out first the recursion has to grow new nodes mid-descent, which is where this version usually goes wrong.
 
 ```python
 def add_two_numbers(l1, l2):

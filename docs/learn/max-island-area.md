@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Grow by rescanning
 
-Claim one land cell as a seed, then sweep the whole grid over and over adding any land cell touching the island, until a full sweep adds nothing.
+Claim one land cell as a seed, then sweep the entire grid over and over adding any land cell that touches what is already claimed, until a full sweep adds nothing. It needs no stack or queue and is easy to argue correct, and each sweep costs the whole grid while it may add as little as one cell.
 
 ```python
 def max_area_of_island(grid: list[list[int]]) -> int:

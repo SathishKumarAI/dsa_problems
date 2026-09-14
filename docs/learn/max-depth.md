@@ -507,7 +507,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Iterative BFS
 
-Count levels with a queue — one increment per BFS round. Same O(n), no recursion-depth risk on degenerate (linked-list-shaped) trees.
+Sweep the tree level by level with a queue, draining exactly the nodes present at the start of each round and adding one to the depth per round. Same linear time with no recursion at all, so a tree degenerated into a 10,000-node chain cannot blow the stack. The price is that the memory tracks the WIDEST level rather than the height.
 
 ```python
 from collections import deque
@@ -582,7 +582,7 @@ int maxDepth(TreeNode* root) {
 
 > **Why now.** Counting levels means holding a whole level in memory, which is the widest part of the tree. A stack of node-and-depth pairs carries one path at a time instead.
 
-Explicit stack of (node, depth) pairs — recursion without the call stack.
+Push (node, depth) pairs onto an explicit stack, popping and keeping the largest depth seen. It is the recursion with the call stack written out by hand, which makes the traversal visible, and the stack holds every node whose sibling is still pending, so on a bushy tree it can carry far more than the h frames the recursion would.
 
 ```python
 def max_depth(root) -> int:

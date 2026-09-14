@@ -92,7 +92,7 @@ def level_order(root) -> list[list[int]]:
     {
       name: "DFS with depth",
       summary:
-        "Recurse carrying the depth; append each value to out[depth]. Surprising but valid — pre-order visits keep left-to-right order within each level.",
+        "Recurse carrying the current depth, appending each value to the list at out[depth] and starting a new list the first time a depth is reached. Surprising but correct: visiting left before right at every node means each level's values still land in left-to-right order, and the memory is the height rather than the widest level.",
       complexity: { time: "O(n)", space: "O(h)" },
       python: `def level_order(root) -> list[list[int]]:
     out: list[list[int]] = []

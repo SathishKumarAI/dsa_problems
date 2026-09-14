@@ -73,7 +73,7 @@ def lowest_common_ancestor(root: TreeNode | None, p: int, q: int) -> int:
     {
       name: "Search both sides, ignoring the ordering",
       summary:
-        "Recurse into both subtrees looking for either target; a node is the answer when the two targets are found on different sides, or when it is itself one of them.",
+        "Recurse into both subtrees looking for either target; a node is the answer when the two come back from different sides, or when it is one of them itself. This is the general binary-tree solution and it is correct here too. It just refuses to use the one fact that makes this a BST question, so it can visit every node instead of walking a single root-to-answer path.",
       complexity: { time: "O(n)", space: "O(h)" },
       python: `class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):

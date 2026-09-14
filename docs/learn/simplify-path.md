@@ -52,7 +52,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Chop the answer string as you go
 
-Carry the answer as a string. An ordinary name is appended with a slash; a '..' searches backwards for the last slash and cuts everything after it.
+Carry the answer as a string: append an ordinary name with a slash, and on a '..' search backwards for the last slash and cut there. It never builds a second structure, and every cut copies the string that remains, so a path that is mostly '..' rewrites the whole answer over and over.
 
 ```python
 def simplify_path(path: str) -> str:

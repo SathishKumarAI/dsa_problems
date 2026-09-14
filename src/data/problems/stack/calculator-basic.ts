@@ -173,7 +173,7 @@ export const problem: Problem = {
     {
       name: "Two passes over the tokens",
       summary:
-        "Tokenise the string into numbers and operators, sweep once collapsing every * and / into their left operand, then add and subtract what is left.",
+        "Tokenise into numbers and operators, sweep once collapsing every * and / into their left operand, then add and subtract what is left. Doing the high-precedence pass first makes precedence obvious, and it materialises the whole token list, so the memory tracks the length of the expression rather than staying constant.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def evaluate_expression(s: str) -> int:
     def trunc_div(a: int, b: int) -> int:

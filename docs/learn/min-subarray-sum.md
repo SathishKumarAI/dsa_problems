@@ -597,7 +597,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Every subarray
 
-Take each start, extend right adding as you go, and remember the shortest stretch whose total reaches the target.
+Fix each start index, extend right adding as you go, and stop as soon as the running total reaches the target, keeping the shortest such stretch. Easy to trust because every subarray is genuinely tried, and every start re-adds the same values the previous start already added, so the work is quadratic in the array length.
 
 ```python
 def min_subarray_len(target: int, nums: list[int]) -> int:

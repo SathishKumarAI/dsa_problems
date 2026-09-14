@@ -244,7 +244,7 @@ int shortestPath(vector<vector<int>> grid) {
     {
       name: "Dijkstra with a heap",
       summary:
-        "Treat it as a weighted graph and always expand the cheapest frontier cell, pulled from a min-heap keyed by distance so far.",
+        "Treat the open cells as a weighted graph and always expand the cheapest frontier cell, pulled from a min-heap keyed by distance so far. It is the right answer and the tool to reach for the moment steps cost different amounts. Here every step costs exactly one, and when all edges weigh the same a plain queue already dequeues in distance order, so the heap buys nothing but its log factor.",
       complexity: { time: "O(n² log n)", space: "O(n²)" },
       whyNow:
         "Backtracking re-walks the same cells through every route that can reach them, which on an open grid is exponential — the same cell is visited once per path rather than once. A shortest-path algorithm visits each cell once by keeping the frontier sorted by distance, and Dijkstra is the general one that does it for any edge cost.",

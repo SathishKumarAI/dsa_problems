@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Flood fill from each city
 
-Walk the cities; when one has not been visited, run a depth-first search marking everything it can reach, and add one to the count for each fill started.
+Walk the cities; when one has not been visited, depth-first search everything it can reach through the matrix, marking as you go, and add one province per fill started. This is the right answer and it reads the matrix as what it is, an adjacency table. Note that finding a city's neighbours means scanning a full row of n entries whether the graph is dense or nearly empty.
 
 ```python
 def sink(matrix: list[list[int]], seen: list[bool], i: int) -> None:

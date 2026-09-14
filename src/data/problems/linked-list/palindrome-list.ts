@@ -106,7 +106,7 @@ def is_palindrome(head: ListNode | None) -> bool:
     {
       name: "Copy into an array",
       summary:
-        "Walk the list collecting the values, then compare the array against its own reverse.",
+        "Walk the list once collecting the values into an array, then run two indices inward from both ends. Linear time and nearly impossible to get wrong, and it is genuinely the right answer whenever the memory is available. The O(n) array is the only thing between it and the optimal rung, which buys constant space by mutating the list.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `class ListNode:
     def __init__(self, val: int = 0, nxt: "ListNode | None" = None):

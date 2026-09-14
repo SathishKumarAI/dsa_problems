@@ -135,7 +135,7 @@ export const problem: Problem = {
     {
       name: "Try every starting tree",
       summary:
-        "For each tree, walk forward collecting kinds until a third appears, and remember the longest run found.",
+        "For every tree, walk forward collecting kinds until a third one appears, and keep the longest run found. It is the problem statement read literally, and every start re-walks ground the previous start already covered, so the row is traversed once per tree rather than once in total.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def fruit_baskets(fruits: list[int]) -> int:
     best = 0

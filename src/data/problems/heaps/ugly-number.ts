@@ -134,7 +134,7 @@ export const problem: Problem = {
     {
       name: "Test every integer",
       summary:
-        "Walk the integers from 1 upward. For each, divide out every factor of 2, 3 and 5 and check whether 1 is left; count the ones that pass until the nth.",
+        "Walk the integers from 1 upward, dividing each by 2, 3 and 5 as far as they go and keeping the ones that leave 1. It executes the definition directly, and the ugly numbers thin out fast: they are sparse enough that reaching the far end of the constraint means testing billions of integers that are not ugly to collect a few thousand that are.",
       complexity: {
         time: "O(m log m) over the integers scanned",
         space: "O(1)",

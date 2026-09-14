@@ -522,7 +522,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Visited set
 
-Remember every node object seen; a repeat means a cycle. Linear time and dead simple — the O(n) memory is its only sin.
+Walk the list putting every node OBJECT into a set, not its value, because duplicate values are legal and would report a cycle that is not there. The first node already in the set is where the cycle closes, so this even names the entry node for free. Its one sin is the O(n) memory, which is the whole reason the pointer trick exists.
 
 ```python
 def has_cycle(head) -> bool:

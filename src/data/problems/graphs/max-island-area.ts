@@ -98,7 +98,7 @@ int maxAreaOfIsland(vector<vector<int>> grid) {
     {
       name: "Grow by rescanning",
       summary:
-        "Claim one land cell as a seed, then sweep the whole grid over and over adding any land cell touching the island, until a full sweep adds nothing.",
+        "Claim one land cell as a seed, then sweep the entire grid over and over adding any land cell that touches what is already claimed, until a full sweep adds nothing. It needs no stack or queue and is easy to argue correct, and each sweep costs the whole grid while it may add as little as one cell.",
       complexity: { time: "O((m · n)²)", space: "O(m · n)" },
       python: `def max_area_of_island(grid: list[list[int]]) -> int:
     rows, cols = len(grid), len(grid[0])

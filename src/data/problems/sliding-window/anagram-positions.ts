@@ -168,7 +168,7 @@ export const problem: Problem = {
     {
       name: "Sort every window",
       summary:
-        "Sort the pattern once, then sort each window of the text and compare the two strings. The definition of an anagram, typed directly.",
+        "Sort the pattern once, then sort each window of the text and compare the two strings. It is the definition of an anagram typed straight out, and it re-sorts k characters at every one of the n positions, even though consecutive windows differ by a single letter at each end.",
       complexity: { time: "O(n · k log k)", space: "O(k)" },
       python: `def anagram_positions(text: str, pattern: str) -> list[int]:
     k = len(pattern)
@@ -206,7 +206,7 @@ export const problem: Problem = {
     {
       name: "Count every window from scratch",
       summary:
-        "Replace sorting with counting: build a 26-slot tally for the pattern once, and a fresh tally for each window, then compare the two tallies.",
+        "Replace the sorting with counting: build a 26-slot tally of the pattern once, then a fresh tally for each window of the text and compare. That drops the log factor, and it still rebuilds the whole window tally from nothing at every position instead of editing the one it already had.",
       complexity: { time: "O(n · k)", space: "O(1)" },
       whyNow:
         "Sorting a window costs k log k to answer a question that does not care about order at all — and it throws the sorted string away immediately. A tally of 26 counts decides the same thing in k steps, and two tallies compare in a fixed 26.",
@@ -251,7 +251,7 @@ export const problem: Problem = {
     {
       name: "Slide the tally, compare all 26",
       summary:
-        "Keep one tally and update it as the window moves — add the entering letter, remove the leaving one — then compare the two tallies at each position.",
+        "Keep one tally and edit it as the window moves, adding the entering letter and subtracting the leaving one, then compare the two 26-slot tallies. The update is constant now; the comparison is still 26 slots per step, re-checking 24 counts that could not have changed since the previous move.",
       complexity: { time: "O(26n)", space: "O(1)" },
       whyNow:
         "Two neighbouring windows share all but two letters, yet the per-window tally recounts every one of the k characters. Updating the tally instead of rebuilding it makes each step two operations, which is where the k disappears from the running time.",

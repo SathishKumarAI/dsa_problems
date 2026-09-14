@@ -338,7 +338,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Serialise and compare
 
-Turn each tree into a string that records every value and every empty child, then compare the two strings.
+Turn each tree into a string that records every value AND every empty child, then compare the two strings. The null markers are the whole trick, because without them two differently shaped trees serialise identically, and it builds two full O(n) strings to answer a question that needs no storage at all.
 
 ```python
 class TreeNode:

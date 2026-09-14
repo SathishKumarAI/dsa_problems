@@ -81,7 +81,7 @@ export const problem: Problem = {
     {
       name: "Every subarray",
       summary:
-        "Take each start, extend right adding as you go, and remember the shortest stretch whose total reaches the target.",
+        "Fix each start index, extend right adding as you go, and stop as soon as the running total reaches the target, keeping the shortest such stretch. Easy to trust because every subarray is genuinely tried, and every start re-adds the same values the previous start already added, so the work is quadratic in the array length.",
       complexity: { time: "O(n^2)", space: "O(1)" },
       python: `def min_subarray_len(target: int, nums: list[int]) -> int:
     best = 0

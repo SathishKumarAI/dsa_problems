@@ -491,7 +491,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Rewrite in place
 
-Scan the list for the first operator, replace it and the two tokens before it with their result, and repeat until a single token remains.
+Scan the token list for the first operator, replace it and the two tokens before it with their result, and repeat until one token remains. Correct, and it needs no stack to explain, and every replacement re-scans from the front and shifts the rest of the list, so the work is quadratic in the number of tokens.
 
 ```python
 def eval_rpn(tokens: list[str]) -> int:

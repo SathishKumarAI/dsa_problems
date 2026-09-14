@@ -162,7 +162,7 @@ export const problem: Problem = {
       whyNow:
         "Rebuilding replaces every surviving node with a copy. Recursion lets each node decide its own fate and hands back either itself or its tail, so the nodes you keep are the nodes you were given.",
       summary:
-        "Clean the tail first, then return either this node or the cleaned tail. Three lines, and the whole list sits on the call stack — 10^4 nodes is 10^4 frames.",
+        "Clean the tail first, then return either this node with its next already cleaned or, if this node matches, the cleaned tail in its place. Three lines and the clearest statement of the rule. The leading-match problem that complicates every iterative version never appears, because the head is just another node to the recursion, and the whole list sits on the call stack while it runs.",
       complexity: { time: "O(n)", space: "O(n) stack" },
       python: `def remove_elements(head, val):
     if head is None:

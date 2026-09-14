@@ -87,7 +87,7 @@ bool isBalanced(const TreeNode* root) {
     {
       name: "Measure the height at every node",
       summary:
-        "For each node, compute the height of both subtrees from scratch, check the difference, and recurse into the children.",
+        "For each node, measure both subtree heights from scratch, check they differ by at most one, then recurse into the children. It matches the definition word for word, and every measurement re-walks a subtree its parent already walked, so a node deep in a balanced tree is measured once for every ancestor standing over it.",
       complexity: { time: "O(n^2)", space: "O(h)" },
       python: `class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):

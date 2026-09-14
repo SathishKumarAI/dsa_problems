@@ -84,7 +84,7 @@ def frequency_sort(s: str) -> str:
     {
       name: "Sort the counted pairs",
       summary:
-        "Tally the characters, then sort the pairs by falling count and rising character, and emit each one its many times.",
+        "Tally the characters, then sort the (count, character) pairs by falling count and rising character, and emit each one its count many times. This is a perfectly good answer and often the one to write. The heap rung is worth knowing because it generalises to a stream, where the tally is never finished and there is nothing to sort.",
       complexity: { time: "O(n + k log k)", space: "O(n)" },
       python: `def frequency_sort(s: str) -> str:
     counts: dict[str, int] = {}

@@ -86,7 +86,7 @@ def max_sliding_window(nums: list[int], k: int) -> list[int]:
     {
       name: "Scan each window",
       summary:
-        "For every window position, walk its k elements and take the largest, starting fresh each time.",
+        "For each of the n - k + 1 window positions, walk its k elements from scratch and take the largest. Correct, one line of logic, and it re-reads the k - 1 values it already looked at on the previous window. With k anywhere near n that is billions of comparisons for a question the deque answers in one pass.",
       complexity: { time: "O(n · k)", space: "O(1)" },
       python: `def max_sliding_window(nums: list[int], k: int) -> list[int]:
     out = []
@@ -123,9 +123,7 @@ def max_sliding_window(nums: list[int], k: int) -> list[int]:
     {
       name: "Max-heap with lazy eviction",
       summary:
-        "Push (value, index) into a max-heap as the window advances, and before reading the top, discard entries whose index has already fallen out of the window.",
-      whyNow:
-        "The per-window scan re-reads k − 1 values it saw a moment ago. A heap remembers them — but it cannot delete the element that just left, so it accumulates stale entries and has to check the top before trusting it.",
+        "Push every (value, index) pair into a max-heap as the right edge advances, and before reading the answer, discard top entries whose index has fallen out of the window. Genuinely n log n and easy to get right, and the heap can still hold every element ever seen, because an entry is only ever evicted once it happens to reach the top.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `import heapq
 

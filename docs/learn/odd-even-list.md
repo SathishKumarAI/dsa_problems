@@ -51,7 +51,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Move the second node to the tail, repeatedly
 
-For each even-positioned node, unlink it and append it to the end. Obviously correct, and it re-walks the whole list to find the tail every single time.
+Repeatedly unlink the node at the current even position and append it to the very end, walking to the tail each time. Obviously correct and easy to argue about, and quadratic: every relocation re-walks the whole list to find its end, so the list is traversed once per even-positioned node to do a linear job.
 
 ```python
 def odd_even_list(head):
@@ -131,7 +131,7 @@ ListNode* oddEvenList(ListNode* head) {
 
 > **Why now.** The repeated tail hunt walks the whole list once per moved node — a 10^4-node list costs 25 million steps for an answer that needs 10^4. One pass into two buckets is linear.
 
-Collect the values by position parity, concatenate, rebuild. Linear at last, but it allocates a whole second list and throws the original nodes away.
+Collect the values into two arrays by position parity, concatenate them, and rebuild the list. Linear at last, and it allocates a whole second list of n nodes and hands back different node objects. Any caller still holding a pointer into the original list now points into a list that this answer no longer includes.
 
 ```python
 def odd_even_list(head):

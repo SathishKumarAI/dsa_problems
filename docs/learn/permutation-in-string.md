@@ -447,7 +447,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Sort every window
 
-Take each substring of s1's length, sort its letters, and compare against the sorted s1.
+Slide a window of s1's length across s2, sort its letters, and compare against sorted s1. It leans on the cleanest definition of an anagram, same letters in any order, and pays k log k at every one of the n positions, re-sorting a window that differs from the previous one by exactly two letters.
 
 ```python
 def check_inclusion(s1: str, s2: str) -> bool:
@@ -501,9 +501,7 @@ bool checkInclusion(const string& s1, const string& s2) {
 
 ## Rung 2 — Compare all 26 counts each step
 
-> **Why now.** Sorting rebuilds the window from scratch at every position, when only one letter entered and one left. Carrying the tally makes each move constant work — the comparison is still 26 slots, but the counting is no longer redone.
-
-Slide a fixed-width window keeping a letter tally, and after every move compare the whole 26-slot tally against s1's.
+Keep a running letter tally and edit it as the window slides, then compare the whole 26-slot tally against s1's after every move. The counting is now constant per move, but the comparison is not: all 26 slots are re-checked each step even though only two of them could possibly have changed.
 
 ```python
 def check_inclusion(s1: str, s2: str) -> bool:
@@ -673,7 +671,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort every window | O(n · k log k) time · O(k) space | the baseline — nothing before it |
-| 2 | Compare all 26 counts each step | O(26 · n) time · O(1) space | Sorting rebuilds the window from scratch at every position, when only one letter entered and one left. Carrying the tally makes each move constant work — the comparison is still 26 slots, but the counting is no longer redone. |
+| 2 | Compare all 26 counts each step | O(26 · n) time · O(1) space | Keep a running letter tally and edit it as the window slides, then compare the whole 26-slot tally against s1's after every move. |
 | 3 | The one to remember | O(n) time · O(1) space | Comparing the whole tally at every position is 26 comparisons per step, which is a constant but a real one — and it re-reads counts that did not change. Carrying a single number, how many letters currently agree, means each step touches only the two letters that moved and answers in constant work. |
 
 ---

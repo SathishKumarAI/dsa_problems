@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Search both sides, ignoring the ordering
 
-Recurse into both subtrees looking for either target; a node is the answer when the two targets are found on different sides, or when it is itself one of them.
+Recurse into both subtrees looking for either target; a node is the answer when the two come back from different sides, or when it is one of them itself. This is the general binary-tree solution and it is correct here too. It just refuses to use the one fact that makes this a BST question, so it can visit every node instead of walking a single root-to-answer path.
 
 ```python
 class TreeNode:

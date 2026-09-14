@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Sort the counted pairs
 
-Tally the characters, then sort the pairs by falling count and rising character, and emit each one its many times.
+Tally the characters, then sort the (count, character) pairs by falling count and rising character, and emit each one its count many times. This is a perfectly good answer and often the one to write. The heap rung is worth knowing because it generalises to a stream, where the tally is never finished and there is nothing to sort.
 
 ```python
 def frequency_sort(s: str) -> str:

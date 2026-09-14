@@ -98,7 +98,7 @@ export const problem: Problem = {
     {
       name: "Try both meanings for every star",
       summary:
-        "Recurse over the string; at each '*' branch three ways — open, close, or nothing — and report whether any branch balances.",
+        "Recurse over the string, branching three ways at each star, as an open bracket, a close bracket, or nothing, and report whether any branch balances. It is the definition of 'can be read as' and it is the version that proves the answer, and it explores 3 to the power of the star count, so twenty stars is already billions of readings.",
       complexity: { time: "O(3^n)", space: "O(n)" },
       python: `def walk(s: str, at: int, open_count: int) -> bool:
     if open_count < 0:

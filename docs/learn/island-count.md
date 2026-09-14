@@ -47,7 +47,7 @@ one before it, in all three languages.
 
 ## Rung 1 — BFS flood fill
 
-Identical counting, queue instead of recursion. Preferable on huge grids where the DFS recursion could blow the stack.
+The same counting with a queue instead of recursion: on finding unvisited land, sink it, push it, and drain its neighbours before moving on. Identical linear time, and it is what you reach for on a huge grid where the DFS recursion would blow the stack, because a queue holds a frontier and a frontier is bounded by the smaller grid dimension.
 
 ```python
 from collections import deque

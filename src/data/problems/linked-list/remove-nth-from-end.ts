@@ -79,7 +79,7 @@ def remove_nth_from_end(head: ListNode | None, n: int) -> ListNode | None:
     {
       name: "Count, then walk forward",
       summary:
-        "Traverse to count the nodes, then traverse again to the node before position length − n and relink past it.",
+        "Traverse once to learn the length, then traverse again to the node at position length - n - 1 and splice past it. Two passes, constant space, perfectly correct, and it needs a special case when the node to remove is the head. That wart is precisely what the dummy node and the two-pointer gap both exist to delete.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `class ListNode:
     def __init__(self, val: int = 0, nxt: "ListNode | None" = None):

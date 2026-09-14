@@ -75,7 +75,7 @@ def last_stone_weight(stones: list[int]) -> int:
     {
       name: "Re-sort every round",
       summary:
-        "Sort the pile, take the two largest off the end, push any remainder back, and sort again for the next round.",
+        "Sort the pile, smash the two largest off the end, push any remainder back, and sort again for the next round. Each round re-sorts a list that was sorted a moment ago and changed in one place, and there are n rounds, so the repeated sorting dominates everything the problem actually asks for.",
       complexity: { time: "O(n² log n)", space: "O(n)" },
       python: `def last_stone_weight(stones: list[int]) -> int:
     pile = list(stones)

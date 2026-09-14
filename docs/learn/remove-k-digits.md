@@ -690,7 +690,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Pick the smallest digit at each step
 
-Choose the answer one digit at a time: for each position, scan the window of digits still allowed and take the smallest, then continue after it.
+Build the answer one digit at a time: for each output position, scan the window of digits still reachable, take the smallest, and continue from just past it. Directly greedy and correct, and each of the n output positions rescans a window of up to k digits, which the stack collapses into a single pass.
 
 ```python
 def remove_k_digits(num: str, k: int) -> str:

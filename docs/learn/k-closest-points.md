@@ -48,7 +48,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Sort all
 
-Sort every point by distance and slice. One line, n log n, perfectly fine when n is small or k ≈ n.
+Sort every point by its distance from the origin and take the first k. One line, and genuinely the right answer when n is small or k is close to n. It just fully orders the n - k points nobody asked about, which is nearly all of the work whenever k is small and n is large.
 
 ```python
 def k_closest(points: list[list[int]], k: int) -> list[list[int]]:

@@ -552,7 +552,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Measure the height at every node
 
-For each node, compute the height of both subtrees from scratch, check the difference, and recurse into the children.
+For each node, measure both subtree heights from scratch, check they differ by at most one, then recurse into the children. It matches the definition word for word, and every measurement re-walks a subtree its parent already walked, so a node deep in a balanced tree is measured once for every ancestor standing over it.
 
 ```python
 class TreeNode:

@@ -132,7 +132,7 @@ def top_k_frequent_words(words: list[str], k: int) -> list[str]:
     {
       name: "Count, then sort everything",
       summary:
-        "Build the counts, turn them into a list of pairs, and sort that list by the answer's rule — count descending, word ascending — then cut the first k.",
+        "Build the counts, turn them into a list of pairs, and sort by the answer's own rule: count descending, then word ascending so ties break alphabetically. Short and correct, and the two-key ordering is the part to get right. It just fully orders every distinct word when only the first k are ever read.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `from collections import Counter
 

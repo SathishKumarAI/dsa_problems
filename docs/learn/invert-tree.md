@@ -381,7 +381,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Iterative with an explicit stack
 
-Push the root onto a stack; pop a node, swap its children, push both children, and repeat until the stack empties.
+Push the root, then repeatedly pop a node, swap its two children, and push both children. The same linear work as the recursion with the call stack made explicit, which is what you reach for when the tree might be a 10,000-node chain, at the cost of a stack that can hold a whole level of pending nodes at once.
 
 ```python
 class TreeNode:

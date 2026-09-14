@@ -65,7 +65,7 @@ def is_same_tree(p: TreeNode | None, q: TreeNode | None) -> bool:
     {
       name: "Serialise and compare",
       summary:
-        "Turn each tree into a string that records every value and every empty child, then compare the two strings.",
+        "Turn each tree into a string that records every value AND every empty child, then compare the two strings. The null markers are the whole trick, because without them two differently shaped trees serialise identically, and it builds two full O(n) strings to answer a question that needs no storage at all.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):

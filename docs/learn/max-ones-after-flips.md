@@ -617,7 +617,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Try every window
 
-Take each start and each end, count the zeroes between them, and keep the widest window whose count fits the budget.
+Take every start and every end, count the zeroes between them, and remember the widest stretch whose zero count fits the budget. It is the definition of the answer written straight out, and it recounts the same zeroes for every window that contains them, so the work is quadratic where one sliding count is linear.
 
 ```python
 def longest_ones(nums: list[int], k: int) -> int:

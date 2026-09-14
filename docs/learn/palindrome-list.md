@@ -707,7 +707,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Copy into an array
 
-Walk the list collecting the values, then compare the array against its own reverse.
+Walk the list once collecting the values into an array, then run two indices inward from both ends. Linear time and nearly impossible to get wrong, and it is genuinely the right answer whenever the memory is available. The O(n) array is the only thing between it and the optimal rung, which buys constant space by mutating the list.
 
 ```python
 class ListNode:

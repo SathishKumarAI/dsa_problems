@@ -116,7 +116,7 @@ export const problem: Problem = {
     {
       name: "Sort every window",
       summary:
-        "Take each substring of s1's length, sort its letters, and compare against the sorted s1.",
+        "Slide a window of s1's length across s2, sort its letters, and compare against sorted s1. It leans on the cleanest definition of an anagram, same letters in any order, and pays k log k at every one of the n positions, re-sorting a window that differs from the previous one by exactly two letters.",
       complexity: { time: "O(n · k log k)", space: "O(k)" },
       python: `def check_inclusion(s1: str, s2: str) -> bool:
     target = sorted(s1)
@@ -151,9 +151,7 @@ export const problem: Problem = {
     {
       name: "Compare all 26 counts each step",
       summary:
-        "Slide a fixed-width window keeping a letter tally, and after every move compare the whole 26-slot tally against s1's.",
-      whyNow:
-        "Sorting rebuilds the window from scratch at every position, when only one letter entered and one left. Carrying the tally makes each move constant work — the comparison is still 26 slots, but the counting is no longer redone.",
+        "Keep a running letter tally and edit it as the window slides, then compare the whole 26-slot tally against s1's after every move. The counting is now constant per move, but the comparison is not: all 26 slots are re-checked each step even though only two of them could possibly have changed.",
       complexity: { time: "O(26 · n)", space: "O(1)" },
       python: `def check_inclusion(s1: str, s2: str) -> bool:
     if len(s1) > len(s2):

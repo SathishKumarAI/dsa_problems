@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Flatten and sort
 
-Collect every value into one list, sort it, and read the entry at position k − 1.
+Collect all n-squared values into one list, sort it, and read position k - 1. It ignores both facts the problem hands you, that the rows are sorted AND that the columns are sorted, and copies the entire matrix to answer a question about a single position in it.
 
 ```python
 def kth_smallest(matrix: list[list[int]], k: int) -> int:

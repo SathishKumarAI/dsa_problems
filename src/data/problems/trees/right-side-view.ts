@@ -127,7 +127,7 @@ vector<int> rightSideView(const TreeNode* root) {
     {
       name: "Collect every level, keep the last of each",
       summary:
-        "Run a full level-order traversal into a list of levels, then map each level to its last element. The answer is obvious once the levels are written down.",
+        "Run a full level-order traversal into a list of levels, then map each level to its last element. The answer is obvious once the levels are on the page, which makes this the version to think in, and it stores every value in the tree to keep one per level, so the memory is n where the answer needs the height.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def right_side_view(root) -> list[int]:
     if root is None:

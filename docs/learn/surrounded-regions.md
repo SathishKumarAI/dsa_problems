@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Fill each region and check afterwards
 
-Flood fill every region of 0s, collecting its cells and noting whether any of them sat on the border, then flip the regions that did not.
+Flood fill every region of 0s, collect the cells of each one, and note whether any of them sat on the border, then flip the regions that did not. It answers the question in the direction it was asked, and it holds a whole region in memory to decide it. The border-first version asks the same question backwards and needs no cell list at all.
 
 ```python
 def collect(grid: list[list[int]], seen: list[list[bool]], r: int, c: int, cells: list[tuple[int, int]]) -> bool:

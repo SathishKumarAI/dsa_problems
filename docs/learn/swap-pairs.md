@@ -812,7 +812,7 @@ ListNode* swapPairs(ListNode* head) {
 
 > **Why now.** The array exists only so the code can name the node after the pair, and the pair already points at it. Recursion asks the tail to swap itself and hangs the answer off the pair it is holding.
 
-Swap the first two, then let the recursion own everything after them. The clearest statement of the idea, at one stack frame per pair.
+Swap the first two nodes, then hand the rest of the list to the recursion and hook the result behind them. It is the clearest statement of the idea and needs no dummy node at all, because the recursion returns the new head of each pair. It costs one stack frame per pair, so it is the version to explain and not the version to ship.
 
 ```python
 def swap_pairs(head):

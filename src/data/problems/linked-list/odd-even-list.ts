@@ -82,7 +82,7 @@ export const problem: Problem = {
     {
       name: "Move the second node to the tail, repeatedly",
       summary:
-        "For each even-positioned node, unlink it and append it to the end. Obviously correct, and it re-walks the whole list to find the tail every single time.",
+        "Repeatedly unlink the node at the current even position and append it to the very end, walking to the tail each time. Obviously correct and easy to argue about, and quadratic: every relocation re-walks the whole list to find its end, so the list is traversed once per even-positioned node to do a linear job.",
       complexity: { time: "O(n^2)", space: "O(1)" },
       python: `def odd_even_list(head):
     if head is None or head.next is None:
@@ -143,7 +143,7 @@ export const problem: Problem = {
       whyNow:
         "The repeated tail hunt walks the whole list once per moved node — a 10^4-node list costs 25 million steps for an answer that needs 10^4. One pass into two buckets is linear.",
       summary:
-        "Collect the values by position parity, concatenate, rebuild. Linear at last, but it allocates a whole second list and throws the original nodes away.",
+        "Collect the values into two arrays by position parity, concatenate them, and rebuild the list. Linear at last, and it allocates a whole second list of n nodes and hands back different node objects. Any caller still holding a pointer into the original list now points into a list that this answer no longer includes.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def odd_even_list(head):
     odds = []

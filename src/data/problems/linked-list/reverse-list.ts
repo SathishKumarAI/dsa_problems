@@ -63,7 +63,7 @@ def reverse_list(head: Node | None) -> Node | None:
     {
       name: "Copy to array",
       summary:
-        'Collect values, rebuild a reversed list. Obvious, allocates n nodes, and disqualifies you from the "in place" requirement — but it\'s the honest baseline.',
+        "Walk the list collecting every value into an array, then build a brand-new list from that array backwards. Correct and obvious, and it allocates n fresh nodes and hands back a different list from the one it was given, so every pointer the caller still holds points into the old list. That is exactly what 'reverse it in place' forbids.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def reverse_list(head: Node | None) -> Node | None:
     vals = []
@@ -104,7 +104,7 @@ def reverse_list(head: Node | None) -> Node | None:
       whyNow:
         "Rebuilding the list allocates a second one and gives up the in-place requirement. Recursion rewires the nodes that are already there.",
       summary:
-        "Reverse the tail, then hook the current node behind it. Elegant, but n stack frames — the iterative version is the one to ship.",
+        "Recurse to the end, reverse everything after the current node, then hook the current node onto the tail of that reversed remainder and null out its own next. Four lines, and the clearest statement of the idea. It also opens one stack frame per node, which is the reason the iterative version is the one to have memorised.",
       complexity: { time: "O(n)", space: "O(n) stack" },
       python: `def reverse_list(head: Node | None) -> Node | None:
     if head is None or head.next is None:

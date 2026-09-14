@@ -67,7 +67,7 @@ export const problem: Problem = {
     {
       name: "Collect and sort",
       summary:
-        "Dump both lists into one array, sort, rebuild. Throws away the pre-sorted structure — O(n log n) where merging is linear.",
+        "Dump the values of both lists into one array, sort it, and build a fresh list. It throws away the one fact the problem handed you, that both inputs are ALREADY sorted, and pays n log n for work that merging does in linear time. It also allocates n + m new nodes when the problem asks you to splice the existing ones.",
       complexity: { time: "O((n+m) log (n+m))", space: "O(n+m)" },
       python: `def merge_sorted(a, b):
     vals = []
@@ -115,7 +115,7 @@ export const problem: Problem = {
       whyNow:
         "Sorting the combined values throws away the fact that both inputs are already sorted. Merging compares the two heads and never looks back.",
       summary:
-        "The smaller head owns the merge of everything else. Reads beautifully; n+m stack frames make it a demo, not a default.",
+        "Whichever head is smaller owns the answer: attach it to the merge of its own tail with the other list, and return it. It reads like the definition of merging and is the clearest statement of the idea, and it opens one stack frame per node merged, which makes it a whiteboard version rather than the one you ship.",
       complexity: { time: "O(n+m)", space: "O(n+m) stack" },
       python: `def merge_sorted(a, b):
     if not a or not b:

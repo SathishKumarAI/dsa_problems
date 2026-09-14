@@ -96,7 +96,7 @@ export const problem: Problem = {
     {
       name: "Sweep until nothing changes",
       summary:
-        "Scan the list for an adjacent pair that would collide, resolve that one pair, and start over — repeating until a full scan finds nothing to do.",
+        "Scan for an adjacent pair that would collide, resolve that one pair, and start the scan over, repeating until a full pass finds nothing. It is the physics written out literally and it is easy to believe, and each resolved collision restarts the whole sweep, so a row that collapses one pair at a time costs a full pass per collision.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def asteroid_collision(asteroids: list[int]) -> list[int]:
     current = list(asteroids)

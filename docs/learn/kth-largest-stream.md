@@ -48,7 +48,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Sort per add
 
-Keep a list, re-sort on every add, index the kth from the end. Each add costs n log n — painful for a hot path the heap serves in log k.
+Keep every value in a list, re-sort the whole list on every add, and index the kth from the end. Each add pays n log n to re-establish an order that was already correct except for one new element, and add is the hot path here: this is a class that gets called repeatedly, not a function that runs once.
 
 ```python
 class KthLargest:

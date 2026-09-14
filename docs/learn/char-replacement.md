@@ -466,7 +466,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Every substring
 
-Take each start and each end, count the letters in that substring, and check whether the rewrites it needs fit the budget.
+Take every start and every end, tally the 26 letters inside that substring, and keep it when the rewrites it needs, its length minus its most common letter's count, fit inside k. It checks the definition literally and is the version to reason from, and the n-squared substrings make it hours of work for a problem one window answers in a single pass.
 
 ```python
 def character_replacement(s: str, k: int) -> int:

@@ -159,7 +159,7 @@ vector<vector<int>> pacificAtlantic(vector<vector<int>> heights) {
 
 > **Why now.** The full search per cell keeps walking long after the answer for that cell is settled — on a grid that drains easily, most cells know their verdict within a few steps. Stopping on the first pair of touches costs one comparison per pop and cuts the common case hard, while leaving the worst case exactly where it was: a grid that drains to one ocean only still walks every slope in full.
 
-Identical walk, but it abandons a cell's search the moment both oceans have been touched instead of exploring the rest of the reachable slope.
+The same per-cell search, abandoned the moment both oceans have been reached instead of finishing the slope. A real saving on grids where both oceans are close to most cells, and the same quadratic work in the worst case, because a cell that reaches neither ocean still explores everything downhill from it before giving up.
 
 ```python
 def pacific_atlantic(heights: list[list[int]]) -> list[list[int]]:
