@@ -110,6 +110,34 @@ export interface Reference {
   note: string
 }
 
+// One move of a pattern's playbook: the technique, how to recognise it from the
+// statement alone, and the mistake people actually make writing it.
+//
+// Why this is a RECORD and not the Markdown it came from. `docs/RESOURCES.md`
+// held the best writing in the repository — the six array ideas and the five
+// list moves — in tables that nothing in `src/` could read, so it reached no
+// screen at all. As data it is a query: `#/resources` renders it, a pattern's
+// problems inherit it, and extending it to the other eight patterns is filling
+// a table rather than writing a document.
+//
+// `learnOn` is problem IDs, checked by `data/problems.test.ts`, so a row cannot
+// point at a problem that was renamed or never existed.
+export interface Move {
+  /** the technique, named — "Dummy head", "Prefix sums" */
+  name: string
+  /** what it IS, in one sentence: the mechanism, not the motivation */
+  idea: string
+  /** the tell: what in the STATEMENT says to reach for this */
+  tell: string
+  /** what must stay true while the loop runs. Absent where a move has no
+   *  single invariant worth naming — the array ideas mostly do not */
+  invariant?: string
+  /** problem ids in this repo, so a row is a set of routes and not a citation */
+  learnOn: string[]
+  /** the mistake people actually make, with the input that exposes it */
+  mistake: string
+}
+
 export interface Pattern {
   id: string
   name: string
@@ -119,6 +147,8 @@ export interface Pattern {
   // candidates were dropped for 404 and one — the Wikipedia "sliding window
   // protocol" — for being the NETWORKING thing of the same name.
   references?: Reference[]
+  /** how to recognise and write this pattern — rendered on `#/resources` */
+  playbook?: Move[]
 }
 
 export interface SqlProblem {

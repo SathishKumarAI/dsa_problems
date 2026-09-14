@@ -83,6 +83,16 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | **Problem page — three zones** | **Orient**: one bar, four facts (pattern back-link, difficulty + meter, target time/space + growth marks, solved). **Act**: title, brief and both doors on the page's one raised surface. **Review**: the problem, hints, walkthrough and the approach ladder as bands — a heading and a hairline, never card chrome. | `problem-detail.tsx` · `ui/band.tsx` | shipped (measured: 8 → 7 bands, 26 → 23 boxes, 12 → 10 shadowed, 24 → 20 accent, 0 → 1 raised, touch targets 17 → 7 at 390px; R1/R2/B45 and the learn-link gate all still pass) |
 
 
+
+## 3b. Resources (`#/resources`)
+
+| Feature | Behaviour | File | Status |
+|---|---|---|---|
+| **Pattern playbook** | Per pattern: the **move**, what it IS mechanically, **the tell** (what in the statement says to reach for it — the only part that works *before* you know the technique), **keep this true** (the invariant, where the move has one), **the classic mistake** with the input that exposes it, and **practise it on** — links into this app's own problems, not citations. `docs/RESOURCES.md`'s tables are data now: `Pattern.playbook`. Arrays & Hashing has six moves, Linked List five; the other eight are "sources only" until someone fills the table. | `components/resources-view.tsx` · `data/patterns.ts` · `data/types.ts` `Move` | shipped (gate: every `learnOn` id is a real problem, every row has an idea, a tell and a mistake of real length, ≥10 rows total) |
+| **Read further, with the note** | The 30 HTTP-checked sources render here with the **note** saying what each one answers — the field `Pattern.references` always carried and the pattern header dropped. | `resources-view.tsx` | shipped |
+| **Pattern picker is a route** | `#/resources?p=linked-list`, so a playbook is a link you can send. | `resources-view.tsx` · `App.tsx` | shipped |
+| **A live pattern vanishes entirely** | The page is a pattern name written a dozen different ways ("Two pointers converging", "Hash map as an index"), so a pattern whose journey is started and unfinished is **removed from the picker and unreachable by `?p=`** — not merely renamed to `· · ·`. Same call `ReadFurther` makes, same reason (B45). With every pattern masked, the page says so instead of rendering empty. | `resources-view.tsx` · `lib/disclosure.ts` | shipped (UI test: arm `unlocked:<slug>` on the journey that reveals linked-list, then ask for `?p=linked-list` **by name** and assert no move leaks) |
+
 ## 4. Journey page — the map
 
 ```

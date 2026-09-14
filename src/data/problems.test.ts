@@ -357,3 +357,38 @@ test("problems: a promoted problem's journey names its rung by key, not index", 
     )
   }
 })
+
+// B85. A playbook row's `learnOn` is a set of ROUTES, not a citation: the
+// resources page renders each id as a link into this app. `docs/RESOURCES.md`
+// carried the same lists as prose and said so itself — "if a link 404s, that
+// is why" — which is exactly the state data should make impossible.
+test("patterns: every playbook row is usable, and points at real problems", () => {
+  const ids = new Set(PROBLEMS.map((p) => p.id))
+  let rows = 0
+  for (const pattern of PATTERNS) {
+    const seen = new Set<string>()
+    for (const m of pattern.playbook ?? []) {
+      rows++
+      const where = `${pattern.id}/${m.name}`
+      assert.ok(m.name.trim(), `${pattern.id}: a move with no name`)
+      assert.ok(!seen.has(m.name), `${where}: two moves share a name`)
+      seen.add(m.name)
+      assert.ok(
+        m.idea.trim().length > 40,
+        `${where}: the idea needs a sentence — what the move IS, mechanically`
+      )
+      assert.ok(
+        m.tell.trim().length > 30,
+        `${where}: the tell is what makes this page worth reading; write it`
+      )
+      assert.ok(
+        m.mistake.trim().length > 60,
+        `${where}: name the mistake AND the input that exposes it`
+      )
+      assert.ok(m.learnOn.length > 0, `${where}: nowhere to practise it`)
+      for (const id of m.learnOn)
+        assert.ok(ids.has(id), `${where}: "${id}" is not a problem in this app`)
+    }
+  }
+  assert.ok(rows >= 10, `only ${rows} playbook rows — the page has nothing to show`)
+})

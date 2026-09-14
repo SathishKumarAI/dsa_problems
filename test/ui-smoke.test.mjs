@@ -358,6 +358,99 @@ describe(
       }
     })
 
+    // B85. The resources route, and the disclosure rule on it — which is the
+    // half worth testing. The page is a pattern name written a dozen different
+    // ways ("Two pointers converging", "Hash map as an index"), so a pattern
+    // whose journey is mid-flight must not appear here AT ALL, not merely with
+    // its name swapped for the mask.
+    test("the resources route renders a playbook, and masks a live pattern (B85)", async () => {
+      // This page is DRIVEN BY the ledger, so it is the one test in this file
+      // that cannot inherit one. Passed alone and failed in the suite: an
+      // earlier test left a journey armed, arrays-hashing was masked, the page
+      // fell back to a pattern with no playbook, and the failure read as
+      // "only 1 playbook moves rendered" — which is the empty-state copy, not
+      // a bug in the page.
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/resources`)
+      const out = await page.run(`
+        const text = document.body.innerText;
+        const main = document.querySelector('main').innerText;
+        return {
+          tabs: [...document.querySelectorAll('nav[aria-label="pattern"] button')]
+            .map(b => b.innerText.trim().split(String.fromCharCode(10))[0]),
+          moves: (main.match(/the tell/gi) || []).length,
+          mistakes: (main.match(/the classic mistake/gi) || []).length,
+          practise: [...document.querySelectorAll('a')]
+            .filter(a => (a.getAttribute('href') || '').indexOf('#/p/') === 0).length,
+          hasNote: /what it answers|why THIS|pointer-machine|answers the question/i.test(text),
+        };
+      `)
+      assert.ok(out.tabs.length >= 2, `only ${out.tabs.length} patterns offered`)
+      assert.ok(out.moves >= 5, `only ${out.moves} playbook moves rendered`)
+      assert.equal(out.moves, out.mistakes, "a move rendered without its mistake")
+      assert.ok(out.practise >= 5, "no links into the problems")
+      assert.deepEqual(page.errors(), [], "resources logged console errors")
+
+      // pick another pattern: it is a ROUTE, so it survives a reload
+      await page.goto(`${server.base}/#/resources?p=linked-list`)
+      const ll = await page.eval(`document.querySelector('main').innerText`)
+      assert.match(ll, /Dummy head/, "the linked-list playbook did not render")
+      assert.match(ll, /Reverse in place/, "a move is missing")
+
+      // now start a journey that REVEALS linked-list and leave it unfinished:
+      // the pattern must vanish from the picker entirely.
+      //
+      // `add-two-numbers`, not `cycle-detect`: the mask is driven by a
+      // journey's `reveals`, and cycle-detect declares none, so the first
+      // version of this test set a ledger key that masked nothing and asserted
+      // against a mask that was never armed. It passed the leak check for the
+      // wrong reason — the page simply had a different pattern selected.
+      //
+      // Written on another route and then navigated for real, because the
+      // store caches per key and a write while the page is mounted is undone.
+      await page.goto(`${server.base}/#/`)
+      // the ledger key is the journey's SLUG, which is not its filename:
+      // add-two-numbers.ts declares slug "add-them-the-way-you-were-taught".
+      // Keyed by the filename first, the mask never armed and the page was
+      // marked as leaking when it was behaving correctly.
+      const slug = JOURNEYS.find((j) => j.problemId === "add-two-numbers").slug
+      assert.ok(
+        (JOURNEYS.find((j) => j.problemId === "add-two-numbers").reveals ?? [])
+          .includes("linked-list"),
+        "this test needs a journey that reveals linked-list"
+      )
+      await page.eval(
+        `localStorage.setItem('dsa:unlocked:' + ${JSON.stringify(slug)}, '2'); true`
+      )
+      await page.goto(`${server.base}/#/resources`)
+      const masked = await page.run(`
+        return {
+          tabs: [...document.querySelectorAll('nav[aria-label="pattern"] button')]
+            .map(b => b.innerText.trim()),
+          // asked for by name, so the mask cannot hide the leak by simply
+          // selecting a different pattern
+          leaks: (await (async () => {
+            location.hash = '#/resources?p=linked-list';
+            await new Promise(r => setTimeout(r, 400));
+            return /Dummy head|Reverse in place|Split and weave/.test(
+              document.querySelector('main').innerText
+            );
+          })()),
+        };
+      `)
+      assert.equal(
+        masked.leaks,
+        false,
+        "a masked pattern's playbook leaked onto the resources page"
+      )
+      assert.ok(
+        !masked.tabs.some(t => /Linked List/i.test(t)),
+        `the masked pattern is still offered: ${masked.tabs.join(", ")}`
+      )
+      await page.eval(`localStorage.clear(); true`)
+    })
+
     // B82 / B83. The one check that matters for the Python runtime: a real
     // browser, a real fetch of 10.6 MB of CPython, real output. Everything
     // else about this feature is a claim.

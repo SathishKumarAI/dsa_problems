@@ -16,6 +16,7 @@ import {
   RouteIcon,
   SettingsIcon,
   SigmaIcon,
+  LibraryIcon,
   SlidersHorizontalIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -109,6 +110,7 @@ function whereAmI(parts: string[], mask: Mask): string {
     if (problem) return `DSA · ${name} · ${problem.title}`
     return `DSA · pattern · ${name}`
   }
+  if (root === "resources") return "DSA · resources"
   if (root === "sql") return "SQL · drills"
   if (root === "flashcards") return "Data science · stats flashcards"
   return "home"
@@ -262,6 +264,20 @@ export function AppSidebar({ view }: { view: string }) {
                 >
                   <SlidersHorizontalIcon className="size-3.5 shrink-0 text-chart-2" />
                   <span className="truncate">Algorithm visualizer</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* B85. Not under "DSA · patterns" below: that group is a list of
+                  patterns to PRACTISE, and this is one page about all of them.
+                  It sits beside the visualizer, which is the other reference
+                  surface that is not a problem list. */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<a href={href("/resources")} />}
+                  isActive={view === "resources"}
+                  tooltip="Resources"
+                >
+                  <LibraryIcon className="size-3.5 shrink-0 text-chart-2" />
+                  <span className="truncate">Resources</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

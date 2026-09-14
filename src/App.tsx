@@ -46,6 +46,7 @@ import { FlashcardsView } from "./components/flashcards-view"
 import { HomeView } from "./components/home-view"
 import { ProblemDetail } from "./components/problem-detail"
 import { ProblemList } from "./components/problem-list"
+import { ResourcesView } from "./components/resources-view"
 import { SqlView } from "./components/sql-view"
 
 function View() {
@@ -57,6 +58,7 @@ function View() {
   }
   if (root === "algorithms") return <AlgorithmsPage />
   if (root === "learn" && a) return <LearnPageView key={a} id={a} />
+  if (root === "resources") return <ResourcesView />
   if (root === "sql") return <SqlView />
   if (root === "flashcards") return <FlashcardsView />
   if (root === "p") {
