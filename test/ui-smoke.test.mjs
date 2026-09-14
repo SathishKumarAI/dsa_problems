@@ -358,6 +358,80 @@ describe(
       }
     })
 
+    // B82 / B83. The one check that matters for the Python runtime: a real
+    // browser, a real fetch of 10.6 MB of CPython, real output. Everything
+    // else about this feature is a claim.
+    //
+    // The script it runs is the SAME one `scripts/verify-deep.mjs` executes in
+    // CI — every approach in the document plus a differential test over random
+    // inputs — so agreement here and agreement there are the same fact, and
+    // this test fails if the two ever stop being the same code.
+    test("the learn page runs its own Python, and the script agrees (B82)", async () => {
+      await page.goto(`${server.base}/#/learn/cycle-detect`)
+
+      const before = await page.run(`
+        const runs = [...document.querySelectorAll('button')]
+          .filter(b => b.innerText.trim() === 'Run');
+        return {
+          buttons: runs.length,
+          editors: document.querySelectorAll(
+            'textarea[aria-label="the script, yours to change"]'
+          ).length,
+          // nothing may be RUNNING before a press: the whole case for
+          // self-hosting 10.6 MB is that a reader who never runs never pays.
+          // Measured on the page, not on performance.getEntriesByType:
+          // because the runtime is fetched INSIDE the worker and a worker's
+          // resource timeline is its own — the main thread never sees it, so
+          // that check read zero whether or not CPython had loaded.
+          started: /fetching CPython|loading Python/.test(document.body.innerText),
+          output: !!document.querySelector('pre + div, [class*="output"]') ||
+            [...document.querySelectorAll('span')].some(s => s.innerText.trim() === 'output'),
+        };
+      `)
+      assert.ok(before.buttons >= 2, `only ${before.buttons} Run buttons`)
+      assert.equal(before.editors, 1, "the full script is not editable")
+      assert.equal(before.started, false, "CPython started before Run was pressed")
+      assert.equal(before.output, false, "an output panel rendered before any run")
+
+      // press the LAST Run — the full runnable script
+      await page.run(`
+        const runs = [...document.querySelectorAll('button')]
+          .filter(b => b.innerText.trim() === 'Run');
+        runs[runs.length - 1].click();
+        return true;
+      `)
+
+      // booting CPython is seconds, not milliseconds
+      await page.waitFor(
+        `!!document.body.innerText.match(/exit 0|error \u00b7/)`,
+        { tries: 90, gap: 1000 }
+      )
+
+      const out = await page.run(`
+        const text = document.body.innerText;
+        return {
+          ok: /exit 0/.test(text),
+          agreed: /ALL APPROACHES AGREED/i.test(text),
+          // the four rung names the document's script exercises, so this
+          // fails if the page ever runs a DIFFERENT script than the one CI does
+          rungs: ['nested_walk', 'visited_set', 'floyd', 'value_marking']
+            .filter(n => text.includes(n)).length,
+          tail: text.slice(-400),
+        };
+      `)
+      assert.ok(out.ok, `the script did not exit 0 — page ended: ${out.tail}`)
+      assert.equal(
+        out.rungs,
+        4,
+        `the script ran only ${out.rungs} of the document's four approaches`
+      )
+      assert.ok(
+        out.agreed,
+        `it ran but did not report agreement — page ended: ${out.tail}`
+      )
+      assert.deepEqual(page.errors(), [], "the learn page logged console errors")
+    })
+
     // B79 / B87. The promotion and the comparator are both claims about what a
     // page RENDERS, so neither is settled by a node test: `ladderOf` returning
     // four rungs and the page drawing four rungs are different facts.

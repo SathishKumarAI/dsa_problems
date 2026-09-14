@@ -37,7 +37,7 @@ import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import { compareHref, ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
 import type { Ladder, Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
-import { href, replaceQuery, useRoute } from "@/lib/route"
+import { href, navigate, useRoute } from "@/lib/route"
 import { hasDeepDoc, hasLearnPage } from "@/lib/learn-pages"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
@@ -269,12 +269,55 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
   // worth sending to someone, and the back button should undo it. Resolved
   // against the rungs the LADDER returned, never against the problem, so a
   // hand-typed key cannot walk past the ledger's cap.
-  const { query } = useRoute()
+  const { path, query } = useRoute()
   const pair = parseCompare(query.get("compare"), ladder.rungs)
+  // `navigate`, not `replaceQuery`: the comparison has to be a history entry or
+  // Back cannot undo it, and Back is the only way out a reader will guess.
+  // Measured in a real browser first — `replaceQuery` uses `history.replaceState`
+  // and left the reader with no way back to the ladder but the button.
   const compare = (value: string) => {
-    replaceQuery(value ? { compare: value } : {})
+    navigate(path, value ? { compare: value } : {})
     window.scrollTo({ top: 0 })
   }
+
+  // `?compare=` is a FOCUSED view, not a section appended to the page.
+  //
+  // The first cut rendered the comparator at the foot, below the statement,
+  // the hints and the walkthrough — so pressing "compare with the visited set"
+  // scrolled you to the top of a problem statement you had already read, with
+  // the thing you asked for four screens down. Looked at in a real browser
+  // before this was noticed; nothing about the code said it was wrong.
+  //
+  // A reader who asks to compare two rungs is asking one question. Answer it,
+  // keep the orient bar so they know where they are, and let Back return the
+  // page. Everything else on this page is the context they just came from.
+  if (pair)
+    return (
+      <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
+        <OrientBar>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => compare("")}
+            className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
+          >
+            <ArrowLeftIcon data-icon="inline-start" />
+            {problem.title}
+          </Button>
+          <Fact label="comparing">
+            <span className="font-mono">
+              {pair[0].key} · {pair[1].key}
+            </span>
+          </Fact>
+        </OrientBar>
+        <ApproachCompare
+          pair={pair}
+          rungs={ladder.rungs}
+          onPick={compare}
+          onBack={() => compare("")}
+        />
+      </div>
+    )
 
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-8">
@@ -476,21 +519,12 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         </Band>
       )}
 
-      {pair ? (
-        <ApproachCompare
-          pair={pair}
-          rungs={ladder.rungs}
-          onPick={compare}
-          onBack={() => compare("")}
-        />
-      ) : (
-        <ApproachLadder
-          problem={problem}
-          journey={journey}
-          ladder={ladder}
-          onCompare={compare}
-        />
-      )}
+      <ApproachLadder
+        problem={problem}
+        journey={journey}
+        ladder={ladder}
+        onCompare={compare}
+      />
     </div>
   )
 }

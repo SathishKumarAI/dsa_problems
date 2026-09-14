@@ -105,7 +105,7 @@ export function LearnPageView({ id }: { id: string }) {
         </div>
 
         {blocks ? (
-          <Markdown blocks={blocks} />
+          <Markdown blocks={blocks} runnable />
         ) : (
           <p className="text-ui text-muted-foreground">loading the document…</p>
         )}
