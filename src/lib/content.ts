@@ -1,4 +1,4 @@
-// The bridge between `src/content/<id>.ts` and the learn page.
+// The bridge between `src/problems/<id>/doc.ts` and the learn page.
 //
 // Owns: which problems have a typed teaching document, fetching one, and
 // composing it back into the page's block order. Owns no markup
@@ -26,14 +26,20 @@ import type { Problem } from "@/data"
 import type { TeachingDoc } from "@/content/types"
 import type { Rung } from "@/lib/ladder"
 
-const MODULES = import.meta.glob("/src/content/*.ts", {
+// `doc.ts` and nothing else. A problem directory holds BOTH halves — the record
+// (`index.ts`, eager, on the static chain from `data/index.ts`) and the teaching
+// document (`doc.ts`, lazy, only ever reached from here). Globbing the directory
+// instead would match the record too and put 30 KB of prose per problem into
+// the first chunk, which is the exact thing B95 is about.
+const MODULES = import.meta.glob("/src/problems/*/doc.ts", {
   import: "doc",
 }) as Record<string, () => Promise<TeachingDoc>>
 
 const byId = new Map<string, () => Promise<TeachingDoc>>(
-  Object.entries(MODULES)
-    .filter(([path]) => !path.endsWith("/types.ts"))
-    .map(([path, load]) => [path.replace(/^.*\/(.+)\.ts$/, "$1"), load])
+  Object.entries(MODULES).map(([path, load]) => [
+    path.replace(/^.*\/([^/]+)\/doc\.ts$/, "$1"),
+    load,
+  ])
 )
 
 export const hasContent = (id: string) => byId.has(id)
@@ -100,6 +106,21 @@ export function composeLearnPage(
         doc.unlocks.map((u) => [u.constraint, u.what])
       )
     )
+  }
+
+  // The document's own numbered failure list, straight after the constraints
+  // that make each one possible — and before the first approach, because every
+  // approach's "Common mistake" cites these by number.
+  if (doc.traps) {
+    h(2, "The failure modes — the whole test suite")
+    out.push(doc.traps.intro)
+    out.push(
+      pipeTable(
+        ["#", "Failure", "Example", "What the code must check"],
+        doc.traps.rows.map((t, i) => [`**${i + 1}**`, t.name, t.example, t.check])
+      )
+    )
+    if (doc.traps.outro) out.push(doc.traps.outro)
   }
 
   if (doc.calculations) {

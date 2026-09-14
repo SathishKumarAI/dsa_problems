@@ -29,7 +29,7 @@ const arg = (k) => {
 }
 
 const DEEP = "docs/deep"
-const OUT = "src/content"
+const OUT = "src/problems"
 
 /** every line of the source that carries the author's words */
 function sourceLines(md) {
@@ -65,13 +65,31 @@ function fieldText(src) {
 
 const norm = (s) => s.replace(/\s+/g, " ").trim()
 
+/** every `.ts` under one problem's directory, concatenated.
+ *
+ *  The document is a DIRECTORY now, so "did this line survive" is a question
+ *  about the whole of it — a paragraph that moved from `understanding.ts` to
+ *  `traps.ts` has not been lost, and a check that read one file would say it
+ *  had. The record half (index/problem/hints/solutions) is in here too, which
+ *  costs nothing: it can only make a line easier to find, and no md line is
+ *  sourced from it. */
+function moduleText(dir) {
+  const out = []
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name)
+    if (e.isDirectory()) out.push(moduleText(p))
+    else if (e.name.endsWith(".ts")) out.push(readFileSync(p, "utf8"))
+  }
+  return out.join("\n")
+}
+
 function check(id) {
   const mdPath = join(DEEP, `${id}_explained.md`)
-  const tsPath = join(OUT, `${id}.ts`)
-  if (!existsSync(mdPath) || !existsSync(tsPath)) return null
+  const dir = join(OUT, id)
+  if (!existsSync(mdPath) || !existsSync(join(dir, "doc.ts"))) return null
 
   const lines = sourceLines(readFileSync(mdPath, "utf8"))
-  const haystack = fieldText(readFileSync(tsPath, "utf8"))
+  const haystack = fieldText(moduleText(dir))
 
   const present = (t) => {
     if (t.length < 12) return true // a lone pipe, a bullet marker, a separator
@@ -114,18 +132,16 @@ function check(id) {
 
 // `--all` means "every module that still has a source to compare against".
 //
-// It used to enumerate every `.ts` under src/content bar `types.ts`, which
+// It used to enumerate every `.ts` under the output dir bar `types.ts`, which
 // picked up `content.test` — never a document — and `cycle-detect`, whose
 // Markdown was deleted once it round-tripped. So the gate the fan-out was told
 // to satisfy could never say "ok" again after the first conversion: it was
 // unreachable by construction, and an agent had to work that out from a
 // confusing failure list.
 const ids = process.argv.includes("--all")
-  ? readdirSync(OUT)
-      .filter(
-        (f) => f.endsWith(".ts") && f !== "types.ts" && !f.endsWith(".test.ts")
-      )
-      .map((f) => f.replace(/\.ts$/, ""))
+  ? readdirSync(OUT, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && existsSync(join(OUT, d.name, "doc.ts")))
+      .map((d) => d.name)
       .filter((id) => existsSync(join(DEEP, `${id}_explained.md`)))
   : [arg("--id")].filter(Boolean)
 

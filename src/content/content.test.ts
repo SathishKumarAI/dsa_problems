@@ -9,19 +9,23 @@
 
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { readdirSync } from "node:fs"
+import { existsSync, readdirSync } from "node:fs"
 import { PROBLEMS } from "../data/index.ts"
 import { JOURNEYS } from "../engine/index.ts"
 import { ladderOf } from "../lib/ladder.ts"
 import type { TeachingDoc } from "./types.ts"
 
-const ids = readdirSync(new URL(".", import.meta.url))
-  .filter((f) => f.endsWith(".ts") && !f.endsWith(".test.ts") && f !== "types.ts")
-  .map((f) => f.replace(/\.ts$/, ""))
+// One directory per problem, entered through `doc.ts`. A directory without one
+// is a problem whose record has moved but whose document has not been converted
+// yet, and it is not an error — the two halves migrate independently.
+const DIR = new URL("../problems/", import.meta.url)
+const ids = readdirSync(DIR, { withFileTypes: true })
+  .filter((d) => d.isDirectory() && existsSync(new URL(`${d.name}/doc.ts`, DIR)))
+  .map((d) => d.name)
 
 const docs: [string, TeachingDoc][] = []
 for (const id of ids) {
-  const mod = (await import(`./${id}.ts`)) as { doc: TeachingDoc }
+  const mod = (await import(`../problems/${id}/doc.ts`)) as { doc: TeachingDoc }
   docs.push([id, mod.doc])
 }
 

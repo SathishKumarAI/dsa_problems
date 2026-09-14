@@ -18,10 +18,11 @@ import { PROBLEMS } from "../src/data/index.ts"
 import { audit } from "./learn-gaps.mjs"
 
 // Measured 2026-09-13, tightened 2026-09-14 when the first document was
-// converted to `src/content/`. Lower these as documents are written or
+// converted to a typed document. Lower these as documents are written or
 // converted; never raise them without saying why in the commit.
 //
-// 116 -> 105 on 2026-09-14 as the first batch of twelve converted. Every batch
+// 116 -> 105 on 2026-09-14 as the first batch of twelve converted, 105 -> 104
+// when balanced-brackets moved to `src/problems/<id>/`. Every batch
 // moves these three by one per document that lacked those sections, so the
 // number belongs to whoever merges the batch — a parallel agent must NOT edit
 // it, or twelve agents collide on three integers.
@@ -34,9 +35,9 @@ import { audit } from "./learn-gaps.mjs"
 // conversion, and this ratchet is what noticed.
 const BASELINE = {
   untaught: 45, // problems with no teaching document at all
-  calculations: 105, // missing "Reading the Calculations"
-  fluent: 105, // missing "How to Get Fluent"
-  hood: 105, // missing an "Under the hood" callout
+  calculations: 104, // missing "Reading the Calculations"
+  fluent: 104, // missing "How to Get Fluent"
+  hood: 104, // missing an "Under the hood" callout
   interview: 45,
   arc: 45,
   comparison: 45,

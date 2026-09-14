@@ -7,7 +7,7 @@
 //
 // Reached only through `lib/content.ts`'s glob — never import this file.
 
-import type { TeachingDoc } from "./types.ts"
+import type { TeachingDoc } from "../../content/types.ts"
 
 export const doc: TeachingDoc = {
   problemId: "intersection-of-arrays",

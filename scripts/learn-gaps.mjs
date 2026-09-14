@@ -25,7 +25,7 @@ import { PATTERNS, PROBLEMS } from "../src/data/index.ts"
 const strict = process.argv.includes("--strict")
 const quiet = process.argv.includes("--quiet")
 const DEEP = "docs/deep"
-const CONTENT = "src/content"
+const CONTENT = "src/problems"
 const REPORT = "docs/LEARN-GAPS.md"
 
 // "an addition", "not in the data file", "(an addition — …)" all count: the
@@ -80,7 +80,7 @@ export function audit() {
       .map((f) => f.replace(/_explained\.md$/, ""))
   )
 
-  // A problem whose document has been converted to `src/content/<id>.ts` is
+  // A problem whose document has been converted to `src/problems/<id>/doc.ts` is
   // TAUGHT, and none of the section columns below apply to it: the sections it
   // used to be graded on by grepping headings are fields of a type now, and
   // `src/content/content.test.ts` fails the build when one is missing or a
@@ -88,9 +88,9 @@ export function audit() {
   // gate — and counting a converted problem as untaught would have read as a
   // regression on the day it improved.
   const typed = new Set(
-    (existsSync(CONTENT) ? readdirSync(CONTENT) : [])
-      .filter((f) => f.endsWith(".ts") && f !== "types.ts" && !f.endsWith(".test.ts"))
-      .map((f) => f.replace(/\.ts$/, ""))
+    (existsSync(CONTENT) ? readdirSync(CONTENT) : []).filter((id) =>
+      existsSync(join(CONTENT, id, "doc.ts"))
+    )
   )
 
   return PROBLEMS.map((problem) => {

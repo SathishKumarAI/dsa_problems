@@ -80,6 +80,30 @@ export interface ApproachDoc {
   notes?: Note[]
 }
 
+/**
+ * One way the problem goes wrong, named so the rest of the document can refer
+ * to it by number instead of re-describing it.
+ *
+ * Typed rather than left as prose because the numbering is load-bearing:
+ * balanced-brackets' three failure modes are cited by every approach's
+ * `mistake`, by its worked example and by its interview note, and a document
+ * that renumbers them in one place and not the others reads as correct.
+ *
+ * NOT the journey's `edges`. Those are four preset-bound cases that cite a line
+ * of `constraints` and load an animation; these are the document's own list,
+ * three of them, with the line of code that catches each. Same subject, two
+ * different artifacts — merging them would drop the presets on one side and the
+ * `check` column on the other.
+ */
+export interface Trap {
+  /** the failure, in the words the document uses when it cites it */
+  name: string
+  /** the shortest inputs that trigger it */
+  example: string
+  /** what the code must test for, in one clause */
+  check: string
+}
+
 /** A constraint, and the approach it is a permission slip for. */
 export interface Unlock {
   constraint: string
@@ -102,6 +126,12 @@ export interface TeachingDoc {
   understanding: string
   /** constraint → what it unlocks (§1). Absent on the thinnest documents. */
   unlocks?: Unlock[]
+  /**
+   * §1 — the ways a solution to THIS problem fails, numbered. `intro` says why
+   * the list is the whole test suite; `outro` is the paragraph on which of them
+   * get forgotten and why.
+   */
+  traps?: { intro: string; rows: Trap[]; outro?: string }
   /** §2 — the symbol table and how to trace it by hand. 10 of 127 have it. */
   calculations?: string
   /** least to most optimized */

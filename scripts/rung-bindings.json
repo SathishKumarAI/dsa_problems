@@ -25,6 +25,7 @@
     "slide-the-tally-compare-all-26",
     "optimal"
   ],
+  "balanced-brackets": ["delete", "stack", "counter"],
   "backspace-compare": [
     "recursion-one-cancel-at-a-time",
     "rebuild-the-text-by-slicing",

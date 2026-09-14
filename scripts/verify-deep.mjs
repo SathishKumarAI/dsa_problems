@@ -32,21 +32,21 @@ const DIR = "docs/deep"
 const AGREED = /all approaches agreed/i
 
 // Two sources while the conversion runs. A problem with a typed document
-// (`src/content/<id>.ts`) hands over a STRING FIELD; the rest still need the
+// (`src/problems/<id>/doc.ts`) hands over a STRING FIELD; the rest still need the
 // last python fence of their Markdown parsed out of prose.
 //
 // The field is the better arrangement and this script is the reason to say so:
 // "the last ```python block" is a convention that a document can break by
 // adding a code sample after its script, and the CRLF note below is what
 // parsing prose for a program costs.
-const CONTENT = "src/content"
+const CONTENT = "src/problems"
 const typed = new Map()
 if (existsSync(CONTENT))
-  for (const f of readdirSync(CONTENT)) {
-    if (!f.endsWith(".ts") || f === "types.ts" || f.endsWith(".test.ts")) continue
-    const id = f.replace(/\.ts$/, "")
+  for (const id of readdirSync(CONTENT)) {
+    const entry = resolve(CONTENT, id, "doc.ts")
+    if (!existsSync(entry)) continue
     if (only && id !== only) continue
-    const mod = await import(pathToFileURL(resolve(CONTENT, f)).href)
+    const mod = await import(pathToFileURL(entry).href)
     typed.set(id, mod.doc.script)
   }
 
@@ -88,7 +88,7 @@ function runScript(id, script, source) {
   if (!quiet) console.log(`ok  ${id.padEnd(30)} ${source}`)
 }
 
-for (const [id, script] of typed) runScript(id, script, "src/content")
+for (const [id, script] of typed) runScript(id, script, "src/problems")
 
 for (const file of files) {
   const id = file.replace(/_explained\.md$/, "")

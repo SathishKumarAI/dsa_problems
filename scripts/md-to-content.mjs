@@ -1,5 +1,6 @@
-// Convert one `docs/deep/<id>_explained.md` into `src/content/<id>.ts` — the
-// typed teaching document (`src/content/types.ts`).
+// Convert one `docs/deep/<id>_explained.md` into `src/problems/<id>/` — the
+// typed teaching document (`src/content/types.ts`), one file per section,
+// entered through `doc.ts`.
 //
 // This script is the point of the migration, not the one file it produces.
 // There are 82 documents; hand-converting them is 82 chances to drop a
@@ -29,7 +30,7 @@
 //       node scripts/md-to-content.mjs --all --dry
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 
 const arg = (k) => {
   const i = process.argv.indexOf(k)
@@ -41,7 +42,7 @@ const DEEP = "docs/deep"
 const BINDINGS = JSON.parse(readFileSync("scripts/rung-bindings.json", "utf8"))
 /** `###` parts under a `##` section that has a field but no room for them */
 let leftover = []
-const OUT = "src/content"
+const OUT = "src/problems"
 
 /** split a markdown body on `## ` headings, keeping order */
 function sections(md) {
@@ -116,6 +117,44 @@ function table(body) {
   return { head, rows }
 }
 
+/**
+ * Pull the document's own numbered failure list out of `## Understanding`.
+ *
+ * It has to come out BEFORE the unlocks table is stripped, because it is a
+ * table too, and the line-based strip below would fold its rows into `unlocks`
+ * without a word — three trap rows silently becoming three constraints. Found
+ * on balanced-brackets, the first document with two tables in that section.
+ */
+function splitTraps(body) {
+  const lines = body.split("\n")
+  const start = lines.findIndex((l) => /^###\s+.*failure modes?\b/i.test(l))
+  if (start === -1) return { body, traps: undefined }
+  let end = lines.length
+  for (let i = start + 1; i < lines.length; i++)
+    if (/^###\s/.test(lines[i])) {
+      end = i
+      break
+    }
+  const block = lines.slice(start + 1, end)
+  const first = block.findIndex((l) => l.trim().startsWith("|"))
+  const last = block.findLastIndex((l) => l.trim().startsWith("|"))
+  const parsed =
+    first === -1 ? undefined : table(block.slice(first, last + 1).join("\n"))
+  if (!parsed) return { body, traps: undefined }
+  // the house table is `| # | Failure | Example | What the code must check |`.
+  // The number is the row's POSITION, so it is not carried as data — a list
+  // that stores its own indices is a list that can disagree with itself.
+  const rows = parsed.rows.map((r) => ({ name: r[1], example: r[2], check: r[3] }))
+  return {
+    body: [...lines.slice(0, start), ...lines.slice(end)].join("\n"),
+    traps: {
+      intro: block.slice(0, first).join("\n").trim(),
+      rows,
+      outro: block.slice(last + 1).join("\n").trim() || undefined,
+    },
+  }
+}
+
 /** strip the `*(an addition — not in the data file's ladder)*` disclosure:
  *  the record makes it unnecessary, because there is no longer a ladder the
  *  document can be an addition TO */
@@ -162,12 +201,15 @@ function convert(id, rungKeys) {
   // ── Understanding: the WHOLE section bar the unlocks table ────────────────
   const understanding = find(/^Understanding the Problem/i)
   let unlocks
+  let traps
   let understandingBody = ""
   if (understanding) {
+    const split = splitTraps(understanding.body)
+    traps = split.traps
     const rows = []
     const kept = []
     let inTable = false
-    for (const line of understanding.body.split("\n")) {
+    for (const line of split.body.split("\n")) {
       const t = line.trim()
       if (t.startsWith("|")) {
         inTable = true
@@ -279,7 +321,11 @@ function convert(id, rungKeys) {
       .filter((l) => !l.trim().startsWith("|"))
       .join("\n")
       .trim()
-    if (aside) leftover.push({ title: "Comparison", body: aside })
+    // a horizontal rule is not an aside. The house format ends most sections
+    // with one, and carrying it through emitted a `notes` entry whose entire
+    // body was `---` — a section on the page with no words in it.
+    if (aside && aside.replace(/^-{3,}$/gm, "").trim())
+      leftover.push({ title: "Comparison", body: aside })
   }
 
   // anything the converter could not place
@@ -292,6 +338,7 @@ function convert(id, rungKeys) {
     problemId: id,
     understanding: understandingBody,
     unlocks,
+    traps,
     calculations: calcSec?.body,
     approaches,
     arc: arcSec?.body ?? "",
@@ -328,7 +375,39 @@ function guessRung(heading, rungKeys) {
   return rungKeys.find((k) => words.includes(k)) ?? ""
 }
 
+/** a rung key as a JS identifier — `delete` is a reserved word, `deleteRung` is not */
+const ident = (key, i) =>
+  (key ? key.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase()) : `approach${i + 1}`) +
+  "Rung"
+
+/** the file an approach lives in. A blank rung is a decision nobody has made
+ *  yet, so it is named by position and `content.test.ts` fails until it is. */
+const approachFile = (key, i) => `approaches/${key || `${i + 1}-unassigned`}.ts`
+
+const header = (id, owns) => `// ${id} — ${owns}
+//
+// Converted from docs/deep/${id}_explained.md by scripts/md-to-content.mjs.
+// Every byte of prose carried through unchanged; what changed is that the
+// STRUCTURE is a type (src/content/types.ts) rather than a heading convention.
+`
+
+/**
+ * One problem's teaching document, as a DIRECTORY rather than one module.
+ *
+ * Why split: these run to 650 lines of prose apiece, and the house rule is ~300
+ * with 500 the ceiling — a file you have to skim is a file you re-read every
+ * session. Changing one approach's worked example should open one ~90-line
+ * file, not scroll past two approaches to reach it.
+ *
+ * `doc.ts` is the only entry point, and the ONLY module `lib/content.ts`'s glob
+ * matches. Everything here hangs off it and nothing else imports it, so Vite
+ * still gives the whole directory one lazy chunk (B95) — the record half of the
+ * directory (`index.ts`, `problem.ts`, `hints.ts`, `solutions.ts`) is eager and
+ * must never be reachable from these files.
+ */
 function emit(doc) {
+  const id = doc.problemId
+  const files = new Map()
   const notes = (ns, indent) =>
     ns
       .map(
@@ -337,42 +416,178 @@ function emit(doc) {
       )
       .join("\n")
 
-  const a = (x) => `  {
-    rung: ${JSON.stringify(x.rung)},
-    title: ${JSON.stringify(x.title)},
-    idea: ${lit(x.idea)},
-    intuition: ${lit(x.intuition)},
-    worked: ${lit(x.worked)},
-    code: ${lit(x.code)},${x.codeNote ? `\n    codeNote: ${lit(x.codeNote)},` : ""}
-    mistake: ${lit(x.mistake)},
-    cost: ${lit(x.cost)},${x.notes ? `\n    notes: [\n${notes(x.notes, "    ")}\n    ],` : ""}
-  },`
+  // ── understanding ─────────────────────────────────────────────────────────
+  files.set(
+    "understanding.ts",
+    header(id, '"Understanding the Problem", and the constraints table') +
+      `//
+// The constraints are DATA here rather than prose: each row is a permission
+// slip an approach below cashes in, and the page renders them as a table.
+${doc.unlocks ? `\nimport type { Unlock } from "../../content/types.ts"\n` : ""}
+export const understanding = ${lit(doc.understanding)}
+${
+  doc.unlocks
+    ? `\nexport const unlocks: Unlock[] = ${JSON.stringify(doc.unlocks, null, 2)}\n`
+    : ""
+}`
+  )
 
-  return `// ${doc.problemId} — the teaching document, as data.
+  // ── traps ─────────────────────────────────────────────────────────────────
+  if (doc.traps)
+    files.set(
+      "traps.ts",
+      header(id, "the ways a solution to this problem is wrong, numbered") +
+        `//
+// The numbers are load-bearing: the approaches below cite "failure 1/2/3"
+// rather than restating the case, so a list renumbered in one place and not the
+// others still reads as correct. That is why these are rows and not a paragraph.
 //
-// Converted from docs/deep/${doc.problemId}_explained.md by
-// scripts/md-to-content.mjs. Every byte of prose carried through unchanged;
-// what changed is that the STRUCTURE is now a type (src/content/types.ts)
-// rather than a heading convention a script had to grep for.
-//
-// Reached only through \`lib/content.ts\`'s glob — never import this file.
+// NOT the journey's \`edges\` (src/data/journeys/${id}.ts). Those are
+// preset-bound cases that cite a line of \`constraints\` and load an animation;
+// these are the document's own, with the line of code that catches each.
 
-import type { TeachingDoc } from "./types.ts"
+import type { Trap } from "../../content/types.ts"
+
+export const intro = ${lit(doc.traps.intro)}
+
+export const rows: Trap[] = ${JSON.stringify(doc.traps.rows, null, 2)}
+${doc.traps.outro ? `\nexport const outro = ${lit(doc.traps.outro)}\n` : ""}`
+    )
+
+  // ── calculations ──────────────────────────────────────────────────────────
+  if (doc.calculations)
+    files.set(
+      "calculations.ts",
+      header(id, "the symbol table, and how to trace it by hand") +
+        `\nexport const calculations = ${lit(doc.calculations)}\n`
+    )
+
+  // ── one file per approach ─────────────────────────────────────────────────
+  doc.approaches.forEach((x, i) => {
+    files.set(
+      approachFile(x.rung, i),
+      header(id, `approach ${i + 1} — ${x.title}`) +
+        `//
+// All six parts docs/deep/README.md §3 requires. \`rung\` binds this section to
+// the problem's own ladder (solutions.ts), in both directions: a document may
+// not teach an approach with no record, and a rung may not go untaught.
+
+import type { ApproachDoc } from "../../../content/types.ts"
+
+export const approach: ApproachDoc = {
+  rung: ${JSON.stringify(x.rung)},
+  title: ${JSON.stringify(x.title)},
+  idea: ${lit(x.idea)},
+  intuition: ${lit(x.intuition)},
+  worked: ${lit(x.worked)},
+  code: ${lit(x.code)},${x.codeNote ? `\n  codeNote: ${lit(x.codeNote)},` : ""}
+  mistake: ${lit(x.mistake)},
+  cost: ${lit(x.cost)},${x.notes ? `\n  notes: [\n${notes(x.notes, "  ")}\n  ],` : ""}
+}
+`
+    )
+  })
+
+  // ── arc + comparison ──────────────────────────────────────────────────────
+  files.set(
+    "arc.ts",
+    header(id, "the closing narrative, and the rungs side by side") +
+      `//
+// The LONG arc — one connected story of what every rung had in common. The
+// short paragraph the problem page renders under its ladder is \`arc\` in
+// solutions.ts; the two are written for different readers and neither is a
+// copy of the other.
+
+import type { Comparison } from "../../content/types.ts"
+
+export const arc = ${lit(doc.arc)}
+
+export const comparison: Comparison = ${JSON.stringify(doc.comparison, null, 2)}
+`
+  )
+
+  // ── interview ─────────────────────────────────────────────────────────────
+  files.set(
+    "interview.ts",
+    header(id, "which rungs to know cold, and the drills") +
+      `\nexport const interview = ${lit(doc.interview)}
+${doc.fluent ? `\nexport const fluent = ${lit(doc.fluent)}\n` : ""}`
+  )
+
+  // ── the runnable script ───────────────────────────────────────────────────
+  files.set(
+    "script.ts",
+    header(id, "every approach in one file, cross-checked") +
+      `//
+// scripts/verify-deep.mjs runs this string on every pull request, and the Run
+// button on the page runs it in the browser. It ends by saying whether the
+// approaches agreed, because a result nobody can read is not a check.
+${doc.scriptNote ? `\nexport const scriptNote = ${lit(doc.scriptNote)}\n` : ""}
+export const script = ${lit(doc.script)}
+${doc.scriptOutput ? `\nexport const scriptOutput = ${lit(doc.scriptOutput)}\n` : ""}`
+  )
+
+  // ── anything the house format carries with no field of its own ────────────
+  if (doc.notes)
+    files.set(
+      "notes.ts",
+      header(id, "the sections the format has no field for") +
+        `\nimport type { Note } from "../../content/types.ts"
+
+export const notes: Note[] = [
+${notes(doc.notes, "")}
+]
+`
+    )
+
+  // ── the entry point ───────────────────────────────────────────────────────
+  const imports = [
+    `import { understanding${doc.unlocks ? ", unlocks" : ""} } from "./understanding.ts"`,
+    doc.traps
+      ? `import * as traps from "./traps.ts"`
+      : "",
+    doc.calculations ? `import { calculations } from "./calculations.ts"` : "",
+    ...doc.approaches.map(
+      (x, i) =>
+        `import { approach as ${ident(x.rung, i)} } from "./${approachFile(x.rung, i).replace(/\.ts$/, ".ts")}"`
+    ),
+    `import { arc, comparison } from "./arc.ts"`,
+    `import { interview${doc.fluent ? ", fluent" : ""} } from "./interview.ts"`,
+    `import { ${doc.scriptNote ? "scriptNote, " : ""}script${doc.scriptOutput ? ", scriptOutput" : ""} } from "./script.ts"`,
+    doc.notes ? `import { notes } from "./notes.ts"` : "",
+  ].filter(Boolean)
+
+  files.set(
+    "doc.ts",
+    `// ${id} — the teaching document, assembled from the files beside it.
+//
+// LAZY, and this is the whole point of the two entry files. This module is
+// reached ONLY through \`lib/content.ts\`'s glob, so every part it imports lands
+// in a chunk of its own. \`index.ts\` — the problem record — must never reach
+// anything here, or 30 KB of prose per problem joins the first load (B95).
+
+import type { TeachingDoc } from "../../content/types.ts"
+${imports.join("\n")}
 
 export const doc: TeachingDoc = {
-  problemId: ${JSON.stringify(doc.problemId)},
-  understanding: ${lit(doc.understanding)},
-${doc.unlocks ? `  unlocks: ${JSON.stringify(doc.unlocks, null, 4).replace(/\n/g, "\n  ")},\n` : ""}${doc.calculations ? `  calculations: ${lit(doc.calculations)},\n` : ""}  approaches: [
-${doc.approaches.map(a).join("\n")}
-  ],
-  arc: ${lit(doc.arc)},
-  comparison: ${JSON.stringify(doc.comparison, null, 4).replace(/\n/g, "\n  ")},
-  interview: ${lit(doc.interview)},
-${doc.fluent ? `  fluent: ${lit(doc.fluent)},\n` : ""}${doc.scriptNote ? `  scriptNote: ${lit(doc.scriptNote)},\n` : ""}  script: ${lit(doc.script)},${doc.scriptOutput ? `\n  scriptOutput: ${lit(doc.scriptOutput)},` : ""}${doc.notes ? `\n  notes: [\n${notes(doc.notes, "  ")}\n  ],` : ""}
+  problemId: ${JSON.stringify(id)},
+  understanding,${doc.unlocks ? "\n  unlocks," : ""}${
+    doc.traps
+      ? `\n  traps: { intro: traps.intro, rows: traps.rows${doc.traps.outro ? ", outro: traps.outro" : ""} },`
+      : ""
+  }${doc.calculations ? "\n  calculations," : ""}
+  approaches: [${doc.approaches.map((x, i) => ident(x.rung, i)).join(", ")}],
+  arc,
+  comparison,
+  interview,${doc.fluent ? "\n  fluent," : ""}${doc.scriptNote ? "\n  scriptNote," : ""}
+  script,${doc.scriptOutput ? "\n  scriptOutput," : ""}${doc.notes ? "\n  notes," : ""}
 }
 
 export default doc
 `
+  )
+
+  return files
 }
 
 // ── main ────────────────────────────────────────────────────────────────────
@@ -412,7 +627,12 @@ for (const id of ids) {
   const doc = convert(id, rungKeys)
   const missing = doc.approaches.filter((a) => !a.rung).length
   blanks += missing
-  if (!has("--dry")) writeFileSync(join(OUT, `${id}.ts`), emit(doc), "utf8")
+  if (!has("--dry"))
+    for (const [rel, body] of emit(doc)) {
+      const dest = join(OUT, id, rel)
+      mkdirSync(dirname(dest), { recursive: true })
+      writeFileSync(dest, body, "utf8")
+    }
   console.log(
     `${id}: ${doc.approaches.length} approaches` +
       `${missing ? `, ${missing} with no rung (decide by hand)` : ""}` +

@@ -2,36 +2,58 @@
 
 ## Where the code is
 
-**`master` at `cae2fd7`, tree clean.** Session of **2026-09-14** landed three branches:
-`chore/stop-committing-generated-learn-pages` (B72/B76), `feat/rung-keys` (B77 + the
-`cycle-detect` pilot of B79) and `feat/ladder-ui-and-compare` (B87). Everything below is verified
-green, not asserted: `npm run check` 765 tests / 0 fail, `npm run test:ui` 167 / 0 fail,
-`verify:code` 756 blocks / 0 failed, `run.mjs --id cycle-detect` 48 translations / 0 disagreed.
+**Branch `refactor/problems-dir-balanced-brackets`.** It moves one problem to the shape the rest
+will follow: **`src/problems/<id>/`, one directory per problem**, holding the record and the
+teaching document side by side, one file per section, every file under 200 lines.
 
-**Read `docs/AUDIT-2026-09-14.md` first.** It is the findings + plan this session executed from,
-and it names what is left. The two things on it that matter more than the content queue:
+`balanced-brackets` is the worked example — 110 lines of record plus a 620-line Markdown document
+became 14 files. Read **`src/problems/README.md`** before converting the next one; it is the
+change → file table and the rules.
 
-* **B95 — content is shipped as code.** 63 928 lines of content against 21 058 of application, all
-  statically imported, so the first chunk is **478 KB gzip + 260 KB gzip**. At B65's 500-problem
-  target that is ~2.9 MB. This is the ceiling on the stated goal; fix it before the catalogue grows.
-* **B79 — 44 problems still to promote.** The machinery and both gates are in. `cycle-detect` is
-  the worked example: two rungs became four, keys on every alternative, the journey wired
-  `from: "set"` rather than `from: 0`.
+**The one thing to hold on to:** there are **two entry files** and that is load-bearing.
+`index.ts` is the `Problem` record and is imported statically by the pattern barrel, so it is in
+the first chunk. `doc.ts` is the `TeachingDoc` and is reached only by `lib/content.ts`'s
+`import.meta.glob`, so its ~30 KB of prose is a chunk of its own. **Nothing eager may reach a doc
+file**, or 127 documents join the first load and B95 is undone.
 
-**The trap this session found the hard way:** `DerivedSpec.from` was a positional index into
-`problem.alternatives`, 133 uses across 88 files. Inserting a rung repointed a journey act at the
-wrong algorithm — right name, wrong code, wrong complexity, no error. `from` takes a key now and
-`problems.test.ts` fails the build if a keyed problem is still wired by position. Any B79 batch
-MUST rewire the journey in the same commit.
+Verified green on this branch, not asserted:
 
-The long-running branch
-`feat/deep-docs-and-list-journeys` was merged with `--no-ff` on 2026-09-13 (76 commits, history
-preserved on purpose) and is no longer the place to work. Start a new `type/scope-slug` branch from
-`master`.
+| Gate | Result |
+|---|---|
+| `npm run check` | **774 tests, 0 fail** (tsc + eslint + node) |
+| `npm run test:ui` | **171 / 0 fail**, real Chrome |
+| `npm run verify:code` | **758 blocks compiled, 0 failed** (up from 756 — the promoted counter rung) |
+| `npm run verify:run` | **2,186 oracle runs, 4,372 translations, 0 disagreed** (2,168 / 4,336 before — the two counter blocks that `cDefs` used to skip) |
+| `node scripts/verify-deep.mjs --id balanced-brackets` | ran clean and reported agreement |
+| `node scripts/content-roundtrip.mjs --id balanced-brackets` | **470 of 470** source lines carried through |
+| `node scripts/learn-gaps.mjs --strict` | clean; the ratchet dropped 105 → 104 |
+| The page, driven in Chrome at 1440 | the new **failure modes** section renders, 3 approaches, 3 rungs, 7 tables, 14 code blocks, no raw Markdown, no sideways scroll, no console errors |
 
-Last session: **2026-09-13 (night)**. It closed B68, killed two false complexity claims, started the
-122-document retrofit queue, and opened the repo for collaborators. Everything below is **verified
-green**, not asserted — the numbers are from the run recorded in `docs/WORKLOG.md`.
+### Two brace counters were lying, and one of them was skipping work
+
+Both `problems.test.ts`'s well-formed check and `localsmith/run.mjs`'s `cDefs` counted `{` and `}`
+as structure without skipping character and string literals. A rung whose code tests `ch == '{'`
+was called malformed by the first, and by the second was never closed at all — so it reported
+**"no function to call"** and silently skipped both translations. That reads exactly like a rung
+that passed. Both strip literals before counting now. The repo's own rule said it already: to find
+code, parse it; do not count braces.
+
+### What is left of the migration
+
+**68 documents to go** (B97). The converter emits the whole directory now, so the next one is:
+
+```
+node scripts/md-to-content.mjs --id <id>      # bind its rungs in scripts/rung-bindings.json first
+node scripts/content-roundtrip.mjs --id <id>  # prove no line was lost, THEN delete the md
+node scripts/verify-deep.mjs --id <id>
+```
+
+The thirteen documents converted before this branch moved to `<id>/doc.ts` unchanged — they are not
+split into sections and their records have not moved. Split each when someone next touches it; there
+is no value in a mechanical pass over prose nobody is reading.
+
+`src/content/` now holds only `types.ts` and `content.test.ts`. Renaming it is churn on top of an
+already wide diff; do it in a commit of its own or leave it.
 
 ## Start here
 
@@ -49,7 +71,7 @@ green**, not asserted — the numbers are from the run recorded in `docs/WORKLOG
 |---|---|
 | Problems | **127**, 10 patterns |
 | Journeys | **93**; the other 34 ship a static walkthrough |
-| Teaching documents | **82**; **45** problems have none |
+| Teaching documents | **82**; **45** problems have none. **14 are typed** (`src/problems/<id>/doc.ts`), 68 are still Markdown |
 | Documents with all three required sections | **10 of 127** |
 | Thin rungs (summary under 160 chars) | **0** — B68, closed 2026-09-13 |
 | Undisclosed approach additions | **0** |

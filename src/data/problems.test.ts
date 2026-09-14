@@ -139,9 +139,16 @@ test("problems: a journeyed problem has no hand-written walkthrough (one source 
 // main() and no explanatory prose. This is what makes a generated translation
 // safe to accept: nothing about it is taken on trust.
 test("problems: any Java or C++ block present is well-formed", () => {
+  // Braces inside a CHARACTER or STRING literal are data, not structure, and
+  // counting them is how a correct block gets reported as malformed: the
+  // single-counter rung tests `ch == '{'` and was rejected for it, while the
+  // stack rung's `partner.put('}', '{')` passed only because its two literals
+  // happened to cancel. Strip the literals first (escapes included), then count.
+  // `verify:code` compiles these blocks for real; this is the cheap pre-check.
   const balanced = (src: string) => {
+    const bare = src.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, "''")
     let d = 0
-    for (const c of src) {
+    for (const c of bare) {
       if (c === "{") d++
       if (c === "}") d--
       if (d < 0) return false
