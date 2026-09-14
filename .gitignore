@@ -25,3 +25,4 @@ dist-ssr
 
 # localsmith: generated drafts awaiting review, never committed
 scripts/localsmith/out/
+__pycache__/
