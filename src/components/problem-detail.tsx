@@ -1,7 +1,14 @@
-// One problem's page, read top to bottom: statement, constraints and examples,
-// then the hint ladder, the walkthrough, and every approach in build order, each
-// rung carrying the weakness in the one before it (R1). The primary action is
-// solving it on LeetCode, because this page explains and does not host an editor.
+// One problem's page — the ONLY page for a problem, read top to bottom:
+// statement, constraints and examples, then the hint ladder, the walkthrough,
+// every approach in build order each carrying the weakness in the one before it
+// (R1), and then the long explanation in full. The primary action is solving it
+// on LeetCode, because this page explains and does not host an editor.
+//
+// The explanation used to be a SECOND page at `#/learn/<id>`, reached through a
+// door in zone 2, and it opened by restating the statement, the constraints,
+// the examples and the whole ladder — because a separate page has to stand on
+// its own. Merged, all four of those are the screen above it. `#/learn/<id>`
+// still resolves; it redirects here and jumps to the explanation.
 //
 // It is NOT tabbed (B38). 42 of 87 problems have no journey, so tabs were doing
 // hiding that no ledger asked for — three sections behind clicks on a page whose
@@ -12,8 +19,8 @@
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  BookOpenIcon,
   ExternalLinkIcon,
+  ListTreeIcon,
   RouteIcon,
   ScrollTextIcon,
 } from "lucide-react"
@@ -39,7 +46,10 @@ import { compareHref, ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
 import type { Ladder, Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href, navigate, useRoute } from "@/lib/route"
-import { hasDeepDoc, hasLearnPage } from "@/lib/learn-pages"
+import { useEffect } from "react"
+import { ExplanationBody } from "./explanation"
+import { useExplanation } from "@/lib/use-explanation"
+import type { Outline } from "@/lib/markdown"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
 import { ApproachCompare } from "./approach-compare"
@@ -289,13 +299,31 @@ function ProblemPage({
     1
   )
   const ladder = ladderOf(problem, journey, unlocked)
-  const deep = hasDeepDoc(problem.id)
+  // The explanation, fetched on arrival and never with the bundle: a typed
+  // document is ~30 KB of prose and the Markdown ones are larger. Not fetched
+  // at all while the ladder is CAPPED — a started journey has not earned the
+  // ending, and the cheapest way to not leak it is to not ask for it.
+  const explanation = useExplanation(problem.id, !ladder.capped)
   // `?compare=a,b` is state that belongs in the URL: the comparison is a claim
   // worth sending to someone, and the back button should undo it. Resolved
   // against the rungs the LADDER returned, never against the problem, so a
   // hand-typed key cannot walk past the ledger's cap.
   const { path, query } = useRoute()
   const pair = parseCompare(query.get("compare"), ladder.rungs)
+  // `?read=explanation` — what `#/learn/<id>` becomes. The section is at the
+  // foot of the page and its content is FETCHED, so the jump cannot happen at
+  // navigation time: it waits until the explanation is actually on screen.
+  // `ready` in the dependency is what makes this fire exactly once, on the
+  // render where the document arrives. Above the `?compare=` early return,
+  // because a hook after a conditional return is a hook that changes order.
+  const jumpToExplanation =
+    query.get("read") === "explanation" && explanation.present && explanation.ready
+  useEffect(() => {
+    if (!jumpToExplanation) return
+    document
+      .getElementById("explanation")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }, [jumpToExplanation])
   // `navigate`, not `replaceQuery`: the comparison has to be a history entry or
   // Back cannot undo it, and Back is the only way out a reader will guess.
   // Measured in a real browser first — `replaceQuery` uses `history.replaceState`
@@ -344,8 +372,14 @@ function ProblemPage({
       </div>
     )
 
+  const outline = explanation.present && explanation.ready ? explanation.outline : []
+
   return (
-    <div className="mx-auto flex w-full max-w-reading flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-(--container-page) gap-10">
+      {/* min-w-0: a flex item's default `min-width: auto` is its content's
+          min-content width, and the widest comparison table would push this
+          column open and take the whole document sideways with it. */}
+      <div className="mx-auto flex w-full min-w-0 max-w-reading flex-col gap-8">
       {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
           Four facts, one row: where am I, how hard is it, what do I have to
           beat, have I done it. Each changes what you do in the next thirty
@@ -399,12 +433,11 @@ function ProblemPage({
           journey invitation below is a bordered panel, not a second dock).
 
           This page explains and hosts no editor, so the primary action leaves
-          for LeetCode. The second door is the written explanation, and it
-          names which kind it opens: 81 of the 127 problems carry an authored
-          document in `docs/deep/` spliced into the learn page verbatim, the
-          other 46 get one assembled from the data. The phrase "Learn this
-          problem" is load-bearing — a UI test reads it to prove the ledger
-          still hides this mid-journey. */}
+          for LeetCode. The second door is the written explanation, which is
+          now FURTHER DOWN THIS PAGE rather than on another route — so it
+          scrolls rather than navigates. The phrase "Learn this problem" is
+          load-bearing: a UI test reads it to prove the ledger still hides this
+          mid-journey. */}
       <div
         data-surface="raised"
         className="flex flex-col gap-3 rounded-xl border bg-card p-5 md:p-6"
@@ -425,21 +458,24 @@ function ProblemPage({
             Solve on LeetCode
             <ExternalLinkIcon className="size-4" />
           </a>
-          {hasLearnPage(problem.id) && !ladder.capped && (
+          {explanation.present && (
             <a
-              href={href(`/learn/${problem.id}`)}
+              // A bare `#id` href is a ROUTE change in a hash-routed app, not a
+              // scroll: it would set the route to `explanation` and render
+              // home. Every in-page anchor here needs both of these lines.
+              href="#explanation"
+              onClick={(e) => {
+                e.preventDefault()
+                document
+                  .getElementById("explanation")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }}
               className="group inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
             >
-              {deep ? (
-                <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
-              ) : (
-                <BookOpenIcon className="size-4 shrink-0 text-chart-1" />
-              )}
+              <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
               Learn this problem
               <span className="hidden font-normal text-muted-foreground sm:inline">
-                {deep
-                  ? "— the long explanation"
-                  : "— every approach, one page"}
+                — the long explanation, further down
               </span>
               <RowNudge />
             </a>
@@ -550,6 +586,86 @@ function ProblemPage({
         ladder={ladder}
         onCompare={compare}
       />
+
+      {/* ── THE EXPLANATION ─────────────────────────────────────────────
+          The long-form document, in full, at the foot of the page it belongs
+          to. Gated by the SAME `capped` flag as the ladder and the arc: it
+          walks the whole climb, and a journey mid-flight has not earned that.
+
+          It is the last thing on the page on purpose. A reader who wants it
+          presses the door in zone 2 and is scrolled here; a reader who wants
+          the ladder never meets it. */}
+      {explanation.present && (
+        <section
+          id="explanation"
+          className="flex min-w-0 scroll-mt-6 flex-col gap-6 border-t pt-8"
+        >
+          <div className="flex flex-col gap-1">
+            <h2 className="font-heading text-title font-semibold">
+              The long explanation
+            </h2>
+            <p className="max-w-[35em] text-body text-muted-foreground">
+              Every approach in full: the idea, the mental model, a worked
+              trace, the bug you are about to write, and a script you can run.
+            </p>
+          </div>
+          <ExplanationBody state={explanation} />
+        </section>
+      )}
+      </div>
+
+      {/* The contents rail. The explanation runs to a few thousand words with
+          one section per approach, so the sections ARE the navigation. Hidden
+          below xl, where there is no second column to put it in. It lists the
+          SAME array the page renders (`partsOf`), so it cannot offer a section
+          that is not there. */}
+      {outline.length > 0 && <ContentsRail outline={outline} />}
     </div>
+  )
+}
+
+/** `top-16`, not `top-6`: the shell parks a fixed search control at
+ *  `top-3 right-4` and this rail is the only thing that shares that corner. At
+ *  1280 the button was measured painting over the rail's first entries. */
+function ContentsRail({ outline }: { outline: Outline[] }) {
+  return (
+    <nav
+      aria-label="contents"
+      className="sticky top-16 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
+    >
+      <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
+        <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
+        The explanation
+      </span>
+      {outline.map((entry) => (
+        <a
+          key={entry.id}
+          href={`#${entry.id}`}
+          onClick={(e) => {
+            // a bare `#id` href would replace the hash ROUTE and navigate the
+            // app home; scroll to the heading instead (CLAUDE.md, the trap)
+            e.preventDefault()
+            document
+              .getElementById(entry.id)
+              ?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }}
+          // `-ml-4 border-l-2 border-transparent pl-4` puts each entry's own
+          // indicator exactly on the rail's border, so the hovered section
+          // lights that hairline instead of adding a second line beside it.
+          // Border and colour only — the row never moves, which is what would
+          // make a 30-entry rail jitter.
+          className={cn(
+            // `text-ui`, not `text-meta`: several section labels run past 55
+            // characters, which is the threshold this repo's own audit uses to
+            // call something a SENTENCE rather than a label — and a sentence is
+            // never set below the ui step.
+            "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-colors hover:border-chart-1 hover:text-foreground",
+            entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
+          )}
+        >
+          {entry.text.replace(/`/g, "")}
+        </a>
+      ))}
+    </nav>
   )
 }

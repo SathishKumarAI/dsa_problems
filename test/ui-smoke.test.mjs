@@ -11,16 +11,28 @@
 import assert from "node:assert/strict"
 import { after, before, describe, test } from "node:test"
 import { JOURNEYS } from "../src/engine/index.ts"
-import { readdirSync } from "node:fs"
+import { existsSync, readdirSync } from "node:fs"
 import { PROBLEMS } from "../src/data/index.ts"
 
-// which problems actually have a learn page, read from disk rather than
-// listed here, so this file cannot go stale as pages are written
-const LEARN_PAGES = new Set(
-  readdirSync("docs/learn")
+// Which problems have a long explanation, read from disk rather than listed
+// here, so this file cannot go stale as documents are written. Two sources,
+// the same two the app forks on: a TYPED document in `src/problems/<id>/`, or
+// a generated Markdown one in `docs/learn/`.
+const EXPLAINED = new Set([
+  ...readdirSync("docs/learn")
     .filter((f) => f.endsWith(".md") && f !== "README.md")
-    .map((f) => f.replace(/\.md$/, ""))
-)
+    .map((f) => f.replace(/\.md$/, "")),
+  ...readdirSync("src/problems", { withFileTypes: true })
+    .filter((d) => d.isDirectory() && existsSync(`src/problems/${d.name}/doc.ts`))
+    .map((d) => d.name),
+])
+
+/** the one route a problem has, now that the explanation is a section of it */
+const pageOf = (p) => `/#/p/${p.pattern}/${p.id}`
+/** the explanation is FETCHED, so every check on it has to wait for it */
+const EXPLANATION_READY =
+  '!!document.getElementById("explanation") && ' +
+  '!/loading the explanation/.test(document.body.innerText)'
 import { chromePath, launch, startServer } from "./browser.mjs"
 
 const exe = chromePath()
@@ -459,8 +471,10 @@ describe(
     // CI — every approach in the document plus a differential test over random
     // inputs — so agreement here and agreement there are the same fact, and
     // this test fails if the two ever stop being the same code.
-    test("the learn page runs its own Python, and the script agrees (B82)", async () => {
-      await page.goto(`${server.base}/#/learn/cycle-detect`)
+    test("the problem page runs the document's Python, and it agrees (B82)", async () => {
+      const problem = PROBLEMS.find((p) => p.id === "cycle-detect")
+      await page.goto(`${server.base}${pageOf(problem)}`)
+      await page.waitFor(EXPLANATION_READY, { tries: 40 })
 
       const before = await page.run(`
         const runs = [...document.querySelectorAll('button')]
@@ -522,7 +536,7 @@ describe(
         out.agreed,
         `it ran but did not report agreement — page ended: ${out.tail}`
       )
-      assert.deepEqual(page.errors(), [], "the learn page logged console errors")
+      assert.deepEqual(page.errors(), [], "the problem page logged console errors")
     })
 
     // B79 / B87. The promotion and the comparator are both claims about what a
@@ -1104,7 +1118,14 @@ describe(
           names: l ? [...l.querySelectorAll('b')].map(b => b.innerText) : [],
           capped: l ? /still ahead of you/.test(l.innerText) : false,
           cta: cta ? cta.href : null,
-          editor: !!document.querySelector('textarea'),
+          // No editor ABOVE the explanation. The page explains and hosts no
+          // editor — that is why the primary action leaves for LeetCode — but
+          // the document's own full runnable script at the foot IS editable
+          // (B83), and it moved onto this page when the two routes merged. So
+          // the question is where the textarea is, not whether one exists.
+          editor: [...document.querySelectorAll('textarea')].some(
+            t => !t.closest('#explanation')
+          ),
         };
       `
       // never opened the journey: the whole ladder, ending on the best rung
@@ -1132,7 +1153,7 @@ describe(
       assert.equal(
         all.editor,
         false,
-        "the problem page must not grow an editor"
+        "an editor appeared above the explanation — this page hosts none"
       )
 
       // midway through the journey: only what has been earned
@@ -2022,21 +2043,29 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
-    test("a learn page renders as a page, not as raw markdown", async () => {
-      // The reader parses `docs/learn/<id>.md` in the browser, so the
-      // things that can break are exactly the things node cannot see: an
-      // unclosed fence swallowing the rest of the file, a table that never
-      // became a table, a `#` heading printed literally.
-      await page.goto(`${server.base}/#/learn/max-depth`)
-      await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+    test("a Markdown explanation renders as a page, not as raw markdown", async () => {
+      // The reader parses `docs/learn/<id>.md` in the browser, so the things
+      // that can break are exactly the things node cannot see: an unclosed
+      // fence swallowing the rest of the file, a table that never became a
+      // table, a `#` heading printed literally.
+      //
+      // `max-depth` is deliberately one of the problems still on MARKDOWN —
+      // the typed half is checked by the balanced-brackets test below, and
+      // both halves have to render, so neither check stands in for the other.
+      const problem = PROBLEMS.find((p) => p.id === "max-depth")
+      await page.goto(`${server.base}${pageOf(problem)}`)
+      await page.waitFor(EXPLANATION_READY, { tries: 40 })
       const out = await page.run(`
         // The PROSE elements only, each read live. Two things this had to
         // learn: a Python comment inside a code block legitimately starts
         // with '# ', so code is excluded rather than filtered; and innerText
         // on a DETACHED clone silently degrades to textContent — no layout,
         // so no line breaks — which made a per-line check see one long line.
-        const prose = [...document.querySelectorAll(
-          'article h2, article h3, article p, article li, article td, article th'
+        // Scoped to the explanation, not the page: the problem page's own
+        // statement, constraints and hints are not markdown and never were.
+        const root = document.getElementById('explanation');
+        const prose = [...root.querySelectorAll(
+          'h2, h3, p, li, td, th'
         )].map(el => el.innerText);
         // built from a string with NO backslashes on purpose: this whole
         // script is sent as a template literal, which eats them — '\\s' arrives
@@ -2044,11 +2073,10 @@ describe(
         // pattern into one that matched every line
         const marker = new RegExp('^[ ]*(#{1,3}[ ]|[|][ ]*-{3})');
         return {
-          h1: (document.querySelector('h1') || {}).textContent || '',
-          headings: document.querySelectorAll('h2, h3').length,
-          tables: document.querySelectorAll('table').length,
-          codeBlocks: document.querySelectorAll('pre code').length,
-          callouts: document.querySelectorAll('blockquote').length,
+          headings: root.querySelectorAll('h2, h3').length,
+          tables: root.querySelectorAll('table').length,
+          codeBlocks: root.querySelectorAll('pre code').length,
+          callouts: root.querySelectorAll('blockquote').length,
           // a literal marker on screen means a block was never parsed
           rawMarkers: prose.filter(line => marker.test(line)).slice(0, 5),
           // a backtick on screen means an inline span was not parsed — it is
@@ -2058,8 +2086,7 @@ describe(
           // the merged page brought three constructs the parser had never
           // seen: an edit-me comment on every page, 2003 links and 879 folds
           rawComment: document.body.innerText.includes('<!--'),
-          folds: document.querySelectorAll('details').length,
-          links: document.querySelectorAll('article a[href]').length,
+          links: root.querySelectorAll('a[href]').length,
           // includes(), not a regex: this script is sent as a template literal
           // and backslashes do not survive it (it has bitten this file twice)
           rawBrackets: prose.filter(l => l.includes('](http')).length,
@@ -2067,7 +2094,6 @@ describe(
           clientW: document.documentElement.clientWidth,
         };
       `)
-      assert.match(out.h1, /maximum depth/i, "the document title is missing")
       assert.ok(out.headings > 20, `only ${out.headings} section headings`)
       assert.ok(out.tables >= 4, `only ${out.tables} tables rendered`)
       assert.ok(out.codeBlocks >= 5, `only ${out.codeBlocks} code blocks`)
@@ -2079,7 +2105,10 @@ describe(
       )
       assert.equal(out.rawFence, false, "a code fence marker reached the screen")
       assert.equal(out.rawComment, false, "the edit-me banner reached the screen")
-      assert.ok(out.folds >= 1, "the hints fold did not render as a <details>")
+      // The hints fold is NOT checked here any more. It used to be emitted
+      // into the generated page; the hints are an Accordion on the problem
+      // page above, and emitting them twice was the duplication this change
+      // removed.
       assert.ok(out.links >= 1, "no link rendered — markdown links reached the screen raw")
       assert.equal(out.rawBrackets, 0, "an unparsed markdown link is on screen")
       assert.deepEqual(
@@ -2087,20 +2116,21 @@ describe(
         [],
         "a backtick reached the screen — an inline code span was not parsed"
       )
-      assert.equal(out.scrollW, out.clientW, "the learn page scrolls sideways")
+      assert.equal(out.scrollW, out.clientW, "the problem page scrolls sideways")
       assert.deepEqual(page.errors(), [])
     })
 
-    test("every problem has a learn page, and a started journey hides the link", async () => {
-      // This check used to prove "no page, no link". Since docs/learn merged
-      // the generated and authored pages, ALL 127 problems have one — so the
-      // premise is gone and the question that remains is the one that matters:
-      // the page carries the whole ladder and the ending, so a learner partway
-      // through a journey must not be offered it (the same gate the arc gets).
+    test("every problem has an explanation, and a started journey hides it", async () => {
+      // The question that matters, and it got sharper when the two routes
+      // merged: the explanation walks the whole climb and gives the ending
+      // away, so a learner partway through a journey must not be shown it —
+      // the same gate the arc and the ladder get. It used to be enough to hide
+      // the LINK, because the content was on another route. It is on this page
+      // now, so the section itself has to be absent.
       assert.equal(
-        PROBLEMS.filter((p) => !LEARN_PAGES.has(p.id)).length,
+        PROBLEMS.filter((p) => !EXPLAINED.has(p.id)).length,
         0,
-        "a problem has no page in docs/learn — run npm run docs:learn"
+        "a problem has no explanation — run npm run docs:learn"
       )
 
       const journeyed = PROBLEMS.find((p) =>
@@ -2127,6 +2157,8 @@ describe(
         return {
           link: !![...document.querySelectorAll('a')]
             .find(a => /learn this problem/i.test(a.textContent || '')),
+          // the section itself, not just the door to it
+          section: !!document.getElementById('explanation'),
           capped: /still ahead of you/.test(document.body.innerText),
         };
       `)
@@ -2138,17 +2170,68 @@ describe(
       assert.equal(
         gated.link,
         false,
-        `${journeyed.id}: the learn page was offered mid-journey — it gives the ending away`
+        `${journeyed.id}: the explanation was offered mid-journey — it gives the ending away`
+      )
+      assert.equal(
+        gated.section,
+        false,
+        `${journeyed.id}: the door was hidden but the explanation rendered anyway`
       )
       assert.deepEqual(page.errors(), [])
     })
 
-    test("390 px wide: a learn page does not scroll sideways", async () => {
+    // The route did not just change, it MERGED, and an id that used to be a
+    // page is in every link written before the merge. A redirect that silently
+    // 404s is the same as deleting them.
+    test("#/learn/<id> lands on the problem page, at the explanation", async () => {
+      const problem = PROBLEMS.find((p) => p.id === "balanced-brackets")
+      await page.goto(`${server.base}/#/learn/${problem.id}`)
+      await page.waitFor(EXPLANATION_READY, { tries: 40 })
+      const out = await page.run(`
+        const root = document.getElementById('explanation');
+        return {
+          hash: location.hash,
+          // the typed document's own sections, rendered as sections rather
+          // than round-tripped through a markdown string
+          headings: [...root.querySelectorAll('h2')].map(h => h.innerText.trim()),
+          tables: root.querySelectorAll('table').length,
+          editors: document.querySelectorAll(
+            'textarea[aria-label="the script, yours to change"]'
+          ).length,
+          // the problem page is still above it, exactly once
+          statements: (document.body.innerText.match(
+            /decide whether it is well-formed/g
+          ) || []).length,
+          rail: !!document.querySelector('nav[aria-label="contents"]'),
+        };
+      `)
+      assert.match(
+        out.hash,
+        new RegExp(`/p/${problem.pattern}/${problem.id}`),
+        `#/learn/ did not redirect — landed on ${out.hash}`
+      )
+      assert.ok(
+        out.headings.some((h) => /failure modes/i.test(h)),
+        `the typed document's sections are missing: ${out.headings.join(" | ")}`
+      )
+      assert.ok(out.tables >= 3, `only ${out.tables} tables in the explanation`)
+      assert.equal(out.editors, 1, "the full script is not editable")
+      assert.equal(
+        out.statements,
+        1,
+        "the statement is on the page twice — the merge did not dedupe"
+      )
+      assert.ok(out.rail, "the contents rail did not render at 1440")
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("390 px wide: an explanation does not scroll sideways", async () => {
       // Its tables are the widest things in the app; they must scroll inside
       // their own box rather than taking the page with them.
       await page.resize(390)
-      await page.goto(`${server.base}/#/learn/balanced-tree`)
-      await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+      const problem = PROBLEMS.find((p) => p.id === "balanced-tree")
+      await page.goto(`${server.base}${pageOf(problem)}`)
+      await page.waitFor(EXPLANATION_READY, { tries: 40 })
       const out = await page.run(`
         return {
           scrollW: document.documentElement.scrollWidth,
