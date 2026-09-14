@@ -51,6 +51,87 @@ EMPTY_PRODUCT = 1  # the product of no numbers at all; every accumulator below s
 
 ---
 
+## Reading the Calculations
+
+This is the first problem in the set whose optimal solution is genuinely hard to *read*. Not hard to
+write — it is nine lines — but hard to look at and believe, because the same array is used as an
+output buffer and as a scratch pad, and because the crucial line writes a value **before** the
+variable it is built from has been updated. Almost every bug here is an ordering bug, so this section
+is about ordering.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `EMPTY_PRODUCT = 1` | the product of *no* numbers | Multiplying by `1` changes nothing, which is exactly what "nothing has joined yet" should mean. (`0` is the equivalent for sums) | Start at `0` and every answer is `0` |
+| `left[i]` | product of everything **strictly before** `i` | "Strictly" is the whole contract. `left[0]` is the empty product, because nothing is before position `0` | Include `nums[i]` and every answer is the product of the whole array |
+| `left[i] = left[i - 1] * nums[i - 1]` | extend the previous prefix | Note the **two different indices**: writing at `i`, reading `nums` at `i - 1`. That offset *is* the word "strictly" | `nums[i]` here folds each element into its own answer — the most common bug in this problem |
+| `right[i] = right[i + 1] * nums[i + 1]` | the mirror image | Same offset, other direction | — |
+| `out[i] = left[i] * right[i]` | everything except `i` | The two halves never overlap and together cover everything else, so their product is the answer | — |
+| `out[i] = running` **then** `running *= nums[i]` | the fold, forward | **Write before you update.** The value stored is the prefix *not yet* including `nums[i]` | Swap the two lines and `out[i]` includes `nums[i]` — the same bug as above, in disguise |
+| `out[i] *= running` **then** `running *= nums[i]` | the fold, backward | `*=` because `out[i]` already holds the prefix; this multiplies the suffix into it | `=` overwrites the prefix and the answer becomes the suffix alone |
+| `range(n - 1, -1, -1)` | `n-1` down to `0` | The `-1` end is exclusive, so it stops *after* `0` | `range(n - 1, 0, -1)` never visits position `0` — which is left holding a prefix of `1` and no suffix, silently wrong at exactly one index |
+
+### The one rearrangement
+
+Start from the definition and split it. The answer at `i` is the product of everything except `i`:
+
+```
+answer[i]  =  nums[0] * nums[1] * … * nums[i-1]  *  nums[i+1] * … * nums[n-1]
+              \___________  ___________/            \_________  _________/
+                          \/                                  \/
+                   everything LEFT of i                everything RIGHT of i
+
+answer[i]  =  left[i] * right[i]
+```
+
+That is the entire idea, and it is worth seeing why it is a *rearrangement* rather than a trick. The
+naive reading treats each `answer[i]` as its own product, so the `n` answers share nothing. This
+reading says the answers are all built from two **running** quantities that each change by one factor
+per step — so the `n` answers share almost everything, and the sharing is what turns `n²` into `n`.
+
+The division approach is the same equation solved the other way: `answer[i] = total / nums[i]`. It is
+algebraically correct and it is not defined when `nums[i]` is `0`, which is why the statement bans it
+and why the split above is the durable version. Division needs the whole product and then undoes
+part of it; the split never builds the whole product in the first place.
+
+### How to hand-trace it
+
+`nums = [1, 2, 3, 4]`. The folded version, both passes, on one array. Every row below is printed by
+the script at the foot of this document.
+
+**Forward pass** — store the running prefix, *then* extend it:
+
+| `i` | `out[i] = running` | then `running *= nums[i]` |
+|---|---|---|
+| 0 | `out[0] = 1` | `running = 1` |
+| 1 | `out[1] = 1` | `running = 2` |
+| 2 | `out[2] = 2` | `running = 6` |
+| 3 | `out[3] = 6` | `running = 24` |
+
+`out` is now `[1, 1, 2, 6]` — each slot holding the product of everything to its left. The final
+`running = 24` is computed and never read, which is the detail the 32-bit note at the top refers to.
+
+**Backward pass** — `running` resets to `1` and the same dance runs the other way:
+
+| `i` | `out[i] *= running` | then `running *= nums[i]` |
+|---|---|---|
+| 3 | `6 * 1 = 6` | `running = 4` |
+| 2 | `2 * 4 = 8` | `running = 12` |
+| 1 | `1 * 12 = 12` | `running = 24` |
+| 0 | `1 * 24 = 24` | `running = 24` |
+
+`out = [24, 12, 8, 6]`. Check one by hand: position `1` should be `1·3·4 = 12`, and it is — the `1`
+came from the forward pass, the `12` from the backward one, and `nums[1] = 2` was never multiplied in
+by either, because both passes write before they update.
+
+**The recipe, for any input:** sweep left storing the running product *before* folding in the current
+element; reset; sweep right multiplying the running product *into* what is already there, again
+before folding in the current element. The phrase "before folding in the current element", said
+twice, is the entire algorithm.
+
+---
+
 ## Approach 1 — Brute force: multiply the others, once per position
 
 ### The idea
@@ -222,6 +303,29 @@ Use it when division is permitted, zeros are impossible by construction, and you
 possible code — running products over known-positive quantities such as prices or weights. Name it in
 an interview, name its zero problem, then move on; recognising why the shortcut fails is what points
 at the structure the next two approaches exploit.
+
+> **Under the hood.** The zero problem is usually described as an edge case, which undersells it. The
+> version people actually reach for has no zero handling at all:
+>
+> ```
+> [1, 2, 3, 4]  ->  [24, 12, 8, 6]      correct
+> [1, 0, 3, 4]  ->  ZeroDivisionError
+> [0, 0, 3, 4]  ->  ZeroDivisionError
+> ```
+>
+> and the correct answers are `[0, 12, 0, 0]` and `[0, 0, 0, 0]`. Note that those two need *different*
+> reasoning: with one zero, only the zero's own slot is non-zero; with two, every slot is zero. So
+> the one-liner needs **three** branches — no zeros, exactly one, two or more — and the code above is
+> only the first of them.
+>
+> How often does that matter? Over 10,000 random small arrays with zeros permitted: 4,314 had no
+> zero, 3,724 had exactly one, 1,962 had two or more. **57% land in a branch the one-liner does not
+> have.** This is not a rare corner; it is the majority of the input space, and it is invisible if
+> your own test cases happen to be made of non-zero numbers.
+>
+> That is the real argument for the prefix/suffix split, and it is not about speed — both are `O(n)`.
+> The split has **one** code path. It treats a zero as an ordinary factor, because it never needs to
+> undo a multiplication, and an algorithm that never undoes anything has nothing to special-case.
 
 ---
 
@@ -448,6 +552,50 @@ for zeros or negatives, and the pattern it teaches — *sweep prefixes forward, 
 backward into the same array* — reappears in trapping rain water, in candy-distribution problems, and
 in several range-query problems. Learn the shape, not the lines.
 
+> **Under the hood.** Three documents in this set have found the ladder's optimal rung losing to a
+> rung below it on the clock. This one does not, and it is worth seeing what "actually optimal" looks
+> like when it is true. At the constraint's ceiling, `n = 10^5`, best of three: two prefix arrays
+> **12.50 ms**, folded **7.14 ms** — 1.8× faster while holding **one** integer of scratch against
+> 200,000. Both are `O(n)`; only one of them is also cheap.
+>
+> | `n` | two prefix arrays | folded |
+> |---|---|---|
+> | `500` | 0.04 ms | **0.03 ms** |
+> | `1,000` | 0.10 ms | **0.06 ms** |
+> | `2,000` | 0.20 ms | **0.13 ms** |
+> | `4,000` | 0.42 ms | **0.26 ms** |
+>
+> Both columns double when `n` doubles. That is what linear looks like, and it is worth having seen,
+> because the next table is what linear looks like when it is lying.
+>
+> **`O(n)` here means `O(n)` multiplications, not `O(n)` time**, and those are the same thing only
+> because the statement promises every answer fits in a 32-bit integer. Break that promise — take an
+> array of `n` twos, which is legal-looking input that no longer satisfies the constraint — and the
+> running product stops being a machine word:
+>
+> | `n` | bits in the running product | decimal digits | folded |
+> |---|---|---|---|
+> | `500` | 501 | 151 | 0.1 ms |
+> | `1,000` | 1,001 | 302 | 0.2 ms |
+> | `2,000` | 2,001 | 603 | 1.2 ms |
+> | `4,000` | 4,001 | 1,205 | **9.0 ms** |
+>
+> The time **quadruples** when `n` doubles. Same code, same number of multiplications, and it is now
+> quadratic, because multiplying two `k`-bit numbers is not one instruction — it is work proportional
+> to `k`, and `k` is growing linearly down the array. In Python the failure is a slowdown; in Java or
+> C++ it is silent wraparound and a wrong answer.
+>
+> Now read the constraint again, because it says something surprising. At `n = 10^5`, "every answer
+> fits in 32 bits" means the product of any `n - 1` elements is under about two billion — which with
+> integer values forces **almost every element to be `1`, `-1` or `0`**. A legal array of a hundred
+> thousand elements can contain at most about thirty values with magnitude 2 or more. The constraint
+> is not a note about overflow; it is a description of what the input can actually look like.
+>
+> **What to take from this.** "Constant time arithmetic" is an assumption, not a fact, and it is the
+> assumption that every `O(n)` claim about products, sums and hashes quietly rests on. When a problem
+> hands you a bound on the *size of the answer*, it is not being fussy — it is telling you which
+> machine model you are allowed to cost the algorithm in.
+
 ---
 
 ## The Overall Arc
@@ -514,6 +662,45 @@ Its real use is as the oracle in the test suite, where its obviousness is the en
 
 ---
 
+## How to Get Fluent
+
+The folded solution is nine lines and every one of its bugs is an ordering bug, so these drills are
+about order rather than about ideas.
+
+**1. Trace the forward pass on `[1, 2, 3, 4]` with a pencil, writing both columns.** Store, then
+extend.
+*Done when:* you wrote `out = [1, 1, 2, 6]` and can say why `out[3]` is `6` and not `24`. If you got
+`[1, 2, 6, 24]`, you updated before you stored — go straight to drill 2.
+
+**2. Swap the two lines on purpose.** Put `running *= nums[i]` before `out[i] = running`.
+*Done when:* you have seen every answer come back as the product of the **whole** array, and can
+name the one word that broke: *strictly*.
+
+**3. Write the two-array version first, then fold it, without looking.** Two arrays, then one.
+*Done when:* the fold felt mechanical rather than clever — the second array was never anything but a
+running value read once, so it did not need to exist.
+
+**4. Break the backward range.** Change `range(n - 1, -1, -1)` to `range(n - 1, 0, -1)` and run it.
+*Done when:* you have seen exactly one wrong answer, at index `0`, and understand why an off-by-one
+at a loop *bound* produces a single wrong slot rather than a crash. These are the hardest bugs to see
+in a code review.
+
+**5. Reach for division, then talk yourself out of it in three sentences.** Total, divided by each
+element.
+*Done when:* you can say (a) it dies on a zero, (b) one zero and two zeros need different answers, so
+it is three branches not two, and (c) the split never divides, so it never needs any of them.
+
+**6. Ask what the 32-bit promise is actually for.** Run the all-twos table from the script.
+*Done when:* you can say that `O(n)` counts multiplications, that multiplication is only `O(1)` while
+the numbers fit in a machine word, and — the part almost nobody notices — that at `n = 10^5` the
+constraint forces nearly every element of a legal input to be `1`, `-1` or `0`.
+
+**The one sentence worth keeping a month from now:** *everything except `i` is everything left of `i`
+times everything right of `i`, and both are running products* — and its shadow: *write before you
+update, in both directions.*
+
+---
+
 ## Full Runnable Script
 
 Every approach above, plus a test suite covering the statement's two examples (including the one with
@@ -534,6 +721,7 @@ Run: python product_except_self_all.py
 from __future__ import annotations
 
 import random
+import time
 
 EMPTY_PRODUCT = 1  # the product of no numbers at all; every accumulator below starts here
 
@@ -605,7 +793,118 @@ APPROACHES = [
 
 # --- test suite ---------------------------------------------------------------
 
+def _best_of(fn, rounds: int = 3) -> float:
+    best = float("inf")
+    for _ in range(rounds):
+        start = time.perf_counter()
+        fn()
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
+def _naive_division(nums: list[int]) -> list[int]:
+    """Scaffolding: the one-liner people reach for, with NO zero handling at all."""
+    total = EMPTY_PRODUCT
+    for x in nums:
+        total *= x
+    return [total // x for x in nums]
+
+
+def _legal_array(n: int, rng: random.Random) -> list[int]:
+    """An array that actually satisfies 'every answer fits in a 32-bit integer'.
+    At this n that forces nearly every element to be +/-1, which is the point."""
+    nums = [rng.choice([-1, 1]) for _ in range(n)]
+    for i in rng.sample(range(n), 6):
+        nums[i] = [2, 3, 5, 7, 11, 13][i % 6]
+    return nums
+
+
+def trace_the_fold() -> None:
+    """Both tables of the hand-trace in 'Reading the Calculations'."""
+    nums = [1, 2, 3, 4]
+    n = len(nums)
+    out = [EMPTY_PRODUCT] * n
+    print(f"=== {nums}, forward pass: store, THEN extend ===")
+    running = EMPTY_PRODUCT
+    for i in range(n):
+        out[i] = running
+        running *= nums[i]
+        print(f"  i={i}  out[{i}] = {out[i]:<3} then running = {running}")
+    print(f"  out {out}   (final running {running} is written and never read)")
+    print("=== backward pass: multiply IN, then extend ===")
+    running = EMPTY_PRODUCT
+    for i in range(n - 1, -1, -1):
+        before = out[i]
+        out[i] *= running
+        running *= nums[i]
+        print(f"  i={i}  {before} * {out[i] // before if before else 0} = {out[i]:<3} then running = {running}")
+    print(f"  out {out}")
+
+
+def measure() -> None:
+    """The numbers quoted in the two 'Under the hood' callouts. Counts are exact;
+    timings are one machine's, and the SHAPE of each column is the claim."""
+    print("\n=== the division one-liner, with no zero special case ===")
+    for nums in ([1, 2, 3, 4], [1, 0, 3, 4], [0, 0, 3, 4]):
+        try:
+            got = str(_naive_division(list(nums)))
+        except ZeroDivisionError as exc:
+            got = f"ZeroDivisionError: {exc}"
+        correct = product_except_self_prefix_suffix(list(nums))
+        print(f"  {str(nums):<14} -> {got:<34} correct {correct}")
+
+    rng = random.Random(1)
+    buckets = {0: 0, 1: 0, 2: 0}
+    for _ in range(10000):
+        sample = [rng.choice([-2, -1, 0, 1, 2, 3]) for _ in range(rng.randint(2, 8))]
+        buckets[min(sample.count(0), 2)] += 1
+    print("  over 10,000 random small arrays with zeros permitted:")
+    print(f"    no zeros    {buckets[0]:>6}   plain division works")
+    print(f"    exactly one {buckets[1]:>6}   needs its own branch")
+    print(f"    two or more {buckets[2]:>6}   needs a third branch")
+    share = 100 * (buckets[1] + buckets[2]) / 10000
+    print(f"    {share:.0f}% land in a branch the one-liner does not have")
+
+    print("\n=== linear, when the 32-bit promise holds ===")
+    print(f"  {'n':>6} {'two arrays ms':>14} {'folded ms':>11}")
+    rng = random.Random(20260913)
+    for n in (500, 1000, 2000, 4000):
+        nums = _legal_array(n, rng)
+        print(
+            f"  {n:>6}"
+            f" {_best_of(lambda d=nums: product_except_self_two_prefix_arrays(list(d))) * 1e3:>14.2f}"
+            f" {_best_of(lambda d=nums: product_except_self_prefix_suffix(list(d))) * 1e3:>11.2f}"
+        )
+
+    print("\n=== and what happens when it does not: an array of n twos ===")
+    print(f"  {'n':>6} {'bits':>8} {'digits':>8} {'folded ms':>11}")
+    for n in (500, 1000, 2000, 4000):
+        nums = [2] * n
+        running = EMPTY_PRODUCT
+        for x in nums:
+            running *= x
+        t = _best_of(lambda d=nums: product_except_self_prefix_suffix(list(d)))
+        print(f"  {n:>6} {running.bit_length():>8} {len(str(running)):>8} {t * 1e3:>11.1f}")
+    print("  time QUADRUPLES when n doubles: bignum multiplication is not O(1)")
+
+    print("\n=== at the real ceiling, n = 10^5, with legal values ===")
+    nums = _legal_array(10**5, rng)
+    biggest = max(abs(v) for v in product_except_self_prefix_suffix(list(nums)))
+    print(f"  largest answer {biggest}, inside 32 bits: {biggest < 2**31}")
+    print(
+        f"  two prefix arrays"
+        f" {_best_of(lambda: product_except_self_two_prefix_arrays(list(nums))) * 1e3:.2f} ms"
+        f"  ·  folded"
+        f" {_best_of(lambda: product_except_self_prefix_suffix(list(nums))) * 1e3:.2f} ms"
+    )
+    print(f"  scratch integers held: two arrays {2 * len(nums)}, folded 1")
+
+
 def main() -> None:
+    trace_the_fold()
+    measure()
+    print()
+
     cases: list[tuple[str, list[int]]] = [
         ("statement example", [1, 2, 3, 4]),
         ("statement example with a zero", [-1, 1, 0, -3, 3]),
