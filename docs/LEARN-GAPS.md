@@ -12,9 +12,9 @@ document in `docs/deep/`, and the sections [its spec](deep/README.md) requires.
 
 | Section | Have it | Missing | What a reader loses without it |
 |---|---|---|---|
-| Reading the Calculations | 11 | **116** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
-| How to Get Fluent | 11 | **116** | no drills: the page can be read and still not be practised |
-| Under the hood | 11 | **116** | a cost is taken on faith — what the language actually does is never shown |
+| Reading the Calculations | 22 | **105** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
+| How to Get Fluent | 22 | **105** | no drills: the page can be read and still not be practised |
+| Under the hood | 22 | **105** | a cost is taken on faith — what the language actually does is never shown |
 | Interview Priority | 82 | **45** | no guidance on which approaches to know cold |
 | The Overall Arc | 82 | **45** | the rungs never join into one story |
 | Comparison | 82 | **45** | no side-by-side of the trade-offs |
@@ -49,14 +49,14 @@ None.
 | [contains-duplicate](learn/contains-duplicate.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [valid-anagram](learn/valid-anagram.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [product-except-self](learn/product-except-self.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [group-anagrams](learn/group-anagrams.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
+| [group-anagrams](learn/group-anagrams.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [subarray-sum-k](learn/subarray-sum-k.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [majority-element](learn/majority-element.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [longest-common-prefix](learn/longest-common-prefix.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [isomorphic-strings](learn/isomorphic-strings.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
-| [find-all-duplicates](learn/find-all-duplicates.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
-| [first-missing-positive](learn/first-missing-positive.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
-| [intersection-of-arrays](learn/intersection-of-arrays.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
+| [find-all-duplicates](learn/find-all-duplicates.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [first-missing-positive](learn/first-missing-positive.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [intersection-of-arrays](learn/intersection-of-arrays.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [missing-number](learn/missing-number.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [plus-one](learn/plus-one.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [rotate-array](learn/rotate-array.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
@@ -64,7 +64,7 @@ None.
 | [spiral-order](learn/spiral-order.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [zero-matrix](learn/zero-matrix.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [sorted-pair-sum](learn/sorted-pair-sum.md) | two-pointers | yes | · | · | · | · | · | · |
-| [container-water](learn/container-water.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
+| [container-water](learn/container-water.md) | two-pointers | yes | · | · | · | · | · | · |
 | [three-sum-zero](learn/three-sum-zero.md) | two-pointers | yes | · | · | · | · | · | · |
 | [valid-palindrome](learn/valid-palindrome.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [trap-rain-water](learn/trap-rain-water.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
@@ -72,13 +72,13 @@ None.
 | [move-zeroes](learn/move-zeroes.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [sorted-squares](learn/sorted-squares.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [remove-duplicates-sorted](learn/remove-duplicates-sorted.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
-| [is-subsequence](learn/is-subsequence.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
+| [is-subsequence](learn/is-subsequence.md) | two-pointers | yes | · | · | · | · | · | · |
 | [merge-sorted-array](learn/merge-sorted-array.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [remove-element](learn/remove-element.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [reverse-string](learn/reverse-string.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [three-sum-closest](learn/three-sum-closest.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
-| [backspace-compare](learn/backspace-compare.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
-| [boats-to-save](learn/boats-to-save.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
+| [backspace-compare](learn/backspace-compare.md) | two-pointers | yes | · | · | · | · | · | · |
+| [boats-to-save](learn/boats-to-save.md) | two-pointers | yes | · | · | · | · | · | · |
 | [next-permutation](learn/next-permutation.md) | two-pointers | yes | **no** | **no** | **no** | · | · | · |
 | [best-trade](learn/best-trade.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [longest-unique-substring](learn/longest-unique-substring.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
@@ -88,10 +88,10 @@ None.
 | [window-maximum](learn/window-maximum.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [max-ones-after-flips](learn/max-ones-after-flips.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [min-subarray-sum](learn/min-subarray-sum.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
-| [anagram-positions](learn/anagram-positions.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
-| [fruit-baskets](learn/fruit-baskets.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
+| [anagram-positions](learn/anagram-positions.md) | sliding-window | yes | · | · | · | · | · | · |
+| [fruit-baskets](learn/fruit-baskets.md) | sliding-window | yes | · | · | · | · | · | · |
 | [balanced-brackets](learn/balanced-brackets.md) | stack | yes | **no** | **no** | **no** | · | · | · |
-| [daily-warmer](learn/daily-warmer.md) | stack | yes | **no** | **no** | **no** | · | · | · |
+| [daily-warmer](learn/daily-warmer.md) | stack | yes | · | · | · | · | · | · |
 | [largest-rectangle](learn/largest-rectangle.md) | stack | yes | **no** | **no** | **no** | · | · | · |
 | [rpn-eval](learn/rpn-eval.md) | stack | yes | **no** | **no** | **no** | · | · | · |
 | [generate-parens](learn/generate-parens.md) | stack | yes | **no** | **no** | **no** | · | · | · |
