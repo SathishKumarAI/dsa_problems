@@ -57,7 +57,7 @@ export const problem: Problem = {
     {
       name: "Recursion + memo",
       summary:
-        "best(i) tried top-down with caching. Same recurrence; the table version just removes the stack.",
+        "best(i) computed top-down with a cache, so each index is solved once. The recurrence is already the final one; this rung exists to show that the exponential version and the linear version differ by a dictionary. The cost still carried is the stack — one frame per house — which the table below removes by asking the questions in an order that needs no stack.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `from functools import lru_cache
 
@@ -99,7 +99,7 @@ private int best(int[] nums, int i, Integer[] memo) {
       whyNow:
         "The memo already computes bottom-up, with a call stack in the way. Filling the array in order removes the recursion and makes the order of computation visible.",
       summary:
-        "Explicit dp array before the two-variable compression. Easier to debug and to extend (e.g. recovering WHICH elements were taken).",
+        "The same answers in an explicit array, filled front to back. No recursion and nothing to overflow, and it is the version to write when you need to recover WHICH houses were taken, because the table is a record of the decisions. The waste is that the transition reads only the previous two entries, so n slots are kept to serve a window of two.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def max_take(nums: list[int]) -> int:
     if not nums:

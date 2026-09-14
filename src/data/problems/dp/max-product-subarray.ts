@@ -125,7 +125,7 @@ export const problem: Problem = {
     {
       name: "Multiply out every run",
       summary:
-        "Two nested loops over start and end, multiplying the values of each run from scratch and keeping the largest product seen.",
+        "Two nested loops over start and end, multiplying each run from scratch. Cubic, because the multiplication inside the pair of loops walks the run again — the same product, rebuilt from its factors, once per endpoint.",
       complexity: { time: "O(n³)", space: "O(1)" },
       python: `def max_product(nums: list[int]) -> int:
     answer = nums[0]
@@ -163,7 +163,7 @@ export const problem: Problem = {
     {
       name: "Grow each run in place",
       summary:
-        "Same pairs of endpoints, but the product of a run is carried as the end moves instead of being recomputed: one multiplication per extension.",
+        "The same pairs of endpoints, but the product is carried as the end moves instead of being rebuilt: one multiplication per step. The cubic collapses to quadratic, and what is left is the starts — the loop still tries every one, when a single pass can decide whether extending or restarting is better at each position.",
       complexity: { time: "O(n²)", space: "O(1)" },
       whyNow:
         "The innermost loop recomputes a product the loop before it already had — extending a run by one value is one multiplication, not a fresh pass over the run. Dropping that loop costs nothing in clarity and removes a whole factor of n.",

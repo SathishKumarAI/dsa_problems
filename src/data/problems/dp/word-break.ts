@@ -77,7 +77,7 @@ export const problem: Problem = {
     {
       name: "Backtrack over every split",
       summary:
-        "Try every dictionary word as a prefix, and recurse on whatever is left, reporting success if any chain of choices consumes the whole string.",
+        "Try each dictionary word as a prefix and recurse on what is left. Exponential in the worst case, and the waste is that the same suffix is re-tested after every different way of segmenting the text before it — whether the tail can be broken up has nothing to do with how the head was cut.",
       complexity: { time: "O(2^n)", space: "O(n)" },
       python: `def walk(s: str, at: int, allowed: set[str]) -> bool:
     if at == len(s):

@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Every subsequence
 
-Try both choices at every index — take this element if it is larger than the last one taken, or skip it — and report the deepest run found.
+Take or skip each element and report the deepest chain built. Exponential, because the choice at every index doubles the tree — and the doubling is unnecessary: what happens after index i depends only on the last value taken, not on the whole history of how you got there.
 
 ```python
 def length_of_lis(nums: list[int]) -> int:
@@ -107,9 +107,7 @@ int lengthOfLis(const vector<int>& nums) {
 
 ## Rung 2 — Table of best-ending-here
 
-> **Why now.** The recursion re-solves the same suffix once per path that reaches it, which is where the exponential comes from. Writing each position's answer down once turns those repeats into a single lookup.
-
-Let best[i] be the length of the longest increasing run ending exactly at index i, built by scanning every earlier index that could feed it.
+Let best[i] be the longest run ending exactly at i, built by scanning every earlier index with a smaller value. Quadratic, and the step that costs is the scan: it asks every predecessor in turn whether it can be extended, when the only thing it needs to know is the smallest value a run of each length can end with.
 
 ```python
 def length_of_lis(nums: list[int]) -> int:
@@ -249,7 +247,7 @@ Three rungs, and each one shrinks what a position has to remember. The recursion
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every subsequence | O(2^n) time · O(n) space | the baseline — nothing before it |
-| 2 | Table of best-ending-here | O(n²) time · O(n) space | The recursion re-solves the same suffix once per path that reaches it, which is where the exponential comes from. Writing each position's answer down once turns those repeats into a single lookup. |
+| 2 | Table of best-ending-here | O(n²) time · O(n) space | Let best[i] be the longest run ending exactly at i, built by scanning every earlier index with a smaller value. |
 | 3 | The one to remember | O(n log n) time · O(n) space | The table asks, for every position, which of the earlier positions it can extend — that inner scan is the whole n² cost. The patience version stores one number per achievable length instead: the smallest tail a run of that length can have. That list is sorted by construction, so the right slot is a binary search rather than a scan. |
 
 ---

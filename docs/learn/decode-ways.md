@@ -115,7 +115,7 @@ int decodeWays(string s) {
 
 > **Why now.** The two branches overlap almost completely: taking one digit then two lands on the same position as taking two then one, so the same suffix is recounted along every route that reaches it — a hundred digits of 1s and 2s is a Fibonacci-sized number of calls. The answer for a position never depends on how the walk arrived there, which is exactly the condition that makes caching sound.
 
-Identical logic with a cache keyed by position. The first call for a position computes it; every later call reads it back.
+Identical logic with a cache keyed by position, so the first call for a position computes it and every later one reads it. The exponential tree collapses to one answer per position — and the recursion remains, which on a long string means a frame per character and a cache holding values only the next two positions will read.
 
 ```python
 def decode_ways(s: str) -> int:
@@ -190,7 +190,7 @@ int decodeWays(string s) {
 
 > **Why now.** Caching fixed the repeated work but kept the call stack, which is as deep as the string — and the recursion computes positions right to left anyway. Writing that order out as a loop removes the stack entirely and makes the dependency obvious: every slot reads only the two slots after it.
 
-Drop the recursion: allocate one slot per position plus a sentinel past the end, fill it right to left with the same rule, and read the answer at position 0.
+Drop the recursion: one slot per position plus a sentinel past the end, filled right to left by the same rule. The stack is gone and the order of filling is now explicit, which is the real gain — but the table is still n slots wide to answer a question whose transition reaches exactly two positions ahead.
 
 ```python
 def decode_ways(s: str) -> int:

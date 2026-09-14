@@ -47,7 +47,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Naive recursion
 
-Direct translation of the recurrence. Exponential — ways(n) recomputes ways(n-2) all the way down. This is what memoization exists to fix.
+The recurrence typed out: ways(n) is ways(n-1) plus ways(n-2). Exponential, and for a precise reason worth seeing — the two branches overlap almost entirely, so ways(n-2) is computed once inside the first branch and again as the whole second branch, all the way down. The work is the number of leaves in that tree, not the number of distinct questions.
 
 ```python
 def climb_ways(n: int) -> int:
@@ -86,7 +86,7 @@ int climbWays(int n) {
 
 > **Why now.** The plain recursion recomputes the same step counts exponentially often. Caching each one makes every subproblem happen exactly once.
 
-Same recursion, each subproblem cached and computed once. Top-down DP — the systematic step between naive recursion and the iterative table.
+The same recursion with each answer cached the first time it is computed. The tree collapses to n distinct questions, which is the entire gain — nothing about the logic changed, only how often it runs. What is left is a call stack n deep and a table holding every answer when only the last two are ever read.
 
 ```python
 from functools import lru_cache

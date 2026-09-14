@@ -66,7 +66,7 @@ export const problem: Problem = {
     {
       name: "A table of costs",
       summary:
-        "Fill an array where entry i is the cheapest cost to stand on stair i, each built from the two entries before it.",
+        "Fill an array where entry i is the cheapest way to stand on stair i, each built from the two entries before it. Linear and easy to check by hand, and the array outlives its usefulness: the transition never looks further back than two steps, so all but two slots are holding history for nobody.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def min_cost_climbing_stairs(cost: list[int]) -> int:
     best = [0] * len(cost)

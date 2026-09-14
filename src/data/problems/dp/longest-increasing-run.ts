@@ -83,7 +83,7 @@ def length_of_lis(nums: list[int]) -> int:
     {
       name: "Every subsequence",
       summary:
-        "Try both choices at every index — take this element if it is larger than the last one taken, or skip it — and report the deepest run found.",
+        "Take or skip each element and report the deepest chain built. Exponential, because the choice at every index doubles the tree — and the doubling is unnecessary: what happens after index i depends only on the last value taken, not on the whole history of how you got there.",
       complexity: { time: "O(2^n)", space: "O(n)" },
       python: `def length_of_lis(nums: list[int]) -> int:
     def walk(i: int, previous: int) -> int:
@@ -122,9 +122,7 @@ public int lengthOfLis(int[] nums) {
     {
       name: "Table of best-ending-here",
       summary:
-        "Let best[i] be the length of the longest increasing run ending exactly at index i, built by scanning every earlier index that could feed it.",
-      whyNow:
-        "The recursion re-solves the same suffix once per path that reaches it, which is where the exponential comes from. Writing each position's answer down once turns those repeats into a single lookup.",
+        "Let best[i] be the longest run ending exactly at i, built by scanning every earlier index with a smaller value. Quadratic, and the step that costs is the scan: it asks every predecessor in turn whether it can be extended, when the only thing it needs to know is the smallest value a run of each length can end with.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def length_of_lis(nums: list[int]) -> int:
     if not nums:

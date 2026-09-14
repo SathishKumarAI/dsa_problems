@@ -51,7 +51,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Try every jump length
 
-Backtracking from index 0: from each index try every jump from 1 up to its value, and report success as soon as any route lands on the last index.
+From each index try every jump from 1 up to its value, and report success as soon as a route lands on the end. Exponential, and the routes overlap: whether the end is reachable FROM an index has nothing to do with which path arrived there, so the same index is re-explored once per way of reaching it.
 
 ```python
 def can_jump(nums: list[int]) -> bool:
@@ -110,7 +110,7 @@ bool canJump(vector<int> nums) {
 
 > **Why now.** Backtracking re-explores the same index through every route that reaches it, so an array like [5,4,3,2,1,…] revisits the tail exponentially often. Whether an index can reach the end does not depend on how you got to it — one boolean per index, computed once, replaces the whole tree.
 
-Fill a table right to left: an index is good when some jump from it lands on a good index. The answer is whether index 0 is good.
+Fill a table right to left, marking an index good when some jump from it lands on a good index. Quadratic, and the inner scan is the cost — it checks every landing spot in range, when the only thing that matters is whether the jump reaches the leftmost good index found so far.
 
 ```python
 def can_jump(nums: list[int]) -> bool:

@@ -57,7 +57,7 @@ export const problem: Problem = {
     {
       name: "Count each number's bits",
       summary:
-        "For every number from 0 to n, shift it right until it reaches zero, adding up the low bit each time.",
+        "For every number from 0 to n, shift it right until it reaches zero, adding the low bit each time. Correct and n log n, and it treats every number as a stranger — when in fact i differs from the already-computed i >> 1 by exactly one bit, which is the whole problem.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def count_bits(n: int) -> list[int]:
     out = []

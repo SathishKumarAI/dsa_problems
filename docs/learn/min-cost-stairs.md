@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — A table of costs
 
-Fill an array where entry i is the cheapest cost to stand on stair i, each built from the two entries before it.
+Fill an array where entry i is the cheapest way to stand on stair i, each built from the two entries before it. Linear and easy to check by hand, and the array outlives its usefulness: the transition never looks further back than two steps, so all but two slots are holding history for nobody.
 
 ```python
 def min_cost_climbing_stairs(cost: list[int]) -> int:

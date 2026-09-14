@@ -80,7 +80,7 @@ export const problem: Problem = {
     {
       name: "Branch on every mismatch",
       summary:
-        "Recurse from the ends of both strings: on a match take the character and shrink both, otherwise try dropping each end in turn and keep the better answer.",
+        "Recurse from the ends of both strings: on a match take the character and shrink both, otherwise try dropping each end in turn. Exponential in the combined length, and the two branches at every mismatch overlap heavily — the same pair of suffixes is reached by many different routes through the string.",
       complexity: { time: "O(2^(n+m))", space: "O(n + m)" },
       python: `def walk(a: str, b: str, i: int, j: int) -> int:
     if i == 0 or j == 0:

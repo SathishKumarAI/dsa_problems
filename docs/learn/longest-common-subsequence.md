@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Branch on every mismatch
 
-Recurse from the ends of both strings: on a match take the character and shrink both, otherwise try dropping each end in turn and keep the better answer.
+Recurse from the ends of both strings: on a match take the character and shrink both, otherwise try dropping each end in turn. Exponential in the combined length, and the two branches at every mismatch overlap heavily — the same pair of suffixes is reached by many different routes through the string.
 
 ```python
 def walk(a: str, b: str, i: int, j: int) -> int:

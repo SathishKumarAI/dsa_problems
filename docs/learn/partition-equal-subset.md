@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Try every subset
 
-Recurse over the elements, taking or skipping each, and report whether any combination reaches half the total.
+Take or skip each element and report whether any combination reaches half the total. Exponential in the count of elements, and it distinguishes subsets that the question cannot: two different subsets reaching the same sum are the same fact, and the table below stores the sum rather than the subset for exactly that reason.
 
 ```python
 def walk(nums: list[int], at: int, remaining: int) -> bool:

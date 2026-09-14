@@ -50,7 +50,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Backtrack over every split
 
-Try every dictionary word as a prefix, and recurse on whatever is left, reporting success if any chain of choices consumes the whole string.
+Try each dictionary word as a prefix and recurse on what is left. Exponential in the worst case, and the waste is that the same suffix is re-tested after every different way of segmenting the text before it — whether the tail can be broken up has nothing to do with how the head was cut.
 
 ```python
 def walk(s: str, at: int, allowed: set[str]) -> bool:

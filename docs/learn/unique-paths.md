@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Branch at every cell
 
-Recurse from the start, trying a move right and a move down at each cell and summing the paths each returns.
+Recurse from the start, trying a move right and a move down at each cell and summing what each returns. Exponential, and every cell is recomputed once per path that reaches it — the count for a cell depends only on the cell itself, not on the route taken to arrive.
 
 ```python
 def walk(m: int, n: int, r: int, c: int) -> int:

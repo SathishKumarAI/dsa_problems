@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Every subarray
 
-Take each start and each end, add up the elements between them, and keep the largest total found.
+Take each start and each end and add up everything between them. Quadratic, and the redundancy is exact: the sum for a run is the sum of the run one shorter plus one element, and this recomputes it from scratch every time.
 
 ```python
 def max_subarray(nums: list[int]) -> int:
@@ -106,9 +106,7 @@ int maxSubArray(const vector<int>& nums) {
 
 ## Rung 2 — Table of best-ending-here
 
-> **Why now.** The double loop re-adds prefixes it has already summed. Writing down the best run ending at each position means every entry is built from its predecessor in constant time — the same answer, once through the array instead of n times.
-
-Fill an array where entry i is the largest sum of a run ending exactly at i, each entry built from the one before it, then take the largest entry.
+Fill an array where entry i is the best sum of a run ending exactly at i, each entry built from the one before, then take the maximum. Linear, and it names the idea that makes the problem work — a run ending here either extends the one before or starts fresh. What it still pays is n slots to hold a history nothing reads twice.
 
 ```python
 def max_subarray(nums: list[int]) -> int:
@@ -217,7 +215,7 @@ The same collapse as the rest of the pattern, compressed into two steps. The dou
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Every subarray | O(n²) time · O(1) space | the baseline — nothing before it |
-| 2 | Table of best-ending-here | O(n) time · O(n) space | The double loop re-adds prefixes it has already summed. Writing down the best run ending at each position means every entry is built from its predecessor in constant time — the same answer, once through the array instead of n times. |
+| 2 | Table of best-ending-here | O(n) time · O(n) space | Fill an array where entry i is the best sum of a run ending exactly at i, each entry built from the one before, then take the maximum. |
 | 3 | The one to remember | O(n) time · O(1) space | The table version is already linear, but every entry is read exactly once, by the very next step. A value read once and never again does not need to be stored — so the whole table collapses to a single running number, and the space goes from n to a constant. |
 
 ---

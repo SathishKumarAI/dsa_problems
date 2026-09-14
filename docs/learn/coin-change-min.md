@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Greedy (broken)
 
-Largest coin first. Included as a warning: for [1, 3, 4] and amount 6 it answers 3 (4+1+1) when 2 (3+3) exists. Greedy is only safe for canonical coin systems.
+Take the largest coin that fits, repeat. It is here because it is WRONG, and the counterexample is small enough to hold in your head: coins [1, 3, 4] and amount 6 gives 4+1+1, three coins, when 3+3 is two. Greedy works only when the denominations are such that a big coin is never worth breaking up, and no line in this statement promises that.
 
 ```python
 def min_coins_WRONG(coins: list[int], amount: int) -> int:

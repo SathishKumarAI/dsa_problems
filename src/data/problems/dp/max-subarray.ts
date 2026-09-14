@@ -67,7 +67,7 @@ export const problem: Problem = {
     {
       name: "Every subarray",
       summary:
-        "Take each start and each end, add up the elements between them, and keep the largest total found.",
+        "Take each start and each end and add up everything between them. Quadratic, and the redundancy is exact: the sum for a run is the sum of the run one shorter plus one element, and this recomputes it from scratch every time.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def max_subarray(nums: list[int]) -> int:
     best = nums[0]
@@ -105,9 +105,7 @@ export const problem: Problem = {
     {
       name: "Table of best-ending-here",
       summary:
-        "Fill an array where entry i is the largest sum of a run ending exactly at i, each entry built from the one before it, then take the largest entry.",
-      whyNow:
-        "The double loop re-adds prefixes it has already summed. Writing down the best run ending at each position means every entry is built from its predecessor in constant time — the same answer, once through the array instead of n times.",
+        "Fill an array where entry i is the best sum of a run ending exactly at i, each entry built from the one before, then take the maximum. Linear, and it names the idea that makes the problem work — a run ending here either extends the one before or starts fresh. What it still pays is n slots to hold a history nothing reads twice.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def max_subarray(nums: list[int]) -> int:
     ending = [0] * len(nums)
