@@ -2179,5 +2179,102 @@ describe(
       )
       assert.deepEqual(page.errors(), [])
     })
+
+    // ---------- 10. a broken page beats a broken site (B96) ----------
+
+    test("a route that names nothing renders not-found, not home", async () => {
+      // Both shapes: a real pattern with a dead problem under it, and a root
+      // that names nothing at all. Before B96 both rendered HOME — a working
+      // page with no signal that the link had missed.
+      for (const [hash, back] of [
+        ["#/p/linked-list/no-such-problem", "#/p/linked-list"],
+        ["#/nonsense", null],
+        ["#/journey/no-such-journey", null],
+      ]) {
+        await page.goto(`${server.base}/${hash}`)
+        const out = await page.run(`
+          const main = document.querySelector('main');
+          return {
+            text: main.innerText,
+            hrefs: [...main.querySelectorAll('a')].map(a => a.getAttribute('href')),
+            // home's own furniture, to prove we are NOT looking at it
+            home: /day streak|learning journeys/i.test(main.innerText),
+          };
+        `)
+        assert.match(
+          out.text,
+          /nothing at that address/i,
+          `${hash} did not render the not-found view`
+        )
+        // it names what was not found, verbatim, so the reader can see which
+        // part of the path is wrong
+        assert.ok(
+          out.text.includes(hash),
+          `${hash}: the not-found view did not name the route (${out.text.slice(0, 80)})`
+        )
+        assert.equal(out.home, false, `${hash} still rendered home`)
+        assert.ok(out.hrefs.includes("#/"), `${hash}: no link home`)
+        if (back)
+          assert.ok(
+            out.hrefs.includes(back),
+            `${hash}: no link back to ${back}`
+          )
+        assert.deepEqual(page.errors(), [], `${hash} logged console errors`)
+      }
+    })
+
+    test("a render error costs one page, not the site", async () => {
+      // The honest trigger, with no test-only code in the app: a CORRUPT
+      // stored record, which is the fault B96 was filed for. `prefs` is read
+      // by problem-list as a string it lowercases, so a number there throws
+      // during render — and only in that view (the rail and the palette read
+      // other keys). Written on home and then navigated to for real, because
+      // the store caches per key (CLAUDE.md).
+      await page.goto(`${server.base}/#/`)
+      await page.run(
+        `localStorage.setItem('dsa:prefs', JSON.stringify({ filterQuery: 42 })); return 1`
+      )
+      await page.goto(`${server.base}/#/p/arrays-hashing`)
+      const out = await page.run(`
+        const main = document.querySelector('main');
+        return {
+          text: main.innerText,
+          message: (main.querySelector('pre') || {}).innerText || '',
+          hrefs: [...main.querySelectorAll('a')].map(a => a.getAttribute('href')),
+          alerts: document.querySelectorAll('[role=alert]').length,
+          // the shell has to survive: this is the whole point
+          sidebar: document.querySelectorAll('[data-slot=sidebar]').length,
+          rail: [...document.querySelectorAll('[data-slot=sidebar] a')].length,
+        };
+      `)
+      // clean up before asserting, so a failure does not poison the run
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:prefs'); return 1`)
+
+      assert.match(
+        out.text,
+        /this page hit an error/i,
+        "the boundary did not catch — the page is blank or the throw stopped happening"
+      )
+      assert.ok(out.alerts >= 1, "the fallback is not announced as an alert")
+      assert.match(
+        out.message,
+        /toLowerCase/,
+        `the error message was not shown (got "${out.message}")`
+      )
+      assert.ok(out.hrefs.includes("#/"), "the fallback offers no way out")
+      assert.equal(out.sidebar > 0, true, "the shell went down with the page")
+      assert.ok(out.rail > 5, `the rail lost its links (${out.rail} left)`)
+
+      // and the very next route is fine again: the boundary resets on the
+      // route change rather than latching
+      await page.goto(`${server.base}/#/p/arrays-hashing`)
+      const after = await page.run(`return document.querySelector('main').innerText`)
+      assert.ok(
+        !/this page hit an error/i.test(after),
+        "the boundary latched — a good route still shows the fallback"
+      )
+      assert.deepEqual(page.errors(), [], "the recovered page logged errors")
+    })
   }
 )

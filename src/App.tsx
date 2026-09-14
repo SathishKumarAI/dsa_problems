@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils"
 import { CircleHelpIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AppDialogs } from "./components/app-dialogs"
+import { ErrorBoundary } from "./components/error-boundary"
 import { AppSidebar } from "./components/app-sidebar"
 import { GlobalKeys } from "./components/global-keys"
 import { CommandPalette, SearchTrigger } from "@/features/search/palette"
@@ -44,14 +45,31 @@ const Loading = () => (
 )
 import { FlashcardsView } from "./components/flashcards-view"
 import { HomeView } from "./components/home-view"
+import { NotFound } from "./components/not-found"
 import { ProblemDetail } from "./components/problem-detail"
 import { ProblemList } from "./components/problem-list"
 import { ResourcesView } from "./components/resources-view"
 import { SqlView } from "./components/sql-view"
 
 function View() {
-  const { parts } = useRoute()
+  const { parts, path } = useRoute()
   const [root, a, b] = parts
+  // home is the empty path and nothing else now: every other fallthrough is a
+  // route that named something which does not exist
+  if (parts.length === 0)
+    return (
+      <HomeView
+        onNavigate={(v) =>
+          navigate(
+            v === "home"
+              ? "/"
+              : v === "sql" || v === "flashcards"
+                ? `/${v}`
+                : `/p/${v}`
+          )
+        }
+      />
+    )
   if (root === "journey") {
     const j = a ? journeyBySlug(a) : undefined
     if (j) return <JourneyPage key={j.slug} journey={j} />
@@ -72,27 +90,20 @@ function View() {
           onBack={() => navigate(`/p/${pattern.id}`)}
         />
       )
-    if (pattern)
+    if (pattern && !b)
       return (
         <ProblemList
           pattern={pattern}
           onOpen={(id) => navigate(`/p/${pattern.id}/${id}`)}
         />
       )
+    // the pattern is real and the problem is not: the list it came from is a
+    // better second option than home
+    if (pattern) return <NotFound path={path} back={`/p/${pattern.id}`} />
   }
-  return (
-    <HomeView
-      onNavigate={(v) =>
-        navigate(
-          v === "home"
-            ? "/"
-            : v === "sql" || v === "flashcards"
-              ? `/${v}`
-              : `/p/${v}`
-        )
-      }
-    />
-  )
+  // Everything that named nothing. It used to render HOME — a working page,
+  // no signal, and a reader who believes the link worked (B96).
+  return <NotFound path={path} />
 }
 
 export default function App() {
@@ -167,9 +178,15 @@ export default function App() {
               panels && "min-h-0 overflow-hidden py-4 lg:py-4"
             )}
           >
-            <Suspense fallback={<Loading />}>
-              <View />
-            </Suspense>
+            {/* The boundary is INSIDE `main`, so the `key={path}` above is
+                also its reset: a route change remounts it and the caught
+                error goes with it. Outside Suspense, so a chunk that fails
+                to load is caught as well. */}
+            <ErrorBoundary>
+              <Suspense fallback={<Loading />}>
+                <View />
+              </Suspense>
+            </ErrorBoundary>
           </main>
         </SidebarInset>
       </SidebarProvider>

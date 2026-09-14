@@ -93,6 +93,14 @@ Verification legend: `cdp` = driven in headless Chrome over the DevTools protoco
 | **Pattern picker is a route** | `#/resources?p=linked-list`, so a playbook is a link you can send. | `resources-view.tsx` · `App.tsx` | shipped |
 | **A live pattern vanishes entirely** | The page is a pattern name written a dozen different ways ("Two pointers converging", "Hash map as an index"), so a pattern whose journey is started and unfinished is **removed from the picker and unreachable by `?p=`** — not merely renamed to `· · ·`. Same call `ReadFurther` makes, same reason (B45). With every pattern masked, the page says so instead of rendering empty. | `resources-view.tsx` · `lib/disclosure.ts` | shipped (UI test: arm `unlocked:<slug>` on the journey that reveals linked-list, then ask for `?p=linked-list` **by name** and assert no move leaks) |
 
+
+## 3c. When something is missing or broken
+
+| Feature | Behaviour | File | Status |
+|---|---|---|---|
+| **A render error costs one page, not the site** | There was no `ErrorBoundary` anywhere in `src/`, so one malformed record took the whole tree to a white page — and this app is 75% content, growing twenty problems a branch. The boundary sits **inside `main`**, which is already keyed on the route, so a route change is the reset and no `resetKeys` state is kept; it sits **outside `Suspense`**, so a lazy chunk that fails to load is caught too. Shows the message, says the rest of the app still works, links home, and logs the component stack — the half React's own log omits, and the part that names which view threw. | `components/error-boundary.tsx` · `App.tsx` | shipped (UI test triggers a REAL fault — a corrupt `dsa:prefs` making `problem-list` throw mid-render — and asserts the sidebar survives and the next navigation is clean) |
+| **A dead link says so** | `View()` used to fall through to `HomeView`, so a renamed problem or a stale bookmark rendered a working home page with no signal. Not-found **names the route verbatim** (`#/p/linked-list/no-such-problem`) rather than saying "not found", with a link home and, where there is one, back to the problem list. The back link **never names the pattern**: that is the one word the disclosure rule withholds, and this view has no ledger to check against. | `components/not-found.tsx` · `App.tsx` | shipped (UI test: unknown routes render not-found, not home, with a clean console) |
+
 ## 4. Journey page — the map
 
 ```
