@@ -4,11 +4,13 @@
 # as more than it is:
 #
 #   covered here  — typecheck, lint, 758 node tests, the production build, all 82
-#                   teaching scripts, and the content-drift gate
-#   NOT covered   — `npm run test:ui` (real Chrome), `verify:code` (compiles every
-#                   Java and C++ block) and `verify:run` (checks they agree with the
-#                   Python). Those need a browser and a JDK/g++ toolchain, and they
-#                   are slow. Run them locally; the PR template asks for their output.
+#                   teaching scripts, the content-drift gate, and `verify:code`
+#                   (compiles every Java and C++ block against a real toolchain)
+#   NOT covered   — `npm run test:ui` (real Chrome) and `verify:run` (runs the
+#                   blocks and checks they agree with the Python). One needs a
+#                   browser, the other is slow enough to be its own decision —
+#                   see the `compile` job. Run them locally; the PR template asks
+#                   for their output.
 #
 # So: a green tick here means "nothing obviously broke". It is not verification.
 # See CONTRIBUTING.md, "The gates" — none of the seven is sufficient alone.
@@ -79,3 +81,51 @@ jobs:
       # `prebuild` and `pretest:ui` all depend on it, so a broken one breaks the app.
       - name: the learn-page generator runs
         run: npm run docs:learn
+
+  # B28. `verify:code` compiles every Java and C++ block in src/data/problems/**
+  # against a real compiler. The toolchain is user-space (`mise use -g
+  # java@temurin-21`, `scoop install main/gcc`), so locally the gate bites only on
+  # a machine that happens to have javac and g++ — and on CI it bit for nobody.
+  # A contributor without the toolchain could land a block that does not compile
+  # and the pull request stayed green. Here it bites for everyone.
+  #
+  # Its own job rather than steps in `content`: it runs in parallel with that one,
+  # so installing a JDK costs no wall clock, and a failure names itself in the
+  # checks list instead of hiding inside "teaching scripts · content drift".
+  #
+  # `verify:run` (execute the blocks, require the three languages to agree) is
+  # deliberately NOT here. Its Windows-only .exe-launch flake would indeed go away
+  # on Ubuntu, but the cost did not: it ran past ten minutes on the authoring
+  # machine and would dominate the wall clock of every push, and it needs Python
+  # on top of the JDK and g++. Compiling is the cheap half that catches the errors
+  # a translation actually makes; running stays a local gate the PR template asks
+  # for. Revisit if it is ever measured under ~3 minutes on a runner.
+  compile:
+    name: every Java and C++ block compiles
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 24 for the `.ts` imports the script does (type stripping, no build).
+      # No `npm ci`: verify.mjs imports src/data and node builtins only, nothing
+      # from node_modules — measured by running it against a tree with none.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # Temurin 21, matching the local `mise use -g java@temurin-21` pin — a block
+      # that compiles here must compile on the machine that wrote it.
+      # g++ is preinstalled on ubuntu-latest, so there is nothing to install.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # verify.mjs SKIPS the language whose compiler it cannot find, and exits 0
+      # when it finds neither — correct locally, silent rot here. Prove both exist
+      # before trusting the result below.
+      - name: javac and g++ are both present
+        run: javac -version && g++ --version
+
+      - name: npm run verify:code (756 blocks today, 0 failing)
+        run: npm run verify:code

@@ -6,8 +6,15 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { PATTERNS, PROBLEMS } from "@/data"
-import { journeyBySlug } from "@/engine"
+// `@/data` is the barrel that builds PROBLEMS from all ten pattern folders, so
+// importing it here put every statement, hint ladder and code block in the
+// shell. The route only needs to know the id EXISTS; the record arrives with
+// the problem page's own chunk.
+import { PATTERNS } from "@/data/patterns"
+import { cardOf } from "@/data/manifest"
+// the MANIFEST answers "is this a route"; the journey itself arrives with the
+// route's own chunk. Asking `@/engine` this question cost 567.7 KB in the shell.
+import { cardBySlug } from "@/engine/manifest"
 import { Suspense, lazy } from "react"
 import { navigate, useRoute } from "@/lib/route"
 import { openDialog } from "@/lib/dialogs"
@@ -46,9 +53,20 @@ const Loading = () => (
 import { FlashcardsView } from "./components/flashcards-view"
 import { HomeView } from "./components/home-view"
 import { NotFound } from "./components/not-found"
-import { ProblemDetail } from "./components/problem-detail"
+// LAZY, because it is the other holder of `@/engine`: the problem page draws
+// the journey's own stage and caps its ladder by the ledger, so it needs the
+// real journey — and a route may fetch what it needs. Eager, it put every
+// journey in the shell.
+const ProblemDetail = lazy(() =>
+  import("./components/problem-detail").then((m) => ({
+    default: m.ProblemDetail,
+  }))
+)
 import { ProblemList } from "./components/problem-list"
-import { ResourcesView } from "./components/resources-view"
+// lazy too: it carries every pattern's playbook prose
+const ResourcesView = lazy(() =>
+  import("./components/resources-view").then((m) => ({ default: m.ResourcesView }))
+)
 import { SqlView } from "./components/sql-view"
 
 function View() {
@@ -71,8 +89,8 @@ function View() {
       />
     )
   if (root === "journey") {
-    const j = a ? journeyBySlug(a) : undefined
-    if (j) return <JourneyPage key={j.slug} journey={j} />
+    const card = a ? cardBySlug(a) : undefined
+    if (card) return <JourneyPage key={card.slug} slug={card.slug} />
   }
   if (root === "algorithms") return <AlgorithmsPage />
   if (root === "learn" && a) return <LearnPageView key={a} id={a} />
@@ -81,11 +99,12 @@ function View() {
   if (root === "flashcards") return <FlashcardsView />
   if (root === "p") {
     const pattern = PATTERNS.find((p) => p.id === a)
-    const problem = b ? PROBLEMS.find((p) => p.id === b) : undefined
-    if (pattern && problem)
+    const card = b ? cardOf(b) : undefined
+    if (pattern && card)
       return (
         <ProblemDetail
-          problem={problem}
+          key={card.id}
+          problemId={card.id}
           pattern={pattern}
           onBack={() => navigate(`/p/${pattern.id}`)}
         />

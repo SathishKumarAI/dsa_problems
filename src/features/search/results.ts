@@ -14,7 +14,7 @@
 // reading them off `PROBLEMS` put all 127 statements, constraint lists, hint
 // ladders and code blocks in three languages into the first chunk so that
 // pressing Ctrl-K could match a title.
-import { PATTERNS } from "@/data"
+import { PATTERNS } from "@/data/patterns"
 import { CATALOGUE as PROBLEMS } from "@/data/manifest"
 import type { Difficulty } from "@/data"
 import { JOURNEY_CARDS as JOURNEYS } from "@/engine/manifest"

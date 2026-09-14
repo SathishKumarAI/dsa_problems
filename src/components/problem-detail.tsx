@@ -29,6 +29,7 @@ import { RowNudge } from "@/components/ui/row"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
+import { PROBLEMS } from "@/data"
 import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
@@ -47,7 +48,9 @@ import { setPref, usePrefs } from "@/lib/store"
 import { StepPlayer } from "./step-player"
 
 interface Props {
-  problem: Problem
+  /** the id, not the record: this component is lazy, so it resolves the record
+   *  from its own chunk rather than having the shell import all 127 to pass one */
+  problemId: string
   pattern: Pattern
   onBack: () => void
 }
@@ -244,7 +247,29 @@ function ApproachLadder({
   )
 }
 
-export function ProblemDetail({ problem, pattern, onBack }: Props) {
+/**
+ * Resolves the record, then renders it.
+ *
+ * Split in two so the lookup can return early without sitting between hooks —
+ * the id is checked against the manifest before this route renders, so the miss
+ * is unreachable, but a manifest that has drifted should show a page rather
+ * than break the rules of hooks.
+ */
+export function ProblemDetail({ problemId, pattern, onBack }: Props) {
+  const problem = PROBLEMS.find((p) => p.id === problemId)
+  if (!problem) return null
+  return <ProblemPage problem={problem} pattern={pattern} onBack={onBack} />
+}
+
+function ProblemPage({
+  problem,
+  pattern,
+  onBack,
+}: {
+  problem: Problem
+  pattern: Pattern
+  onBack: () => void
+}) {
   const solved = useSolved()
   const journey = journeyForProblem(problem.id)
   const steps = journey ? undefined : problem.walkthrough?.length
