@@ -567,7 +567,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Product of the others, each time
 
-For every index, loop over the whole array multiplying together every element except the one at that index.
+For every index, loop the whole array multiplying everything except that one element. Quadratic, and it recomputes almost the same product n times over — every pair of positions shares all but two of its factors, which is the redundancy the prefix rungs remove.
 
 ```python
 def product_except_self(nums: list[int]) -> list[int]:
@@ -625,9 +625,7 @@ vector<int> productExceptSelf(const vector<int>& nums) {
 
 ## Rung 2 — Two prefix arrays
 
-> **Why now.** The nested loop recomputes the same partial products for every index. Storing each running product once makes the whole thing linear — at the cost of two extra arrays that are each read exactly once.
-
-Build one array of running products from the left and another from the right, then multiply them position by position.
+Build running products from the left and from the right, then multiply them position by position. Linear at last, and the insight is complete: everything before me times everything after me. What it still pays is two full arrays of scaffolding for an answer array that could have carried the same information itself.
 
 ```python
 def product_except_self(nums: list[int]) -> list[int]:
@@ -771,7 +769,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Product of the others, each time | O(n²) time · O(1) space | the baseline — nothing before it |
-| 2 | Two prefix arrays | O(n) time · O(n) space | The nested loop recomputes the same partial products for every index. Storing each running product once makes the whole thing linear — at the cost of two extra arrays that are each read exactly once. |
+| 2 | Two prefix arrays | O(n) time · O(n) space | Build running products from the left and from the right, then multiply them position by position. |
 | 3 | The one to remember | O(n) time · O(1) space | Holding the two prefix arrays makes the idea obvious but keeps 2n numbers alive to read each of them exactly once. The output array can carry the left products while the right sweep folds its running product straight into them, so the same two passes need no storage beyond the answer. |
 
 ---

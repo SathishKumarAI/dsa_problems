@@ -517,7 +517,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Sum every subarray
 
-Take each start, extend to each end adding as you go, and count the totals that land on k.
+Take each start, extend to each end adding as you go, and count the totals landing on k. Quadratic, and the waste is specific: the sum of a window is almost the sum of the previous window, and this throws that away at every step.
 
 ```python
 def subarray_sum(nums: list[int], k: int) -> int:
@@ -574,9 +574,7 @@ int subarraySum(const vector<int>& nums, int k) {
 
 ## Rung 2 — Prefix sums, compared pairwise
 
-> **Why now.** The nested loop re-adds the same prefix over and over. Computing each running total once means a stretch's sum is a single subtraction — the same quadratic number of pairs, but no arithmetic repeated inside them.
-
-Build the array of running totals once, then check every pair of endpoints by subtracting one prefix from another.
+Build the running totals once, then test every pair of endpoints by subtracting one prefix from another. The re-adding is gone and the arithmetic is now O(1) per pair — but the pairs themselves are still quadratic, because it asks which earlier prefix makes this work by searching rather than by looking up.
 
 ```python
 def subarray_sum(nums: list[int], k: int) -> int:
@@ -700,7 +698,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sum every subarray | O(n²) time · O(1) space | the baseline — nothing before it |
-| 2 | Prefix sums, compared pairwise | O(n²) time · O(n) space | The nested loop re-adds the same prefix over and over. Computing each running total once means a stretch's sum is a single subtraction — the same quadratic number of pairs, but no arithmetic repeated inside them. |
+| 2 | Prefix sums, compared pairwise | O(n²) time · O(n) space | Build the running totals once, then test every pair of endpoints by subtracting one prefix from another. |
 | 3 | The one to remember | O(n) time · O(n) space | Prefix sums already cut the re-adding, but they still ask, for every endpoint, which of the earlier starts work — that inner scan is the remaining n². Storing how many times each prefix sum has been seen turns that scan into a single lookup, and counts rather than positions are all the question needs. |
 
 ---

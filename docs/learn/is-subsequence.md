@@ -361,7 +361,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Search for each character in turn
 
-For each character of s, scan t from the position after the previous match, restarting the scan from the beginning each time.
+For each character of s, scan t for it. Correct, and it restarts the scan from the beginning after every match rather than continuing, so matched ground is walked again and again — n times m in the worst case, to answer what one forward pass settles.
 
 ```python
 def is_subsequence(s: str, t: str) -> bool:

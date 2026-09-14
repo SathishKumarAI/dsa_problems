@@ -633,7 +633,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — One step at a time
 
-Shift every value one place right, put the value that fell off the end at the front, and repeat that k times.
+Shift every value one place right, move the one that fell off to the front, and do that k times. Faithful to the word 'rotate' and disastrous: n·k work, so a k near n is quadratic — and all of it recomputed, since every value's final home was knowable before the first shift.
 
 ```python
 def rotate_array(nums: list[int], k: int) -> list[int]:
@@ -686,7 +686,7 @@ vector<int> rotateArray(vector<int> nums, int k) {
 
 > **Why now.** Shifting by one rewrites all n values k times over, which is 10^10 writes at the stated limits. The destination of a value never depended on the steps in between — (i + k) % n names it directly, so one pass places everything, at the cost of a full-size scratch array.
 
-Every value's destination is known up front: nums[i] belongs at (i + k) % n. Write each one there in a new array, then copy that back.
+Every value's destination is known up front — nums[i] belongs at (i + k) % n — so write each one there in a fresh array and copy it back. Linear and clear, and the cost is the second array: n extra slots to express a permutation the array can perform on itself.
 
 ```python
 def rotate_array(nums: list[int], k: int) -> list[int]:

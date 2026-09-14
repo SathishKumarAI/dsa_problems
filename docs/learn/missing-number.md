@@ -599,7 +599,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Sort and scan
 
-Sorted, the array should read 0, 1, 2, ... — the first index whose value does not match itself is the answer. If every one matches, the gap is at the end.
+Sorted, the array should read 0, 1, 2, … so the first index whose value does not match it is the answer. Honest and easy to defend, and it spends n log n imposing an order the question never needed — the answer depends on WHICH values are present, not on their arrangement.
 
 ```python
 def missing_number(nums: list[int]) -> int:
@@ -647,7 +647,7 @@ int missingNumber(vector<int> nums) {
 
 > **Why now.** Sorting rearranges all n values to answer a question about presence, and it charges n log n for the privilege. A flag per candidate answers presence directly in one pass — the price is n + 1 slots of memory the follow-up does not allow.
 
-Mark each value present in an array of n + 1 flags, then walk 0..n and return the first flag never set.
+Mark each value present in an array of n + 1 flags, then walk 0..n and return the first never set. Linear, and the flags are the thing to notice: they store one bit per value to recover a single number, which the next two rungs get for free from arithmetic the input already satisfies.
 
 ```python
 def missing_number(nums: list[int]) -> int:
@@ -701,7 +701,7 @@ int missingNumber(const vector<int>& nums) {
 
 > **Why now.** The flag table spends n + 1 fresh slots to record what the input already contains. Because every value is a legal index, the array can be its own table: send each value home and the hole shows itself — no extra memory, at the cost of rearranging the caller's array.
 
-Swap values around until every value that can sit at its own index does. Then the first index holding something else is the missing number.
+Swap values around until every one that can sit at its own index does; the first index holding something else is the answer. Constant extra space, and the price is that it rearranges the caller's array — a destructive answer to a read-only question.
 
 ```python
 def missing_number(nums: list[int]) -> int:
@@ -774,7 +774,7 @@ int missingNumber(vector<int> nums) {
 
 > **Why now.** Placing values home is constant space but it destroys the caller's array and still needs a second scan to find the hole. A running total needs neither: one accumulator, one pass, and the input untouched.
 
-The numbers 0..n add up to n * (n + 1) / 2. Subtract what the array actually holds and the difference is the value that never arrived.
+The numbers 0..n sum to n(n+1)/2, so subtracting what the array actually holds leaves the value that never arrived. One pass, one accumulator, nothing touched — and the one place it can bite is a language where that product overflows before the subtraction happens.
 
 ```python
 def missing_number(nums: list[int]) -> int:

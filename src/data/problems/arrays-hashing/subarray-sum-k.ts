@@ -74,7 +74,7 @@ export const problem: Problem = {
     {
       name: "Sum every subarray",
       summary:
-        "Take each start, extend to each end adding as you go, and count the totals that land on k.",
+        "Take each start, extend to each end adding as you go, and count the totals landing on k. Quadratic, and the waste is specific: the sum of a window is almost the sum of the previous window, and this throws that away at every step.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def subarray_sum(nums: list[int], k: int) -> int:
     total = 0
@@ -112,9 +112,7 @@ export const problem: Problem = {
     {
       name: "Prefix sums, compared pairwise",
       summary:
-        "Build the array of running totals once, then check every pair of endpoints by subtracting one prefix from another.",
-      whyNow:
-        "The nested loop re-adds the same prefix over and over. Computing each running total once means a stretch's sum is a single subtraction — the same quadratic number of pairs, but no arithmetic repeated inside them.",
+        "Build the running totals once, then test every pair of endpoints by subtracting one prefix from another. The re-adding is gone and the arithmetic is now O(1) per pair — but the pairs themselves are still quadratic, because it asks which earlier prefix makes this work by searching rather than by looking up.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def subarray_sum(nums: list[int], k: int) -> int:
     prefix = [0] * (len(nums) + 1)

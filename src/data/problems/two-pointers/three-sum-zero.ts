@@ -103,7 +103,7 @@ export const problem: Problem = {
     {
       name: "Brute force",
       summary:
-        "Three nested loops, dedup with a set of sorted tuples. Cubic — only useful to establish correctness on small inputs.",
+        "Three nested loops, with a set of sorted tuples to kill repeats. Cubic, so useful only for establishing correctness on small inputs — and the dedup set is the tell: on unsorted input the same triple is reachable by several routes, which is exactly the problem sorting makes disappear.",
       complexity: { time: "O(n³)", space: "O(n) for dedup" },
       python: `def three_sum(nums: list[int]) -> list[list[int]]:
     found: set[tuple[int, int, int]] = set()

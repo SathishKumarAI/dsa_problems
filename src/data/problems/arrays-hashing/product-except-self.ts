@@ -80,7 +80,7 @@ export const problem: Problem = {
     {
       name: "Product of the others, each time",
       summary:
-        "For every index, loop over the whole array multiplying together every element except the one at that index.",
+        "For every index, loop the whole array multiplying everything except that one element. Quadratic, and it recomputes almost the same product n times over — every pair of positions shares all but two of its factors, which is the redundancy the prefix rungs remove.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def product_except_self(nums: list[int]) -> list[int]:
     out = []
@@ -119,9 +119,7 @@ export const problem: Problem = {
     {
       name: "Two prefix arrays",
       summary:
-        "Build one array of running products from the left and another from the right, then multiply them position by position.",
-      whyNow:
-        "The nested loop recomputes the same partial products for every index. Storing each running product once makes the whole thing linear — at the cost of two extra arrays that are each read exactly once.",
+        "Build running products from the left and from the right, then multiply them position by position. Linear at last, and the insight is complete: everything before me times everything after me. What it still pays is two full arrays of scaffolding for an answer array that could have carried the same information itself.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def product_except_self(nums: list[int]) -> list[int]:
     n = len(nums)

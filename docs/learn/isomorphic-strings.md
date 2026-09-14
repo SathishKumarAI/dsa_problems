@@ -644,7 +644,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Encode both as patterns
 
-Rewrite each string as the position at which each character was first seen, then check whether the two encodings are identical.
+Rewrite each string as the position where each character was first seen, then compare the two encodings. Elegant, and it answers the question exactly — but it builds two whole encodings before comparing anything, so a pair that differs at the first character still costs two full passes and two arrays.
 
 ```python
 def encode(s: str) -> list[int]:

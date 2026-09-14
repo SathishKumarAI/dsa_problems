@@ -210,7 +210,7 @@ export const problem: Problem = {
     {
       name: "Rescan for the heaviest and the lightest",
       summary:
-        "Keep a used flag per person. Each round, scan for the heaviest person still waiting, then scan again for the lightest, and put them on one boat if they fit.",
+        "Keep a used flag per person; each round, scan for the heaviest still waiting, then scan again for the lightest that fits beside them. The greedy pairing is already right — the cost is rediscovering the two extremes every round, which one sort establishes once and for all.",
       complexity: { time: "O(n^2)", space: "O(n)" },
       whyNow:
         "The subset table doubles in size with every extra person — fifty thousand people is not a bigger table, it is an impossible one. The greedy rule replaces the whole table: the heaviest person's boat is best shared with the lightest who fits, so each round needs only those two people, not a record of every group that could have sailed.",
@@ -283,7 +283,7 @@ export const problem: Problem = {
     {
       name: "Sort, then empty the queue from both ends",
       summary:
-        "Sort the weights into a queue, then repeatedly take the person off the heavy end and, if they fit together, the person off the light end.",
+        "Sort into a queue, then repeatedly take the person at the heavy end and, if they fit together, the one at the light end. The right pairing with the wrong container: removing from the front of a list shifts everything behind it, so a walk that should be linear becomes quadratic.",
       complexity: { time: "O(n^2)", space: "O(n)" },
       whyNow:
         "Rescanning finds the same extremes over and over: the weights never change, so n rounds of two full scans re-derive an ordering that one sort settles for good. Sorting once turns 'find the heaviest' into 'look at the end'.",
@@ -329,7 +329,7 @@ export const problem: Problem = {
     {
       name: "Count the weights into buckets",
       summary:
-        "Weights are small integers, so count how many people share each weight and walk one cursor down from the limit and one up from 1 over the bucket table.",
+        "Weights are small integers, so count how many people share each weight and walk one cursor down from the limit while another walks up. Linear in people plus the weight range, which beats sorting — and it is bought entirely with the bound on weights, so it disappears the moment that bound widens.",
       complexity: { time: "O(n + limit)", space: "O(limit)" },
       whyNow:
         "Taking a person off the front of a queue shifts every remaining person one slot, so the sorted version is still quadratic — the sort fixed the searching and left the removing. A bucket table removes a person by decrementing a counter, which is one write, and it never compares two weights at all.",

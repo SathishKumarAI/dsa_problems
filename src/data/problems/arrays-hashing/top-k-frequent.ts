@@ -91,7 +91,7 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     {
       name: "Sort by count",
       summary:
-        "Count, then sort the distinct values by frequency and slice the top k. Simplest to write; the sort is the only thing costing more than linear.",
+        "Count the values, then sort the distinct ones by frequency and slice the top k. The simplest thing that works, and the sort is the only step costing more than linear — it orders ALL the distinct values to answer a question about k of them, which is wasted whenever k is small.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `from collections import Counter
 
@@ -138,7 +138,7 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
       whyNow:
         "Sorting puts every distinct value in order when only k of them are wanted. A heap of size k keeps just the frontrunners, so the cost follows k instead of the whole set of values.",
       summary:
-        "Keep a min-heap of the k most frequent seen while iterating counts. Better than sorting when k ≪ distinct values; stdlib nlargest does exactly this.",
+        "Keep a min-heap of size k while walking the counts: push, and drop the smallest whenever the heap grows past k. Now the ordering work is bounded by k rather than by the number of distinct values, which is the whole gain — n log k instead of n log n, and it matters exactly when k is much smaller than the alphabet.",
       complexity: { time: "O(n log k)", space: "O(n)" },
       python: `import heapq
 from collections import Counter

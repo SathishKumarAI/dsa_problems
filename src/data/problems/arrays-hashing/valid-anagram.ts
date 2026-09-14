@@ -70,7 +70,7 @@ export const problem: Problem = {
     {
       name: "Sort both",
       summary:
-        "Sort the letters of each string and compare the results — two anagrams share exactly one sorted form.",
+        "Sort the letters of each string and compare: two anagrams share exactly one sorted form. Correct for any alphabet, including Unicode, and it costs n log n plus two copies to answer a question that is really about counts, not order — nothing here needs the letters arranged, only tallied.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def is_anagram(s: str, t: str) -> bool:
     return sorted(s) == sorted(t)`,

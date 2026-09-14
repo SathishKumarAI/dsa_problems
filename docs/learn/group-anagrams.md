@@ -443,7 +443,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Compare every pair
 
-Walk the words, and for each one scan the groups built so far for one whose first member is an anagram of it, creating a new group when none matches.
+For each word, scan the groups built so far for one whose first member is an anagram of it. Correct, and quadratic in the number of words with an anagram test inside every comparison — it asks whether two words match, over and over, instead of asking each word once what it IS.
 
 ```python
 def group_anagrams(words: list[str]) -> list[list[str]]:
@@ -537,9 +537,7 @@ vector<vector<string>> groupAnagrams(const vector<string>& words) {
 
 ## Rung 2 — Sorted letters as the key
 
-> **Why now.** The pairwise scan re-sorts a group's representative once for every word it compares against. A map lookup replaces that whole scan with one hash, turning the quadratic search into a single pass.
-
-Use the word's own letters in sorted order as a map key, so every anagram of it lands on the same string.
+Use the word's own letters, sorted, as a map key, so every anagram lands on the same string. The pairwise scan collapses to one pass, and the only remaining cost is the sort inside each key — k log k per word, paid to produce a label that a 26-slot count could produce in k.
 
 ```python
 def group_anagrams(words: list[str]) -> list[list[str]]:
@@ -696,7 +694,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Compare every pair | O(n² · k) time · O(n · k) space | the baseline — nothing before it |
-| 2 | Sorted letters as the key | O(n · k log k) time · O(n · k) space | The pairwise scan re-sorts a group's representative once for every word it compares against. A map lookup replaces that whole scan with one hash, turning the quadratic search into a single pass. |
+| 2 | Sorted letters as the key | O(n · k log k) time · O(n · k) space | Use the word's own letters, sorted, as a map key, so every anagram lands on the same string. |
 | 3 | The one to remember | O(n · k) time · O(n · k) space | Sorting each word costs k log k just to make a label, and the label throws away nothing the counts do not already capture. A 26-slot tally is built in one pass over the word — linear in its length instead of linearithmic — and two anagrams produce the same tally by definition. |
 
 ---

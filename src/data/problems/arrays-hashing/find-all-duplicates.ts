@@ -108,7 +108,7 @@ export const problem: Problem = {
     {
       name: "Compare every pair",
       summary:
-        "For each element, look at everything after it and report a match. No memory at all, and no cleverness — just every pair.",
+        "For each element, look at everything after it and report a match. No memory and no cleverness, and quadratic — on the 10^5 bound that is five billion comparisons. It also ignores the promise that makes this problem special: the values are confined to 1..n, which is what every later rung spends.",
       complexity: { time: "O(n^2)", space: "O(1)" },
       python: `def find_duplicates(nums: list[int]) -> list[int]:
     out = []
@@ -141,7 +141,7 @@ export const problem: Problem = {
     {
       name: "Sort, then read neighbours",
       summary:
-        "Sorting puts the two copies of a value next to each other, so one walk comparing each element with the one before it collects every pair.",
+        "Sorting puts the two copies of a value side by side, so one walk comparing each element with its predecessor collects every pair. Drops the quadratic scan for n log n, and pays for it by destroying the caller's order — in a problem whose values already tell you where they belong.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       whyNow:
         "The pair scan re-reads the whole tail for every element: at n = 10^5 that is about 5 * 10^9 comparisons, minutes of work for an answer that needs milliseconds. Sorting brings the two copies of a value together so a single pass is enough — but it rearranges the input and still costs n log n.",
@@ -175,7 +175,7 @@ export const problem: Problem = {
     {
       name: "Count in a hash map",
       summary:
-        "One pass to count how often each value occurs, then walk 1..n and take the values whose count is 2.",
+        "One pass to count how often each value occurs, then walk 1..n and take those seen twice. Linear at last, and the memory is the point: a general-purpose map for keys that are promised to be 1..n, which is a lookup table with a hash function bolted on top of it.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "Sorting still costs n log n and moves values the caller may want where they were. Counting touches each value once and moves nothing — the price is a map entry per distinct value and a hash computed on every lookup.",
@@ -212,7 +212,7 @@ export const problem: Problem = {
     {
       name: "A flag per value",
       summary:
-        "The values are bounded by n, so the lookup table can be a plain array of n + 1 flags instead of a map. A value landing on a set flag is the second copy.",
+        "Since the values are bounded by n, the lookup table can be a plain array of n + 1 flags rather than a map — no hashing, no buckets, one memory access per value. Still O(n) extra space, and that is the last thing left to remove: the array itself already has n slots that could carry the same marks.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "The map hashes keys that are already small integers and boxes each one — work that buys nothing when the key range is known to be 1..n. A flat array indexes straight to the slot, so the same one-pass idea runs with array reads instead of hash lookups, and the answer comes out during that pass rather than in a second sweep.",

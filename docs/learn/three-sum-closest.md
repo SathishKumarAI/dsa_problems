@@ -636,7 +636,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Every triple
 
-Three nested loops over all distinct index triples, keeping whichever sum has landed closest to the target so far.
+Three nested loops over all distinct index triples, keeping the sum nearest the target. Cubic on unsorted data, and it can neither stop early nor skip anything: without an order, no triple tells you a thing about the ones you have not tried.
 
 ```python
 def three_sum_closest(nums: list[int], target: int) -> int:
@@ -703,7 +703,7 @@ int threeSumClosest(vector<int> nums, int target) {
 
 > **Why now.** The blind triple loop cannot tell a hopeless candidate from a promising one, because unsorted values give no direction: after seeing a sum way above the target it still has to check the rest. Sorting makes the innermost loop monotone, so the first sum that reaches the target is the last one worth looking at for that pair.
 
-Same three loops, but on sorted values — once the innermost sum reaches the target, every later k only overshoots further, so the scan can stop.
+The same three loops on sorted values, abandoning the innermost once its sum passes the target. Often much faster and still cubic in the worst case — sorting has been paid for and is only being used to stop early, not to steer.
 
 ```python
 def three_sum_closest(nums: list[int], target: int) -> int:
@@ -777,7 +777,7 @@ int threeSumClosest(vector<int> nums, int target) {
 
 > **Why now.** Pruning only helps when the target sits early in the run; a target above everything makes the inner loop scan to the end every time, and it is still O(n^3). The sorted tail can be searched instead of walked: the ideal third value is arithmetic, and the two entries straddling it are the only candidates worth testing.
 
-Fix the first two values, work out the third that would hit the target exactly, and binary search the sorted tail for the neighbours on either side of it.
+Fix two values, work out the third that would hit the target exactly, and binary search the sorted tail for the nearest real one. A loop is gone, and the logarithm is the tell: it searches for a partner that a second pointer already knows where to find.
 
 ```python
 def three_sum_closest(nums: list[int], target: int) -> int:
@@ -872,7 +872,7 @@ int threeSumClosest(vector<int> nums, int target) {
 
 > **Why now.** The binary search restarts from scratch for every pair, throwing away everything the previous search learned about where the tail sits relative to the target. A pointer that only ever moves inward keeps that knowledge: one comparison retires one index for good, which replaces the log n search with a single step.
 
-Fix the first value and squeeze the rest between a low and a high pointer, moving whichever end the sum says is wrong.
+Fix the first value and squeeze the rest between a low and a high pointer, moving whichever end the sum says is wrong. Quadratic with no logarithm and no extra memory — the search for a partner became a decision, because on sorted values the sum itself says which way to move.
 
 ```python
 def three_sum_closest(nums: list[int], target: int) -> int:

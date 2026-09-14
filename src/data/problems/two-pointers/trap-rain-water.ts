@@ -88,7 +88,7 @@ export const problem: Problem = {
     {
       name: "Brute force per column",
       summary:
-        "For each column, scan the whole array left and right to find the tallest bar on each side, then take the smaller of the two minus this column's height.",
+        "For each column, scan left and right for the tallest bar on each side; the water above it is the smaller of those minus its own height. Correct, and quadratic because each column re-derives maxima its neighbour just computed — the same scan, one position over.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def trap(height: list[int]) -> int:
     total = 0
@@ -122,9 +122,7 @@ export const problem: Problem = {
     {
       name: "Prefix and suffix maxima",
       summary:
-        "Precompute, for every index, the tallest bar at or before it and the tallest at or after it, then read both off in a third pass.",
-      whyNow:
-        "The per-column scan recomputes the same two maxima from scratch for every index, so the same prefix is walked n times. Storing each maximum once turns the whole thing linear — at the cost of two extra arrays.",
+        "Precompute the tallest bar at or before every index and at or after it, then read both off in a third pass. The rescanning is gone and it is genuinely linear; what remains is two arrays of n, holding numbers that two travelling variables could carry instead.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def trap(height: list[int]) -> int:
     n = len(height)

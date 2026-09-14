@@ -97,7 +97,7 @@ export const problem: Problem = {
     {
       name: "Compare every pair",
       summary:
-        "Walk the words, and for each one scan the groups built so far for one whose first member is an anagram of it, creating a new group when none matches.",
+        "For each word, scan the groups built so far for one whose first member is an anagram of it. Correct, and quadratic in the number of words with an anagram test inside every comparison — it asks whether two words match, over and over, instead of asking each word once what it IS.",
       complexity: { time: "O(n² · k)", space: "O(n · k)" },
       python: `def group_anagrams(words: list[str]) -> list[list[str]]:
     groups: list[list[str]] = []
@@ -172,9 +172,7 @@ export const problem: Problem = {
     {
       name: "Sorted letters as the key",
       summary:
-        "Use the word's own letters in sorted order as a map key, so every anagram of it lands on the same string.",
-      whyNow:
-        "The pairwise scan re-sorts a group's representative once for every word it compares against. A map lookup replaces that whole scan with one hash, turning the quadratic search into a single pass.",
+        "Use the word's own letters, sorted, as a map key, so every anagram lands on the same string. The pairwise scan collapses to one pass, and the only remaining cost is the sort inside each key — k log k per word, paid to produce a label that a 26-slot count could produce in k.",
       complexity: { time: "O(n · k log k)", space: "O(n · k)" },
       python: `def group_anagrams(words: list[str]) -> list[list[str]]:
     groups: dict[str, list[str]] = {}

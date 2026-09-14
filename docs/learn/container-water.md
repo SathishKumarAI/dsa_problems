@@ -341,7 +341,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-Measure all pairs. Fine for tiny inputs; quadratic wall at scale. State it, then improve it.
+Measure every pair of lines and keep the largest area. Right, and quadratic — and the reason it is worth stating is that it treats all n squared pairs as equally plausible, when the width of a pair is known before either height is read.
 
 ```python
 def max_area(heights: list[int]) -> int:

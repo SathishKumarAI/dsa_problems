@@ -884,7 +884,7 @@ vector<int> nextPermutation(vector<int> nums) {
 
 > **Why now.** Trying every pair tests n^2 candidates when only one position can ever change first: the rightmost index whose value is smaller than its neighbour. Everything to its right is descending, so it is already maximal and nothing there can grow — naming that pivot collapses the whole search to a single scan.
 
-Scan in from the right for the pivot, sort the tail ascending, then swap the pivot with the first tail value that exceeds it.
+Scan in from the right for the pivot, sort the tail ascending, then swap the pivot with the first tail value that exceeds it. The pivot insight has landed and the tail work has not: everything right of the pivot is already non-increasing, so sorting it is paying n log n to reverse a sequence whose order you were handed.
 
 ```python
 def next_permutation(nums: list[int]) -> list[int]:
@@ -959,7 +959,7 @@ vector<int> nextPermutation(vector<int> nums) {
 
 > **Why now.** Sorting the tail spends O(n log n) comparisons discovering an order that is already known: the tail was descending before the swap, and swapping a smaller value into the slot of a larger one keeps it descending. Reading it backwards produces the ascending version for free, which drops the whole solution to a linear pass.
 
-Find the pivot, swap it with the last value that still beats it, then read the tail from the end into a fresh list and copy that list back.
+Find the pivot, swap it with the last value that still beats it, then read the tail from the end into a fresh list and copy it back. Linear at last, and the only thing left is the list: reading a run backwards into new storage is a reversal, and a reversal is two indices walking towards each other in place.
 
 ```python
 def next_permutation(nums: list[int]) -> list[int]:

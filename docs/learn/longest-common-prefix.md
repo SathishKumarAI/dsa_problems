@@ -582,7 +582,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Shrink against each string
 
-Start with the first string as the answer and, for each later string, trim the answer until it is a prefix of that one too.
+Hold the first string as a candidate answer and trim it against each later string until it is a prefix of that one too. Correct and linear in the total input, but it builds and discards a new string at every step, and it reads words to the end that disagreed at character one.
 
 ```python
 def longest_common_prefix(words: list[str]) -> str:

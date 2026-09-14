@@ -312,7 +312,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Build a distinct copy
 
-Walk the array collecting values that differ from the last one collected, into a new list.
+Walk the array collecting values that differ from the last one kept, into a new list. Linear and obviously correct, and the copy is the whole cost — the survivors are always a prefix of the original, so they can be written over the array as it is read.
 
 ```python
 def remove_duplicates(nums: list[int]) -> list[int]:

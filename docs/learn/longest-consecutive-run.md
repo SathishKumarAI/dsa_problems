@@ -597,7 +597,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Sort
 
-Sort, then walk once counting runs (skip duplicates, reset on gaps). Violates the O(n) target but is the honest first answer and handles everything correctly.
+Sort, then walk once counting runs, skipping duplicates and resetting on gaps. Honest, short, and it breaks the one rule the statement sets — O(n log n) against a demanded O(n). It is here because it names what sorting is being used FOR: putting neighbours next to each other, which a hash set can do without any ordering at all.
 
 ```python
 def longest_consecutive(nums: list[int]) -> int:

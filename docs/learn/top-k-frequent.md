@@ -667,7 +667,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Sort by count
 
-Count, then sort the distinct values by frequency and slice the top k. Simplest to write; the sort is the only thing costing more than linear.
+Count the values, then sort the distinct ones by frequency and slice the top k. The simplest thing that works, and the sort is the only step costing more than linear — it orders ALL the distinct values to answer a question about k of them, which is wasted whenever k is small.
 
 ```python
 from collections import Counter
@@ -731,7 +731,7 @@ vector<int> topKFrequent(const vector<int>& nums, int k) {
 
 > **Why now.** Sorting puts every distinct value in order when only k of them are wanted. A heap of size k keeps just the frontrunners, so the cost follows k instead of the whole set of values.
 
-Keep a min-heap of the k most frequent seen while iterating counts. Better than sorting when k ≪ distinct values; stdlib nlargest does exactly this.
+Keep a min-heap of size k while walking the counts: push, and drop the smallest whenever the heap grows past k. Now the ordering work is bounded by k rather than by the number of distinct values, which is the whole gain — n log k instead of n log n, and it matters exactly when k is much smaller than the alphabet.
 
 ```python
 import heapq

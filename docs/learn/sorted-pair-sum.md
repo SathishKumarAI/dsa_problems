@@ -558,7 +558,7 @@ vector<int> sortedPairSum(const vector<int>& nums, int target) {
 
 > **Why now.** The double loop asks whether a partner exists by trying every candidate. One pass with a map answers it in a single lookup - but this is the answer for an unsorted array, and this array is sorted.
 
-The unsorted-array solution still works — but it spends O(n) memory to ignore information the input already gives you for free.
+The unsorted-array solution still works: remember each value's index and look up the complement. Linear, and it spends O(n) memory to ignore the one thing this input hands you free. Sortedness means a comparison tells you about everything you have not looked at, and a map throws that away.
 
 ```python
 def sorted_pair_sum(nums: list[int], target: int) -> list[int]:

@@ -69,7 +69,7 @@ export const problem: Problem = {
     {
       name: "Build a distinct copy",
       summary:
-        "Walk the array collecting values that differ from the last one collected, into a new list.",
+        "Walk the array collecting values that differ from the last one kept, into a new list. Linear and obviously correct, and the copy is the whole cost — the survivors are always a prefix of the original, so they can be written over the array as it is read.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def remove_duplicates(nums: list[int]) -> list[int]:
     out: list[int] = []

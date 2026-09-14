@@ -120,7 +120,7 @@ export const problem: Problem = {
     {
       name: "Delete and shift",
       summary:
-        "Scan for a match and, every time one turns up, slide the whole remaining tail one slot to the left and shrink the live length.",
+        "Every time a match turns up, slide the whole remaining tail one slot left. It is what deletion looks like if you picture it literally, and it is quadratic: an array of all-matching values shifts n, then n-1, then n-2 elements for a job one pass finishes.",
       complexity: { time: "O(n^2)", space: "O(1)" },
       python: `def remove_element(nums: list[int], val: int) -> list[int]:
     n = len(nums)
@@ -164,7 +164,7 @@ export const problem: Problem = {
     {
       name: "Filter into a copy",
       summary:
-        "Collect the survivors into a fresh list in one pass and return that, leaving the original array untouched.",
+        "Collect the survivors into a fresh list in one pass. Linear, and it leaves the caller's array untouched — which sounds like a virtue and is the wrong answer here, because the statement asks for the removal to happen in place.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "Shifting the tail on every match re-copies values that were already in the right place; an array of nothing but val does that n times, which is quadratic work to produce an empty answer. Appending the survivors somewhere else touches each value exactly once.",
@@ -196,7 +196,7 @@ export const problem: Problem = {
     {
       name: "Count, then compact",
       summary:
-        "One pass to count how many values survive, a second to slide them to the front of the original array, and return that many.",
+        "One pass to count the survivors, a second to slide them to the front. In place and constant-space, and the first pass earns nothing: the second already knows a value survives at the moment it reads it, so counting them first is asking the same question twice.",
       complexity: { time: "O(n)", space: "O(1)" },
       whyNow:
         "The filtered copy is linear but it allocates a second array the size of the input just to hold values that already exist. Counting first gives the length of the answer up front, so the survivors can be packed into the array that was already there and nothing new is allocated.",
@@ -244,7 +244,7 @@ export const problem: Problem = {
     {
       name: "Reader and writer",
       summary:
-        "One pass with two indices: the reader visits everything, the writer only advances when a survivor is placed.",
+        "One pass, two indices: the reader visits every position, the writer advances only when a survivor is placed. This is the answer — the two indices are the whole idea, and every rung above it is this one with an extra pass or an extra array bolted on.",
       complexity: { time: "O(n)", space: "O(1)" },
       whyNow:
         "The counting pass exists only to learn the length of the answer, and the compaction loop already knows it — the writer's index at the end is that number. Dropping the first pass halves the reads and removes a second place where the match test could be written differently by accident.",

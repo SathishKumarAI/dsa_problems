@@ -477,7 +477,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Filter into a copy
 
-Collect the non-zero values into a new list, pad it with zeroes to the original length, and copy it back.
+Collect the non-zero values into a new list, pad with zeroes, copy back. Linear and easy to defend, and it allocates a second array of n to perform a rearrangement the array can do to itself — the statement says in place, and this satisfies the letter of that by copying back at the end.
 
 ```python
 def move_zeroes(nums: list[int]) -> list[int]:

@@ -683,7 +683,7 @@ vector<int> plusOne(vector<int> digits) {
 
 > **Why now.** The integer version stops being correct at about 19 digits, and the problem allows 100 — the failure is silent, since an overflowed sum still returns digits. Carrying one digit at a time has no width at all: it works on a hundred digits or a million.
 
-Flip the digits so the least significant one is first, run a carry left to right the way a loop naturally goes, append any leftover carry, and flip back.
+Flip the digits so the least significant is first, carry left to right the way a loop naturally runs, then flip back. It works, and it pays two full reversals and a copy to avoid writing a backwards loop — which is a real cost imposed by a preference rather than by the problem.
 
 ```python
 def plus_one(digits: list[int]) -> list[int]:

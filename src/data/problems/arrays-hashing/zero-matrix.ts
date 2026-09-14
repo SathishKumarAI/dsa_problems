@@ -154,7 +154,7 @@ export const problem: Problem = {
     {
       name: "Write into a copy",
       summary:
-        "Build a second matrix. Read the original to decide, write the answer into the copy, and hand the copy back — so nothing ever reacts to its own output.",
+        "Build a second matrix: read the original to decide, write into the copy, hand the copy back. This is the rung that names the actual hazard — every later approach writes zeros into the grid it is still reading, so a cell blanked early would be mistaken for an original zero and wipe a row that was never doomed.",
       complexity: { time: "O(rows · cols)", space: "O(rows · cols)" },
       python: `def zero_matrix(matrix: list[list[int]]) -> list[list[int]]:
     rows, cols = len(matrix), len(matrix[0])
@@ -197,7 +197,7 @@ export const problem: Problem = {
     {
       name: "Two lists of doomed lines",
       summary:
-        "One pass collects the rows and columns that hold a zero; a second pass blanks every cell whose row or column is on those lists. No copy of the matrix.",
+        "One pass collects the rows and columns holding a zero; a second blanks every cell on those lists. The full copy is gone and the hazard with it, and what remains is rows + cols of bookkeeping — two lists the matrix could store in its own first row and column.",
       complexity: { time: "O(rows · cols)", space: "O(rows + cols)" },
       whyNow:
         "The copy doubles the memory to hold information worth one bit per row and per column — a 200 × 200 matrix duplicates 40 000 values to remember at most 400 facts. Which rows and columns are doomed is all the second pass needs.",

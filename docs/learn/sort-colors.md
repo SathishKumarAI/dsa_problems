@@ -402,7 +402,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Count, then rewrite
 
-Count how many 0s, 1s and 2s there are, then overwrite the array with that many of each in order.
+Count the 0s, 1s and 2s, then overwrite the array with that many of each. Two passes and constant memory, and it is the honest baseline — but it reads the whole array before writing anything, so it cannot run on a stream, and the follow-up asks for one pass for exactly that reason.
 
 ```python
 def sort_colors(nums: list[int]) -> list[int]:

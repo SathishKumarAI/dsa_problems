@@ -88,7 +88,7 @@ export const problem: Problem = {
     {
       name: "Square, then sort",
       summary:
-        "Replace each value with its square and hand the result to a sort, ignoring the ordering the input already had.",
+        "Square every value and hand the result to a sort. One line, and it throws away the only promise the input makes: the input was sorted, so the squares already run outward from whichever value sits nearest zero. Paying n log n to rediscover that is the waste.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def sorted_squares(nums: list[int]) -> list[int]:
     return sorted(x * x for x in nums)`,

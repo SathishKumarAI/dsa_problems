@@ -711,7 +711,7 @@ int firstMissingPositive(vector<int> nums) {
 
 > **Why now.** The sort spends O(n log n) arranging values into an order the answer never asks about — it only ever asks whether one particular number is present. A set answers exactly that in constant time, so the ordering work was pure waste.
 
-Pour every value into a set, then probe 1, 2, 3, … until a probe misses. Each probe is O(1), so the whole thing is linear.
+Pour every value into a set, then probe 1, 2, 3, … until a probe misses. Linear, and it finally uses the fact that the answer cannot exceed n + 1 — but it allocates a second structure the size of the input to record membership, which the array's own slots can encode.
 
 ```python
 def first_missing_positive(nums: list[int]) -> int:

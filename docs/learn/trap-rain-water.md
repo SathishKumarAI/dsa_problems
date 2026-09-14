@@ -471,7 +471,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force per column
 
-For each column, scan the whole array left and right to find the tallest bar on each side, then take the smaller of the two minus this column's height.
+For each column, scan left and right for the tallest bar on each side; the water above it is the smaller of those minus its own height. Correct, and quadratic because each column re-derives maxima its neighbour just computed — the same scan, one position over.
 
 ```python
 def trap(height: list[int]) -> int:
@@ -524,9 +524,7 @@ int trap(const vector<int>& height) {
 
 ## Rung 2 — Prefix and suffix maxima
 
-> **Why now.** The per-column scan recomputes the same two maxima from scratch for every index, so the same prefix is walked n times. Storing each maximum once turns the whole thing linear — at the cost of two extra arrays.
-
-Precompute, for every index, the tallest bar at or before it and the tallest at or after it, then read both off in a third pass.
+Precompute the tallest bar at or before every index and at or after it, then read both off in a third pass. The rescanning is gone and it is genuinely linear; what remains is two arrays of n, holding numbers that two travelling variables could carry instead.
 
 ```python
 def trap(height: list[int]) -> int:
@@ -669,7 +667,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force per column | O(n²) time · O(1) space | the baseline — nothing before it |
-| 2 | Prefix and suffix maxima | O(n) time · O(n) space | The per-column scan recomputes the same two maxima from scratch for every index, so the same prefix is walked n times. Storing each maximum once turns the whole thing linear — at the cost of two extra arrays. |
+| 2 | Prefix and suffix maxima | O(n) time · O(n) space | Precompute the tallest bar at or before every index and at or after it, then read both off in a third pass. |
 | 3 | The one to remember | O(n) time · O(1) space | Precomputing the two maxima arrays is already linear, but it reads the array three times and holds 2n extra numbers. Walking inward from both ends carries the same two maxima in two variables, because the shorter wall is always the one that decides — and the shorter wall is always the one you can safely move. |
 
 ---

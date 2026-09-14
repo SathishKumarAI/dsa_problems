@@ -55,7 +55,7 @@ export const problem: Problem = {
     {
       name: "Hash map",
       summary:
-        "Count every value, then return the one with count 1. Linear time, but the map is O(n) extra space — exactly what the follow-up forbids.",
+        "Count every value, then return the one whose count is 1. Linear and obvious, and it pays O(n) memory to store 'appears twice' for every value in the array — facts the answer never reads. That is exactly the extra space the follow-up question forbids.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def single_number(nums: list[int]) -> int:
     counts: dict[int, int] = {}
@@ -85,7 +85,7 @@ export const problem: Problem = {
       whyNow:
         "The map counts every value in order to find the one whose count is odd: n entries of bookkeeping for a single answer, which is exactly the O(n) space the follow-up forbids. Sorting puts twins next to each other instead, so the pairing becomes visible without storing anything.",
       summary:
-        "Sort, then twins are adjacent: walk in steps of two until a pair breaks. No map, but the sort costs O(n log n).",
+        "Sort, so twins land next to each other, then walk in steps of two until a pair fails to match. Memory drops to nothing, but n log n is spent arranging the whole array to expose a fact about pairing — and it rearranges the caller's data to do it.",
       complexity: { time: "O(n log n)", space: "O(1)" },
       python: `def single_number(nums: list[int]) -> int:
     s = sorted(nums)

@@ -344,7 +344,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Clean, then reverse
 
-Build a lowercase copy holding only the letters and digits, then check it against its own reverse.
+Build a lowercase copy holding only letters and digits, then compare it with its own reverse. Clear and linear, and it allocates two full strings to answer a yes/no question — then reads both to the end even when the first and last characters already disagree.
 
 ```python
 def is_palindrome(s: str) -> bool:

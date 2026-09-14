@@ -921,7 +921,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-Check every pair. Correct, trivial to write, and the baseline every interviewer expects you to name before improving on it.
+Check every pair until one sums to the target. No memory, nothing to get wrong, and the right thing to say first in an interview — but it re-reads the whole array for every element, asking a question it has already asked n times. On the 10^4 upper bound that is fifty million pairs to find one.
 
 ```python
 def pair_sum(nums: list[int], target: int) -> list[int]:

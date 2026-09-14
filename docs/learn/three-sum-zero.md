@@ -568,7 +568,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-Three nested loops, dedup with a set of sorted tuples. Cubic — only useful to establish correctness on small inputs.
+Three nested loops, with a set of sorted tuples to kill repeats. Cubic, so useful only for establishing correctness on small inputs — and the dedup set is the tell: on unsorted input the same triple is reachable by several routes, which is exactly the problem sorting makes disappear.
 
 ```python
 def three_sum(nums: list[int]) -> list[list[int]]:

@@ -134,7 +134,7 @@ export const problem: Problem = {
     {
       name: "Insert one at a time",
       summary:
-        "Take each value of b in turn, find where it belongs among a's live values, and shift everything after it one slot right to open a gap.",
+        "Take each value of b, find its place among the live values of a, and shift the tail right to make room. Faithful to the picture of inserting into a sorted list, and the shifting is quadratic — every insertion moves elements the next insertion will move again.",
       complexity: { time: "O(n * (m + n))", space: "O(1)" },
       python: `def merge_sorted(a: list[int], m: int, b: list[int], n: int) -> list[int]:
     live = m
@@ -173,7 +173,7 @@ export const problem: Problem = {
     {
       name: "Append and sort",
       summary:
-        "Drop b's values into a's padding without thinking about order, then sort the whole array and let the sort work out the interleaving.",
+        "Drop b into the padding of a without thinking, then sort the whole thing. Two lines, hard to get wrong, and it pays a full sort to rediscover an order both inputs already had — the sort is being asked to find structure that was handed to it.",
       complexity: { time: "O((m + n) log(m + n))", space: "O(1)" },
       whyNow:
         "Inserting one value at a time re-shifts a growing tail for every element of b, so a large b pays roughly n * (m + n) moves — and the shifting is pure bookkeeping, not comparison. Handing the whole thing to a sort replaces all of it with one call whose cost grows only logarithmically.",
@@ -200,7 +200,7 @@ export const problem: Problem = {
     {
       name: "Merge into a scratch array",
       summary:
-        "Do a textbook forward merge of the two runs into a brand new array of size m + n, then copy the result back over a.",
+        "The textbook forward merge into a fresh array of size m plus n, then copied back. Linear, and the first rung that actually uses both inputs being sorted; the price is the scratch array, which exists only because writing forward into a would overwrite values not yet read.",
       complexity: { time: "O(m + n)", space: "O(m + n)" },
       whyNow:
         "The sort throws away the one fact the input is handing you for free — both halves are already ordered — and pays log(m + n) per element to rediscover it. A merge exploits it: each comparison places one value for good, so the whole thing is linear.",
@@ -251,7 +251,7 @@ export const problem: Problem = {
     {
       name: "Copy only a's prefix",
       summary:
-        "Save just a's m live values in a small buffer, then merge that buffer with b forward into a — the padding is never copied.",
+        "Save the m live values of a in a small buffer, then merge that buffer with b forward into a. The padding is never copied, so the extra memory drops from m plus n to m — and it is still a copy, made for the same reason: a forward merge writes onto ground it has not read.",
       complexity: { time: "O(m + n)", space: "O(m)" },
       whyNow:
         "The scratch array is sized m + n and then copied back wholesale, so every value is written twice and n of the copied slots were empty padding to begin with. Only a's own prefix is actually at risk of being overwritten, so only the prefix needs saving: the buffer shrinks to m and the copy-back disappears.",
