@@ -79,6 +79,92 @@ one left out.
 
 ---
 
+## Reading the Calculations
+
+There is no arithmetic in this problem — no formula to rearrange, no index to derive. What there is
+instead is a pile of notation that all looks like bookkeeping and is not: one of these lines is the
+idea, and the rest are the tally around it. This section is so you can tell which is which.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `Counter(nums)` | a map, **value → how many times it appears** | One walk of the list. It is a `dict` with a nicer constructor, nothing more | — |
+| `counts.get(x, 0) + 1` | the same tally, written out | `counts[x] + 1` has nothing to add to the **first** time a value is seen | `KeyError` on the first occurrence of *every* value |
+| `counts.items()` | the `(value, count)` pairs | The map read as a list, so it can be sorted or pushed | — |
+| `key=lambda v: counts[v]` | "order by **count**" | Without it, `sorted(counts)` orders the **values** — `counts` iterates its keys | Returns the `k` *smallest values*. Still `k` numbers, still no crash, completely wrong |
+| `reverse=True` | biggest first | — | Returns the `k` **rarest** |
+| `[:k]` | the cut | Everything past `k` was ranked for nothing — which is the whole complaint against this rung | — |
+| `heapq.heappush(heap, (c, value))` | keep `(count, value)` in a **min**-heap | Python has no max-heap, and it does not need one: a min-heap of size `k` holds the `k` largest *because* the one on top is the one to throw away | — |
+| `heap[0][0]` | the smallest count currently kept | The eviction test — the only comparison the rung makes | `heap[0]` is the whole tuple; comparing a tuple to an `int` raises |
+| `heapq.heapreplace(heap, …)` | pop **and** push in one sift | — | `heappush` then `heappop` can pop the item you just pushed, silently dropping a real answer |
+| `buckets[c].append(value)` | file the **value** under its **count** | **This is the idea.** See below | — |
+| `range(n, 0, -1)` | sweep counts high down to `1` | Count `0` means "never appeared", so bucket `0` is empty by construction | `range(n, -1, -1)` reads bucket `0` too — harmless, and one wasted step every time |
+| `tally[x - lo]` | value `x`, moved into a 0-based array | Array positions start at `0`; the values start at `-10^4` | **The worst one here.** Without `- lo`, a negative value indexes from the *end* of the list in Python. No crash, no error, a wrong answer |
+
+### The one rearrangement
+
+Every rung except the bucket one treats `counts` as something to **search**: sort it, or push it
+through a heap, or scan it `k` times. The bucket rung does not search it. It turns the map inside
+out, and after that there is nothing left to look for:
+
+```
+counts    {4: 3, 6: 2, 2: 1}                 "which value has the biggest count?"  -> a search
+buckets   [[], [2], [6], [4], [], [], []]    "what is sitting in bucket 3?"        -> an index
+index       0    1    2    3   4   5   6
+```
+
+Same three facts, read from the other side. `value → count` became `count → values`, and the
+question "which counts are biggest?" stopped being a question, because you can simply **start at the
+biggest count there could be and walk down**.
+
+That move is legal only because of what a count *is*: an integer in `1..n`. Small, bounded, and
+therefore usable as an array position. A **value** cannot be used that way in general — but in this
+problem it happens to be bounded too (`±10^4`), which is the entire content of Approach 5 and the
+reason it needs the `- lo` offset in the table above.
+
+### How to hand-trace it
+
+On `nums = [4, 4, 4, 6, 6, 2]`, `k = 2`. Every row below is printed by the script at the foot of this
+document, so you can check your pencil against it.
+
+**Half one, the tally.** One pass, one row per element:
+
+| Saw | `counts` after |
+|---|---|
+| `4` | `{4: 1}` |
+| `4` | `{4: 2}` |
+| `4` | `{4: 3}` |
+| `6` | `{4: 3, 6: 1}` |
+| `6` | `{4: 3, 6: 2}` |
+| `2` | `{4: 3, 6: 2, 2: 1}` |
+
+**Half two, the ranking.** `n = 6`, so the wall is `7` holes, numbered `0` through `6`:
+
+| Value | Its count | Lands in |
+|---|---|---|
+| `4` | `3` | `buckets[3] = [4]` |
+| `6` | `2` | `buckets[2] = [6]` |
+| `2` | `1` | `buckets[1] = [2]` |
+
+`buckets = [[], [2], [6], [4], [], [], []]`. Now read it downward from `6`:
+
+| `c` | Bucket holds | Take | `out` | Stop? |
+|---|---|---|---|---|
+| `6`, `5`, `4` | empty | — | `[]` | no |
+| `3` | `[4]` | `4` | `[4]` | no — `k` is `2` |
+| `2` | `[6]` | `6` | `[4, 6]` | **yes** |
+
+The answer is `[4, 6]`, and note what never happened: no count was ever compared against another
+count. Three of the seven buckets were read and found empty, which is the cost this rung pays instead
+— and, as the measurement below shows, that cost is much larger than it looks.
+
+**The recipe, for any input:** tally in one pass; write the wall as `n + 1` empty holes; drop each
+value into the hole numbered by its count; read from hole `n` downward, taking values until you have
+`k`. If your trace ever compares two counts, you have written a different algorithm.
+
+---
+
 ## Approach 1 — Brute force: count by rescanning, then pick the maxima  *(an addition — not in the data file's ladder)*
 
 ### The idea
@@ -260,6 +346,24 @@ Use it when `k` is close to `d` — if you want nearly all of them ranked anyway
 for free and the fancier approaches gain nothing. Use it also when you need the results *in rank
 order*, which the optimal approach does not guarantee, or simply when the input is small and two lines
 of obviously-correct code beats twelve.
+
+> **Under the hood.** "Counting is `O(n)`, one hash operation per element" is the sentence every rung
+> from here down rests on, and it is worth one measurement rather than trust. Time the tally alone —
+> `counts[x] = counts.get(x, 0) + 1` over random values, best of three, per element:
+>
+> | `n` | ns per element |
+> |---|---|
+> | `1,000` | 34.8 |
+> | `10,000` | 47.3 |
+> | `100,000` | 39.3 |
+> | `1,000,000` | 42.0 |
+>
+> A thousand-fold growth in `n` and the per-element cost does not move. That flatness *is* the `O(1)`,
+> and it is what a hash table buys: the table is resized as it fills, but the resizes are rare enough
+> and cheap enough that the amortised cost never shows up in the average. Watch for the word
+> **amortised**, though — it means "on average across the whole run", not "every time". A single
+> insert that triggers a resize pays for the whole rebuild, so `O(1)` here is a promise about the
+> total, not about any one line.
 
 ---
 
@@ -474,6 +578,42 @@ more memory than the heap — and unlike the heap it cannot work on a **stream**
 counts complete and `n` known before it starts. Asymptotically optimal is not the same as best in
 every situation.
 
+> **Under the hood.** That last sentence is usually where a document stops. Measured, it is worse
+> than a caveat — at the constraint's own ceiling this rung is the **slowest** on the page. Whole
+> solutions on `n = 10^5` random values in `±10^4`, best of three: heap **3.7 ms**, sort-the-counts
+> **5.0 ms**, buckets **13.2 ms**, counting array **15.0 ms**. The linear rung runs 2.6× slower than
+> the `O(d log d)` rung it is supposed to replace.
+>
+> The reason is a single line, and it is not the algorithm. `[[] for _ in range(n + 1)]` builds
+> `n + 1` **real list objects**. Timed alone: **29 µs** for 1,000, **327 µs** for 10,000, **5,754 µs**
+> for 100,000, **97,662 µs** for a million. At `n = 10^5` the wall alone is 5.8 ms of the rung's
+> 13.2 ms — nearly half the runtime spent building holes, almost all of which are never written to
+> and never read.
+>
+> Now size the wall to `max(count) + 1` instead of `n + 1` — the same algorithm, one line different,
+> and never larger, since no count can exceed `n`. Ranking half only, `n = 100,000`, best of three:
+>
+> | distinct | largest count | sort | wall of `n + 1` | wall of `max + 1` |
+> |---|---|---|---|---|
+> | `10` | `10,000` | 1 µs | 7,811 µs | **295 µs** |
+> | `1,000` | `100` | 29 µs | 8,082 µs | **28 µs** |
+> | `10,000` | `10` | 279 µs | 8,122 µs | **207 µs** |
+> | `100,000` | `1` | 3,180 µs | 10,400 µs | **2,005 µs** |
+>
+> The `n + 1` wall costs about 8 ms *whatever the input is*, because it is sized by `n` and by nothing
+> else — look down that column and notice it barely moves while the data changes by four orders of
+> magnitude. The tight wall tracks the data instead, and beats the sort at every width measured. 500
+> random inputs, 0 disagreements between the two.
+>
+> These are one machine's microseconds and your own will differ; the **shape** of each column is the
+> claim, not the absolute number, and the script at the foot of this page prints all of it.
+>
+> **What to take from this.** The `O(n)` is not wrong; the *constant* is, and the constant was a
+> choice rather than a consequence. "Linear" bought nothing here because the linear term being paid
+> was allocation, not work. And a table of big-O next to a table of milliseconds is the difference
+> between knowing the bound and knowing the cost — this repo files the code change as **G11** rather
+> than quietly making it, because which rung the ladder calls optimal is a teaching decision.
+
 ---
 
 ## Approach 5 — A counting array when the values are small and bounded  *(an addition — not in the data file's ladder)*
@@ -649,6 +789,47 @@ the values are bounded to ±10⁴, so the map in the counting half can be a plai
 refinement *after* the bucket solution. The habit being trained is reading the constraints for what
 they **unlock**, and this problem unlocks two separate things — counts bounded by `n` gives you the
 buckets, values bounded by 10⁴ gives you the tally array.
+
+---
+
+## How to Get Fluent
+
+Reading this page does not install any of it. Each drill below has a **done-condition** — something
+you can check rather than feel. Do them in order; each one assumes the last.
+
+**1. Trace the bucket sweep by hand, no code.** Take `nums = [1, 1, 2, 2, 2, 3]`, `k = 2`. Write the
+tally row by row, draw seven holes numbered `0..6`, place each value, then read downward.
+*Done when:* your `buckets` line reads `[[], [3], [1], [2], [], [], []]` and you stopped after
+taking `2` and `1`. If you wrote six holes, re-read the `n + 1` Watch out — that is the off-by-one
+this problem is actually testing.
+
+**2. Write count-plus-sort from nothing, in under a minute.** Two lines. No peeking.
+*Done when:* you typed `key=` without pausing to think about it. If you wrote `sorted(counts)` and
+then had to fix it, do this one again tomorrow — that is the single most common way this rung is
+written wrong, and it does not crash.
+
+**3. Write the size-`k` heap, then say out loud why it is a min-heap.** The sentence to land is
+*"the one I can see is the one I want to throw away."*
+*Done when:* you can also answer the immediate follow-up — *what if I used a max-heap of all `d`?* —
+with `O(d + k log d)`, and say why that is worse than `O(d log k)` when `k` is small and `d` is not.
+
+**4. Break your own bucket solution on purpose.** Change `n + 1` to `n`, run `[5, 5, 5]` with
+`k = 1`. Then restore it and change the inner `return` to a `break`.
+*Done when:* you have seen the index error with your own eyes, and the `break` version returning
+three values where you asked for one. A bug you have watched happen is a bug you stop writing.
+
+**5. Measure the claim yourself.** Time the four real rungs on `n = 10^5`. The script at the foot of
+this page does it; run it before you read the numbers again.
+*Done when:* you can explain why the linear rung came last, and the answer is about `n + 1`
+allocations rather than about the algorithm.
+
+**6. Answer the stream question cold.** *"The data is a billion events arriving one at a time."*
+*Done when:* you reach for the heap without hesitating, and can name exactly which requirement the
+bucket rung fails — it needs `n` up front and every count final before it can start.
+
+**The one sentence worth keeping a month from now:** *a count cannot exceed `n`, so counts can be
+array indices instead of sort keys* — and its shadow, which most pages leave out: *indices are only
+cheaper than keys when the array is not bigger than the data.*
 
 ---
 
@@ -923,6 +1104,7 @@ from __future__ import annotations
 
 import heapq
 import random
+import time
 from collections import Counter
 
 
@@ -1027,7 +1209,125 @@ def distinct_count_case(distinct: int, rng: random.Random) -> list[int]:
     return nums
 
 
+def bucket_tight(counts: dict[int, int], k: int) -> list[int]:
+    """Scaffolding for the measurement: the same sweep, over a wall of max(count) + 1."""
+    top = max(counts.values())
+    buckets: list[list[int]] = [[] for _ in range(top + 1)]
+    for value, c in counts.items():
+        buckets[c].append(value)
+    out: list[int] = []
+    for c in range(top, 0, -1):
+        for value in buckets[c]:
+            out.append(value)
+            if len(out) == k:
+                return out
+    return out
+
+
+def best_of(fn, rounds: int = 3) -> float:
+    best = float("inf")
+    for _ in range(rounds):
+        start = time.perf_counter()
+        fn()
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
+def trace_the_bucket_sweep() -> None:
+    """Every row of the hand-trace table in 'Reading the Calculations'."""
+    nums, k = [4, 4, 4, 6, 6, 2], 2
+    print("=== the tally, one row per element ===")
+    counts: dict[int, int] = {}
+    for x in nums:
+        counts[x] = counts.get(x, 0) + 1
+        print(f"  saw {x} -> counts {counts}")
+    n = len(nums)
+    print(f"=== the wall: {n + 1} holes, numbered 0..{n} ===")
+    buckets: list[list[int]] = [[] for _ in range(n + 1)]
+    for value, c in counts.items():
+        buckets[c].append(value)
+        print(f"  value {value} has count {c} -> buckets[{c}] = {buckets[c]}")
+    print(f"  buckets {buckets}")
+    print("=== read downward ===")
+    out: list[int] = []
+    for c in range(n, 0, -1):
+        if not buckets[c]:
+            print(f"  c={c}: empty")
+            continue
+        for value in buckets[c]:
+            out.append(value)
+            print(f"  c={c}: take {value} -> out {out}")
+            if len(out) == k:
+                print(f"  have k={k}, stop")
+                return
+
+
+def measure() -> None:
+    """The numbers quoted in the 'Under the hood' callouts. Timings are machine-dependent;
+    the SHAPE of each column is the claim, not the absolute microseconds."""
+    rng = random.Random(20260913)
+
+    print("\n=== is the tally really flat as n grows? (the O(1) every rung rests on) ===")
+    print(f"  {'n':>10} {'ns / element':>14}")
+    for n in (10**3, 10**4, 10**5, 10**6):
+        data = [rng.randrange(-10**4, 10**4) for _ in range(n)]
+
+        def tally(d=data):
+            c: dict[int, int] = {}
+            for x in d:
+                c[x] = c.get(x, 0) + 1
+            return c
+
+        print(f"  {n:>10} {best_of(tally) / n * 1e9:>14.1f}")
+
+    print("\n=== building the wall, and nothing else ===")
+    print(f"  {'slots':>10} {'us':>10}")
+    for m in (10**3, 10**4, 10**5, 10**6):
+        print(f"  {m:>10} {best_of(lambda m=m: [[] for _ in range(m)]) * 1e6:>10.0f}")
+
+    print("\n=== ranking half only, n = 100,000, d varied ===")
+    print(f"  {'distinct':>9} {'max count':>10} {'sort us':>9} {'wall n+1':>10} {'wall max+1':>11}")
+    n = 100_000
+    for d in (10, 1_000, 10_000, 100_000):
+        base = n // d
+        counts = {v: base for v in range(d)}
+        for v in range(n - base * d):
+            counts[v] += 1
+        k = 10
+        ts = best_of(lambda c=counts: sorted(c, key=lambda v: c[v], reverse=True)[:k])
+        tw = best_of(lambda c=counts: top_k_by_bucketing(c, n, k))
+        tt = best_of(lambda c=counts: bucket_tight(c, k))
+        print(
+            f"  {d:>9} {max(counts.values()):>10} {ts * 1e6:>9.0f}"
+            f" {tw * 1e6:>10.0f} {tt * 1e6:>11.0f}"
+        )
+
+    print("\n=== whole solutions at the constraint's ceiling, n = 10^5 ===")
+    nums = [rng.randrange(-10**4, 10**4) for _ in range(10**5)]
+    print(f"  {'approach':>16} {'ms':>8}")
+    for name, fn in APPROACHES:
+        if name == "brute_force":
+            continue  # 10^10 operations; it is on the ladder to be rejected, not run
+        print(f"  {name:>16} {best_of(lambda f=fn: f(nums, 10)) * 1e3:>8.1f}")
+
+    walls = 0
+    for _ in range(500):
+        sample = [rng.randrange(0, 30) for _ in range(rng.randint(1, 60))]
+        c = Counter(sample)
+        kk = rng.randint(1, len(c))
+        loose = top_k_by_bucketing(dict(c), len(sample), kk)
+        tight = bucket_tight(dict(c), kk)
+        # Ties make the value set ambiguous, so compare the COUNTS taken, not the values.
+        if sorted(c[v] for v in loose) != sorted(c[v] for v in tight):
+            walls += 1
+    print(f"\n  500 random inputs: {walls} disagreements between the two wall sizes")
+
+
 def main() -> None:
+    trace_the_bucket_sweep()
+    measure()
+    print()
+
     cases: list[tuple[str, list[int], int]] = [
         ("statement example", [4, 4, 4, 6, 6, 2], 2),
         ("single element", [9], 1),
