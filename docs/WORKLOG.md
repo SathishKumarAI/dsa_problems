@@ -185,11 +185,69 @@ about thirty values of magnitude 2 or more. It is a description of the input.
 
 ### The repo opened for collaborators
 
-`README.md` rewritten as a front door carrying the measured findings, plus a new `CONTRIBUTING.md`,
-three GitHub issue templates (the most-wanted being *a claim that does not survive being run*) and a
-PR template whose Verification section asks for real output rather than assertions. `docs/PRD.md`
-gained section 4b, the **evidence standard** — nine requirements E1 to E9, each with the counter and
-the ratchet behind it. `docs/ROADMAP.md` rewritten around the new thesis.
+`README.md` rewritten as a front door carrying the measured findings rather than a feature list,
+plus a new `CONTRIBUTING.md`, three GitHub issue templates (the most-wanted being *a claim that does
+not survive being run* — it asks for a measurement and a location, and explicitly does **not** ask
+for a fix) and a PR template whose Verification section asks for real output rather than assertions.
+`docs/PRD.md` gained section 4b, the **evidence standard**: nine requirements E1 to E9, each with the
+counter and the ratchet behind it, and its stale header fixed — it still said 31 problems, 3 journeys
+and 41 tests. `docs/ROADMAP.md` rewritten around the new thesis; it had recorded two settled bets and
+no current one. `CODE_OF_CONDUCT.md` written in our own words rather than adopting the Contributor
+Covenant text, its one project-specific clause being the one that matters here: **disagree with
+evidence**, which has to run both ways.
+
+The ask is sized and counted so a contributor sees what *done* means before starting: 45 problems
+with no teaching document, 117 missing a required section, 34 without a journey, `G11` open. Every
+one is independent, which is the actual argument for asking rather than grinding — 117 documents at
+2 to 4 hours each is 30+ working days for one person.
+
+### Two things nobody asked for, both because a document made a promise nothing kept
+
+**CI** (`.github/workflows/gates.yml`). `CONTRIBUTING.md` asks a contributor for seven gates and
+nothing checked a pull request, which makes the ask unenforceable and every review manual. Two jobs:
+typecheck, lint, the 758 tests and the build; then all 82 teaching scripts through `verify-deep`, the
+drift gate with `--strict`, and a regeneration of `docs/learn` that fails if it was hand-edited or
+left stale — the mistake this session made twice before it became muscle memory. Deliberately absent:
+`test:ui` (needs Chrome), `verify:code` and `verify:run` (need a JDK and g++). The workflow file, the
+README and `CONTRIBUTING.md` all say in those words that a green tick means *nothing obviously
+broke*, not verification. A badge trusted for more than it checks is worse than no badge.
+
+**`.gitattributes`.** Regenerating `docs/learn` on Windows left `git status` reporting 128 modified
+files whose content was byte-identical — `git diff --exit-code` returned 0 and the md5 matched the
+committed blob, but status still said `M` on every one. That noise hides real drift, and the CI job
+above would have read a different signal on each platform. `text=auto eol=lf` settles it;
+`docs/learn` is also marked generated and `legacy/` vendored.
+
+### Merged to master, and pushed
+
+**76 commits, merged with `--no-ff` rather than squashed.** The commit bodies *are* the audit trail
+on this branch — each one carries the measurement behind its claim — so a squash would have thrown
+away precisely the thing the branch is about. The house rule prefers a squash; it is written for a
+single-increment branch, and this was not one.
+
+`master` at `a54a734`, pushed to `origin`, tree clean, `docs/learn` verified byte-identical to its
+committed blobs.
+
+**All seven gates, re-run on the merged tree rather than trusted from the branch:**
+
+| Gate | Result |
+|---|---|
+| `npm run check` | 758 tests, 0 failed |
+| `npm run test:ui` | 166 checks, 0 failed, real Chrome |
+| `npm run verify:code` | 752 blocks, 0 failed |
+| `npm run verify:run` | 2,168 oracle runs, 4,336 translations compared, 0 disagreed |
+| `npm run verify:vectors` | 637 mutants, 583 caught (92%), **0 survived** |
+| `node scripts/verify-deep.mjs` | 82/82 ran clean and reported agreement |
+| `node scripts/learn-gaps.mjs --strict` | 0 undisclosed additions |
+| `npm run build` | clean |
+
+Two things left open and worth knowing. The GitHub labels the issue templates apply —
+`false-claim`, `content`, `bug` — **do not exist yet**; GitHub drops an unknown label silently, so
+nothing breaks and issues simply arrive unsorted. `CONTRIBUTING.md` now lists them with the triage
+order that matters: `false-claim` first, because a wrong complexity label renders on a problem page
+and is teaching someone the wrong thing right now. And `verify:vectors` reports **4 unproven
+equivalent mutants** — "searched and not separated, which is weaker than an argument". That is the
+gate being honest about itself, it predates this session, and it is worth a look sometime.
 
 ---
 

@@ -1,5 +1,12 @@
 # STATUS — read this when you return
 
+## Where the code is
+
+**`master` at `a54a734`, pushed to `origin`, tree clean.** The long-running branch
+`feat/deep-docs-and-list-journeys` was merged with `--no-ff` on 2026-09-13 (76 commits, history
+preserved on purpose) and is no longer the place to work. Start a new `type/scope-slug` branch from
+`master`.
+
 Last session: **2026-09-13 (night)**. It closed B68, killed two false complexity claims, started the
 122-document retrofit queue, and opened the repo for collaborators. Everything below is **verified
 green**, not asserted — the numbers are from the run recorded in `docs/WORKLOG.md`.
@@ -79,17 +86,15 @@ Budget about 2–4 hours per document at this depth.
 | **Statistics chapter 5** | Hypothesis testing, still unwritten |
 | **Learn page contents rail** | Should collapse to approach level; pages are long now |
 
-## Four stashes, and none of it has shipped
+## The stashes are gone
 
-Read the stash **messages**, never the numbers — they shift as entries are pushed.
+An earlier version of this file described four stashes and warned to merge rather than
+`git stash pop` them. **`git stash list` now returns nothing**, checked 2026-09-13 after the merge.
+The problem-page redesign that was the one worth recovering shipped that day (G10, ticked).
 
-```
-git stash list
-```
-
-The problem-page redesign that used to sit here **shipped** on 2026-09-13 (G10, ticked). What
-remains is older and predates several fixes, so **merge, never `git stash pop`** — popping would
-silently revert work that is in `master`.
+Recording the correction rather than deleting the section, because a stale warning about
+irreversible git operations is worse than no warning — and because this is the same class of defect
+the content gates exist to catch: a claim that read fine and was not true when run.
 
 ## The process finding, because it cost real work
 
