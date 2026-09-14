@@ -27,33 +27,59 @@ the ladder in three languages, a runnable script. **The authored half is the wor
 
 ## Where it stands, measured
 
+Regenerate with `node scripts/learn-gaps.mjs`. Never trust the numbers in prose, these included.
+
 | | Count |
 |---|---|
 | Problems | **127** |
 | With a learn page | **127** — generated, so this stays true |
-| With a teaching document | **81** |
-| With "Reading the Calculations" | **1** |
-| With "How to Get Fluent" | **1** |
-| With an "Under the hood" callout | **1** |
-| Adding approaches without disclosing it | **23** |
+| With a teaching document | **82** |
+| With "Reading the Calculations" | **10** |
+| With "How to Get Fluent" | **10** |
+| With an "Under the hood" callout | **10** |
+| Adding approaches without disclosing it | **0** — closed 2026-09-13 |
+| Rungs whose summary does not argue | **0** — B68, closed 2026-09-13 |
 
-That first column of ones is not a typo. Both sections were added to the spec on 2026-09-13 after a
-reader said, of the two-pass hash, *"I cannot follow the calculations"* — and was right. `pair-sum`
-is the only document written since.
+Those three tens were **ones** the day before. Both sections were added to the spec on 2026-09-13
+after a reader said, of the two-pass hash, *"I cannot follow the calculations"* — and was right
+twice, because the first element does **not** land in the first bucket and nothing on the page said
+so.
+
+**What retrofitting them keeps finding.** Five documents done in sidebar order, and three of the
+five found the ladder's designated **optimal** rung losing to a rung below it on the clock. That is
+now the point of the exercise as much as the prose is: the measurement decides what the section
+says, so write the measurement first and the prose second.
+
+| Done | What measuring showed |
+|---|---|
+| `top-k-frequent` | Optimal rung slowest on the page; the `n + 1` bucket wall is 5.8 of its 13.2 ms. **Filed G11** |
+| `longest-consecutive-run` | The guard costs 320,400 → 1,600 probes on a long run, and **doubles** the work when no run exists |
+| `contains-duplicate` | `len(set(nums))` beats the optimal rung by 60% on the worst case, loses by 33× on the best |
+| `valid-anagram` | The `O(1)`-space rung is 3× slower than `Counter`; on 50,000 identical characters the sort wins by 8× |
+| `product-except-self` | Optimal genuinely fastest (1.8×) — and `O(n)` counts *multiplications*, which go quadratic when the 32-bit promise breaks |
 
 ---
 
 ## The order of work, and why
 
-### 1. Disclose the 23 undisclosed additions — **small, and it unblocks a gate**
+### 1. ~~Disclose the 23 undisclosed additions~~ — **DONE 2026-09-13**
 
-`node scripts/learn-gaps.mjs --strict` exits 1 while any document teaches a rung the data file lacks
-without saying so. Twenty-three do. Each needs one label on one heading.
+`node scripts/learn-gaps.mjs --strict` now exits 0. Keep it there: a document that teaches a rung
+the data file lacks must say so in its heading. Note that this is a live constraint, not history —
+when `G6` moved `balanced-tree`'s ladder rung from the short-circuit version to the every-node one,
+the two `*(an addition)*` labels in that document had to **swap**, or the gate would have gone red.
 
-**Done when:** `--strict` exits 0, and the check is wired into `npm run check` so it can never
-regress.
+### 2. "Reading the Calculations" for the remaining 117 — **the reported pain**
 
-### 2. "Reading the Calculations" for the 30 most-used problems — **the reported pain**
+**In sidebar order.** Five done: `top-k-frequent`, `longest-consecutive-run`, `contains-duplicate`,
+`valid-anagram`, `product-except-self`. Next up is `group-anagrams`, then `subarray-sum-k`,
+`majority-element`, `longest-common-prefix`, and the rest of arrays-hashing.
+
+**Write the measurement before the prose.** Extract the document's last Python fence (that is the
+one `verify-deep.mjs` runs), measure against it, and let the numbers decide what the section says.
+Then move the measurement code *into* the document's script so a reader reproduces rather than
+trusts, and pin the prose to that run's actual output — timings move between runs, exact counts do
+not.
 
 This is the section that answers the actual complaint. Start where a learner starts: the problems
 with journeys, in the order the sidebar lists them.

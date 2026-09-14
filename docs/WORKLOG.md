@@ -95,6 +95,104 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-13 (night) — every rung argues, two false claims died, and the content got a standard
+
+Three pieces of work, and the third changed what this project is for.
+
+### B68 closed — thin rungs repo-wide go 50 to 0
+
+The item was filed against three patterns: *81 of 174 rungs carry a summary under 160 characters*.
+It closed wider than it was filed — all **127** problems, every rung including the optimal one,
+counted with a `node -e` over `PROBLEMS` on `summary.length < 160`. Seven passes: arrays-hashing,
+two-pointers, dp, binary-search, then linked-list (12) + sliding-window (11) + trees (8) + heaps (7)
++ stack (6) + graphs (6) in one — 50 rungs across 42 files.
+
+The bar every rewrite meets is three things, and the third is the one that was missing: **what the
+rung does, what it costs, and the promise it ignores** — the fact the problem handed you that this
+rung throws away. `merge-two-sorted` sorting both lists is not slow because `n log n` beats `n`; it
+is slow because both inputs were **already sorted**. `cycle-detect` needs a set of node *objects*
+because duplicate values are legal and a value set reports a cycle that is not there.
+`reverse-list` rebuilding through an array returns a *different* list and leaves every caller
+pointer aimed at the old one — which is what "in place" forbids.
+
+Commit `7f90e09`. Verified: `npm run check` 758/758, `docs:learn` regenerated all 128 pages,
+recount reports 0.
+
+**Process note, recorded because it cost two attempts:** a `bash` heredoc cannot carry this kind of
+text. The Bash tool wraps the command in `bash -c '...'`, so the first apostrophe in the payload
+ends the string — quoting the heredoc delimiter does not help. Write the Python helper with the
+Write tool, then run it. It must replace from the `summary:` label onward (never from `name:`,
+which eats `whyNow`) and emit ONE long quoted line, because adjacent quoted lines are Python
+implicit concatenation and a TypeScript syntax error.
+
+### G6 and G7 — two complexity claims that were false
+
+Both were filed during the previous session and both rendered where a learner could see them.
+
+**G6, `balanced-tree`.** The naive rung is *named* "Measure the height at every node", is
+*labelled* `O(n^2)`, and did neither: it checked a node, then recursed only if that check passed.
+Reaching a deep node therefore required every ancestor to be balanced, balanced means height
+`O(log n)`, so its real worst case was `O(n log n)`. On a left spine it failed at the root and
+left — **100 / 200 / 400 / 800** `height()` entries for `n` of 50 / 100 / 200 / 400. Strictly
+linear, under a quadratic label.
+
+Fixed by changing the **code**, not the label, because the rung name was the honest half. The three
+answers are now bound to names before being combined, so `&&` cannot short-circuit past the
+children. Re-measured on the same spines: **2,550 / 10,100 / 40,200 / 160,400**, x3.99 per doubling.
+On a perfect tree the two versions are identical (40,962 entries at `n = 2,047`) — exactly the
+`O(n log n)` the old one topped out at. 3,000 random trees, 0 disagreements, so this changed cost
+and not answers.
+
+**G7, `tree-diameter`.** The third example carried the note *"a solution that only measures through
+the root gets this wrong"*, and it did not: through-the-root returns `3` on
+`[1, 2, null, 3, null, 4]`, which is correct, because a chain's longest path ends at the root. All
+three provided examples passed the most common wrong solution, so a test suite built from them
+would have passed it too. The third example is now `[1, 2, null, 3, 4, 5, 6, 7]`, answer **4** along
+`5 -> 3 -> 2 -> 4 -> 7`, bending at node `2`; through the root gives 3.
+`scripts/localsmith/vectors.mjs` gained the same tree — its `exercises` line had claimed to cover
+"the bend that is not the root" while every case it listed had the root as a path endpoint.
+
+Commit `7f47a30`. Verified: `check` 758/758, `verify:code` 752 blocks 0 failed, `verify:run` 2,168
+oracle runs and 4,336 translations compared with 0 disagreements, `verify-deep` 82/82.
+
+**The reusable lesson from both, now in `CONTRIBUTING.md`:** instrument the bound, and run the wrong
+solution against your own examples. An example that does not distinguish the answers is decoration,
+and this one carried a note asserting that it did.
+
+### The retrofit queue — five documents, and a pattern nobody had noticed
+
+`docs/LEARN-PLAN.md` items 2 to 4: **122** documents missing *Reading the Calculations*, *How to Get
+Fluent*, or an `Under the hood` callout carrying a measured number. Five done, in sidebar order, one
+commit each, ratchet lowered one step per document (122 to 117).
+
+| Document | Commit | What measuring showed |
+|---|---|---|
+| `top-k-frequent` | `1d7d0ed` | The **optimal** rung is the slowest real rung on the page — 13.2 ms against 5.0 ms for sort-the-counts at `n = 10^5`. `[[] for _ in range(n + 1)]` builds `n + 1` real list objects: 29 / 327 / 5,754 / 97,662 us for 1k / 10k / 100k / 1M slots, so the wall alone is 5.8 of the rung's 13.2 ms. Sizing it `max(count) + 1` beats the sort at every width measured (7,811 to 295 us at `d = 10`). **Filed as G11, not fixed** — Approach 4's own Watch out currently teaches `n + 1` as the *correct* size against the `len(nums)` crash, so a third sizing needs that callout rewritten rather than appended to |
+| `longest-consecutive-run` | `21f54b3` | The guard is a `continue` statement, so the document counts it. One unbroken run of `n`: probes without the guard 1,275 / 5,050 / 20,100 / 80,200 / 320,400, with it 100 / 200 / 400 / 800 / 1,600 — and the *ratio itself* doubles every row. The uncomfortable half: on an array with no run longer than 1 the guard **doubles** the probes and saves nothing. Both are linear there, so a test suite of scattered values **cannot tell the two rungs apart** |
+| `contains-duplicate` | `b1290c7` | `len(set(nums)) != len(nums)` — filed in the document as an *addition*, not the answer — beats the optimal early-exit rung by **60%** on the worst case (3.33 against 5.35 ms), by doing strictly more work in C rather than less work in the interpreter. The early exit's real currency is the best case (33x) and the memory it never allocates: 1 value stored against 100,000 |
+| `valid-anagram` | `9f4434e` | The `O(1)`-space rung is **3x slower** than `Counter(s) == Counter(t)` and no faster than the sort it replaced. On 50,000 identical characters the **sort wins by 8x**, because Timsort detects an ordered run. No column moves with the position of the mismatch — not one rung here can exit early |
+| `product-except-self` | `82c12cf` | The first document where the optimal rung really *is* fastest (1.8x, holding one integer against 200,000). The finding came from a measurement that **hung**: timing `n = 10^5` with values in -30..30 never finished, because that input violates the statement's own 32-bit constraint. `O(n)` counts *multiplications*, and on an array of `n` twos the same code goes quadratic — 0.1 / 0.2 / 1.2 / 9.0 ms at `n` of 500 / 1,000 / 2,000 / 4,000, the running product reaching 4,001 bits |
+
+**Three of five found the ladder's designated optimal rung losing to a rung below it on the clock.**
+That is a high enough hit rate to be worth a sweep rather than a fix, and it is now the thesis: *the
+ladder ranks algorithms, the clock ranks implementations, and in Python they come apart.* No page in
+this repo said that before it was measured.
+
+Also worth recording: the `product-except-self` finding means the constraint *"every answer fits in
+a 32-bit integer"* is not a note about overflow. At `n = 10^5` it forces almost every element of a
+legal input to be `1`, `-1` or `0` — a legal array of a hundred thousand elements can hold at most
+about thirty values of magnitude 2 or more. It is a description of the input.
+
+### The repo opened for collaborators
+
+`README.md` rewritten as a front door carrying the measured findings, plus a new `CONTRIBUTING.md`,
+three GitHub issue templates (the most-wanted being *a claim that does not survive being run*) and a
+PR template whose Verification section asks for real output rather than assertions. `docs/PRD.md`
+gained section 4b, the **evidence standard** — nine requirements E1 to E9, each with the counter and
+the ratchet behind it. `docs/ROADMAP.md` rewritten around the new thesis.
+
+---
+
 ## 2026-09-13 (evening) — the design system held only where a test was looking
 
 A polish pass that turned into four bug fixes, because every claim got measured instead of read.

@@ -1,23 +1,73 @@
 # dsa.patterns — learn the insight, then the name
 
-One app: a pattern-organised interview practice set (**127 problems** across 10 patterns, SQL drills,
-stats flashcards) plus **learning journeys** — problems built all the way down, Brilliant/Khan style:
-the need first, approaches unlocked one at a time by the previous one's weakness, predictions
-mid-playback, quiz gates, your own code driving the animation, and the pattern named only at the
-reveal. **93 of the 127 problems have a journey**, drawn as a chip row, a grid, a tree (heaps reuse
-it), a linked list, a DP table or a bar chart — whichever the problem actually is. The other 34 carry
-a static walkthrough until their journeys are written (B63). Plus a sorting / search / graph
-visualizer whose bars morph instead of teleporting.
+[![MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+[![problems](https://img.shields.io/badge/problems-127-brightgreen.svg)](docs/PROBLEMS.md)
+[![journeys](https://img.shields.io/badge/journeys-93-brightgreen.svg)](docs/AUTHORING.md)
+[![tests](https://img.shields.io/badge/tests-758%20passing-brightgreen.svg)](#the-seven-gates)
+[![contributions](https://img.shields.io/badge/contributions-wanted-orange.svg)](CONTRIBUTING.md)
 
-Every problem also carries an **approach ladder** — each way in, worst to best, with the weakness in
-the rung below it, in Python, Java and C++ — and an **arc**: one paragraph naming the single idea the
-whole ladder applies. Two written forms fall out of that: `docs/explained/` is generated from the
-data (one page per problem, with a runnable script driving every rung), and `docs/deep/` is authored
-long-form teaching — worked traces, mental models, the bug you are about to write, and what any of it
-is worth in an interview.
+One app: a pattern-organised interview practice set (**127 problems** across 10 patterns, SQL
+drills, stats flashcards) plus **learning journeys** — problems built all the way down,
+Brilliant/Khan style: the need first, approaches unlocked one at a time by the previous one's
+weakness, predictions mid-playback, quiz gates, your own code driving the animation, and the
+pattern named only at the reveal. **93 of the 127 problems have a journey**, drawn as a chip row,
+a grid, a tree (heaps reuse it), a linked list, a DP table or a bar chart — whichever the problem
+actually is. The other 34 carry a static walkthrough until their journeys are written. Plus a
+sorting / search / graph visualizer whose bars morph instead of teleporting.
 
-Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha and Latte — dark, light or system, switchable in settings.
-Node 24 (runs the API and the tests without a build step).
+Every problem also carries an **approach ladder** — each way in, worst to best, in Python, Java and
+C++ — where a rung says three things: what it does, what it costs, and **the promise it ignores**.
+Sorting both lists in `merge-two-sorted` is not slow because `n log n` beats `n`; it is slow because
+both inputs were *already sorted*. Plus an **arc**: one paragraph naming the single idea the whole
+ladder applies. It all lands on one page per problem — `docs/learn/<id>.md`, generated from the
+data and spliced with the authored teaching document, readable in the app at `#/learn/<id>`.
+
+## The thing that makes this different
+
+**Nothing is stated here that has not been run.** Every complexity claim, worked example and corner
+case on a page is produced by a runnable script shipped *with* that page, and a gate executes all
+82 of them on every change.
+
+That is not ceremony. It keeps finding things that read perfectly:
+
+| Found while writing about | What measuring showed |
+|---|---|
+| `balanced-tree` | A rung labelled `O(n²)` measured **strictly linear** — 100 / 200 / 400 / 800 `height()` entries on spines of 50 / 100 / 200 / 400. It short-circuited before it could be quadratic, and the label rendered on the problem page |
+| `tree-diameter` | An example whose note claimed it caught the through-the-root wrong solution — which that solution got **right**. All three examples passed it, so a test suite built from them would have too |
+| `top-k-frequent` | The rung the ladder calls **optimal** is the **slowest** real rung on its page: 13.2 ms against 5.0 ms for the rung below it, because one line allocates `n + 1` list objects most of which are never touched |
+| `contains-duplicate` | `len(set(nums)) != len(nums)` beats the "optimal" early-exit rung by **60%** on the worst case — and loses to it by **33×** on the best |
+| `valid-anagram` | The `O(1)`-space rung is **3× slower** than `Counter`; on 50,000 identical characters the **sort** wins by 8× |
+| `product-except-self` | `O(n)` counts *multiplications* — break the 32-bit promise and the same code goes quadratic, 0.1 → 9.0 ms as `n` goes 500 → 4,000 |
+
+Six documents, five surprises, three saying the same thing: **the ladder ranks algorithms, the
+clock ranks implementations, and in Python they come apart.** No page said that before it was
+measured. Instrument the bound; do not quote it.
+
+## Contributing — help genuinely wanted
+
+**[`CONTRIBUTING.md`](CONTRIBUTING.md) has the full guide.** The short version, ranked by how
+self-contained the work is:
+
+| What | Size | Counted in |
+|---|---|---|
+| Write a teaching document for one of the **45 problems that have none** | ~half a day | `docs/LEARN-GAPS.md` |
+| Retrofit the three required sections onto one of the **117 documents missing them** | ~2–4 hours | `docs/LEARN-GAPS.md` |
+| Write a journey for one of the **34 problems** still on a static walkthrough | ~1 day | `docs/AUTHORING.md` |
+| **Find a claim that does not survive being run** | minutes | `docs/BACKLOG.md`, the `G` table |
+
+That last row is the most valuable issue you can file, and it has its own
+[issue template](.github/ISSUE_TEMPLATE/false-claim.yml). Pick any document, run its script, change
+the input, and see whether the page still tells the truth. Two of the three defects above were
+found exactly that way — while *writing about* the code, not while reading it.
+
+Each document is fully independent, so this work parallelises perfectly. One rule is absolute:
+**never copy text from LeetCode or anywhere else.** Everything here is written in our own words
+from each problem's public definition, which is what makes it MIT-licensable at all.
+
+## Running it
+
+Vite + React 19 + TypeScript + Tailwind v4 + shadcn (base-nova). Catppuccin Mocha and Latte — dark,
+light or system. Node 24 (runs the API and the tests without a build step).
 
 ```
 npm i
@@ -28,11 +78,30 @@ npm run build      # production build (static; the API runs in-process)
 npm run api        # standalone API on :8787 — see docs/API.md
 ```
 
+## The seven gates
+
+None of them is sufficient on its own. That is the point of having seven.
+
+| Command | What it proves |
+|---|---|
+| `npm run check` | `tsc -b`, `eslint`, **758** Node tests |
+| `npm run test:ui` | Real Chrome — routes, the earn loop, rails, deep links, panel sizes |
+| `npm run verify:code` | Every Java and C++ block **compiles** (752 blocks) |
+| `npm run verify:run` | Those blocks **agree with the Python** (2,168 oracle runs, 4,336 translations compared) |
+| `npm run verify:vectors` | The vectors are strong enough to catch a mutation |
+| `node scripts/verify-deep.mjs` | All **82** teaching scripts run and their approaches agree |
+| `node scripts/learn-gaps.mjs --strict` | No document adds approaches without disclosing it |
+
+Compiling is not correctness — which is why `verify:code` and `verify:run` are separate gates.
+
 **Docs** live in [`docs/`](docs/README.md) — start with the manifest there. Product:
-[`PRD.md`](docs/PRD.md) · what's on screen: [`FEATURES.md`](docs/FEATURES.md) · next:
-[`BACKLOG.md`](docs/BACKLOG.md) · later: [`ROADMAP.md`](docs/ROADMAP.md) · how it works:
-[`ARCHITECTURE.md`](docs/ARCHITECTURE.md) · the API: [`API.md`](docs/API.md) · adding a
-journey: [`AUTHORING.md`](docs/AUTHORING.md) · history: [`WORKLOG.md`](docs/WORKLOG.md).
+[`PRD.md`](docs/PRD.md) · where it goes: [`ROADMAP.md`](docs/ROADMAP.md) · what's on screen:
+[`FEATURES.md`](docs/FEATURES.md) · next: [`BACKLOG.md`](docs/BACKLOG.md) · what is missing,
+counted: [`LEARN-GAPS.md`](docs/LEARN-GAPS.md) · the ordered queue:
+[`LEARN-PLAN.md`](docs/LEARN-PLAN.md) · how it works: [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) ·
+the API: [`API.md`](docs/API.md) · adding a journey: [`AUTHORING.md`](docs/AUTHORING.md) ·
+history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
+[`STATUS.md`](STATUS.md).
 
 ## Change → file
 

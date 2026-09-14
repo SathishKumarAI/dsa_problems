@@ -1,18 +1,25 @@
 # Product requirements — dsa.patterns
 
-Status: living document · Owner: Sathish Kumar · Last revised: 2026-09-04
+Status: living document · Owner: Sathish Kumar · Last revised: 2026-09-13
 
 ## 1. One paragraph
 
-`dsa.patterns` is a single-page learning product for engineers preparing for algorithm
-interviews. It teaches the way Brilliant and Khan Academy teach — *learn by doing, one earned
-insight at a time* — and animates the way 3Blue1Brown's Manim animates — *states morph, they
-don't teleport*. Every other DSA site tells you the answer and then shows you why it works. This
-one withholds the name until you have felt the weakness it fixes. The product is the result of
-merging two repositories: a pattern-organised practice site (31 problems, SQL drills, stats
-flashcards) and a vanilla-JS visualizer with two deeply built "learning journeys" plus a
-sorting/search/graph visualizer. Three journeys exist today (Two Sum, Single Number, Triplets
-Summing to Zero); the rest of the 31 problems are queued one at a time in `PROBLEMS.md`.
+`dsa.patterns` is a single-page learning product for engineers preparing for algorithm interviews.
+It teaches the way Brilliant and Khan Academy teach — *learn by doing, one earned insight at a
+time* — and animates the way 3Blue1Brown's Manim animates — *states morph, they don't teleport*.
+Every other DSA site tells you the answer and then shows you why it works. This one withholds the
+name until you have felt the weakness it fixes.
+
+**And it does one thing no other site does: it proves its own claims.** Every complexity label,
+worked example and corner case on a page is produced by a runnable script shipped with that page.
+That requirement is not decoration — it has caught a rung labelled `O(n²)` that measured strictly
+linear, a worked example whose note claimed it caught a wrong solution it did not catch, and a rung
+called *optimal* that is the slowest one on its own page. All three read perfectly and died on a
+measurement.
+
+**Scale today:** **127 problems** across 10 patterns, **93** built as animated journeys, **82**
+carrying an authored teaching document, every problem with an approach ladder in Python, Java and
+C++ and a generated one-page reference at `docs/learn/<id>.md`. Seven gates, **758** Node tests.
 
 ## 2. Users
 
@@ -56,9 +63,11 @@ Summing to Zero); the rest of the 31 problems are queued one at a time in `PROBL
   shipped 2026-09-04 — B3, B4, B5, B26.)
 - Breadth over depth. One problem is in flight at a time and it ships complete; a "tab bar of
   approaches" is not a journey.
-- An automated UI test (B2). Every UI claim in this repo is a browser run recorded in the worklog
-  until that lands.
-- Light theme. The app is Catppuccin Mocha, forced dark, until the palette work in the roadmap.
+- ~~An automated UI test~~ **shipped** — `npm run test:ui` drives real Chrome.
+- ~~Light theme~~ **shipped** — Catppuccin Mocha and Latte, dark / light / system.
+- **Scraped content.** Statements, constraints and examples are written in our own words from each
+  problem's public definition, never copied. An offer to scrape a solutions site was declined on
+  2026-09-13 and the site added as a link instead. This is what makes the content MIT-licensable.
 
 ## 4. The pedagogy — requirements that are invariants
 
@@ -77,6 +86,30 @@ that fails them is a product regression, not a style nit.
 | P8 | **Motion is continuous.** Re-renders FLIP keyed elements; `prefers-reduced-motion` and the motion preference can turn it off. | `use-flip.ts` |
 | P9 | **Corner cases are taught twice.** Every journey ships ≥ 3 corner cases in technique-neutral prose (read on act 1, loadable with one click) and each is *explained in play* by at least one approach on its own preset. | edge-case test; `frame.corner` |
 | P10 | **Every approach exists in three languages.** A journeyed problem carries Python, Java and C++ for every approach, line-for-line against the pseudocode. | line-count test; `data/problems.test.ts` |
+
+## 4b. The evidence standard — requirements on what a page may claim
+
+Added 2026-09-13, after a reader said they could not follow the two-pass hash map's arithmetic and
+was right twice: the page never said where the bucket count came from, and the first element does
+**not** land in the first bucket. Counting that class of gap found it in 122 of 127 documents.
+
+These are requirements, with a counter (`docs/LEARN-GAPS.md`) and a ratchet
+(`scripts/learn-gaps.test.mjs`) behind them.
+
+| # | Requirement | Enforced by |
+|---|---|---|
+| E1 | **Nothing is stated that has not been run.** Every complexity claim, worked example and corner case on a page is produced by a script shipped with that page | `verify-deep.mjs` runs all 82 scripts and requires each to report `ALL APPROACHES AGREED` |
+| E2 | **Every document owes four readers** — first-year student, working engineer, interview candidate, systems/ML architect. The first is the one every document had been skipping | `docs/deep/TEMPLATE.md` four-readers table; review |
+| E3 | **Reading the Calculations** — a symbol table (*what you will see · what it computes · why it is written that way · what happens if it is wrong*), the one rearrangement, and a hand-trace whose rows the script prints | `learn-gaps.mjs`, ratchet |
+| E4 | **How to Get Fluent** — drills with **done-conditions** you can check rather than feel, ending in the sentence that should survive a month | `learn-gaps.mjs`, ratchet |
+| E5 | **`Under the hood` carries a measured number.** `O(1)` with nothing behind it is the sentence that fails the architect | `learn-gaps.mjs`, ratchet |
+| E6 | **A rung's summary names the promise it ignores** — not just what it does and what it costs, but the fact the problem handed you that this rung throws away | thin-rung count, held at **0** since 2026-09-13 |
+| E7 | **Exact counts are preferred to timings.** Probes, comparisons and allocations reproduce anywhere; a timing is one machine's, must say so, and the **shape** of the column is the claim | review; every document states it |
+| E8 | **A document that adds approaches beyond the data file's ladder discloses it** in the heading | `learn-gaps.mjs --strict`, held at **0** |
+| E9 | **Run the wrong solution against your own examples.** An example that does not distinguish the answers is decoration | `G7`; review |
+
+**The ratchet is not a wall.** It fails when a count grows, and separately asserts the baseline is
+not set *above* the tree — because a ratchet with slack passes while the content rots.
 
 ## 5. Functional requirements
 
@@ -114,10 +147,12 @@ that fails them is a product regression, not a style nit.
 
 ### 5.3 Practice set (carried over)
 
-- 10 patterns × 3 problems (+ Single Number = 31), each with statement, examples, three
-  progressive hints, a static walkthrough, approach, complexity, worked code and alternatives.
-  Code is Python, plus Java and C++ wherever the problem has a journey (a language strip shares
-  the journey's `codeTab` preference).
+- **127 problems across 10 patterns**, each with statement, examples, three progressive hints, an
+  approach ladder (every rung naming what it does, what it costs, and **the promise it ignores** —
+  the fact the problem handed you that the rung throws away), complexity, and an arc naming the
+  single idea the ladder applies. Every rung carries Python, Java **and** C++, line-for-line
+  against the pseudocode. The 34 problems without a journey ship a static walkthrough instead, and
+  a test forbids carrying both.
 - Solved checkbox per problem; counts in sidebar and home. Problems with a journey show a CTA.
 - SQL drills, stats flashcards: unchanged.
 
@@ -135,7 +170,7 @@ the Vite dev middleware, the standalone Node server and the in-process client us
 | Accessibility | Every state has a non-colour channel (marker / icon / fade); `:focus-visible` rings on every control; narration is `aria-live="polite"`; reduced motion honoured | chip grammar, `index.css` |
 | Responsiveness | 390 px viewport has no horizontal scroll; bucket table scrolls inside its own box | verified via CDP screenshot |
 | Privacy | No network call carries learner data anywhere but the local API; nothing leaves the browser | there is no analytics endpoint |
-| Quality gate | `npm run check` (tsc, eslint, node tests) exits 0 on every commit | CI-less today; run locally — 41 tests |
+| Quality gate | Seven gates, each checking something the others cannot. `npm run check` (tsc, eslint, **758** node tests) on every commit; `test:ui` in real Chrome for anything rendered; `verify:code` compiles every Java and C++ block; `verify:run` checks they agree with the Python; `verify:vectors` checks the vectors catch a mutation; `verify-deep` runs all 82 teaching scripts; `learn-gaps --strict` catches undisclosed content drift | run locally; **none is sufficient alone** — that is why there are seven |
 | Payload | A content page must not download the stage | `React.lazy` on the journey and visualizer; index ~400 kB + shared ~204 kB, journey chunk ~44 kB |
 
 ## 7. Success metrics (local, no tracking)
