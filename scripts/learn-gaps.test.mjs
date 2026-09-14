@@ -21,6 +21,11 @@ import { audit } from "./learn-gaps.mjs"
 // converted to `src/content/`. Lower these as documents are written or
 // converted; never raise them without saying why in the commit.
 //
+// 116 -> 105 on 2026-09-14 as the first batch of twelve converted. Every batch
+// moves these three by one per document that lacked those sections, so the
+// number belongs to whoever merges the batch — a parallel agent must NOT edit
+// it, or twelve agents collide on three integers.
+//
 // A CONVERTED document is counted as taught with no missing sections, and that
 // is not a loophole: the sections it used to be graded on by grepping headings
 // are fields of a type, and `src/content/content.test.ts` fails the build when
@@ -29,9 +34,9 @@ import { audit } from "./learn-gaps.mjs"
 // conversion, and this ratchet is what noticed.
 const BASELINE = {
   untaught: 45, // problems with no teaching document at all
-  calculations: 116, // missing "Reading the Calculations"
-  fluent: 116, // missing "How to Get Fluent"
-  hood: 116, // missing an "Under the hood" callout
+  calculations: 105, // missing "Reading the Calculations"
+  fluent: 105, // missing "How to Get Fluent"
+  hood: 105, // missing an "Under the hood" callout
   interview: 45,
   arc: 45,
   comparison: 45,

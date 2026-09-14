@@ -112,10 +112,21 @@ function check(id) {
   return { id, total: lines.length, lost }
 }
 
+// `--all` means "every module that still has a source to compare against".
+//
+// It used to enumerate every `.ts` under src/content bar `types.ts`, which
+// picked up `content.test` — never a document — and `cycle-detect`, whose
+// Markdown was deleted once it round-tripped. So the gate the fan-out was told
+// to satisfy could never say "ok" again after the first conversion: it was
+// unreachable by construction, and an agent had to work that out from a
+// confusing failure list.
 const ids = process.argv.includes("--all")
   ? readdirSync(OUT)
-      .filter((f) => f.endsWith(".ts") && f !== "types.ts")
+      .filter(
+        (f) => f.endsWith(".ts") && f !== "types.ts" && !f.endsWith(".test.ts")
+      )
       .map((f) => f.replace(/\.ts$/, ""))
+      .filter((id) => existsSync(join(DEEP, `${id}_explained.md`)))
   : [arg("--id")].filter(Boolean)
 
 if (!ids.length) {
@@ -127,8 +138,9 @@ let failed = 0
 for (const id of ids) {
   const r = check(id)
   if (!r) {
-    console.error(`${id}: no source document or no content module`)
-    failed++
+    // asked for by --id with no source: already converted and deleted, which is
+    // the finished state, not a failure
+    console.log(`--    ${id.padEnd(28)} no source document — already migrated`)
     continue
   }
   const ok = r.lost.length === 0

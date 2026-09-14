@@ -1,26 +1,28 @@
-# Widest Container — explained
+// container-water — the teaching document, as data.
+//
+// Converted from docs/deep/container-water_explained.md by
+// scripts/md-to-content.mjs. Every byte of prose carried through unchanged;
+// what changed is that the STRUCTURE is now a type (src/content/types.ts)
+// rather than a heading convention a script had to grep for.
+//
+// Reached only through `lib/content.ts`'s glob — never import this file.
 
-## Understanding the Problem
+import type { TeachingDoc } from "./types.ts"
 
-Imagine a row of vertical sticks standing on a flat line, one at each position, each with its own
+export const doc: TeachingDoc = {
+  problemId: "container-water",
+  understanding: `Imagine a row of vertical sticks standing on a flat line, one at each position, each with its own
 height. Pick any two of them and pour water into the gap between them. The water forms a rectangle:
 as wide as the distance between the two sticks, and as tall as the *shorter* of the two — because
 water poured above the shorter stick simply runs out over it. Your job is to choose the two sticks
 that hold the most water, and report that amount. The sticks in between are ignored entirely; they
 are treated as infinitely thin lines, not walls.
 
-**The core question is: which pair of positions maximises `distance × shorter height`?** The naive
+**The core question is: which pair of positions maximises \`distance × shorter height\`?** The naive
 approach is slow because it computes that product for every pair, and with up to 100,000 sticks
 that is about 5 billion products — hours of work for one number.
 
 The constraints, and what each one buys:
-
-| Constraint | What it unlocks |
-|---|---|
-| `2 <= height.length <= 10^5` | n² is 10¹⁰ — completely out of reach, so the quadratic answer is not merely inelegant, it fails. The bound is the signal that a single linear sweep is the intended shape. At least two sticks always exist, so an answer always exists (possibly 0). |
-| `0 <= height[i] <= 10^4` | Heights are bounded and non-negative. A height of 0 is legal, which is why the answer can legitimately be 0 and why you must not assume the best container is non-empty. The bound also guarantees `width × height` stays inside a 32-bit integer (10⁵ × 10⁴ = 10⁹), which matters in Java and C++. |
-| the container is capped by the shorter line and widened by the distance | This is the whole problem in one sentence, and it is the source of the monotonicity the fast answer exploits: the area is `min(a, b) × (j − i)`, so the *shorter* wall alone decides the height, and the taller one contributes nothing beyond being at least as tall. |
-| the lines are vertical; nothing between them affects the area | This is what separates this problem from trapping rain water, where the bars in between are solid and do matter. Here the middle is empty space. |
 
 **The array is not sorted, and nothing says it can be.** This is worth stating loudly, because the
 converging-pointer technique is usually introduced on sorted arrays, and a learner reasonably
@@ -32,33 +34,44 @@ this input even if you wanted to, because sorting would destroy the distances, a
 half the objective. This is the clearest example in the family of a two-pointer solution that owes
 nothing to sorted order.
 
----
-
-## Approach 1 — Brute force
-
-### The idea
-
-*Which pair holds the most water?* Compute the area for every pair and keep the largest. There is no
+---`,
+  unlocks: [
+      {
+          "constraint": "`2 <= height.length <= 10^5`",
+          "what": "n² is 10¹⁰ — completely out of reach, so the quadratic answer is not merely inelegant, it fails. The bound is the signal that a single linear sweep is the intended shape. At least two sticks always exist, so an answer always exists (possibly 0)."
+      },
+      {
+          "constraint": "`0 <= height[i] <= 10^4`",
+          "what": "Heights are bounded and non-negative. A height of 0 is legal, which is why the answer can legitimately be 0 and why you must not assume the best container is non-empty. The bound also guarantees `width × height` stays inside a 32-bit integer (10⁵ × 10⁴ = 10⁹), which matters in Java and C++."
+      },
+      {
+          "constraint": "the container is capped by the shorter line and widened by the distance",
+          "what": "This is the whole problem in one sentence, and it is the source of the monotonicity the fast answer exploits: the area is `min(a, b) × (j − i)`, so the *shorter* wall alone decides the height, and the taller one contributes nothing beyond being at least as tall."
+      },
+      {
+          "constraint": "the lines are vertical; nothing between them affects the area",
+          "what": "This is what separates this problem from trapping rain water, where the bars in between are solid and do matter. Here the middle is empty space."
+      }
+  ],
+  approaches: [
+  {
+    rung: "brute",
+    title: "Brute force",
+    idea: `*Which pair holds the most water?* Compute the area for every pair and keep the largest. There is no
 insight here at all — it is the definition of the problem transcribed into two loops, and its whole
 purpose is to establish the number that the fast answer must match and the cost the fast answer must
-beat.
-
-### How to think about it
-
-Every unordered pair of positions is one candidate container, so fix the left stick, try every stick
+beat.`,
+    intuition: `Every unordered pair of positions is one candidate container, so fix the left stick, try every stick
 to its right, then move the left stick along. Picture drawing every possible rectangle on the
 picture of the sticks and measuring each one. There are n(n−1)/2 of them. The shape to notice is
 what is *not* happening: measuring the pair (1, 8) tells you a great deal — that the pair (1, 7) can
 be no taller than the shorter of sticks 1 and 8 and is definitely narrower — but this approach throws
 that away and measures (1, 7) from scratch anyway. The fast version is entirely built out of that
-discarded inference.
-
-### Worked example
-
-Input: `heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]`, nine sticks, so 36 pairs. A sample of them, with
+discarded inference.`,
+    worked: `Input: \`heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]\`, nine sticks, so 36 pairs. A sample of them, with
 the running best:
 
-| Pair (i, j) | Heights | Width `j − i` | `min` height | Area | Best so far |
+| Pair (i, j) | Heights | Width \`j − i\` | \`min\` height | Area | Best so far |
 |---|---|---|---|---|---|
 | (0, 1) | 1, 8 | 1 | 1 | 1 | 1 |
 | (0, 8) | 1, 7 | 8 | 1 | 8 | 8 |
@@ -72,34 +85,23 @@ the running best:
 The winner is (1, 8): the stick of height 8 at position 1 and the stick of height 7 at position 8,
 seven apart, holding 7 × 7 = 49. Note that (0, 8) is the widest container available and it is nearly
 worthless, because the stick at position 0 has height 1 and caps the whole thing at 8. Width alone
-does not win.
-
-### Code
-
-```python
-def container_water_brute_force(heights: list[int]) -> int:
+does not win.`,
+    code: `def container_water_brute_force(heights: list[int]) -> int:
     best = 0
     for i in range(len(heights)):
         for j in range(i + 1, len(heights)):
             best = max(best, (j - i) * min(heights[i], heights[j]))
-    return best
-```
-
-### Common mistake
-
-Writing the area as `(j - i) * max(heights[i], heights[j])`, or as `heights[i] * heights[j]`, or as
-`(j - i + 1) * min(...)`. All three are misreadings of the geometry, and all three pass on some
-inputs. `max` is wrong because water above the shorter stick pours out. The product of the heights
-is wrong because it is not a rectangle at all. The `+1` is the off-by-one from problems where you
+    return best`,
+    mistake: `Writing the area as \`(j - i) * max(heights[i], heights[j])\`, or as \`heights[i] * heights[j]\`, or as
+\`(j - i + 1) * min(...)\`. All three are misreadings of the geometry, and all three pass on some
+inputs. \`max\` is wrong because water above the shorter stick pours out. The product of the heights
+is wrong because it is not a rectangle at all. The \`+1\` is the off-by-one from problems where you
 count *cells* between two indices — here the container spans the *gap*, not the endpoints, so two
 adjacent sticks give width 1, not 2. Cross-check against the statement's example, where all three
-wrong formulas overshoot in recognisable ways: `max` gives 56, the `+1` also gives 56, and the
+wrong formulas overshoot in recognisable ways: \`max\` gives 56, the \`+1\` also gives 56, and the
 product of heights gives 64. Anything but 49 means you have transcribed the geometry, not the
-problem.
-
-### Complexity and when to use this
-
-**Time O(n²), space O(1).** The cost is the full enumeration of pairs: n choices of left stick, up to
+problem.`,
+    cost: `**Time O(n²), space O(1).** The cost is the full enumeration of pairs: n choices of left stick, up to
 n of right, with a constant-time area computation and nothing carried between iterations. Space is
 two indices and a running maximum.
 
@@ -108,52 +110,41 @@ clever version, which is exactly what it does in the stress test at the bottom o
 greedy answer below is one of those algorithms that *looks* wrong to a sceptical reader, so having a
 brute-force oracle to agree with it on a few thousand random inputs is how you earn confidence in it.
 
----
-
-## Approach 2 — Converging pointers with a greedy discard (optimal)
-
-### The idea
-
-*Brute force measures every pair, but most pairs are hopeless — can we prove a whole family of them
+---`,
+  },
+  {
+    rung: "squeeze",
+    title: "Converging pointers with a greedy discard (optimal)",
+    idea: `*Brute force measures every pair, but most pairs are hopeless — can we prove a whole family of them
 worthless without measuring them?* Yes. Start with the widest possible container, the two end
 sticks. The shorter of the two is the one capping the area, and keeping it can only ever produce
 narrower containers with the same cap or worse — so retire it and step inward. This fixes the brute
-force's exact weakness: the inference it computed and discarded is turned into a discard rule.
-
-### How to think about it
-
-Two fingers at the far ends of the row, holding the widest container there is. Every future
+force's exact weakness: the inference it computed and discarded is turned into a discard rule.`,
+    intuition: `Two fingers at the far ends of the row, holding the widest container there is. Every future
 container is narrower, so the only way to come out ahead is to get taller. Ask which of your two
 sticks is stopping you: it is the shorter one, always, because water can only rise to the shorter
 wall. Moving the taller one inward is strictly self-defeating — you lose width and the short stick
 still holds the ceiling down. So move the shorter one, and hope for something taller. Repeat until
 the fingers meet. The mental picture is *sacrificing width to buy height*, and only ever paying for
-height you might actually get.
+height you might actually get.`,
+    worked: `Input: \`heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]\`, the same input as above.
 
-### Worked example
-
-Input: `heights = [1, 8, 6, 2, 5, 4, 8, 3, 7]`, the same input as above.
-
-| Step | i (height) | j (height) | Width | `min` | Area | Best | Which moves, and why |
+| Step | i (height) | j (height) | Width | \`min\` | Area | Best | Which moves, and why |
 |---|---|---|---|---|---|---|---|
-| 1 | 0 (1) | 8 (7) | 8 | 1 | 8 | 8 | left is shorter (1 < 7) → `i → 1` |
-| 2 | 1 (8) | 8 (7) | 7 | 7 | **49** | **49** | right is shorter (7 ≤ 8) → `j → 7` |
-| 3 | 1 (8) | 7 (3) | 6 | 3 | 18 | 49 | right is shorter → `j → 6` |
-| 4 | 1 (8) | 6 (8) | 5 | 8 | 40 | 49 | tie (8 vs 8); the code moves `j` → `j → 5` |
-| 5 | 1 (8) | 5 (4) | 4 | 4 | 16 | 49 | right is shorter → `j → 4` |
-| 6 | 1 (8) | 4 (5) | 3 | 5 | 15 | 49 | right is shorter → `j → 3` |
-| 7 | 1 (8) | 3 (2) | 2 | 2 | 4 | 49 | right is shorter → `j → 2` |
-| 8 | 1 (8) | 2 (6) | 1 | 6 | 6 | 49 | right is shorter → `j → 1`, pointers meet, stop |
+| 1 | 0 (1) | 8 (7) | 8 | 1 | 8 | 8 | left is shorter (1 < 7) → \`i → 1\` |
+| 2 | 1 (8) | 8 (7) | 7 | 7 | **49** | **49** | right is shorter (7 ≤ 8) → \`j → 7\` |
+| 3 | 1 (8) | 7 (3) | 6 | 3 | 18 | 49 | right is shorter → \`j → 6\` |
+| 4 | 1 (8) | 6 (8) | 5 | 8 | 40 | 49 | tie (8 vs 8); the code moves \`j\` → \`j → 5\` |
+| 5 | 1 (8) | 5 (4) | 4 | 4 | 16 | 49 | right is shorter → \`j → 4\` |
+| 6 | 1 (8) | 4 (5) | 3 | 5 | 15 | 49 | right is shorter → \`j → 3\` |
+| 7 | 1 (8) | 3 (2) | 2 | 2 | 4 | 49 | right is shorter → \`j → 2\` |
+| 8 | 1 (8) | 2 (6) | 1 | 6 | 6 | 49 | right is shorter → \`j → 1\`, pointers meet, stop |
 
 Eight measurements against brute force's thirty-six, same answer of 49, found at step 2. Notice step
 1: the widest container is measured first and is nearly worthless, and notice that the pointers
 never revisit position 0 — the entire family of 8 pairs that contain that height-1 stick was retired
-by a single comparison.
-
-### Code
-
-```python
-def container_water_two_pointers(heights: list[int]) -> int:
+by a single comparison.`,
+    code: `def container_water_two_pointers(heights: list[int]) -> int:
     i, j = 0, len(heights) - 1
     best = 0
     while i < j:
@@ -162,12 +153,8 @@ def container_water_two_pointers(heights: list[int]) -> int:
             i += 1  # the short wall caps every remaining pair it belongs to — retire it
         else:
             j -= 1
-    return best
-```
-
-### Common mistake
-
-**Moving the taller wall** — writing `if heights[i] > heights[j]: i += 1`. It is an easy slip
+    return best`,
+    mistake: `**Moving the taller wall** — writing \`if heights[i] > heights[j]: i += 1\`. It is an easy slip
 because "move away from the tall one" and "move the tall one" sound similar when you are reciting the
 rule from memory rather than from the argument. On the statement's own example it returns 8 instead of
 49: the sweep clings to the height-1 stick at position 0 — the very wall that is capping everything —
@@ -177,13 +164,10 @@ wall is the one capping you, so the shorter wall is the one with nothing left to
 
 The second mistake is recording the area *after* moving a pointer instead of before, which skips
 measuring the very first, widest container; on an input whose answer is the full-width pair, such as
-`[3, 1, 1, 3]`, that returns 2 instead of 9. Measure, then move. And the third: `while i <= j`,
+\`[3, 1, 1, 3]\`, that returns 2 instead of 9. Measure, then move. And the third: \`while i <= j\`,
 which computes a zero-width "container" of a stick with itself — harmless to the maximum here, since
-its area is 0, but a habit that is fatal in the neighbouring problems where it reuses an element.
-
-### Complexity and when to use this
-
-**Time O(n), space O(1).** Every iteration moves exactly one pointer inward and neither pointer ever
+its area is 0, but a habit that is fatal in the neighbouring problems where it reuses an element.`,
+    cost: `**Time O(n), space O(1).** Every iteration moves exactly one pointer inward and neither pointer ever
 moves back, so the gap between them shrinks by one each step and the loop runs at most n − 1 times.
 Space is two indices and a running best.
 
@@ -191,37 +175,35 @@ This is the answer, and there is no rung above it — you cannot do better than 
 once. More usefully, this is the problem to reach for when you want to *recognise* the pattern in an
 unfamiliar question: whenever a quantity depends on two endpoints, one of which is the clear
 bottleneck, and moving the non-bottleneck end can be shown to make things strictly worse, converging
-pointers apply, whether or not anything is sorted.
+pointers apply, whether or not anything is sorted.`,
+    notes: [
+      { title: "the exchange argument — why skipping is safe", body: `This is what an interviewer probes the moment you produce the greedy rule, and it is the part most
+write-ups skip. The claim: **when \`heights[i] < heights[j]\`, no pair that uses index \`i\` can beat the
+area you have already recorded, so retiring \`i\` loses nothing.**
 
-### The exchange argument — why skipping is safe
+Here is the argument in full. The pairs still in play that involve index \`i\` are \`(i, m)\` for \`m\`
+ranging over \`i+1 .. j−1\` — everything to the right of \`i\` and left of \`j\`, since \`j\` itself has just
+been measured. Take any such \`m\` and compare its container with the one you just measured, \`(i, j)\`:
 
-This is what an interviewer probes the moment you produce the greedy rule, and it is the part most
-write-ups skip. The claim: **when `heights[i] < heights[j]`, no pair that uses index `i` can beat the
-area you have already recorded, so retiring `i` loses nothing.**
-
-Here is the argument in full. The pairs still in play that involve index `i` are `(i, m)` for `m`
-ranging over `i+1 .. j−1` — everything to the right of `i` and left of `j`, since `j` itself has just
-been measured. Take any such `m` and compare its container with the one you just measured, `(i, j)`:
-
-- **Width.** `m < j`, so `m − i < j − i`. The new container is strictly narrower.
-- **Height.** The height is `min(heights[i], heights[m])`, which is at most `heights[i]`. And
-  `heights[i]` is precisely the height of the container you just measured, because `heights[i]` was
+- **Width.** \`m < j\`, so \`m − i < j − i\`. The new container is strictly narrower.
+- **Height.** The height is \`min(heights[i], heights[m])\`, which is at most \`heights[i]\`. And
+  \`heights[i]\` is precisely the height of the container you just measured, because \`heights[i]\` was
   the smaller of the two. So the new container is no taller.
 
 Multiply: strictly smaller width times no-greater height gives an area strictly less than
-`(j − i) × heights[i]`, which is already in `best`. Every pair containing `i` is provably worse than
-something already recorded, so index `i` can be discarded forever without measuring any of them.
+\`(j − i) × heights[i]\`, which is already in \`best\`. Every pair containing \`i\` is provably worse than
+something already recorded, so index \`i\` can be discarded forever without measuring any of them.
 One comparison retires an entire family of up to n − 1 candidates.
 
-The mirror case is identical: if `heights[j] <= heights[i]`, then for every `m` in `i+1 .. j−1`, the
-container `(m, j)` is narrower than `(i, j)` and capped at `heights[j]`, which is the height of the
-container just measured — so index `j` is dead.
+The mirror case is identical: if \`heights[j] <= heights[i]\`, then for every \`m\` in \`i+1 .. j−1\`, the
+container \`(m, j)\` is narrower than \`(i, j)\` and capped at \`heights[j]\`, which is the height of the
+container just measured — so index \`j\` is dead.
 
 Two details worth having ready, because they are the follow-up questions:
 
 **Ties.** When the two heights are equal, *either* pointer may be retired, and both arguments above
-hold simultaneously. The code moves `j`; moving `i` would be equally correct. In fact when
-`heights[i] == heights[j]`, every pair that uses *either* of them is provably worse, so a clever
+hold simultaneously. The code moves \`j\`; moving \`i\` would be equally correct. In fact when
+\`heights[i] == heights[j]\`, every pair that uses *either* of them is provably worse, so a clever
 implementation could retire both at once. The simple version loses nothing by retiring one.
 
 **Completeness.** Each iteration retires exactly one index, so the loop terminates in at most n − 1
@@ -231,19 +213,19 @@ therefore it is measured. That is the whole proof, and notice it never once uses
 only facts consumed are that the width shrinks as the pointers converge and that the shorter wall
 caps the height.
 
----
-
-## The Overall Arc
-
-One greedy argument carries this entire problem, and the value of working the ladder is that it
+---` },
+    ],
+  },
+  ],
+  arc: `One greedy argument carries this entire problem, and the value of working the ladder is that it
 teaches you to *state* that argument rather than merely trust it. Brute force computes the area of
 all n(n−1)/2 pairs and keeps the biggest, and its failure is not subtlety but waste: having measured
-the container `(1, 8)`, it has already learned everything about the pairs `(1, 7)`, `(1, 6)`, … —
+the container \`(1, 8)\`, it has already learned everything about the pairs \`(1, 7)\`, \`(1, 6)\`, … —
 each is narrower, and each is still capped by whichever of the two original sticks was shorter — and
 it discards that knowledge and re-measures them one by one. Turn that discarded inference into a
 rule and the problem collapses. Start at maximum width, because width is the resource you can only
 ever spend, never earn back. Look at the two walls and identify the bottleneck: the area is
-`min(a, b) × width`, so the *shorter* wall alone sets the ceiling, and the taller wall's excess height
+\`min(a, b) × width\`, so the *shorter* wall alone sets the ceiling, and the taller wall's excess height
 is doing nothing. Moving the taller wall inward is therefore the one move that is guaranteed to hurt
 — narrower, and still capped by the same short wall — while moving the shorter wall is the only move
 that can buy you a taller ceiling in exchange for the width you give up. Retire the shorter wall,
@@ -255,20 +237,33 @@ comes from sorted order; here it comes from geometry. Rehearse this particular p
 because "why is that safe?" is the question that follows the code every single time, and the answer
 is exactly the paragraph above.
 
----
-
-## Comparison
-
-| Approach | Time | Space | Core trade-off | Best used when |
-|---|---|---|---|---|
-| Brute force | O(n²) | O(1) | Measures everything, proves nothing; dies at n = 10⁵ | n is tiny, or as the oracle a greedy solution is stress-tested against |
-| Converging pointers | O(n) | O(1) | One comparison retires a whole family of pairs — but you must be able to justify the discard | Always, here; and as the template whenever one endpoint is a provable bottleneck |
-
----
-
-## Interview Priority
-
-**Memorise cold: the two-pointer sweep — and the exchange argument with it.** The code is six lines
+---`,
+  comparison: {
+      "head": [
+          "Approach",
+          "Time",
+          "Space",
+          "Core trade-off",
+          "Best used when"
+      ],
+      "rows": [
+          [
+              "Brute force",
+              "O(n²)",
+              "O(1)",
+              "Measures everything, proves nothing; dies at n = 10⁵",
+              "n is tiny, or as the oracle a greedy solution is stress-tested against"
+          ],
+          [
+              "Converging pointers",
+              "O(n)",
+              "O(1)",
+              "One comparison retires a whole family of pairs — but you must be able to justify the discard",
+              "Always, here; and as the template whenever one endpoint is a provable bottleneck"
+          ]
+      ]
+  },
+  interview: `**Memorise cold: the two-pointer sweep — and the exchange argument with it.** The code is six lines
 and you will write it in under a minute; that is not what is being tested. What is being tested is
 whether you can answer "how do you know the best pair isn't one you skipped?" without hand-waving.
 The answer has two moving parts and both must be said: any skipped pair is *strictly narrower*, and
@@ -282,22 +277,17 @@ its cost is how you show the optimisation is a decision rather than a memorised 
 do not drill it.
 
 **Understand but do not memorise: the tie case and the off-by-one.** Know that equal heights let you
-move either pointer, know that the width is `j − i` and not `j − i + 1`, and know that the very first
+move either pointer, know that the width is \`j − i\` and not \`j − i + 1\`, and know that the very first
 (widest) container must be measured before any pointer moves. Those three details are where working
 implementations actually break, and an interviewer who watches you get them right without comment has
 learned more than one who hears you recite the complexity.
 
----
-
-## Full Runnable Script
-
-Both approaches in one file, checked against the statement's example, the smallest legal input, an
+---`,
+  scriptNote: `Both approaches in one file, checked against the statement's example, the smallest legal input, an
 all-duplicates input, an all-zero input where no water is possible, strictly increasing and strictly
 decreasing maps, an input whose best pair is interior rather than at the ends, and a randomised
-stress test comparing the greedy sweep against brute force on 800 random height maps.
-
-```python
-"""Widest Container — every approach in one file, cross-checked.
+stress test comparing the greedy sweep against brute force on 800 random height maps.`,
+  script: `"""Widest Container — every approach in one file, cross-checked.
 
 Run: python container_water.py
 """
@@ -383,12 +373,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
-```
-
-### Output when run
-
-```
+    main()`,
+  scriptOutput: `\`\`\`
 example from the statement
   heights=[1, 8, 6, 2, 5, 4, 8, 3, 7]
     brute force    -> 49
@@ -427,4 +413,7 @@ best pair is interior
 stress: 800 random height maps cross-checked, two pointers against brute force
 
 ALL APPROACHES AGREED ON EVERY CASE.
-```
+\`\`\``,
+}
+
+export default doc

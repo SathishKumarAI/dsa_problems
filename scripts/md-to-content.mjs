@@ -38,6 +38,9 @@ const arg = (k) => {
 const has = (k) => process.argv.includes(k)
 
 const DEEP = "docs/deep"
+const BINDINGS = JSON.parse(readFileSync("scripts/rung-bindings.json", "utf8"))
+/** `###` parts under a `##` section that has a field but no room for them */
+let leftover = []
 const OUT = "src/content"
 
 /** split a markdown body on `## ` headings, keeping order */
@@ -118,7 +121,8 @@ function table(body) {
  *  document can be an addition TO */
 const cleanTitle = (t) =>
   t
-    .replace(/^Approach\s+\d+:\s*/i, "")
+    // both forms: the house format uses "Approach 1: Title" and "Approach 1 — Title"
+    .replace(/^Approach\s+\d+\s*[:—–-]\s*/i, "")
     .replace(/\s*\*\([^)]*\)\*\s*$/, "")
     .trim()
 
@@ -128,90 +132,220 @@ const lit = (s) =>
 
 function convert(id, rungKeys) {
   // CRLF, normalised on read. Without this `/^##\s+(.*)$/` never matches: `.`
-  // does not match a line terminator, so the capture stops before the CR and
-  // the anchor can never match.
-  // cannot then match. The first run reported "0 approaches" on a document with
-  // four — it is in CLAUDE.md's trap list for exactly this reason.
+  // does not match a line terminator, so the capture stops before the CR and the
+  // anchor can never match. The first run reported "0 approaches" on a document
+  // with four; it is in CLAUDE.md's trap list for exactly this reason.
   const md = readFileSync(join(DEEP, `${id}_explained.md`), "utf8").replace(
     /\r\n?/g,
     "\n"
   )
   inFence = false
+  leftover = []
   const secs = sections(md)
-  const find = (re) => secs.find((s) => re.test(s.title))
 
+  // Every section is CLAIMED exactly once, and anything left over is an error
+  // rather than a silent loss. The first converter read the sections it knew
+  // about and dropped the rest: a seventh `###` part in an approach, the prose
+  // inside `### Code`, everything after the script fence, an unrecognised `##`.
+  // Twelve documents lost 456 lines between them and only a separate round-trip
+  // check noticed. A converter that cannot place something should say so.
+  const unclaimed = new Set(secs)
+  const claim = (sec) => {
+    unclaimed.delete(sec)
+    return sec
+  }
+  const find = (re) => {
+    const sec = secs.find((s) => re.test(s.title))
+    return sec ? claim(sec) : undefined
+  }
+
+  // ── Understanding: the WHOLE section bar the unlocks table ────────────────
   const understanding = find(/^Understanding the Problem/i)
-  const unlocksSec = understanding && parts(understanding.body)
-  const unlockTable = unlocksSec
-    ? table([...unlocksSec.values()].find((v) => v.includes("|")) ?? "")
-    : undefined
+  let unlocks
+  let understandingBody = ""
+  if (understanding) {
+    const rows = []
+    const kept = []
+    let inTable = false
+    for (const line of understanding.body.split("\n")) {
+      const t = line.trim()
+      if (t.startsWith("|")) {
+        inTable = true
+        rows.push(t)
+        continue
+      }
+      // the heading that introduces the table goes with the table
+      if (inTable && !t) continue
+      inTable = false
+      kept.push(line)
+    }
+    const parsed = table(rows.join("\n"))
+    unlocks = parsed
+      ? parsed.rows.map((r) => ({ constraint: r[0], what: r[1] }))
+      : undefined
+    // drop the now-empty "### The constraints, and what each one unlocks"
+    understandingBody = kept
+      .join("\n")
+      .replace(/^###\s+The constraints[^\n]*$/im, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  }
+
+  // ── approaches ────────────────────────────────────────────────────────────
+  const KNOWN = [
+    ["idea", /^the idea/],
+    ["intuition", /^how to think/],
+    ["worked", /^worked example/],
+    ["code", /^code$/],
+    ["mistake", /^common mistake/],
+    ["cost", /^complexity/],
+  ]
 
   const approaches = secs
     .filter((s) => /^Approach\s+\d+/i.test(s.title))
-    .map((s) => {
+    .map((s, i) => {
+      claim(s)
       const p = parts(s.body)
-      const get = (re) => {
-        for (const [k, v] of p) if (re.test(k)) return v
-        return ""
-      }
-      const title = cleanTitle(s.title)
-      // match the heading against the problem's rung keys; blank when unsure,
-      // which fails the gate on purpose rather than guessing
-      const slug = title.toLowerCase()
-      const rung =
-        rungKeys.find((k) => slug.replace(/[^a-z]/g, "").includes(k)) ??
-        rungKeys.find((k) => slug.split(/[\s—-]+/).includes(k)) ??
-        ""
+      const out = {}
+      const seen = new Set()
+      for (const [field, re] of KNOWN)
+        for (const [k, v] of p)
+          if (re.test(k) && !seen.has(k)) {
+            out[field] = v
+            seen.add(k)
+            break
+          }
+
+      // `### Code` carries prose as well as the fence on 7 of 12 documents
+      const codeBody = out.code ?? ""
+      const codeFence = fence(codeBody)
+      const codeNote = codeBody
+        .replace(/```[\s\S]*?```/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+
+      // everything else, in document order — the `> **Why it works.**` argument
+      // the format demands of every greedy and every two-pointer solution
+      const notes = [...p.entries()]
+        .filter(([k]) => !seen.has(k))
+        .map(([title, body]) => ({ title, body }))
+
       return {
-        rung,
-        title,
-        idea: get(/^the idea/),
-        intuition: get(/^how to think/),
-        worked: get(/^worked example/),
-        code: fence(get(/^code/)),
-        mistake: get(/^common mistake/),
-        cost: get(/^complexity/),
+        rung: bindingFor(id, i) ?? guessRung(s.title, rungKeys),
+        title: cleanTitle(s.title),
+        idea: out.idea ?? "",
+        intuition: out.intuition ?? "",
+        worked: out.worked ?? "",
+        code: codeFence,
+        codeNote: codeNote || undefined,
+        mistake: out.mistake ?? "",
+        cost: out.cost ?? "",
+        notes: notes.length ? notes : undefined,
       }
     })
 
-  const comparison = table(find(/^Comparison/i)?.body ?? "")
+  // ── the rest ──────────────────────────────────────────────────────────────
+  const arcSec = find(/^The Overall Arc/i)
+  const comparisonSec = find(/^Comparison/i)
+  const interviewSec = find(/^Interview Priority/i)
+  const fluentSec = find(/^How to Get Fluent/i)
+  const calcSec = find(/^Reading the Calculations/i)
   const scriptSec = find(/^Full Runnable Script/i)
+
+  // The script section is prose, then the script, then `### Output when run`.
+  // Splitting on the first fence kept the prose and threw away the output —
+  // 291 of 456 lost lines across the first batch.
+  let scriptNote, script, scriptOutput
+  if (scriptSec) {
+    const sp = parts(scriptSec.body)
+    const head = scriptSec.body.split(/^###\s/m)[0]
+    scriptNote = head.replace(/```[\s\S]*?```/g, "").trim() || undefined
+    script = lastFence(head) || lastFence(scriptSec.body)
+    const outPart = [...sp.entries()].find(([k]) => /output|when run/i.test(k))
+    if (outPart) scriptOutput = outPart[1]
+    // any other `###` under the script section joins the document's notes
+    for (const [k, v] of sp)
+      if (!/output|when run/i.test(k)) leftover.push({ title: k, body: v })
+  }
+
+  const comparison = table(comparisonSec?.body ?? "")
+  // A `## Comparison` section is usually nothing but its table — but not always:
+  // group-anagrams closes with two sentences under it, and the first converter
+  // parsed the table and dropped them. Anything in that section which is not a
+  // table row joins the document's notes rather than vanishing.
+  if (comparisonSec) {
+    const aside = comparisonSec.body
+      .split("\n")
+      .filter((l) => !l.trim().startsWith("|"))
+      .join("\n")
+      .trim()
+    if (aside) leftover.push({ title: "Comparison", body: aside })
+  }
+
+  // anything the converter could not place
+  const notes = [
+    ...leftover,
+    ...[...unclaimed].map((s) => ({ title: s.title, body: s.body })),
+  ]
 
   return {
     problemId: id,
-    understanding: understanding
-      ? understanding.body.split(/^###\s/m)[0].trim()
-      : "",
-    unlocks: unlockTable
-      ? unlockTable.rows.map((r) => ({ constraint: r[0], what: r[1] }))
-      : undefined,
-    calculations: find(/^Reading the Calculations/i)?.body,
+    understanding: understandingBody,
+    unlocks,
+    calculations: calcSec?.body,
     approaches,
-    arc: find(/^The Overall Arc/i)?.body ?? "",
+    arc: arcSec?.body ?? "",
     comparison: comparison ?? { head: [], rows: [] },
-    interview: find(/^Interview Priority/i)?.body ?? "",
-    fluent: find(/^How to Get Fluent/i)?.body,
-    // everything in the section that is NOT the fence: the house format puts
-    // real teaching there — which helpers are scaffolding rather than part of
-    // the answer, and the step limit a cyclic read-back needs or the harness
-    // hangs. The first conversion took the fence and discarded this.
-    scriptNote: scriptSec
-      ? scriptSec.body.split("```")[0].trim() || undefined
-      : undefined,
-    script: lastFence(scriptSec?.body ?? md),
+    interview: interviewSec?.body ?? "",
+    fluent: fluentSec?.body,
+    scriptNote,
+    script: script ?? "",
+    scriptOutput,
+    notes: notes.length ? notes : undefined,
   }
 }
 
+/** the hand-decided rung for approach `i` of `id`, if one has been recorded */
+function bindingFor(id, i) {
+  return BINDINGS[id]?.[i]
+}
+
+/**
+ * A guess, only where no binding exists, and deliberately weak.
+ *
+ * It used to build its candidate list from `alternatives[].key` plus a literal
+ * "optimal", which is wrong on every journeyed problem: `ladderOf` takes those
+ * keys from the journey's ACT keys, so container-water's rungs are `brute` and
+ * `squeeze`, not `brute` and `optimal`. The guess was confidently wrong rather
+ * than blank on three of twelve. Candidates come from the real ladder now, and
+ * anything short of an exact word match stays blank so a human decides.
+ */
+function guessRung(heading, rungKeys) {
+  const words = cleanTitle(heading)
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+  return rungKeys.find((k) => words.includes(k)) ?? ""
+}
+
 function emit(doc) {
+  const notes = (ns, indent) =>
+    ns
+      .map(
+        (n) =>
+          `${indent}  { title: ${JSON.stringify(n.title)}, body: ${lit(n.body)} },`
+      )
+      .join("\n")
+
   const a = (x) => `  {
     rung: ${JSON.stringify(x.rung)},
     title: ${JSON.stringify(x.title)},
     idea: ${lit(x.idea)},
     intuition: ${lit(x.intuition)},
     worked: ${lit(x.worked)},
-    code: ${lit(x.code)},
+    code: ${lit(x.code)},${x.codeNote ? `\n    codeNote: ${lit(x.codeNote)},` : ""}
     mistake: ${lit(x.mistake)},
-    cost: ${lit(x.cost)},
+    cost: ${lit(x.cost)},${x.notes ? `\n    notes: [\n${notes(x.notes, "    ")}\n    ],` : ""}
   },`
 
   return `// ${doc.problemId} — the teaching document, as data.
@@ -234,7 +368,7 @@ ${doc.approaches.map(a).join("\n")}
   arc: ${lit(doc.arc)},
   comparison: ${JSON.stringify(doc.comparison, null, 4).replace(/\n/g, "\n  ")},
   interview: ${lit(doc.interview)},
-${doc.fluent ? `  fluent: ${lit(doc.fluent)},\n` : ""}${doc.scriptNote ? `  scriptNote: ${lit(doc.scriptNote)},\n` : ""}  script: ${lit(doc.script)},
+${doc.fluent ? `  fluent: ${lit(doc.fluent)},\n` : ""}${doc.scriptNote ? `  scriptNote: ${lit(doc.scriptNote)},\n` : ""}  script: ${lit(doc.script)},${doc.scriptOutput ? `\n  scriptOutput: ${lit(doc.scriptOutput)},` : ""}${doc.notes ? `\n  notes: [\n${notes(doc.notes, "  ")}\n  ],` : ""}
 }
 
 export default doc
@@ -243,6 +377,8 @@ export default doc
 
 // ── main ────────────────────────────────────────────────────────────────────
 const { PROBLEMS } = await import("../src/data/index.ts")
+const { JOURNEYS } = await import("../src/engine/index.ts")
+const { ladderOf } = await import("../src/lib/ladder.ts")
 const ids = has("--all")
   ? readdirSync(DEEP)
       .filter((f) => f.endsWith("_explained.md"))
@@ -263,10 +399,16 @@ for (const id of ids) {
     process.exitCode = 1
     continue
   }
-  const rungKeys = [
-    ...(problem.alternatives ?? []).map((s) => s.key).filter(Boolean),
-    "optimal",
-  ]
+  // the REAL ladder's keys. On a journeyed problem `ladderOf` takes them from
+  // the journey's ACT keys, so `alternatives[].key` plus a literal "optimal"
+  // named rungs that do not exist — confidently wrong on three of the first
+  // twelve (container-water's rungs are `brute` and `squeeze`, not `optimal`).
+  const { rungs } = ladderOf(
+    problem,
+    JOURNEYS.find((j) => j.problemId === problem.id),
+    Number.MAX_SAFE_INTEGER
+  )
+  const rungKeys = rungs.map((r) => r.key)
   const doc = convert(id, rungKeys)
   const missing = doc.approaches.filter((a) => !a.rung).length
   blanks += missing

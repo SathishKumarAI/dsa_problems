@@ -32,6 +32,12 @@
 // `docs/learn/*.md` was. A static import would put 3 MB of prose into the first
 // chunk, which is already 738 KB gzipped (B95).
 
+/** A `###` part the six named ones do not cover, kept in document order. */
+export interface Note {
+  title: string
+  body: string
+}
+
 /** One approach, with all six parts `docs/deep/README.md` §3 requires. */
 export interface ApproachDoc {
   /**
@@ -50,10 +56,28 @@ export interface ApproachDoc {
   worked: string
   /** Python. The ladder's own `Code` record holds Java and C++ as well. */
   code: string
+  /** prose in the `### Code` part that is not the fence — the line under
+   *  inorder-walk's traversal that says moving one line up gives you preorder
+   *  and down gives you postorder, which is the thing to remember from that
+   *  rung. Seven of twelve documents in the first batch had one. */
+  codeNote?: string
   /** the misconception behind the bug, and why it is wrong */
   mistake: string
   /** time and space, where the cost comes from, and when to reach for it */
   cost: string
+  /**
+   * Every OTHER `###` part of the approach, in order. The format asks for six;
+   * it also demands a `> **Why it works.**` argument on every greedy and every
+   * two-pointer solution, and that lands here — along with "Why the walk is
+   * still linear, despite the inner loop", "The cost of mutation — who it hurts,
+   * and can it be undone", and "The exchange argument — why skipping is safe".
+   *
+   * The first converter read exactly six parts by regex and threw the rest away.
+   * That is 27 lines of the argument for container-water's whole approach, gone
+   * silently. Nothing is dropped now: the converter fails if a part has nowhere
+   * to go.
+   */
+  notes?: Note[]
 }
 
 /** A constraint, and the approach it is a permission slip for. */
@@ -70,7 +94,11 @@ export interface Comparison {
 export interface TeachingDoc {
   /** the `Problem.id` this document teaches — checked against the catalogue */
   problemId: string
-  /** plain language, no jargon; names the core question */
+  /** plain language, no jargon; names the core question — the WHOLE section
+   *  apart from the unlocks table, including its `###` subsections. The first
+   *  converter kept only the text before the first `###`, which in eight of
+   *  twelve documents cut off the declaration of the worked-example input every
+   *  later section refers to. */
   understanding: string
   /** constraint → what it unlocks (§1). Absent on the thinnest documents. */
   unlocks?: Unlock[]
@@ -93,4 +121,17 @@ export interface TeachingDoc {
   /** §9 — every approach plus tests, ending in one line saying they agreed.
    *  `scripts/verify-deep.mjs` runs THIS, on every pull request. */
   script: string
+  /**
+   * `### Output when run` — what the script prints, so a reader who cannot run
+   * it still sees the agreement. 291 of the 456 lines the first converter lost
+   * across twelve documents were this one section: it kept only the prose
+   * BEFORE the first fence and discarded everything after it.
+   */
+  scriptOutput?: string
+  /**
+   * Any `##` section with no field of its own, in order — is-subsequence's
+   * "The reader/writer family", which names the sibling problems using the same
+   * move. The converter used to eat these without a word.
+   */
+  notes?: Note[]
 }

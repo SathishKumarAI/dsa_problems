@@ -117,10 +117,18 @@ export function composeLearnPage(
     out.push(a.worked)
     h(3, "Code")
     out.push(fence(a.code))
+    if (a.codeNote) out.push(a.codeNote)
     h(3, "Common mistake")
     out.push(a.mistake)
     h(3, "Complexity and when to use this")
     out.push(a.cost)
+    // the parts the six named ones do not cover, in the order the author wrote
+    // them: the `> **Why it works.**` argument the format demands of every
+    // greedy and every two-pointer solution, and the cost-of-mutation notes
+    for (const n of a.notes ?? []) {
+      h(3, n.title)
+      out.push(n.body)
+    }
   })
 
   h(2, "The Overall Arc")
@@ -166,6 +174,18 @@ export function composeLearnPage(
   // dropped it and the round-trip check found it (`scriptNote`).
   if (doc.scriptNote) out.push(doc.scriptNote)
   out.push(fence(doc.script))
+  if (doc.scriptOutput) {
+    h(3, "Output when run")
+    out.push(doc.scriptOutput)
+  }
+
+  // anything the house format carries that has no field of its own — a section
+  // naming the sibling problems that use the same move, an aside under the
+  // comparison table. Kept in document order rather than dropped.
+  for (const n of doc.notes ?? []) {
+    h(2, n.title)
+    out.push(n.body)
+  }
 
   return out.join("\n\n") + "\n"
 }
