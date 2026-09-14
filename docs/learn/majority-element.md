@@ -518,7 +518,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Count everything
 
-Tally how many times each value occurs, then return whichever tally is largest.
+Tally every value, then return whichever tally is largest. Linear, obvious, and correct without ever using the guarantee the problem makes — which is also why it costs O(n) memory: it answers the harder question of how often EVERY value appears, when only one value can possibly win.
 
 ```python
 def majority_element(nums: list[int]) -> int:

@@ -629,7 +629,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-Test every substring for uniqueness with a set.
+Take every start, extend to every end, and rebuild a set from scratch to test that stretch for repeats. Three nested costs — n starts, n ends, and up to n characters re-examined per pair — which is cubic on a 5*10^4 string. The waste is that the set is thrown away and rebuilt for a substring overlapping the last one almost entirely.
 
 ```python
 def longest_unique(s: str) -> int:

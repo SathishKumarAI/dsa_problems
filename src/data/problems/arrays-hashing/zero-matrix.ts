@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "arrays-hashing",
   difficulty: "medium",
   leetcode: "set-matrix-zeroes",
-  brief: "Every zero in the matrix blanks its whole row and column — done in place.",
+  brief:
+    "Every zero in the matrix blanks its whole row and column — done in place.",
   statement:
     "Given a matrix, set the entire row and the entire column of every zero to 0. The wipe is decided by the ORIGINAL matrix, and the classic follow-up asks for it in place with constant extra memory.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Two marker arrays are already linear and correct, but they allocate memory proportional to the matrix's sides to hold one bit per row and per column — and the matrix already has a row and a column that can hold exactly that many bits. Moving the marks into the first row and first column makes the extra memory two booleans, and the only price is deciding the fate of that row and column before they are overwritten.",
-  arc:
-    "Two ideas, both worth keeping. The first is sequencing: a sweep that writes into the same structure it reads from will start reacting to its own output, so DECIDE in one pass and APPLY in another. That is the whole reason the naive in-place attempt fails, and the same discipline shows up in game-of-life and in any grid update with simultaneous semantics. The second is the space trick: information worth one bit per row and per column does not need arrays of its own when the matrix already contains a row and a column that can hold it. Storing marks inside the input is a genuine O(1) technique, and its price is always the same — the cells doing the storing need their own fate recorded first, which is exactly what the two booleans are for.",
+  arc: "Two ideas, both worth keeping. The first is sequencing: a sweep that writes into the same structure it reads from will start reacting to its own output, so DECIDE in one pass and APPLY in another. That is the whole reason the naive in-place attempt fails, and the same discipline shows up in game-of-life and in any grid update with simultaneous semantics. The second is the space trick: information worth one bit per row and per column does not need arrays of its own when the matrix already contains a row and a column that can hold it. Storing marks inside the input is a genuine O(1) technique, and its price is always the same — the cells doing the storing need their own fate recorded first, which is exactly what the two booleans are for.",
   approach:
     "Read whether the first row and the first column contain a zero of their own, and keep those as two booleans. Then use row 0 as the column marks and column 0 as the row marks: for every inner cell that is zero, blank its row's mark and its column's mark. Apply the marks to the inner cells, then — last, so their marks survive until they are read — blank the first row and the first column if their booleans said so. Two sweeps, constant extra memory.",
   complexity: { time: "O(rows · cols)", space: "O(1)" },

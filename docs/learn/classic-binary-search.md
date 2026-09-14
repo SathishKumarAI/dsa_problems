@@ -659,7 +659,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Linear scan
 
-Ignore sortedness, check every element. The baseline the log bound is measured against.
+Look at every element until the target turns up. Correct, and immediately disqualified: the statement demands O(log n) and this is O(n). It earns its place by naming what the sortedness is FOR — a scan works on any array, which is exactly why it cannot exploit the one promise this input makes.
 
 ```python
 def binary_search(nums: list[int], target: int) -> int:
@@ -701,9 +701,7 @@ int binarySearch(const vector<int>& nums, int target) {
 
 ## Rung 2 — Recursive
 
-> **Why now.** Checking every element ignores the only thing the input promises: order. Halving the range uses it, and the halving reads most naturally as a recursion.
-
-Same halving, expressed recursively. Cleaner to some eyes, costs stack frames; iterative is the production default.
+The same halving, written as a function that calls itself on the surviving half. Identical comparisons and arguably the clearer statement of the invariant, but it spends a call frame per level — O(log n) stack against the loop's O(1) — for no gain the problem can see.
 
 ```python
 def binary_search(nums: list[int], target: int) -> int:
@@ -826,7 +824,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Linear scan | O(n) time · O(1) space | the baseline — nothing before it |
-| 2 | Recursive | O(log n) time · O(log n) stack space | Checking every element ignores the only thing the input promises: order. Halving the range uses it, and the halving reads most naturally as a recursion. |
+| 2 | Recursive | O(log n) time · O(log n) stack space | The same halving, written as a function that calls itself on the surviving half. |
 | 3 | The one to remember | O(log n) time · O(1) space | Recursion pays a stack frame per halving and buys nothing. The same loop written iteratively is constant space, and it is the version to write under pressure. |
 
 ---

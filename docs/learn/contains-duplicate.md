@@ -577,7 +577,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-Compare every pair of positions and return true the first time two of them hold the same value.
+Compare every pair of positions and return true the first time two match. No memory at all, and quadratic: on 10^5 distinct values that is five billion comparisons to answer false. Every comparison also forgets what it learned, which is the waste the next two rungs attack from opposite directions.
 
 ```python
 def contains_duplicate(nums: list[int]) -> bool:
@@ -625,9 +625,7 @@ bool containsDuplicate(const vector<int>& nums) {
 
 ## Rung 2 — Sort first
 
-> **Why now.** The nested scan re-reads the whole tail for every element. Sorting collapses the question to a single comparison per position — but it pays O(n log n) and destroys the original order to do it.
-
-Sort the array, then walk it once: duplicates, if there are any, must end up side by side.
+Sort, then walk once: duplicates, if there are any, must end up side by side. Trades the quadratic scan for n log n and keeps memory constant, but it reorders the caller's array to answer a yes/no question, and it cannot stop early — the sort finishes before the first comparison happens.
 
 ```python
 def contains_duplicate(nums: list[int]) -> bool:
@@ -730,7 +728,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Brute force | O(n²) time · O(1) space | the baseline — nothing before it |
-| 2 | Sort first | O(n log n) time · O(1) space | The nested scan re-reads the whole tail for every element. Sorting collapses the question to a single comparison per position — but it pays O(n log n) and destroys the original order to do it. |
+| 2 | Sort first | O(n log n) time · O(1) space | Sort, then walk once: duplicates, if there are any, must end up side by side. |
 | 3 | The one to remember | O(n) time · O(n) space | Sorting pays O(n log n) to put duplicates next to each other, but adjacency was never the question. A set answers 'seen before?' directly, and the early return means a duplicate near the front costs almost nothing. |
 
 ---

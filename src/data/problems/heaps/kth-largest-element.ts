@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting orders all n values to read one of them. A min-heap of size k only ever holds the candidates that could still be the answer, so each element costs log k rather than contributing to an n log n sort — and when k is small, log k is close to nothing.",
-  arc:
-    "One principle, three answers: do not order what you will not read. Sorting ranks every element to report one of them, so the first escape is to stop comparing at all — the values live in a band twenty thousand wide, and tallying them lets you walk the range downward subtracting counts until k runs out, linear in n with no comparison anywhere. That trade is honest about its price: the table is sized by the RANGE, so it collapses the moment values are unbounded or sparse. The heap keeps the escape without the assumption. A min-heap capped at k holds exactly the values that could still be the answer and evicts the rest on arrival, so its root is the kth largest by construction — a min-heap answering a max question, which is the piece worth rehearsing out loud. Know the bounded heap and the counting table, and know which constraint chooses between them. Quickselect is the fourth answer when an interviewer wants expected linear with no range to lean on.",
+  arc: "One principle, three answers: do not order what you will not read. Sorting ranks every element to report one of them, so the first escape is to stop comparing at all — the values live in a band twenty thousand wide, and tallying them lets you walk the range downward subtracting counts until k runs out, linear in n with no comparison anywhere. That trade is honest about its price: the table is sized by the RANGE, so it collapses the moment values are unbounded or sparse. The heap keeps the escape without the assumption. A min-heap capped at k holds exactly the values that could still be the answer and evicts the rest on arrival, so its root is the kth largest by construction — a min-heap answering a max question, which is the piece worth rehearsing out loud. Know the bounded heap and the counting table, and know which constraint chooses between them. Quickselect is the fourth answer when an interviewer wants expected linear with no range to lean on.",
   approach:
     "Keep a min-heap holding at most k values. Push each element; when the heap grows past k, pop the smallest, because a value outside the top k can never become the kth largest as more values arrive. The invariant is the whole idea: the heap always holds exactly the k largest seen so far, and its smallest member is the kth largest. Note that a min-heap answers a max question — the top is the weakest survivor, which is precisely the rank being asked for.",
   complexity: { time: "O(n log k)", space: "O(k)" },
@@ -65,7 +64,7 @@ def find_kth_largest(nums: list[int], k: int) -> int:
     {
       name: "Sort and index",
       summary:
-        "Sort the whole array ascending and read the element k places from the end.",
+        "Sort the whole array and read the element k places from the end. One line, always correct, and it orders all n values to answer a question about one of them — n log n time and a full copy, when only k values can ever be candidates.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def find_kth_largest(nums: list[int], k: int) -> int:
     ordered = sorted(nums)
@@ -84,9 +83,7 @@ def find_kth_largest(nums: list[int], k: int) -> int:
     {
       name: "Count the values",
       summary:
-        "Tally how many times each value occurs, then walk the value range downward subtracting counts until k is reached.",
-      whyNow:
-        "Sorting arranges every element when only a rank is wanted. Counting replaces the comparison sort with a walk over the value range — linear in n, but it trades that for a table the size of the range, so it only pays when the values are tightly bounded.",
+        "Tally how many times each value occurs, then walk the value range downward subtracting counts until k is reached. Linear in n and independent of k, but it costs an array the size of the VALUE RANGE rather than of the input, so it exists only because the constraint pins values to -10^4..10^4. Widen that bound and this rung disappears.",
       complexity: { time: "O(n + range)", space: "O(range)" },
       python: `def find_kth_largest(nums: list[int], k: int) -> int:
     low, high = min(nums), max(nums)

@@ -36,8 +36,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "A heap with a seen-set produces the sequence in order, but it pays a logarithm per value and stores up to three candidates per number extracted, and the duplicate 6 has to be recognised by memory. The three multipliers only ever consume the sequence in order, so each needs nothing more than an INDEX into what has already been produced — the heap collapses to three integers, and the duplicate disappears because both pointers advance on the same value instead of being remembered.",
-  arc:
-    "A test becomes a generator, and that is the whole idea. Checking integers one by one wastes almost all its work because the answers thin out — past a billion they are vanishingly rare — while every answer is 2, 3 or 5 times an earlier answer, so the sequence can build itself. Once you are generating, the heap is the obvious way to keep order and the three pointers are the observation that each multiplier only ever consumes the sequence in order, so a heap is more machinery than the job needs. Carry two things: when the valid values are sparse, generate instead of filter; and when a value can be produced by more than one route, decide deliberately whether to deduplicate by memory (a seen-set) or by construction (advance every pointer that tied) — the second is cheaper and is the reason 6 appears exactly once here.",
+  arc: "A test becomes a generator, and that is the whole idea. Checking integers one by one wastes almost all its work because the answers thin out — past a billion they are vanishingly rare — while every answer is 2, 3 or 5 times an earlier answer, so the sequence can build itself. Once you are generating, the heap is the obvious way to keep order and the three pointers are the observation that each multiplier only ever consumes the sequence in order, so a heap is more machinery than the job needs. Carry two things: when the valid values are sparse, generate instead of filter; and when a value can be produced by more than one route, decide deliberately whether to deduplicate by memory (a seen-set) or by construction (advance every pointer that tied) — the second is cheaper and is the reason 6 appears exactly once here.",
   approach:
     "Keep the sequence in an array and three indices, one per multiplier. The next value is the smallest of 2 × seq[i2], 3 × seq[i3] and 5 × seq[i5]; append it, then advance EVERY index whose product equals it — that is what stops 6 from being emitted twice. Each value costs three multiplications and three comparisons, so the whole sequence is linear in n with no ordering structure at all.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -136,7 +135,10 @@ export const problem: Problem = {
       name: "Test every integer",
       summary:
         "Walk the integers from 1 upward. For each, divide out every factor of 2, 3 and 5 and check whether 1 is left; count the ones that pass until the nth.",
-      complexity: { time: "O(m log m) over the integers scanned", space: "O(1)" },
+      complexity: {
+        time: "O(m log m) over the integers scanned",
+        space: "O(1)",
+      },
       python: `def nth_ugly(n: int) -> int:
     def is_ugly(x: int) -> bool:
         for factor in (2, 3, 5):

@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "dp",
   difficulty: "medium",
   leetcode: "decode-ways",
-  brief: "Count the ways a digit string splits into letters, where 1–26 map to A–Z.",
+  brief:
+    "Count the ways a digit string splits into letters, where 1–26 map to A–Z.",
   statement:
     "Letters are encoded as numbers: A is 1, B is 2, …, Z is 26. Given a string of digits, count how many different letter strings could have produced it. A digit string that cannot be decoded at all counts zero.",
   constraints: [
@@ -41,8 +42,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The table is linear but stores a hundred numbers to read exactly two of them: position i depends on i + 1 and i + 2 and never on anything further. Keeping those two in variables makes the memory constant and makes the recurrence visible in a single line — and there is no traceback to reconstruct afterwards, because the answer is a count, not a decoding.",
-  arc:
-    "Every rung is the same recurrence — ways(i) = ways(i+1) plus, when the pair is legal, ways(i+2) — and the ladder is only about where those two numbers are stored: recomputed, cached, tabled, or carried in variables. That progression (brute force, memoise, tabulate, roll the window) is the standard route through almost every one-dimensional dynamic programming question, and it is worth practising as a route rather than as four separate solutions. The content lesson is the zero: it is the only character that can make a whole string undecodable, and it is the reason this is not simply the Fibonacci sequence in disguise. When a problem has a character that kills a branch, write its rule first and the recurrence second — the other way round is how '10' ends up counted twice.",
+  arc: "Every rung is the same recurrence — ways(i) = ways(i+1) plus, when the pair is legal, ways(i+2) — and the ladder is only about where those two numbers are stored: recomputed, cached, tabled, or carried in variables. That progression (brute force, memoise, tabulate, roll the window) is the standard route through almost every one-dimensional dynamic programming question, and it is worth practising as a route rather than as four separate solutions. The content lesson is the zero: it is the only character that can make a whole string undecodable, and it is the reason this is not simply the Fibonacci sequence in disguise. When a problem has a character that kills a branch, write its rule first and the recurrence second — the other way round is how '10' ends up counted twice.",
   approach:
     "Walk from the end of the string towards the front, carrying two numbers: the count of decodings starting one position ahead and two positions ahead. At each position, a '0' contributes nothing (no single digit works and it cannot start a pair); otherwise the count is the one-ahead value, plus the two-ahead value when the current digit and the next one form a number between 10 and 26. Shift the pair and continue. The front of the string ends up holding the answer.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -106,7 +106,7 @@ export const problem: Problem = {
         labels: { 2: "1 way" },
       },
       caption:
-        'At the last 6: not a zero, so it can stand alone — one way. There is no digit after it to pair with. Carried: 1 and 1.',
+        "At the last 6: not a zero, so it can stand alone — one way. There is no digit after it to pair with. Carried: 1 and 1.",
     },
     {
       cells: {

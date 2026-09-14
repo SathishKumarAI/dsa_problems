@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "sliding-window",
   difficulty: "medium",
   leetcode: "find-all-anagrams-in-a-string",
-  brief: "List every start index where a window of the text is an anagram of the pattern.",
+  brief:
+    "List every start index where a window of the text is an anagram of the pattern.",
   statement:
     "Given a text and a pattern, return the start index of every substring of the text that is an anagram of the pattern — the same letters in any order.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Comparing the two count tables at every step is a fixed 26 comparisons, which is cheap but still repeats work the update already knew about: a slide changes exactly two letters, so at most two of the 26 verdicts can change. Carrying a count of how many letters currently match turns each step into two increments and a single equality test — the answer is 'match count is 26', and the alphabet never gets walked again.",
-  arc:
-    "Anagram means multiset, and multiset means counts — once that substitution is made, every rung is an argument about how much of the counting to redo. Sorting each window redoes all of it; recounting each window redoes k characters; sliding the tally redoes two; and tracking how many letters AGREE redoes nothing at all, because only a letter whose count changed can change its verdict. That last step is the one worth stealing: keep a summary of the comparison rather than recomputing the comparison, and update the summary exactly where the data changed. It is the same move that turns the minimum-window-substring check from 26 comparisons into one integer, and knowing the fixed-width window shape — enter one, leave one, test — covers a whole family of string problems.",
+  arc: "Anagram means multiset, and multiset means counts — once that substitution is made, every rung is an argument about how much of the counting to redo. Sorting each window redoes all of it; recounting each window redoes k characters; sliding the tally redoes two; and tracking how many letters AGREE redoes nothing at all, because only a letter whose count changed can change its verdict. That last step is the one worth stealing: keep a summary of the comparison rather than recomputing the comparison, and update the summary exactly where the data changed. It is the same move that turns the minimum-window-substring check from 26 comparisons into one integer, and knowing the fixed-width window shape — enter one, leave one, test — covers a whole family of string problems.",
   approach:
     "Count the pattern's letters, then run a window of that width over the text keeping a live count for the window and a counter of how many of the 26 letters agree with the pattern. Sliding adds the incoming letter and removes the outgoing one, adjusting the agreement counter only for those two letters — a letter's verdict can flip only when its own count changes. A window is an anagram exactly when all 26 letters agree.",
   complexity: { time: "O(n)", space: "O(1)" },

@@ -34,8 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Every buy/sell pair asks the same question over and over. Walking once while remembering the cheapest day so far answers it with two numbers and no nested loop.",
-  arc:
-    "The smallest useful dynamic program in disguise. Brute force asks 'which pair?' and pays quadratically; the linear version asks a local question instead — for each day, what is the best profit if I SELL today? — which needs only the cheapest price seen so far. Carrying one running extreme and folding the answer as you go is the same shape as maximum-subarray, and the two problems are worth learning together because the sell-today framing converts one into the other exactly. The corner case is a strictly falling price series, where the answer is zero rather than negative: the contract says you may decline to trade, and a solution that tracks the best difference without that floor gets it wrong.",
+  arc: "The smallest useful dynamic program in disguise. Brute force asks 'which pair?' and pays quadratically; the linear version asks a local question instead — for each day, what is the best profit if I SELL today? — which needs only the cheapest price seen so far. Carrying one running extreme and folding the answer as you go is the same shape as maximum-subarray, and the two problems are worth learning together because the sell-today framing converts one into the other exactly. The corner case is a strictly falling price series, where the answer is zero rather than negative: the contract says you may decline to trade, and a solution that tracks the best difference without that floor gets it wrong.",
   approach:
     "Scan left to right holding two numbers: the lowest price seen so far and the best profit so far. Each day, profit-if-sold-today is price minus that minimum; update both trackers. This is a shrunk sliding window: the left edge is always the historical minimum.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -68,7 +67,8 @@ export const problem: Problem = {
   alternatives: [
     {
       name: "Brute force",
-      summary: "Try every buy/sell day pair with the sell strictly later.",
+      summary:
+        "Try every buy day against every later sell day and keep the best difference. Correct, and the right first sentence in an interview, but it re-asks a question it has already answered: by the time you reach day i you have seen every earlier price, and the only one that matters is the smallest. Quadratic on 10^5 days is five billion pairs.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def max_profit(prices: list[int]) -> int:
     best = 0

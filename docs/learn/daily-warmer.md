@@ -471,7 +471,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-For each day, scan forward until something warmer shows up.
+For each day, walk forward until a strictly warmer day appears. Quadratic when temperatures trend downward, because every day scans the whole tail and finds nothing — and it repeats work its neighbour already did, since a day too cold for you was too cold for the day before you.
 
 ```python
 def daily_warmer(temps: list[int]) -> list[int]:

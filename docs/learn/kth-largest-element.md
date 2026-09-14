@@ -49,7 +49,7 @@ one before it, in all three languages.
 
 ## Rung 1 — Sort and index
 
-Sort the whole array ascending and read the element k places from the end.
+Sort the whole array and read the element k places from the end. One line, always correct, and it orders all n values to answer a question about one of them — n log n time and a full copy, when only k values can ever be candidates.
 
 ```python
 def find_kth_largest(nums: list[int], k: int) -> int:
@@ -87,9 +87,7 @@ int findKthLargest(const vector<int>& nums, int k) {
 
 ## Rung 2 — Count the values
 
-> **Why now.** Sorting arranges every element when only a rank is wanted. Counting replaces the comparison sort with a walk over the value range — linear in n, but it trades that for a table the size of the range, so it only pays when the values are tightly bounded.
-
-Tally how many times each value occurs, then walk the value range downward subtracting counts until k is reached.
+Tally how many times each value occurs, then walk the value range downward subtracting counts until k is reached. Linear in n and independent of k, but it costs an array the size of the VALUE RANGE rather than of the input, so it exists only because the constraint pins values to -10^4..10^4. Widen that bound and this rung disappears.
 
 ```python
 def find_kth_largest(nums: list[int], k: int) -> int:
@@ -213,7 +211,7 @@ One principle, three answers: do not order what you will not read. Sorting ranks
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Sort and index | O(n log n) time · O(n) space | the baseline — nothing before it |
-| 2 | Count the values | O(n + range) time · O(range) space | Sorting arranges every element when only a rank is wanted. Counting replaces the comparison sort with a walk over the value range — linear in n, but it trades that for a table the size of the range, so it only pays when the values are tightly bounded. |
+| 2 | Count the values | O(n + range) time · O(range) space | Tally how many times each value occurs, then walk the value range downward subtracting counts until k is reached. |
 | 3 | The one to remember | O(n log k) time · O(k) space | Sorting orders all n values to read one of them. A min-heap of size k only ever holds the candidates that could still be the answer, so each element costs log k rather than contributing to an n log n sort — and when k is small, log k is close to nothing. |
 
 ---

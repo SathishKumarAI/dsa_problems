@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "trees",
   difficulty: "easy",
   leetcode: "symmetric-tree",
-  brief: "Decide whether a binary tree is a mirror image of itself down the middle.",
+  brief:
+    "Decide whether a binary tree is a mirror image of itself down the middle.",
   statement:
     "Given the root of a binary tree, return true when the tree is symmetric about its centre line: the left subtree read left-to-right matches the right subtree read right-to-left, in both values and shape.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "A queue of pairs holds a whole level at once, and the widest level of a 1000-node tree is ~500 pairs, while the property being checked is local: one pair at a time, crossed. Recursing on the pair keeps only the ancestors of the pair being examined — the height, not the width — and the crossing that defines the whole problem becomes the two arguments of one call.",
-  arc:
-    "The lesson is smaller than the problem: ask the question about the right THING. Symmetry is not a property of a node, so every attempt that walks one cursor — collect the values, compare a list to its reverse — ends up testing a shadow of the real question and getting the shape wrong. The moment the unit of comparison becomes a PAIR, crossed, the recursion writes itself and the corner case (one child present, one absent) stops being a special case and becomes the base case. Carry two things from this: when a check keeps needing exceptions, the unit is probably wrong; and a values-only test can never see structure, which is why [1,1,1,1,null,1] is worth remembering as the counterexample that kills the tempting shortcut.",
+  arc: "The lesson is smaller than the problem: ask the question about the right THING. Symmetry is not a property of a node, so every attempt that walks one cursor — collect the values, compare a list to its reverse — ends up testing a shadow of the real question and getting the shape wrong. The moment the unit of comparison becomes a PAIR, crossed, the recursion writes itself and the corner case (one child present, one absent) stops being a special case and becomes the base case. Carry two things from this: when a check keeps needing exceptions, the unit is probably wrong; and a values-only test can never see structure, which is why [1,1,1,1,null,1] is worth remembering as the counterexample that kills the tempting shortcut.",
   approach:
     "Ask the question about a pair rather than about a node. Two subtrees mirror each other when both are empty, or when both exist, hold the same value, and their children match CROSSED: a's left against b's right, and a's right against b's left. Start with (root.left, root.right) and recurse. The first mismatch short-circuits, so a tree that fails at the top costs almost nothing, and a symmetric tree visits every node once.",
   complexity: { time: "O(n)", space: "O(h)" },
@@ -94,7 +94,15 @@ bool isSymmetric(const TreeNode* root) {
     {
       cells: {
         values: [1, 2, 2, 3, 4, 4, 3],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 6: "done", 4: "focus", 5: "focus" },
+        marks: {
+          0: "done",
+          1: "done",
+          2: "done",
+          3: "done",
+          6: "done",
+          4: "focus",
+          5: "focus",
+        },
         labels: { 4: "a.right", 5: "b.left" },
       },
       caption:
@@ -103,7 +111,15 @@ bool isSymmetric(const TreeNode* root) {
     {
       cells: {
         values: [1, 2, 2, 3, 4, 4, 3],
-        marks: { 0: "done", 1: "done", 2: "done", 3: "done", 4: "done", 5: "done", 6: "done" },
+        marks: {
+          0: "done",
+          1: "done",
+          2: "done",
+          3: "done",
+          4: "done",
+          5: "done",
+          6: "done",
+        },
       },
       caption:
         "Every pair agreed and nothing is left: the tree is symmetric. Had one pair disagreed, the `and` would have stopped the walk there.",

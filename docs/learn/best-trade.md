@@ -465,7 +465,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Brute force
 
-Try every buy/sell day pair with the sell strictly later.
+Try every buy day against every later sell day and keep the best difference. Correct, and the right first sentence in an interview, but it re-asks a question it has already answered: by the time you reach day i you have seen every earlier price, and the only one that matters is the smallest. Quadratic on 10^5 days is five billion pairs.
 
 ```python
 def max_profit(prices: list[int]) -> int:

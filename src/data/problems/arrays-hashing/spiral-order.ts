@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "arrays-hashing",
   difficulty: "medium",
   leetcode: "spiral-matrix",
-  brief: "Walk a matrix clockwise from the outside in and list the values in that order.",
+  brief:
+    "Walk a matrix clockwise from the outside in and list the values in that order.",
   statement:
     "Given a matrix, return all of its values in spiral order: left to right along the top, down the right side, right to left along the bottom, up the left side, then inward and around again.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "A visited grid works, but it allocates a boolean for every cell to record something the geometry already knows: the spiral's shape is four shrinking edges, not an arbitrary path. Tracking the edges makes the turn condition explicit, drops the extra memory to four integers, and turns 'have I been here?' into 'is this rectangle still non-empty?'.",
-  arc:
-    "There is no clever algorithm here, and that is the point: the difficulty is entirely in the boundaries, which makes it a good rehearsal for writing loops that are correct at the edges rather than correct on average. The visited grid works by refusing to think about geometry and paying memory for it; the boundary version thinks once and pays four integers. The trap is the final ring. After the top row and the right column have been taken, a rectangle that is one row or one column tall has nothing left to walk back along, and a version without that guard emits those cells twice — which is why single-row and single-column inputs are the first tests to write, not an afterthought. Reach for the same shape in rotate-image and matrix-layer problems generally.",
+  arc: "There is no clever algorithm here, and that is the point: the difficulty is entirely in the boundaries, which makes it a good rehearsal for writing loops that are correct at the edges rather than correct on average. The visited grid works by refusing to think about geometry and paying memory for it; the boundary version thinks once and pays four integers. The trap is the final ring. After the top row and the right column have been taken, a rectangle that is one row or one column tall has nothing left to walk back along, and a version without that guard emits those cells twice — which is why single-row and single-column inputs are the first tests to write, not an afterthought. Reach for the same shape in rotate-image and matrix-layer problems generally.",
   approach:
     "Keep four boundaries: top, bottom, left, right. Walk the top row left to right and move top down; walk the right column top to bottom and move right in; then — only if a row is still left — walk the bottom row back, and only if a column is still left, walk the left column up. Repeat while the rectangle is non-empty. The two guards are the whole difficulty: they are what a single row or a single column needs to avoid being read twice.",
   complexity: { time: "O(rows · cols)", space: "O(1)" },

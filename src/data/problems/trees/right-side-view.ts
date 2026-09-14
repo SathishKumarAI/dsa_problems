@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "trees",
   difficulty: "medium",
   leetcode: "binary-tree-right-side-view",
-  brief: "List the nodes visible from the right of a binary tree, top to bottom.",
+  brief:
+    "List the nodes visible from the right of a binary tree, top to bottom.",
   statement:
     "Given the root of a binary tree, imagine standing to its right and looking at it. Return the values you can see, ordered from the top level down — one value per level, the rightmost node on that level.",
   constraints: [
@@ -36,8 +37,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "A breadth-first walk holds a whole level in memory, and the widest level of a tree holds about half its nodes — memory that grows with the WIDTH to answer a question whose answer is one value per level. Visiting the right child first makes the first arrival at each depth the visible node, so the only state is the current depth and the call stack, which is the height.",
-  arc:
-    "Two different-looking solutions, one question: how do you know a node is the last on its level? Breadth-first answers it by construction — the level is materialised, so its last element is obvious — and pays with memory proportional to the tree's widest level. Depth-first answers it by ORDER — visit right before left, and the first arrival at a new depth is the visible one — and pays only the height. The trick worth stealing is the test itself: comparing the current depth to the length of the answer so far is how a depth-first walk knows it is seeing something for the first time, and it reappears in 'leftmost value in the last row' and 'first node at each level'. Know the BFS version for explaining, the DFS version for the follow-up about memory.",
+  arc: "Two different-looking solutions, one question: how do you know a node is the last on its level? Breadth-first answers it by construction — the level is materialised, so its last element is obvious — and pays with memory proportional to the tree's widest level. Depth-first answers it by ORDER — visit right before left, and the first arrival at a new depth is the visible one — and pays only the height. The trick worth stealing is the test itself: comparing the current depth to the length of the answer so far is how a depth-first walk knows it is seeing something for the first time, and it reappears in 'leftmost value in the last row' and 'first node at each level'. Know the BFS version for explaining, the DFS version for the follow-up about memory.",
   approach:
     "Depth-first, right child before left, carrying the current depth. The first time the walk reaches a depth it has never seen — which is exactly when the answer's length equals that depth — the node it is standing on is the rightmost one on that level, because everything to its right on that level would have been visited earlier. Append it and keep going. One visit per node, and the only memory is the call stack.",
   complexity: { time: "O(n)", space: "O(h)" },

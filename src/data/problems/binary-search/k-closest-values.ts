@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "binary-search",
   difficulty: "medium",
   leetcode: "find-k-closest-elements",
-  brief: "From a sorted array, return the k values closest to x — in sorted order, ties going left.",
+  brief:
+    "From a sorted array, return the k values closest to x — in sorted order, ties going left.",
   statement:
     "Given a sorted array, a count k and a target x, return the k values closest to x, sorted ascending. When two values are equally far from x, the smaller one wins.",
   constraints: [
@@ -36,8 +37,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Converging two pointers is linear because it steps one index at a time from the ends of a 10^4-element array to a window of size k — but the decision it makes at each step is the same monotone comparison every time. Binary searching the window's START makes those steps logarithmic in the number of candidate windows: the answer is a slice, and its position is found in about fourteen comparisons rather than ten thousand.",
-  arc:
-    "The insight comes before the algorithm: because the array is sorted, the answer is k CONTIGUOUS values, so the only unknown is where the window starts. Once the search space is 'window positions' rather than 'values', binary search applies to a comparison between arr[mid] and arr[mid + k] — the value that would leave against the value that would join — and the whole problem is four lines. Two lessons generalise. First, when a problem says 'sorted' and asks for a set, check whether the set has to be an interval; it usually does, and that collapses the search space. Second, a two-part rule (closest, then smallest) has to be honoured in the comparison itself: here it is the difference between > and >=, and getting it backwards silently returns a window one step too far right.",
+  arc: "The insight comes before the algorithm: because the array is sorted, the answer is k CONTIGUOUS values, so the only unknown is where the window starts. Once the search space is 'window positions' rather than 'values', binary search applies to a comparison between arr[mid] and arr[mid + k] — the value that would leave against the value that would join — and the whole problem is four lines. Two lessons generalise. First, when a problem says 'sorted' and asks for a set, check whether the set has to be an interval; it usually does, and that collapses the search space. Second, a two-part rule (closest, then smallest) has to be honoured in the comparison itself: here it is the difference between > and >=, and getting it backwards silently returns a window one step too far right.",
   approach:
     "The answer is a window of exactly k contiguous values, so search for its left edge in the range 0 … n − k. For a candidate edge, compare x − arr[edge] against arr[edge + k] − x: if the value leaving on the left is strictly further from x than the one that would join on the right, the window should move right; otherwise it should not. That comparison is monotone in the edge, so binary search finds the smallest edge that should not move — and taking the tie in favour of not moving is exactly the 'ties go left' rule.",
   complexity: { time: "O(log(n − k) + k)", space: "O(1)" },
@@ -104,7 +104,8 @@ export const problem: Problem = {
         values: [1, 2, 3, 4, 5],
         marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
       },
-      caption: "The range closes on start 0 and the answer is the slice [1, 2, 3, 4].",
+      caption:
+        "The range closes on start 0 and the answer is the slice [1, 2, 3, 4].",
     },
     {
       cells: {

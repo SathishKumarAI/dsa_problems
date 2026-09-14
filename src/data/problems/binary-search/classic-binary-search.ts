@@ -26,8 +26,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Recursion pays a stack frame per halving and buys nothing. The same loop written iteratively is constant space, and it is the version to write under pressure.",
-  arc:
-    "The base case of a whole pattern, and worth writing until the boundaries are automatic: while low is at most high, probe the middle, and move the side that cannot contain the answer. Two habits prevent most bugs. Compute the midpoint as low plus half the gap rather than by adding the two ends, so nothing overflows in languages with fixed-width integers. And decide the loop's contract before typing — either 'low <= high' with mid plus or minus one, or 'low < high' converging on a single survivor — then keep it consistent, because mixing the two is how the off-by-one and the infinite loop both appear. Every later rung in this pattern is this loop with a different question at the probe.",
+  arc: "The base case of a whole pattern, and worth writing until the boundaries are automatic: while low is at most high, probe the middle, and move the side that cannot contain the answer. Two habits prevent most bugs. Compute the midpoint as low plus half the gap rather than by adding the two ends, so nothing overflows in languages with fixed-width integers. And decide the loop's contract before typing — either 'low <= high' with mid plus or minus one, or 'low < high' converging on a single survivor — then keep it consistent, because mixing the two is how the off-by-one and the infinite loop both appear. Every later rung in this pattern is this loop with a different question at the probe.",
   approach:
     "Maintain an inclusive search range [lo, hi] that must contain the target if it exists. Probe the midpoint: equal means done; smaller means the answer lives strictly right of mid; larger means strictly left. Each probe halves the range, giving the logarithmic bound.",
   complexity: { time: "O(log n)", space: "O(1)" },
@@ -66,7 +65,7 @@ export const problem: Problem = {
     {
       name: "Linear scan",
       summary:
-        "Ignore sortedness, check every element. The baseline the log bound is measured against.",
+        "Look at every element until the target turns up. Correct, and immediately disqualified: the statement demands O(log n) and this is O(n). It earns its place by naming what the sortedness is FOR — a scan works on any array, which is exactly why it cannot exploit the one promise this input makes.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def binary_search(nums: list[int], target: int) -> int:
     for i, x in enumerate(nums):
@@ -90,10 +89,8 @@ export const problem: Problem = {
     },
     {
       name: "Recursive",
-      whyNow:
-        "Checking every element ignores the only thing the input promises: order. Halving the range uses it, and the halving reads most naturally as a recursion.",
       summary:
-        "Same halving, expressed recursively. Cleaner to some eyes, costs stack frames; iterative is the production default.",
+        "The same halving, written as a function that calls itself on the surviving half. Identical comparisons and arguably the clearer statement of the invariant, but it spends a call frame per level — O(log n) stack against the loop's O(1) — for no gain the problem can see.",
       complexity: { time: "O(log n)", space: "O(log n) stack" },
       python: `def binary_search(nums: list[int], target: int) -> int:
     def go(lo: int, hi: int) -> int:

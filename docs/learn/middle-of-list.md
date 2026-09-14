@@ -536,7 +536,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Count, then walk half
 
-Traverse once to count the nodes, then traverse again stopping at index length // 2.
+Walk the list once to count the nodes, then walk again as far as the middle. Linear and constant-space, and the honest baseline — but it needs the whole list to exist before it can start, which rules it out for a stream, and it touches one and a half times as many nodes as the one-pass version.
 
 ```python
 class ListNode:

@@ -29,8 +29,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The jump version needs a table of last positions before it can move at all. A window plus a set of what is inside it needs only the characters in play and one rule - grow right, shrink left on a repeat - which is why this is the one to remember.",
-  arc:
-    "Every rung is a different answer to 'where should the window's left edge go when a repeat appears?' Recomputing from scratch is cubic; a set with a shrinking left edge is linear but steps the edge one at a time; remembering each character's LAST INDEX lets the edge jump straight past the previous occurrence. The jump is what makes it one pass with no inner loop. The detail that bites is that the left edge must never move backwards — a stale last-index from before the current window would drag it back — so the jump is always a maximum against the current edge. That guard is the same one every 'last seen' window needs, and it is the first thing to check when a window solution fails on repeats.",
+  arc: "Every rung is a different answer to 'where should the window's left edge go when a repeat appears?' Recomputing from scratch is cubic; a set with a shrinking left edge is linear but steps the edge one at a time; remembering each character's LAST INDEX lets the edge jump straight past the previous occurrence. The jump is what makes it one pass with no inner loop. The detail that bites is that the left edge must never move backwards — a stale last-index from before the current window would drag it back — so the jump is always a maximum against the current edge. That guard is the same one every 'last seen' window needs, and it is the first thing to check when a window solution fails on repeats.",
   approach:
     "Two indices bound a window; a set holds the characters inside it. Push the right edge forward one character per step. If the incoming character already sits in the set, pop characters from the left until it doesn't. The window is valid after every step, so tracking its maximum size answers the problem. Each character enters and leaves the window at most once — linear time.",
   complexity: { time: "O(n)", space: "O(min(n, alphabet))" },
@@ -78,7 +77,8 @@ export const problem: Problem = {
   alternatives: [
     {
       name: "Brute force",
-      summary: "Test every substring for uniqueness with a set.",
+      summary:
+        "Take every start, extend to every end, and rebuild a set from scratch to test that stretch for repeats. Three nested costs — n starts, n ends, and up to n characters re-examined per pair — which is cubic on a 5*10^4 string. The waste is that the set is thrown away and rebuilt for a substring overlapping the last one almost entirely.",
       complexity: { time: "O(n³)", space: "O(n)" },
       python: `def longest_unique(s: str) -> int:
     best = 0
