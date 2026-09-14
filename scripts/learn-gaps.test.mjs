@@ -21,9 +21,9 @@ import { audit } from "./learn-gaps.mjs"
 // without saying why in the commit.
 const BASELINE = {
   untaught: 45, // problems with no teaching document at all
-  calculations: 120, // missing "Reading the Calculations"
-  fluent: 120, // missing "How to Get Fluent"
-  hood: 120, // missing an "Under the hood" callout
+  calculations: 119, // missing "Reading the Calculations"
+  fluent: 119, // missing "How to Get Fluent"
+  hood: 119, // missing an "Under the hood" callout
   interview: 45,
   arc: 45,
   comparison: 45,

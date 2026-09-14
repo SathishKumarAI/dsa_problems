@@ -71,6 +71,67 @@ nums = [1, 2, 3, 1]        answer: true   (the value 1 sits at both position 0 a
 
 ---
 
+## Reading the Calculations
+
+This problem has no arithmetic in it at all — no index formula, no running total, nothing to
+rearrange. What it has instead is four one-line solutions that look interchangeable and are not. The
+useful skill here is reading a line and seeing **how much of the input it commits you to reading**,
+because that, not the big-O, is what separates these rungs.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `range(i + 1, len(nums))` | "everything **after** `i`" | Starting at `i` compares `nums[i]` with itself and reports a repeat on every input | `range(i, …)` returns `True` always; `range(0, …)` does every comparison twice |
+| `x in seen` | "have I met this value before?" | The set answers without looking through anything — measured flat below | On a `list` it is a scan, and the rung is quadratic again with extra steps |
+| `seen.add(x)` **after** the check | record it for later elements | **Order is the whole correctness argument.** See below | Add first and every element finds itself; the function returns `True` on every input |
+| `len(set(nums)) != len(nums)` | "did anything collapse?" | A set drops duplicates, so a shorter set *is* a duplicate | `==` inverts the answer; `<` is correct but says less clearly why |
+| `return True` inside the loop | **stop reading** | Existence, not identity — nothing later can change a `True` | Setting a flag and continuing is still correct, and throws away the only thing this rung has |
+| `nums[i] == nums[i + 1]` (sorted) | "are these neighbours equal?" | After sorting, equal values are adjacent, so only neighbours need checking | `i - 1` on an unguarded loop reads `nums[-1]`, which in Python is the **last** element — a wrong answer, not a crash |
+| `sorted(nums)` vs `nums.sort()` | a copy vs in place | `sort()` mutates the **caller's** array | A caller that needed its original order silently loses it |
+
+### The one rearrangement
+
+There is no formula here, so the "rearrangement" is a swap of two lines, and it is the only thing in
+this problem that can be subtly wrong:
+
+```
+    for x in nums:                       for x in nums:
+        if x in seen:  return True           seen.add(x)
+        seen.add(x)                          if x in seen:  return True
+    return False                         return False
+
+    correct                              returns True on EVERY input
+```
+
+Read the right-hand version literally: it puts `x` into the set and then asks whether `x` is in the
+set. It always is. It will pass `[1, 2, 3, 1]`, pass `[1, 1]`, pass every test whose answer is
+`true`, and fail only on inputs with no duplicate — which is exactly the case people forget to test.
+The check must happen against the values seen **strictly earlier**, and "strictly earlier" is
+enforced by nothing but the order of those two lines.
+
+### How to hand-trace it
+
+`nums = [1, 2, 3, 1]`. Every row below is printed by the script at the foot of this document.
+
+| Step | `x` | `seen` before | `x in seen`? | Action |
+|---|---|---|---|---|
+| 1 | `1` | `{}` | no | add `1` |
+| 2 | `2` | `{1}` | no | add `2` |
+| 3 | `3` | `{1, 2}` | no | add `3` |
+| 4 | `1` | `{1, 2, 3}` | **yes** | **return `True`** |
+
+Four elements, four probes, and the loop happened to run to the end. Now move the repeat to the
+front — `[1, 1, 2, 3]` — and it is two probes with one value stored. Same array length, same answer,
+a quarter of the work. That sensitivity to *where* the repeat sits is not a detail of this rung; it
+is the only thing this rung has that the one-liner does not, and the measurement below prices it.
+
+**The recipe, for any input:** walk left to right holding a set of what you have already passed. At
+each element, ask before you add. If you ever add before you ask, you have written a function that
+returns `True` on everything.
+
+---
+
 ## Approach 1 — Brute force: compare every pair
 
 ### The idea
@@ -390,6 +451,51 @@ sorting holds.
 caller's array alone. Choose sorting over it only when extra memory is genuinely unavailable, and
 brute force only for toy-sized inputs.
 
+> **Under the hood.** "The early exit means that number is often far below `n`" is the claim this
+> rung is sold on, so price it. Three arrays of the same length, the same values, differing only in
+> **where the repeat sits** — and for the brute force, how much of the input each rung actually
+> touches, at `n = 2,000`:
+>
+> | shape | brute-force comparisons | set probes |
+> |---|---|---|
+> | repeat at position 1 | 1 | 2 |
+> | repeat at the last position | 1,999 | 2,000 |
+> | no repeat at all | **1,999,000** | 2,000 |
+>
+> The set column barely moves; the brute-force column goes from 1 to two million on the same
+> `n`. That last row is `n(n-1)/2`, and it is the row a hand-written test almost never contains,
+> because the inputs people invent to test "find the duplicate" have a duplicate in them.
+>
+> Now the part that should change how you talk about this problem. Wall clock at the ceiling,
+> `n = 10^5`, best of three:
+>
+> | shape | sort | `len(set(nums))` | early exit |
+> |---|---|---|---|
+> | repeat at position 1 | 10.21 ms | 3.34 ms | **0.10 ms** |
+> | repeat at the last position | 10.51 ms | **3.62 ms** | 5.46 ms |
+> | no repeat at all | 13.12 ms | **3.33 ms** | 5.35 ms |
+>
+> The one-line `len(set(nums)) != len(nums)` — filed above as an *addition*, not the answer — is the
+> fastest rung on two shapes out of three, and on the worst case it beats the "optimal" rung by
+> **60%**. Not because it does less work: it does strictly more, building the whole set every time.
+> It wins because `set(nums)` is one bulk operation in C while the early-exit loop pays Python's
+> per-element interpreter cost on all `10^5` iterations. The same relationship holds at every size
+> measured — 0.30 vs 0.51 ms at `10^4`, 3.81 vs 5.66 at `10^5`, 49.0 vs 82.9 at `10^6`.
+>
+> So what is the early exit actually for? Two things, and neither of them is worst-case speed:
+>
+> - **The best case**, which is 33× here and unbounded in general — 0.10 ms against 3.34 ms when the
+>   repeat is near the front.
+> - **The memory it never allocates.** Values stored before the answer is known: **1** when the repeat
+>   is at position 1, against 100,000 for the one-liner, which always builds the whole set. On a
+>   stream, or on an input that does not fit in memory, that is not a constant factor — it is the
+>   difference between running and not.
+>
+> **What to take from this.** Two rungs with the same `O(n)` and the same worst case can differ by
+> 60% in one direction and 2,000× in the other, and which one you want is decided by your input and
+> your memory budget rather than by the ladder. Say that out loud in an interview and you are having
+> a different conversation from the one most candidates have.
+
 ---
 
 ## Approach 5 — Direct indexing when the values are small and bounded  *(an addition — not in the data file's ladder)*
@@ -559,6 +665,45 @@ failure mode: it needs an input with a length that can be measured and traversed
 when a problem bounds its values to a small range an array of flags replaces the hash set, and when
 the values are a range like `1..n`, in-place sign marking reaches `O(1)` extra space. Spotting which
 constraint would unlock either is the transferable skill.
+
+---
+
+## How to Get Fluent
+
+This problem is small enough to be written from memory in thirty seconds, which is exactly why it is
+worth drilling properly: the things that go wrong here are not about the algorithm.
+
+**1. Write the early-exit version from nothing.** Four lines.
+*Done when:* the `if x in seen` came before the `seen.add(x)` without you having to think about it.
+If you had to pause and check, do drill 2 now rather than later.
+
+**2. Write it wrong on purpose.** Swap those two lines and run it on `[1, 2, 3]`.
+*Done when:* you have watched it return `True` on an array with no duplicate, and can say why every
+test with a `true` answer still passes. The bug that only fails the case you forgot to write is the
+one worth having met.
+
+**3. Answer "which one would you actually ship?" with a question back.** The question is *how long is
+the array, and is there a memory budget?*
+*Done when:* you can name the one-liner as the faster choice on a worst case, the early exit as the
+one with the bounded memory and the good best case, and mean both.
+
+**4. Build the three shapes yourself and time them.** Repeat at the front, repeat at the back, no
+repeat — same `n`, same values. The script at the foot of this page builds them.
+*Done when:* you predicted, before running it, which of the three rows would be fastest and which
+would be slowest, and were right about at least two.
+
+**5. Count the brute force.** Run it on 2,000 distinct values.
+*Done when:* you have seen 1,999,000 comparisons and recognise it as `n(n-1)/2` on sight, because
+that expression turns up in half the problems in this repo.
+
+**6. Answer the two follow-ups cold.** *"No extra memory allowed"* and *"the values are all between
+1 and n"*.
+*Done when:* you reach for sorting on the first and for in-place sign marking on the second, and can
+say in one sentence what each one costs you — the caller's array order, and the values themselves.
+
+**The one sentence worth keeping a month from now:** *ask before you add, because "seen" has to mean
+"seen earlier"* — and its shadow: *the early exit buys a best case and a memory bound, not a faster
+worst case.*
 
 ---
 
@@ -769,6 +914,7 @@ Run: python contains_duplicate_all.py
 from __future__ import annotations
 
 import random
+import time
 
 MAX_DIRECT_SPAN = 1 << 20  # widest value range still worth a flag array
 
@@ -837,7 +983,111 @@ APPROACHES = [
 
 # --- test suite ---------------------------------------------------------------
 
+def _best_of(fn, rounds: int = 3) -> float:
+    best = float("inf")
+    for _ in range(rounds):
+        start = time.perf_counter()
+        fn()
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
+def _shapes(n: int) -> list[tuple[str, list[int]]]:
+    """Same length, same values. Only WHERE the repeat sits changes."""
+    rng = random.Random(20260913)
+    distinct = rng.sample(range(-10**9, 10**9), n)
+    early, late = list(distinct), list(distinct)
+    early[1] = early[0]
+    late[-1] = late[0]
+    return [
+        ("repeat at position 1", early),
+        ("repeat at the last position", late),
+        ("no repeat at all", distinct),
+    ]
+
+
+def trace_the_seen_set() -> None:
+    """Every row of the hand-trace table in 'Reading the Calculations'."""
+    for nums in ([1, 2, 3, 1], [1, 1, 2, 3]):
+        print(f"=== {nums} ===")
+        seen: set[int] = set()
+        for step, x in enumerate(nums, 1):
+            before = sorted(seen)
+            hit = x in seen
+            print(
+                f"  {step}. x={x}  seen before {before}  in seen? "
+                f"{'YES -> return True' if hit else 'no -> add it'}"
+            )
+            if hit:
+                break
+            seen.add(x)
+        print(f"  probes {step}, values stored {len(seen)}")
+
+
+def measure() -> None:
+    """The numbers quoted in the 'Under the hood' callout. Counts are exact and reproduce
+    anywhere; timings are one machine's, and the SHAPE of each column is the claim."""
+    print("\n=== how much of the input each rung touches, n = 2,000 ===")
+    print(f"  {'shape':>28} {'brute compares':>16} {'set probes':>12}")
+    for label, nums in _shapes(2000):
+        compares = 0
+        brute = False
+        for i in range(len(nums)):
+            for j in range(i + 1, len(nums)):
+                compares += 1
+                if nums[i] == nums[j]:
+                    brute = True
+                    break
+            if brute:
+                break
+        probes, seen, viaset = 0, set(), False
+        for x in nums:
+            probes += 1
+            if x in seen:
+                viaset = True
+                break
+            seen.add(x)
+        assert brute == viaset
+        print(f"  {label:>28} {compares:>16} {probes:>12}")
+
+    print("\n=== wall clock at the ceiling, n = 10^5 ===")
+    print(f"  {'shape':>28} {'sort ms':>9} {'len(set) ms':>12} {'early exit ms':>14}")
+    for label, nums in _shapes(10**5):
+        print(
+            f"  {label:>28}"
+            f" {_best_of(lambda d=nums: contains_duplicate_sort_scan(list(d))) * 1e3:>9.2f}"
+            f" {_best_of(lambda d=nums: contains_duplicate_set_length(list(d))) * 1e3:>12.2f}"
+            f" {_best_of(lambda d=nums: contains_duplicate_seen_set(list(d))) * 1e3:>14.2f}"
+        )
+
+    print("\n=== the worst case — no repeat — as n grows ===")
+    print(f"  {'n':>10} {'sort ms':>9} {'len(set) ms':>12} {'early exit ms':>14}")
+    rng = random.Random(5)
+    for n in (10**4, 10**5, 10**6):
+        nums = rng.sample(range(-10**9, 10**9), n)
+        print(
+            f"  {n:>10}"
+            f" {_best_of(lambda d=nums: contains_duplicate_sort_scan(list(d))) * 1e3:>9.2f}"
+            f" {_best_of(lambda d=nums: contains_duplicate_set_length(list(d))) * 1e3:>12.2f}"
+            f" {_best_of(lambda d=nums: contains_duplicate_seen_set(list(d))) * 1e3:>14.2f}"
+        )
+
+    print("\n=== values stored before the answer is known (the one-liner always stores n) ===")
+    print(f"  {'shape':>28} {'early exit stores':>18}")
+    for label, nums in _shapes(10**5):
+        seen = set()
+        for x in nums:
+            if x in seen:
+                break
+            seen.add(x)
+        print(f"  {label:>28} {len(seen):>18}")
+
+
 def main() -> None:
+    trace_the_seen_set()
+    measure()
+    print()
+
     cases: list[tuple[str, list[int]]] = [
         ("statement example, a repeat", [1, 2, 3, 1]),
         ("statement example, all distinct", [1, 2, 3, 4]),
