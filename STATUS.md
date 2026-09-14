@@ -2,7 +2,29 @@
 
 ## Where the code is
 
-**`master` at `a54a734`, pushed to `origin`, tree clean.** The long-running branch
+**`master` at `cae2fd7`, tree clean.** Session of **2026-09-14** landed three branches:
+`chore/stop-committing-generated-learn-pages` (B72/B76), `feat/rung-keys` (B77 + the
+`cycle-detect` pilot of B79) and `feat/ladder-ui-and-compare` (B87). Everything below is verified
+green, not asserted: `npm run check` 765 tests / 0 fail, `npm run test:ui` 167 / 0 fail,
+`verify:code` 756 blocks / 0 failed, `run.mjs --id cycle-detect` 48 translations / 0 disagreed.
+
+**Read `docs/AUDIT-2026-09-14.md` first.** It is the findings + plan this session executed from,
+and it names what is left. The two things on it that matter more than the content queue:
+
+* **B95 — content is shipped as code.** 63 928 lines of content against 21 058 of application, all
+  statically imported, so the first chunk is **478 KB gzip + 260 KB gzip**. At B65's 500-problem
+  target that is ~2.9 MB. This is the ceiling on the stated goal; fix it before the catalogue grows.
+* **B79 — 44 problems still to promote.** The machinery and both gates are in. `cycle-detect` is
+  the worked example: two rungs became four, keys on every alternative, the journey wired
+  `from: "set"` rather than `from: 0`.
+
+**The trap this session found the hard way:** `DerivedSpec.from` was a positional index into
+`problem.alternatives`, 133 uses across 88 files. Inserting a rung repointed a journey act at the
+wrong algorithm — right name, wrong code, wrong complexity, no error. `from` takes a key now and
+`problems.test.ts` fails the build if a keyed problem is still wired by position. Any B79 batch
+MUST rewire the journey in the same commit.
+
+The long-running branch
 `feat/deep-docs-and-list-journeys` was merged with `--no-ff` on 2026-09-13 (76 commits, history
 preserved on purpose) and is no longer the place to work. Start a new `type/scope-slug` branch from
 `master`.
