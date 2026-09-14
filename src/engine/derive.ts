@@ -85,7 +85,21 @@ export interface Rung<C extends Cell = number> {
   hints?: string[]
   quiz?: Quiz[]
   tools?: Tool[]
-  from?: number
+  // Which rung of `problem.alternatives` this act reads its code and cost from.
+  //
+  // A NUMBER is a positional index, and it is only safe while nobody ever
+  // reorders that array. B79 reorders it — promoting an approach the teaching
+  // document already taught inserts a rung — and the first promotion proved the
+  // hazard: inserting a brute force at index 0 of cycle-detect silently
+  // repointed the journey's `set` act at it, so the act rendered the nested
+  // walk's code under the visited set's name and claimed O(n²). Nothing failed;
+  // it just taught the wrong thing.
+  //
+  // So: pass the alternative's `key` instead. A problem whose alternatives
+  // carry keys MUST be wired by key, and `journeys.test.ts` fails the build
+  // otherwise. The 133 numeric uses left are on problems that have not been
+  // promoted yet and stay correct until they are.
+  from?: number | string
   pseudo?: string[] // story acts only: no Problem code to read
   complexity?: string
   run(d: Data<C>): Generator<DFrame>
@@ -177,7 +191,14 @@ export function deriveJourney<C extends Cell = number>(
   spec: DerivedSpec<C>
 ): Journey<Data<C>> {
   const acts = spec.rungs.map<Act<Data<C>, DFrame>>((r) => {
-    const src = r.from === undefined ? problem : problem.alternatives![r.from]
+    const src =
+      r.from === undefined
+        ? problem
+        : typeof r.from === "string"
+          ? problem.alternatives!.find(
+              (a) => (a.key ?? a.name) === r.from
+            )!
+          : problem.alternatives![r.from]
     const solved = "python" in src && !r.pseudo
     return {
       key: r.key,

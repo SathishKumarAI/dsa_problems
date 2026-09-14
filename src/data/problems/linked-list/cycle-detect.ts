@@ -58,8 +58,64 @@ export const problem: Problem = {
     }
     return false;
 }`,
+  // B79. `docs/deep/cycle-detect_explained.md` teaches four approaches; this
+  // file held one, so the problem page could offer two rungs where the reading
+  // offered four. The two missing ones were disclosed additions — the document
+  // says so in its headings — but a disclosed addition is still an approach the
+  // page cannot name, rank or compare. They are records now, in the document's
+  // own order, keyed so `lib/ladder.ts` can tell `set` the act from `set` the
+  // alternative. The prose did not move; only the record is new.
   alternatives: [
     {
+      key: "brute",
+      name: "Nested walk",
+      summary:
+        "If you may not store where you have been, look it up again instead: on reaching the node at position i, walk a second pointer from the head through positions 0 … i-1 and ask whether any of them IS that node. It trades memory for recomputation, which is the same trade the optimal answer makes — only that one pays with a single extra pointer instead of a full prefix re-walk per node. Keep it as the oracle you check a clever implementation against when you do not yet trust anything else.",
+      complexity: { time: "O(n²)", space: "O(1)" },
+      python: `def has_cycle(head) -> bool:
+    node, index = head, 0
+    while node is not None:
+        probe = head
+        for _ in range(index):
+            if probe is node:
+                return True
+            probe = probe.next
+        node = node.next
+        index += 1
+    return False`,
+      java: `public boolean hasCycle(ListNode head) {
+    ListNode node = head;
+    int index = 0;
+    while (node != null) {
+        ListNode probe = head;
+        for (int i = 0; i < index; i++) {
+            if (probe == node) return true;
+            probe = probe.next;
+        }
+        node = node.next;
+        index++;
+    }
+    return false;
+}`,
+      cpp: `bool hasCycle(const ListNode* head) {
+    const ListNode* node = head;
+    int index = 0;
+    while (node != nullptr) {
+        const ListNode* probe = head;
+        for (int i = 0; i < index; i++) {
+            if (probe == node) return true;
+            probe = probe->next;
+        }
+        node = node->next;
+        index++;
+    }
+    return false;
+}`,
+    },
+    {
+      key: "set",
+      whyNow:
+        "The nested walk answers \"have I been here?\" by re-deriving it from scratch at every node, re-walking the whole prefix each time — a quadratic number of comparisons to test a property one pass could test, if the pass were allowed to remember anything at all.",
       name: "Visited set",
       summary:
         "Walk the list putting every node OBJECT into a set, not its value, because duplicate values are legal and would report a cycle that is not there. The first node already in the set is where the cycle closes, so this even names the entry node for free. Its one sin is the O(n) memory, which is the whole reason the pointer trick exists.",
@@ -86,6 +142,44 @@ export const problem: Problem = {
     while (curr != nullptr) {
         if (!seen.insert(curr).second) return true;
         curr = curr->next;
+    }
+    return false;
+}`,
+    },
+    {
+      key: "mark",
+      name: "Value-marking",
+      whyNow:
+        "Floyd is already optimal on both bounds, so there is no complexity left to win — only the constant. It walks the list twice over, dereferencing up to 3n pointers to avoid writing anything down, and the one storage still going spare is the list itself.",
+      summary:
+        "Stamp each node on the way out with 100001 — a value the stated range makes impossible, so only a node WE stamped can hold it — and arriving at a stamped node means you have been there. One visit per node instead of Floyd's up-to-two, at the price of destroying every value in the list. It needs both halves of an assumption: the value range is bounded, and the nodes are yours to mutate. If either half fails this is not merely suboptimal, it is wrong, and a function called hasCycle that silently erases its input is the kind of thing that passes review and then corrupts data.",
+      complexity: { time: "O(n)", space: "O(1)" },
+      python: `def has_cycle(head) -> bool:
+    MARK = 100_001  # outside -10**5 .. 10**5, so no real node holds it
+    node = head
+    while node is not None:
+        if node.val == MARK:
+            return True
+        node.val = MARK  # destructive: the original value is gone
+        node = node.next
+    return False`,
+      java: `public boolean hasCycle(ListNode head) {
+    final int MARK = 100001;
+    ListNode node = head;
+    while (node != null) {
+        if (node.val == MARK) return true;
+        node.val = MARK;
+        node = node.next;
+    }
+    return false;
+}`,
+      cpp: `bool hasCycle(ListNode* head) {
+    const int MARK = 100001;
+    ListNode* node = head;
+    while (node != nullptr) {
+        if (node->val == MARK) return true;
+        node->val = MARK;
+        node = node->next;
     }
     return false;
 }`,

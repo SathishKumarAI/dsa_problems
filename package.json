@@ -12,6 +12,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc -b",
     "preview": "vite preview",
+    "pretest": "npm run docs:learn",
     "test": "node --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
     "api": "node server/index.ts",
     "pretest:ui": "npm run docs:learn",

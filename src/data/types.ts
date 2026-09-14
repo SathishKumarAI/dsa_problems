@@ -38,6 +38,18 @@ export interface Code {
 }
 
 export interface Solution extends Code {
+  // A stable id for this rung, in the same vocabulary a journey uses for
+  // `Act.key` — `brute`, `set`, `floyd`, `mark`. Three things need a rung to be
+  // ADDRESSABLE rather than merely present: the comparator's `?compare=a,b`
+  // route, the `{#key}` anchor that binds a heading in `docs/deep/` to this
+  // record (B78), and the merge in `lib/ladder.ts` that decides whether an
+  // alternative is the same rung as a journey act or a different one.
+  //
+  // Optional, and it falls back to a slug of `name`, because 249 alternatives
+  // did not need renaming to make three problems addressable. Write it
+  // explicitly when the key is load-bearing: a compare link, a doc anchor, or
+  // a rung that must line up with an act.
+  key?: string
   name: string // short tab label: "Brute force", "Sorting", "Hash map"
   summary: string
   complexity: { time: string; space: string }
