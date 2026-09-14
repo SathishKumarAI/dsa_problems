@@ -112,13 +112,18 @@ def diameter_every_node(root: Optional[TreeNode]) -> int:
 
 > **Watch out.** Measuring only through the **root** — `depth(root.left) + depth(root.right) + 2`.
 > The misconception is that the longest path must pass through the top, and the reason it survives
-> is that it is right on most small examples. It is right on the statement's first example (`3`), and
-> — measured — it is also right on the statement's *third* example, `[1, 2, null, 3, null, 4]`,
-> which returns `3`. On `[1, 2, null, 3, 4, 5, 6, 7]` it returns **`3`** where the answer is **`4`**.
+> is that it is right on most small examples. It is right on both of the statement's first two —
+> `[1, 2, 3, 4, 5]` and `[1, 2]` — because in each of them the longest path happens to have the root
+> as an endpoint. The statement's **third** example is the one that kills it: on
+> `[1, 2, null, 3, 4, 5, 6, 7]` it returns **`3`** where the answer is **`4`**, the path
+> `5 → 3 → 2 → 4 → 7` bending at node `2`.
 
-That is worth pausing on. Two of the three examples given with this problem fail to catch the most
-common wrong solution, because in both of them the longest path happens to have the root as an
-endpoint. A test suite made of the provided examples would pass it.
+That third example only earns its place because it was checked. Until 2026-09-13 it was
+`[1, 2, null, 3, null, 4]` — a left-leaning chain, carrying the note *"a solution that only measures
+through the root gets this wrong"* — and the through-the-root formula returns `3` on it, which is the
+right answer, because a chain's longest path ends at the root. All three provided examples passed the
+wrong solution, so a test suite built from them would have passed it too. **Run the wrong solution on
+your examples.** An example that does not distinguish the answers is decoration.
 
 ### Complexity and when to use this
 

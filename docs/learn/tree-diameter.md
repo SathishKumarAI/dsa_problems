@@ -27,7 +27,7 @@ Given the root of a binary tree, return the length of the longest path between a
 |---|---|---|
 | `root = [1, 2, 3, 4, 5]` | `3` | 4 → 2 → 1 → 3 is three edges. The path bends at the root here, but nothing guarantees that. |
 | `root = [1, 2]` | `1` | — |
-| `root = [1, 2, null, 3, null, 4]` | `3` | A chain hanging off the left. The whole path is inside the left subtree — a solution that only measures through the root gets this wrong. |
+| `root = [1, 2, null, 3, 4, 5, 6, 7]` | `4` | The path is 5 → 3 → 2 → 4 → 7, four edges that bend at node 2 and never reach the root. Measuring only through the root gives 3, so this is the example that catches the most common wrong solution — the first two do not, because in both of them the longest path happens to end at the root. |
 
 <details>
 <summary>Hints, one nudge at a time — open them in order</summary>
@@ -152,13 +152,18 @@ def diameter_every_node(root: Optional[TreeNode]) -> int:
 
 > **Watch out.** Measuring only through the **root** — `depth(root.left) + depth(root.right) + 2`.
 > The misconception is that the longest path must pass through the top, and the reason it survives
-> is that it is right on most small examples. It is right on the statement's first example (`3`), and
-> — measured — it is also right on the statement's *third* example, `[1, 2, null, 3, null, 4]`,
-> which returns `3`. On `[1, 2, null, 3, 4, 5, 6, 7]` it returns **`3`** where the answer is **`4`**.
+> is that it is right on most small examples. It is right on both of the statement's first two —
+> `[1, 2, 3, 4, 5]` and `[1, 2]` — because in each of them the longest path happens to have the root
+> as an endpoint. The statement's **third** example is the one that kills it: on
+> `[1, 2, null, 3, 4, 5, 6, 7]` it returns **`3`** where the answer is **`4`**, the path
+> `5 → 3 → 2 → 4 → 7` bending at node `2`.
 
-That is worth pausing on. Two of the three examples given with this problem fail to catch the most
-common wrong solution, because in both of them the longest path happens to have the root as an
-endpoint. A test suite made of the provided examples would pass it.
+That third example only earns its place because it was checked. Until 2026-09-13 it was
+`[1, 2, null, 3, null, 4]` — a left-leaning chain, carrying the note *"a solution that only measures
+through the root gets this wrong"* — and the through-the-root formula returns `3` on it, which is the
+right answer, because a chain's longest path ends at the root. All three provided examples passed the
+wrong solution, so a test suite built from them would have passed it too. **Run the wrong solution on
+your examples.** An example that does not distinguish the answers is decoration.
 
 ### Complexity and when to use this
 

@@ -90,7 +90,7 @@ One tree, used in every approach: `root = [3, 9, 20, null, null, 15, 7]`, the ba
 
 ---
 
-## Approach 1: Judge every node, independently  *(an addition — not in the data file's ladder)*
+## Approach 1: Judge every node, independently
 
 ### The idea
 
@@ -142,6 +142,11 @@ def is_balanced_every_node(root: Optional[TreeNode]) -> bool:
     return all(verdicts)
 ```
 
+The ladder's rung spells the same thing as a plain recursion, binding the three answers to names
+before combining them — `here and left and right` rather than `here and is_balanced(left) and …`,
+because `and` short-circuits and skipping the children is exactly what approach 2 does. Same
+measurements, same count, no list.
+
 ### Common mistake
 
 > **Watch out.** Checking the root and stopping — `return abs(height(root.left) - height(root.right))
@@ -165,7 +170,7 @@ nodes" is this function with the `all()` removed.
 
 ---
 
-## Approach 2: Stop at the first failure
+## Approach 2: Stop at the first failure  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -207,9 +212,11 @@ def is_balanced_short_circuit(root: Optional[TreeNode]) -> bool:
 
 ### Common mistake
 
-> **Watch out.** Believing this rung is the quadratic one. It is the one the app's ladder shows and
-> labels `O(n²)`, and **it is not quadratic** — measured on a left spine it makes `100`, `200`, `400`
-> and `800` `height()` entries for `n` of `50`, `100`, `200`, `400`. Strictly linear.
+> **Watch out.** Believing this rung is the quadratic one. It is the version almost everyone writes,
+> and **it is not quadratic** — measured on a left spine it makes `100`, `200`, `400` and `800`
+> `height()` entries for `n` of `50`, `100`, `200`, `400`. Strictly linear. Approach 1 above, with no
+> short circuit, is the quadratic one: `2 550` / `10 100` / `40 200` / `160 400` on those same spines.
+> That is the rung the app's ladder shows, and it is labelled `O(n²)` because it earns it.
 
 Why: to recurse deep, every ancestor must *pass*, and a node that passes is balanced. A tree that is
 balanced all the way down has height `O(log n)`, so the only trees this rung explores deeply are
@@ -552,7 +559,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Measure the height at every node
 
-For each node, measure both subtree heights from scratch, check they differ by at most one, then recurse into the children. It matches the definition word for word, and every measurement re-walks a subtree its parent already walked, so a node deep in a balanced tree is measured once for every ancestor standing over it.
+For each node, measure both subtree heights from scratch and check they differ by at most one, judging every node independently — the children are measured even when this node has already failed. That missing early exit is exactly what makes it quadratic: on a left spine it makes 2,550 height() entries at n = 50 and 160,400 at n = 400, four times the work for twice the nodes. Put the short circuit back and it is O(n log n) instead, because reaching a deep node would then need every ancestor to be balanced.
 
 ```python
 class TreeNode:
@@ -571,9 +578,14 @@ def height(node: TreeNode | None) -> int:
 def is_balanced(root: TreeNode | None) -> bool:
     if root is None:
         return True
-    if abs(height(root.left) - height(root.right)) > 1:
-        return False
-    return is_balanced(root.left) and is_balanced(root.right)
+    here = abs(height(root.left) - height(root.right)) <= 1
+    # Bound before combining, so every node is judged even once one has failed.
+    # The missing early exit is what makes this quadratic rather than O(n log n):
+    # with it, reaching a deep node would require every ancestor to be balanced,
+    # and a tree balanced all the way down is only O(log n) tall.
+    left = is_balanced(root.left)
+    right = is_balanced(root.right)
+    return here and left and right
 ```
 
 **O(n^2) time · O(h) space**
@@ -588,8 +600,12 @@ public int height(TreeNode node) {
 
 public boolean isBalanced(TreeNode root) {
     if (root == null) return true;
-    if (Math.abs(height(root.left) - height(root.right)) > 1) return false;
-    return isBalanced(root.left) && isBalanced(root.right);
+    boolean here = Math.abs(height(root.left) - height(root.right)) <= 1;
+    // Bound before combining: && would short-circuit and skip the children,
+    // which turns this into O(n log n). Judging every node is the whole point.
+    boolean left = isBalanced(root.left);
+    boolean right = isBalanced(root.right);
+    return here && left && right;
 }
 ```
 
@@ -605,8 +621,12 @@ int height(const TreeNode* node) {
 
 bool isBalanced(const TreeNode* root) {
     if (root == nullptr) return true;
-    if (abs(height(root->left) - height(root->right)) > 1) return false;
-    return isBalanced(root->left) && isBalanced(root->right);
+    bool here = abs(height(root->left) - height(root->right)) <= 1;
+    // Bound before combining: && would short-circuit and skip the children,
+    // which turns this into O(n log n). Judging every node is the whole point.
+    bool left = isBalanced(root->left);
+    bool right = isBalanced(root->right);
+    return here && left && right;
 }
 ```
 

@@ -25,9 +25,9 @@ export const problem: Problem = {
     },
     { input: "root = [1, 2]", output: "1" },
     {
-      input: "root = [1, 2, null, 3, null, 4]",
-      output: "3",
-      note: "A chain hanging off the left. The whole path is inside the left subtree — a solution that only measures through the root gets this wrong.",
+      input: "root = [1, 2, null, 3, 4, 5, 6, 7]",
+      output: "4",
+      note: "The path is 5 → 3 → 2 → 4 → 7, four edges that bend at node 2 and never reach the root. Measuring only through the root gives 3, so this is the example that catches the most common wrong solution — the first two do not, because in both of them the longest path happens to end at the root.",
     },
   ],
   hints: [

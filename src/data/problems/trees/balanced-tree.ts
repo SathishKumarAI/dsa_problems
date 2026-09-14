@@ -87,7 +87,7 @@ bool isBalanced(const TreeNode* root) {
     {
       name: "Measure the height at every node",
       summary:
-        "For each node, measure both subtree heights from scratch, check they differ by at most one, then recurse into the children. It matches the definition word for word, and every measurement re-walks a subtree its parent already walked, so a node deep in a balanced tree is measured once for every ancestor standing over it.",
+        "For each node, measure both subtree heights from scratch and check they differ by at most one, judging every node independently — the children are measured even when this node has already failed. That missing early exit is exactly what makes it quadratic: on a left spine it makes 2,550 height() entries at n = 50 and 160,400 at n = 400, four times the work for twice the nodes. Put the short circuit back and it is O(n log n) instead, because reaching a deep node would then need every ancestor to be balanced.",
       complexity: { time: "O(n^2)", space: "O(h)" },
       python: `class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):
@@ -105,9 +105,14 @@ def height(node: TreeNode | None) -> int:
 def is_balanced(root: TreeNode | None) -> bool:
     if root is None:
         return True
-    if abs(height(root.left) - height(root.right)) > 1:
-        return False
-    return is_balanced(root.left) and is_balanced(root.right)`,
+    here = abs(height(root.left) - height(root.right)) <= 1
+    # Bound before combining, so every node is judged even once one has failed.
+    # The missing early exit is what makes this quadratic rather than O(n log n):
+    # with it, reaching a deep node would require every ancestor to be balanced,
+    # and a tree balanced all the way down is only O(log n) tall.
+    left = is_balanced(root.left)
+    right = is_balanced(root.right)
+    return here and left and right`,
       java: `public int height(TreeNode node) {
     if (node == null) return 0;
     return 1 + Math.max(height(node.left), height(node.right));
@@ -115,8 +120,12 @@ def is_balanced(root: TreeNode | None) -> bool:
 
 public boolean isBalanced(TreeNode root) {
     if (root == null) return true;
-    if (Math.abs(height(root.left) - height(root.right)) > 1) return false;
-    return isBalanced(root.left) && isBalanced(root.right);
+    boolean here = Math.abs(height(root.left) - height(root.right)) <= 1;
+    // Bound before combining: && would short-circuit and skip the children,
+    // which turns this into O(n log n). Judging every node is the whole point.
+    boolean left = isBalanced(root.left);
+    boolean right = isBalanced(root.right);
+    return here && left && right;
 }`,
       cpp: `int height(const TreeNode* node) {
     if (node == nullptr) return 0;
@@ -125,8 +134,12 @@ public boolean isBalanced(TreeNode root) {
 
 bool isBalanced(const TreeNode* root) {
     if (root == nullptr) return true;
-    if (abs(height(root->left) - height(root->right)) > 1) return false;
-    return isBalanced(root->left) && isBalanced(root->right);
+    bool here = abs(height(root->left) - height(root->right)) <= 1;
+    // Bound before combining: && would short-circuit and skip the children,
+    // which turns this into O(n log n). Judging every node is the whole point.
+    bool left = isBalanced(root->left);
+    bool right = isBalanced(root->right);
+    return here && left && right;
 }`,
     },
   ],

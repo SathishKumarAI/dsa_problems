@@ -52,7 +52,7 @@ One tree, used in every approach: `root = [3, 9, 20, null, null, 15, 7]`, the ba
 
 ---
 
-## Approach 1: Judge every node, independently  *(an addition — not in the data file's ladder)*
+## Approach 1: Judge every node, independently
 
 ### The idea
 
@@ -104,6 +104,11 @@ def is_balanced_every_node(root: Optional[TreeNode]) -> bool:
     return all(verdicts)
 ```
 
+The ladder's rung spells the same thing as a plain recursion, binding the three answers to names
+before combining them — `here and left and right` rather than `here and is_balanced(left) and …`,
+because `and` short-circuits and skipping the children is exactly what approach 2 does. Same
+measurements, same count, no list.
+
 ### Common mistake
 
 > **Watch out.** Checking the root and stopping — `return abs(height(root.left) - height(root.right))
@@ -127,7 +132,7 @@ nodes" is this function with the `all()` removed.
 
 ---
 
-## Approach 2: Stop at the first failure
+## Approach 2: Stop at the first failure  *(an addition — not in the data file's ladder)*
 
 ### The idea
 
@@ -169,9 +174,11 @@ def is_balanced_short_circuit(root: Optional[TreeNode]) -> bool:
 
 ### Common mistake
 
-> **Watch out.** Believing this rung is the quadratic one. It is the one the app's ladder shows and
-> labels `O(n²)`, and **it is not quadratic** — measured on a left spine it makes `100`, `200`, `400`
-> and `800` `height()` entries for `n` of `50`, `100`, `200`, `400`. Strictly linear.
+> **Watch out.** Believing this rung is the quadratic one. It is the version almost everyone writes,
+> and **it is not quadratic** — measured on a left spine it makes `100`, `200`, `400` and `800`
+> `height()` entries for `n` of `50`, `100`, `200`, `400`. Strictly linear. Approach 1 above, with no
+> short circuit, is the quadratic one: `2 550` / `10 100` / `40 200` / `160 400` on those same spines.
+> That is the rung the app's ladder shows, and it is labelled `O(n²)` because it earns it.
 
 Why: to recurse deep, every ancestor must *pass*, and a node that passes is balanced. A tree that is
 balanced all the way down has height `O(log n)`, so the only trees this rung explores deeply are
