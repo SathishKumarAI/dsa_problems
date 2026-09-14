@@ -69,7 +69,7 @@ export const problem: Problem = {
     {
       name: "Scan for the turn",
       summary:
-        "Walk forward and return the first index whose value is larger than the value after it, or the last index if the array never turns down.",
+        "Walk forward and return the first index whose value exceeds the one after it. Linear, and it hides the fact that makes a logarithmic answer possible: neighbours are never equal, so a rising step guarantees a peak somewhere to the right. The scan waits to see the turn; a binary search can infer which side must contain one.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def find_peak_element(nums: list[int]) -> int:
     for i in range(len(nums) - 1):

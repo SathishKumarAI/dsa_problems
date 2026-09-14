@@ -73,7 +73,7 @@ export const problem: Problem = {
     {
       name: "Linear scan",
       summary:
-        "min() of the array. Correct, O(n), and exactly what the problem forbids you to settle for.",
+        "Take the minimum of the array. Correct, one line, and exactly what the problem forbids you to settle for — it reads every element because it assumes nothing, which is the right instinct on unstructured data and the wrong one here. Naming it is how you find out what structure is left to exploit once the array has been rotated.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def rotated_min(nums: list[int]) -> int:
     return min(nums)`,
@@ -97,7 +97,7 @@ export const problem: Problem = {
       whyNow:
         "min() reads everything and learns nothing about the array. Looking for the one place where the order breaks names the structure - the seam - even though it still walks the whole thing.",
       summary:
-        "Scan for the single place where nums[i] > nums[i+1] — the rotation seam. Linear again, but names the structure the binary search exploits.",
+        "Scan for the single place where a value is larger than the one after it: the rotation seam, which is also the minimum. Still linear, and it earns its rung by naming the structure the binary search will use — a rotated sorted array has exactly ONE descent, so finding it is a search for a local property rather than a comparison of every element.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def rotated_min(nums: list[int]) -> int:
     for i in range(len(nums) - 1):

@@ -781,7 +781,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Walk until it fits
 
-Scan from the front and return the first index whose value is at least the target, or the length if none is.
+Scan from the front and return the first index whose value is at least the target. Correct, linear, and worth stating because it defines the answer precisely — the first position not below the target — which is the exact predicate the binary search below narrows on. The idea is already right; only the searching is slow.
 
 ```python
 def search_insert(nums: list[int], target: int) -> int:

@@ -758,7 +758,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Scan for it
 
-Walk the array from the front comparing each value to the target, ignoring the order entirely.
+Walk from the front comparing each value to the target, ignoring the order entirely. It is the answer that survives ANY rearrangement of the input, which is exactly why it cannot beat linear: a rotated sorted array still promises that one half of any split is properly sorted, and a scan never asks which half.
 
 ```python
 def search_rotated(nums: list[int], target: int) -> int:
@@ -800,9 +800,7 @@ int searchRotated(const vector<int>& nums, int target) {
 
 ## Rung 2 — Find the pivot, then search one side
 
-> **Why now.** The scan ignores the structure completely. Locating the pivot recovers two genuinely sorted ranges and gets to log n — at the cost of two searches, and a pivot search that has to be right on its own before the second one means anything.
-
-Binary search for the rotation point, then run an ordinary binary search on whichever of the two sorted pieces could contain the target.
+Binary search for the rotation point, then run an ordinary binary search on whichever sorted piece could hold the target. Logarithmic and completely correct, and it walks the array twice to do what one pass can: each midpoint already reveals which side is sorted, so the pivot never has to be located on its own.
 
 ```python
 def search_rotated(nums: list[int], target: int) -> int:
@@ -968,7 +966,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan for it | O(n) time · O(1) space | the baseline — nothing before it |
-| 2 | Find the pivot, then search one side | O(log n) time · O(1) space | The scan ignores the structure completely. Locating the pivot recovers two genuinely sorted ranges and gets to log n — at the cost of two searches, and a pivot search that has to be right on its own before the second one means anything. |
+| 2 | Find the pivot, then search one side | O(log n) time · O(1) space | Binary search for the rotation point, then run an ordinary binary search on whichever sorted piece could hold the target. |
 | 3 | The one to remember | O(log n) time · O(1) space | Finding the pivot first and then binary searching the right piece works and is also logarithmic, but it walks the array twice and needs the pivot search to be correct on its own. Deciding which half is sorted at every step folds both jobs into one loop: the same comparison that narrows the range also identifies the ordered side. |
 
 ---

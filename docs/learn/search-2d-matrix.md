@@ -773,7 +773,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Scan every cell
 
-Walk the grid row by row comparing each value to the target, ignoring the fact that it is sorted at all.
+Walk the grid row by row comparing each value to the target. Correct on any matrix, which is the problem: it ignores both promises this input makes — each row ascends, and every row starts above the last one ends — and those two together are what make the grid one sorted sequence folded into rows.
 
 ```python
 def search_matrix(matrix: list[list[int]], target: int) -> bool:
@@ -820,9 +820,7 @@ bool searchMatrix(const vector<vector<int>>& matrix, int target) {
 
 ## Rung 2 — Pick the row, then binary search it
 
-> **Why now.** The full scan reads cells it already knows are too small. Choosing the row first cuts the work to one row plus the walk to reach it — but that walk is still linear in the number of rows.
-
-Walk down the rows until you find the one whose last value is at least the target, then binary search inside that single row.
+Walk down the rows until one could contain the target, then binary search inside it. Uses half the structure — the row-level ordering picks the row, but the walk to find it is linear in the number of rows. The logarithm in the second half is a hint that the first half is doing the same job the slow way.
 
 ```python
 def search_matrix(matrix: list[list[int]], target: int) -> bool:
@@ -976,7 +974,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan every cell | O(m · n) time · O(1) space | the baseline — nothing before it |
-| 2 | Pick the row, then binary search it | O(m + log n) time · O(1) space | The full scan reads cells it already knows are too small. Choosing the row first cuts the work to one row plus the walk to reach it — but that walk is still linear in the number of rows. |
+| 2 | Pick the row, then binary search it | O(m + log n) time · O(1) space | Walk down the rows until one could contain the target, then binary search inside it. |
 | 3 | The one to remember | O(log (m · n)) time · O(1) space | Searching row by row already exploits half the guarantee — that each row is sorted — but it walks past whole rows to find the right one. The second guarantee makes the entire grid a single sorted sequence, so one binary search over m·n positions replaces both loops, and log(m·n) beats m + log n. |
 
 ---

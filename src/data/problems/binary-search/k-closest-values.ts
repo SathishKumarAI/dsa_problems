@@ -121,7 +121,7 @@ export const problem: Problem = {
     {
       name: "Sort by distance",
       summary:
-        "Order every value by how far it is from x, breaking ties in favour of the smaller value, take the first k, and sort those back into ascending order.",
+        "Order every value by how far it is from x, take the first k, then sort those back into ascending order. Correct including the tie rule, and it sorts all n values by a key that only k of them will be judged on — and it destroys the input's own ordering, which is the property the answer depends on.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def k_closest_values(arr: list[int], k: int, x: int) -> list[int]:
     ranked = sorted(arr, key=lambda value: (abs(value - x), value))
@@ -153,7 +153,7 @@ export const problem: Problem = {
     {
       name: "A heap of the k best so far",
       summary:
-        "Walk the array keeping a heap of size k ordered by the same two-part rule, evicting the current worst whenever a better value arrives. Sort what is left.",
+        "Walk the array keeping a heap of size k under the same two-part rule, evicting the current worst whenever something better arrives. The sort's n log n becomes n log k, which matters when k is small — and it still reads every element, when the answer is a contiguous window whose position the sortedness already pins down.",
       complexity: { time: "O(n log k)", space: "O(k)" },
       whyNow:
         "Sorting the whole array orders values that will never be looked at — with k = 3 and ten thousand values, 9997 of those comparisons are wasted. A heap of size k only ever orders the candidates, so the log follows k instead of n.",
@@ -203,7 +203,7 @@ def k_closest_values(arr: list[int], k: int, x: int) -> list[int]:
     {
       name: "Two pointers, closing in",
       summary:
-        "Put one index at each end of the array and drop the further of the two values — ties dropping from the right — until exactly k values remain between them.",
+        "Put an index at each end and drop the further of the two values, ties dropping from the right, until k remain. No extra memory and no sorting, and it is the first rung to use the fact that the answer is contiguous — but it discards one value per step, so a k much smaller than n means nearly n steps to throw almost everything away.",
       complexity: { time: "O(n − k)", space: "O(1)" },
       whyNow:
         "A heap re-derives an ordering the array already has: it is sorted, so the k closest values are contiguous and the only things that can be discarded are at the two ends. Comparing the two ends and dropping the worse one needs no ordering structure at all.",

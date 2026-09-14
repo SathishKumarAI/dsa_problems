@@ -67,7 +67,7 @@ export const problem: Problem = {
     {
       name: "XOR everything",
       summary:
-        "Combine every value with exclusive-or; the pairs cancel and the lone value is what remains.",
+        "Combine every value with exclusive-or so the pairs cancel and the loner survives. Linear, constant-space, and a genuinely good answer to a DIFFERENT problem — it never uses the sortedness, which is the one thing this statement adds over the unsorted version, and it is why the O(log n) requirement rules it out.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def single_non_duplicate(nums: list[int]) -> int:
     out = 0

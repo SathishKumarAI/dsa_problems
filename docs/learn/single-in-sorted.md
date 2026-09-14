@@ -762,7 +762,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — XOR everything
 
-Combine every value with exclusive-or; the pairs cancel and the lone value is what remains.
+Combine every value with exclusive-or so the pairs cancel and the loner survives. Linear, constant-space, and a genuinely good answer to a DIFFERENT problem — it never uses the sortedness, which is the one thing this statement adds over the unsorted version, and it is why the O(log n) requirement rules it out.
 
 ```python
 def single_non_duplicate(nums: list[int]) -> int:

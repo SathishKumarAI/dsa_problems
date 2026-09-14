@@ -83,7 +83,7 @@ export const problem: Problem = {
     {
       name: "Scan every cell",
       summary:
-        "Walk the grid row by row comparing each value to the target, ignoring the fact that it is sorted at all.",
+        "Walk the grid row by row comparing each value to the target. Correct on any matrix, which is the problem: it ignores both promises this input makes — each row ascends, and every row starts above the last one ends — and those two together are what make the grid one sorted sequence folded into rows.",
       complexity: { time: "O(m · n)", space: "O(1)" },
       python: `def search_matrix(matrix: list[list[int]], target: int) -> bool:
     for row in matrix:
@@ -111,9 +111,7 @@ export const problem: Problem = {
     {
       name: "Pick the row, then binary search it",
       summary:
-        "Walk down the rows until you find the one whose last value is at least the target, then binary search inside that single row.",
-      whyNow:
-        "The full scan reads cells it already knows are too small. Choosing the row first cuts the work to one row plus the walk to reach it — but that walk is still linear in the number of rows.",
+        "Walk down the rows until one could contain the target, then binary search inside it. Uses half the structure — the row-level ordering picks the row, but the walk to find it is linear in the number of rows. The logarithm in the second half is a hint that the first half is doing the same job the slow way.",
       complexity: { time: "O(m + log n)", space: "O(1)" },
       python: `def search_matrix(matrix: list[list[int]], target: int) -> bool:
     row = None

@@ -65,7 +65,7 @@ export const problem: Problem = {
     {
       name: "Walk until it fits",
       summary:
-        "Scan from the front and return the first index whose value is at least the target, or the length if none is.",
+        "Scan from the front and return the first index whose value is at least the target. Correct, linear, and worth stating because it defines the answer precisely — the first position not below the target — which is the exact predicate the binary search below narrows on. The idea is already right; only the searching is slow.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def search_insert(nums: list[int], target: int) -> int:
     for i in range(len(nums)):

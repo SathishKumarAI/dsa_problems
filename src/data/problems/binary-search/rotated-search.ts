@@ -85,7 +85,7 @@ export const problem: Problem = {
     {
       name: "Scan for it",
       summary:
-        "Walk the array from the front comparing each value to the target, ignoring the order entirely.",
+        "Walk from the front comparing each value to the target, ignoring the order entirely. It is the answer that survives ANY rearrangement of the input, which is exactly why it cannot beat linear: a rotated sorted array still promises that one half of any split is properly sorted, and a scan never asks which half.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def search_rotated(nums: list[int], target: int) -> int:
     for i in range(len(nums)):
@@ -108,9 +108,7 @@ export const problem: Problem = {
     {
       name: "Find the pivot, then search one side",
       summary:
-        "Binary search for the rotation point, then run an ordinary binary search on whichever of the two sorted pieces could contain the target.",
-      whyNow:
-        "The scan ignores the structure completely. Locating the pivot recovers two genuinely sorted ranges and gets to log n — at the cost of two searches, and a pivot search that has to be right on its own before the second one means anything.",
+        "Binary search for the rotation point, then run an ordinary binary search on whichever sorted piece could hold the target. Logarithmic and completely correct, and it walks the array twice to do what one pass can: each midpoint already reveals which side is sorted, so the pivot never has to be located on its own.",
       complexity: { time: "O(log n)", space: "O(1)" },
       python: `def search_rotated(nums: list[int], target: int) -> int:
     lo, hi = 0, len(nums) - 1

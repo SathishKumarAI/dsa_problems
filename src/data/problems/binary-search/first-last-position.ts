@@ -98,7 +98,7 @@ vector<int> searchRange(const vector<int>& nums, int target) {
     {
       name: "Scan both ends",
       summary:
-        "Walk from the front for the first occurrence and from the back for the last, comparing each value to the target.",
+        "Walk in from the front for the first occurrence and in from the back for the last. Correct and linear, and on an array that is 10^5 long and entirely one value it touches every element twice — a run of duplicates is the exact input this problem is built from.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def search_range(nums: list[int], target: int) -> list[int]:
     first = -1
@@ -148,9 +148,7 @@ vector<int> searchRange(const vector<int>& nums, int target) {
     {
       name: "Find one, then walk outward",
       summary:
-        "Binary search for any occurrence, then step left and right from it while the neighbours still equal the target.",
-      whyNow:
-        "The scan ignores the ordering entirely. Binary search finds a foothold in log n — but the walk outward is still linear in the length of the run, so an array that is all target costs a full pass.",
+        "Binary search for any occurrence, then step left and right while the neighbours still match. Fast when the run is short and no better than a scan when it is long — and the long run is the case that matters, because the answer is defined by the run's two ends. Walking a boundary is what a binary search should be finding.",
       complexity: { time: "O(log n + run)", space: "O(1)" },
       python: `def search_range(nums: list[int], target: int) -> list[int]:
     lo, hi = 0, len(nums) - 1

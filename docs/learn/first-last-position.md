@@ -858,7 +858,7 @@ rungs; each is labelled where it appears.
 
 ## Rung 1 — Scan both ends
 
-Walk from the front for the first occurrence and from the back for the last, comparing each value to the target.
+Walk in from the front for the first occurrence and in from the back for the last. Correct and linear, and on an array that is 10^5 long and entirely one value it touches every element twice — a run of duplicates is the exact input this problem is built from.
 
 ```python
 def search_range(nums: list[int], target: int) -> list[int]:
@@ -927,9 +927,7 @@ vector<int> searchRange(const vector<int>& nums, int target) {
 
 ## Rung 2 — Find one, then walk outward
 
-> **Why now.** The scan ignores the ordering entirely. Binary search finds a foothold in log n — but the walk outward is still linear in the length of the run, so an array that is all target costs a full pass.
-
-Binary search for any occurrence, then step left and right from it while the neighbours still equal the target.
+Binary search for any occurrence, then step left and right while the neighbours still match. Fast when the run is short and no better than a scan when it is long — and the long run is the case that matters, because the answer is defined by the run's two ends. Walking a boundary is what a binary search should be finding.
 
 ```python
 def search_range(nums: list[int], target: int) -> list[int]:
@@ -1105,7 +1103,7 @@ The narrative version is **The Overall Arc**, above. In one line:
 | # | Approach | Cost | What it adds |
 |---|---|---|---|
 | 1 | Scan both ends | O(n) time · O(1) space | the baseline — nothing before it |
-| 2 | Find one, then walk outward | O(log n + run) time · O(1) space | The scan ignores the ordering entirely. Binary search finds a foothold in log n — but the walk outward is still linear in the length of the run, so an array that is all target costs a full pass. |
+| 2 | Find one, then walk outward | O(log n + run) time · O(1) space | Binary search for any occurrence, then step left and right while the neighbours still match. |
 | 3 | The one to remember | O(log n) time · O(1) space | Finding one occurrence and then walking outward is logarithmic plus linear, and the linear part dominates whenever the run is long — an array that is entirely the target degrades to a full scan. Biasing the search itself keeps both halves logarithmic, because the walk outward is replaced by more halving. |
 
 ---
