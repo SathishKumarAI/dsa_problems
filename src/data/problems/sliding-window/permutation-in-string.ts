@@ -34,8 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Comparing the whole tally at every position is 26 comparisons per step, which is a constant but a real one — and it re-reads counts that did not change. Carrying a single number, how many letters currently agree, means each step touches only the two letters that moved and answers in constant work.",
-  arc:
-    "A fixed-width window, which is the easiest kind: enter one character, leave one character, test. The ladder then argues only about the test — sorting each window, comparing 26 counts, or keeping a running count of how many letters currently match so the test is one integer comparison. Take the general habit: when a check is repeated over sliding data, look for a summary that can be updated incrementally instead of recomputed. And note the difference from find-all-anagrams, which is the same machinery returning every index instead of stopping at the first hit; if you can write one, you can write the other by changing the return.",
+  arc: "A fixed-width window, which is the easiest kind: enter one character, leave one character, test. The ladder then argues only about the test — sorting each window, comparing 26 counts, or keeping a running count of how many letters currently match so the test is one integer comparison. Take the general habit: when a check is repeated over sliding data, look for a summary that can be updated incrementally instead of recomputed. And note the difference from find-all-anagrams, which is the same machinery returning every index instead of stopping at the first hit; if you can write one, you can write the other by changing the return.",
   approach:
     "Both windows have the same fixed width, so slide a window of s1's length across s2: add the entering letter, drop the leaving one. Rather than compare 26 counts each time, keep a running count of how many letters are in agreement, and adjust it only for the two letters that changed — a letter can cross into or out of agreement exactly once per move. When all 26 agree, the window is a rearrangement.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -117,7 +116,7 @@ export const problem: Problem = {
     {
       name: "Sort every window",
       summary:
-        "Take each substring of s1's length, sort its letters, and compare against the sorted s1.",
+        "Slide a window of s1's length across s2, sort its letters, and compare against sorted s1. It leans on the cleanest definition of an anagram, same letters in any order, and pays k log k at every one of the n positions, re-sorting a window that differs from the previous one by exactly two letters.",
       complexity: { time: "O(n · k log k)", space: "O(k)" },
       python: `def check_inclusion(s1: str, s2: str) -> bool:
     target = sorted(s1)
@@ -152,9 +151,7 @@ export const problem: Problem = {
     {
       name: "Compare all 26 counts each step",
       summary:
-        "Slide a fixed-width window keeping a letter tally, and after every move compare the whole 26-slot tally against s1's.",
-      whyNow:
-        "Sorting rebuilds the window from scratch at every position, when only one letter entered and one left. Carrying the tally makes each move constant work — the comparison is still 26 slots, but the counting is no longer redone.",
+        "Keep a running letter tally and edit it as the window slides, then compare the whole 26-slot tally against s1's after every move. The counting is now constant per move, but the comparison is not: all 26 slots are re-checked each step even though only two of them could possibly have changed.",
       complexity: { time: "O(26 · n)", space: "O(1)" },
       python: `def check_inclusion(s1: str, s2: str) -> bool:
     if len(s1) > len(s2):

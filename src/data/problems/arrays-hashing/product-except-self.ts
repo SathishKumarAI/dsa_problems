@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Holding the two prefix arrays makes the idea obvious but keeps 2n numbers alive to read each of them exactly once. The output array can carry the left products while the right sweep folds its running product straight into them, so the same two passes need no storage beyond the answer.",
-  arc:
-    "Division is banned, and that ban is the whole teaching device: it forces you to find the structure instead of the shortcut. The answer at position i is 'everything to the left' times 'everything to the right', and both of those are running products that can be swept in one pass each — which is the prefix-sum idea with multiplication swapped in. The final rung removes even the second array by reusing the output as the left pass and carrying the right pass in a single variable. That pattern — compute prefixes forward, then fold suffixes backward into the same array — reappears in trapping rain water and in several interval problems. The corner case to rehearse is a zero, which is exactly what the division shortcut cannot survive.",
+  arc: "Division is banned, and that ban is the whole teaching device: it forces you to find the structure instead of the shortcut. The answer at position i is 'everything to the left' times 'everything to the right', and both of those are running products that can be swept in one pass each — which is the prefix-sum idea with multiplication swapped in. The final rung removes even the second array by reusing the output as the left pass and carrying the right pass in a single variable. That pattern — compute prefixes forward, then fold suffixes backward into the same array — reappears in trapping rain water and in several interval problems. The corner case to rehearse is a zero, which is exactly what the division shortcut cannot survive.",
   approach:
     "Sweep left to right writing into the output the product of everything strictly before each index, carrying a running product. Then sweep right to left with a second running product of everything strictly after, multiplying it into what is already there. Each position ends up holding left × right, which is every element but its own. Nothing is ever divided, so a zero — or two — behaves like any other value rather than being a special case.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -81,7 +80,7 @@ export const problem: Problem = {
     {
       name: "Product of the others, each time",
       summary:
-        "For every index, loop over the whole array multiplying together every element except the one at that index.",
+        "For every index, loop the whole array multiplying everything except that one element. Quadratic, and it recomputes almost the same product n times over — every pair of positions shares all but two of its factors, which is the redundancy the prefix rungs remove.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def product_except_self(nums: list[int]) -> list[int]:
     out = []
@@ -120,9 +119,7 @@ export const problem: Problem = {
     {
       name: "Two prefix arrays",
       summary:
-        "Build one array of running products from the left and another from the right, then multiply them position by position.",
-      whyNow:
-        "The nested loop recomputes the same partial products for every index. Storing each running product once makes the whole thing linear — at the cost of two extra arrays that are each read exactly once.",
+        "Build running products from the left and from the right, then multiply them position by position. Linear at last, and the insight is complete: everything before me times everything after me. What it still pays is two full arrays of scaffolding for an answer array that could have carried the same information itself.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def product_except_self(nums: list[int]) -> list[int]:
     n = len(nums)

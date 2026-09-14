@@ -41,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Every rung so far builds both finished texts in full — up to 400 characters of memory to produce one bit of answer — and none of them can give up early when the very first survivors already disagree. Walking both strings backward at the same time keeps nothing but two indices and two pending-delete counters, compares survivors as they appear, and returns the moment they differ.",
-  arc:
-    "Reading forwards means a character's fate is decided by things that have not happened yet, which is why the stack rung exists — it undoes work it already did. Reading BACKWARDS turns the hash marks into a debt counter, and each character's fate is known on sight, so nothing is ever pushed only to be popped. That reversal is the transferable idea: when a rule refers to what comes after, try walking the other way. The version to know is the constant-space one, with two independent backward cursors that skip their own debts and then compare — the fiddly part is the loop that must consume a full run of hashes before comparing, which is where every off-by-one in this problem lives.",
+  arc: "Reading forwards means a character's fate is decided by things that have not happened yet, which is why the stack rung exists — it undoes work it already did. Reading BACKWARDS turns the hash marks into a debt counter, and each character's fate is known on sight, so nothing is ever pushed only to be popped. That reversal is the transferable idea: when a rule refers to what comes after, try walking the other way. The version to know is the constant-space one, with two independent backward cursors that skip their own debts and then compare — the fiddly part is the loop that must consume a full run of hashes before comparing, which is where every off-by-one in this problem lives.",
   approach:
     "Read both strings from the right. On each side, a small loop skips forward to the next surviving character: a '#' bumps that side's pending-delete count, and a letter with deletes pending consumes one and dies. What the loop leaves behind is the next character that actually survives. Compare the two survivors; if only one side still has a survivor, the texts have different lengths and the answer is false. Repeat until both sides are exhausted. Each character is visited once, and nothing is stored but four integers.",
   complexity: { time: "O(n + m)", space: "O(1)" },
@@ -223,7 +222,7 @@ export const problem: Problem = {
     {
       name: "Rebuild the text by slicing",
       summary:
-        "Type each string out character by character into a growing text, trimming the last character whenever a '#' arrives, then compare the two finished texts.",
+        "Type each string out, trimming the last character whenever a backspace arrives, then compare the results. The logic is right; the cost is that trimming by slicing builds a new string every time, so a run of backspaces turns quadratic.",
       complexity: { time: "O(n^2 + m^2)", space: "O(n + m)" },
       whyNow:
         "The recursion copies both strings from scratch on every single backspace and stacks one call frame per deletion, so 200 '#' characters mean 200 nested frames and 200 rebuilds. A plain loop applies the identical cancel rule with no call depth at all, and touches one string per pass instead of both.",
@@ -275,7 +274,7 @@ export const problem: Problem = {
     {
       name: "Cancel with a stack",
       summary:
-        "Push every letter onto a stack and pop on '#'. A pop from an empty stack is simply ignored, which is exactly what a backspace on empty text does.",
+        "Push letters, pop on a backspace, and ignore a pop from an empty stack — which is exactly what backspacing in an empty editor does. Linear and the natural shape of the problem, and it builds both finished strings in full before comparing a single character.",
       complexity: { time: "O(n + m)", space: "O(n + m)" },
       whyNow:
         "Slicing rebuilds the whole prefix each time a '#' lands, so text typed and deleted repeatedly costs quadratic work for a linear number of keystrokes. A stack's pop touches one element, which brings the whole thing down to a single pass per string — and the empty-stack guard states the leading-'#' rule outright instead of relying on a slice happening to do nothing.",

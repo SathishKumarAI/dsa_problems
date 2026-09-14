@@ -33,6 +33,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The node array is a full second copy of a 5 * 10^4-node list, held only so the code can reach the back. Reversing the back half in place makes that same back-to-front walk cost nothing but the pointers already in the list.",
+  arc: "The fold pairs node i with node n − 1 − i, so every rung is answering one question: how do you reach the BACK of a list that only points forwards. Recursing in from the ends hunts for the tail at every level and pays a frame for each, which at fifty thousand nodes is a stack overflow rather than a slow answer. Walking from the head to reach each position drops the stack and keeps the hunting, so it stays quadratic. Copying the values out gives every position in one step, then writes the answer back into nodes that never moved — which reorders what the list PRINTS, not what it is. Holding the nodes and consuming them from both ends genuinely relinks, at the price of a second copy of a list that can already do this for itself. The answer is composition: find the middle with the fast and slow pair, reverse the back half in place, weave the two halves together. Three earlier problems used as subroutines, which is why middle-of-list and reverse-list are the two to know cold. On an odd length the middle node belongs to the FRONT half, and the weave then ends by itself when the reversed half runs out.",
   approach:
     "Find the middle with a slow and a fast runner, stopping so the front half keeps the middle node on an odd length. Cut there, reverse the second half in place, then weave: take one node from the front, one from the reversed back, relinking as you go. The weave ends naturally when the reversed half runs out, which is exactly when the odd middle has nothing left to pair with.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -121,43 +122,6 @@ export const problem: Problem = {
     }
     return head;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [1, 2, 3, 4, 5],
-        marks: { 2: "focus" },
-        labels: { 2: "slow" },
-      },
-      caption:
-        "slow and fast start together; fast moves two for every one. It stops with slow on 3, the middle, which the FRONT half keeps.",
-    },
-    {
-      cells: {
-        values: [1, 2, 3, 4, 5],
-        marks: {
-          0: "window",
-          1: "window",
-          2: "window",
-          3: "compare",
-          4: "compare",
-        },
-      },
-      caption: "Cut after 3. Front is [1,2,3]; back is [4,5].",
-    },
-    {
-      cells: { values: [1, 2, 3, 5, 4], marks: { 3: "focus", 4: "compare" } },
-      caption:
-        "Reverse the back half in place: [5,4]. Now walking it forwards reads the list backwards.",
-    },
-    {
-      cells: {
-        values: [1, 5, 2, 4, 3],
-        marks: { 0: "done", 2: "done", 4: "focus" },
-      },
-      caption:
-        "Weave one from each: 1, 5, 2, 4, and the odd middle 3 lands last with nothing to pair with.",
-    },
-  ],
   alternatives: [
     {
       name: "Recursive fold from the ends",

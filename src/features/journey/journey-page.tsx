@@ -28,9 +28,26 @@ import { ActStepper } from "./act-stepper"
 import { EdgeCaseCard, HintLadder, PredictCard, QuizCard } from "./cards"
 import { ChallengeEditor } from "./challenge-editor"
 import { DrawerTabs } from "./drawer-tabs"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { BookOpenIcon, LightbulbIcon, ListTreeIcon, SplitIcon } from "lucide-react"
 import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
 import { useJourney } from "./use-journey"
+
+// The phone's reading bar. Four destinations, the same four the reading
+// column shows as tabs at lg — one place naming them, so the bar and the
+// column can never drift apart.
+const READING_TABS = [
+  { v: "explain", label: "Explain", Icon: BookOpenIcon },
+  { v: "hints", label: "Hints", Icon: LightbulbIcon },
+  { v: "edges", label: "Edge cases", Icon: SplitIcon },
+  { v: "trace", label: "Trace", Icon: ListTreeIcon },
+] as const
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -77,6 +94,8 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
     ? journey.edgeCases.find((e) => e.key === frame.corner)
     : undefined
   const [peek, setPeek] = useState(false)
+  // which reading tab the phone sheet is showing; null = closed
+  const [sheetTab, setSheetTab] = useState<string | null>(null)
   const storyAct = j.actIndex === 0
   // one element, two homes: the drawer above lg, the stage footer below it
   const data = (
@@ -377,7 +396,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
                       onClick={j.nextButton.onClick}
                       className={cn(
                         j.nextButton.reveal &&
-                          "bg-chart-3 text-[var(--primary-foreground)] hover:bg-chart-3/90"
+                          "bg-chart-3 text-primary-foreground hover:bg-chart-3/90"
                       )}
                     >
                       {j.nextButton.label}
@@ -477,7 +496,7 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
         {/* ---------- the reading column (or its rail) ---------- */}
         {!reading ? (
           <aside
-            className="relative flex rounded-xl border bg-card p-1 lg:flex-col"
+            className="relative hidden rounded-xl border bg-card p-1 lg:flex lg:flex-col"
             aria-label="approach (collapsed)"
             onMouseEnter={() => setPeek(true)}
             onMouseLeave={() => setPeek(false)}
@@ -494,13 +513,67 @@ export function JourneyPage({ journey }: { journey: AnyJourney }) {
           </aside>
         ) : (
           <aside
-            className="flex max-h-[45svh] min-h-0 flex-col gap-4 overflow-y-auto text-body lg:max-h-none lg:pr-1"
+            className="hidden max-h-[45svh] min-h-0 flex-col gap-4 overflow-y-auto text-body lg:flex lg:max-h-none lg:pr-1"
             aria-label="approach"
           >
             <DrawerTabs j={j} journey={journey} problem={problem} />
             <ReadingToggle open />
           </aside>
         )}
+
+        {/* ---------- below lg: the reading column IS a bottom nav bar ----------
+            Measured on a 390x844 phone before this: the stage — the thing the
+            product IS — got 197px, 23% of the viewport, while the reading
+            column below it took `max-h-[45svh]`, nearly twice as much. A
+            learner on a phone was watching the algorithm through a letterbox
+            in order to keep four tabs permanently on screen.
+
+            So below lg the column is gone and its four destinations are a bar:
+            56px instead of ~380px, which hands the stage back about 45% of the
+            screen. Each button opens the SAME `DrawerTabs` in a bottom sheet,
+            controlled straight to that tab — one component, one set of tab
+            names (READING_TABS), so the bar and the column cannot drift.
+
+            `lg` and up is untouched: the column is still a column, and the
+            tests that read `aside[aria-label="approach"]` run at 1440. */}
+        <nav
+          aria-label="reading"
+          className="flex items-stretch gap-1 border-t pt-2 lg:hidden"
+        >
+          {READING_TABS.map(({ v, label, Icon }) => (
+            <button
+              key={v}
+              onClick={() => setSheetTab(v)}
+              aria-haspopup="dialog"
+              className="flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-1 py-1 text-meta text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+            >
+              <Icon className="size-4 shrink-0" aria-hidden />
+              {label}
+            </button>
+          ))}
+        </nav>
+        <Sheet
+          open={sheetTab !== null}
+          onOpenChange={(o: boolean) => !o && setSheetTab(null)}
+        >
+          <SheetContent
+            side="bottom"
+            className="flex max-h-[80svh] flex-col lg:hidden"
+          >
+            <SheetHeader>
+              <SheetTitle>{problem?.title ?? journey.title}</SheetTitle>
+            </SheetHeader>
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6 text-body">
+              <DrawerTabs
+                j={j}
+                journey={journey}
+                problem={problem}
+                value={sheetTab ?? "explain"}
+                onValueChange={setSheetTab}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   )

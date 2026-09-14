@@ -5,6 +5,7 @@
 //   #/p/<pattern>              problem list
 //   #/p/<pattern>/<problem>    problem page (static walkthrough)
 //   #/journey/<slug>?act=&step= learning journey (deep-linkable moment)
+//   #/learn/<problem>         everything about one problem, on one page
 //   #/algorithms?algo=quick    sorting / search / graph visualizer
 //   #/sql   #/flashcards
 

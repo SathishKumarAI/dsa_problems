@@ -32,8 +32,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Checking for all nines up front costs a full pass before any work begins, and then walks the digits a second time to do the increment. The same test comes for free at the end of a single backward walk: running off the front IS the all-nines case, so one pass decides both.",
-  arc:
-    "A deliberately small problem that teaches carry propagation and, more usefully, when to stop. Building the number is fine in Python and wrong in a language with fixed-width integers, which is the point: the array representation exists precisely because the value may not fit. Walking from the back, a digit below nine ends the work immediately — the early return is not an optimisation, it is the observation that a carry cannot travel past a digit it does not overflow. The only input that needs a longer answer is all nines, and it always becomes 1 followed by zeros, which is why a special case and a general loop end at the same place. Rehearse it as the easy case of add-two-numbers and of string addition.",
+  arc: "A deliberately small problem that teaches carry propagation and, more usefully, when to stop. Building the number is fine in Python and wrong in a language with fixed-width integers, which is the point: the array representation exists precisely because the value may not fit. Walking from the back, a digit below nine ends the work immediately — the early return is not an optimisation, it is the observation that a carry cannot travel past a digit it does not overflow. The only input that needs a longer answer is all nines, and it always becomes 1 followed by zeros, which is why a special case and a general loop end at the same place. Rehearse it as the easy case of add-two-numbers and of string addition.",
   approach:
     "Walk from the last digit towards the first. The first digit below 9 can take the increment on its own, so add one and return immediately — everything to its left is untouched, which is why the common case costs one step rather than n. A 9 cannot take it: write 0 and carry on left. If the loop runs off the front, every digit was a 9 and every one is now 0, so the answer is that row of zeros with a 1 in front — the one case where the array grows, and the only case that allocates.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -144,7 +143,7 @@ export const problem: Problem = {
     {
       name: "Reverse, carry, reverse back",
       summary:
-        "Flip the digits so the least significant one is first, run a carry left to right the way a loop naturally goes, append any leftover carry, and flip back.",
+        "Flip the digits so the least significant is first, carry left to right the way a loop naturally runs, then flip back. It works, and it pays two full reversals and a copy to avoid writing a backwards loop — which is a real cost imposed by a preference rather than by the problem.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "The integer version stops being correct at about 19 digits, and the problem allows 100 — the failure is silent, since an overflowed sum still returns digits. Carrying one digit at a time has no width at all: it works on a hundred digits or a million.",

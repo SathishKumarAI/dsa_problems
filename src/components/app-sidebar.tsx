@@ -5,6 +5,7 @@
 // Collapses to a 3 rem icon rail that peeks open on hover (ui/sidebar.tsx).
 import { useState } from "react"
 import {
+  CheckIcon,
   ChevronDownIcon,
   CircleHelpIcon,
   DatabaseIcon,
@@ -73,8 +74,15 @@ function JourneyItem({
         <RailToken label={title} done={earned.earned} total={earned.total} />
         <span className={`truncate ${WIDE}`}>{title}</span>
       </SidebarMenuButton>
+      {/* a finished journey says so with the palette's own "this is correct"
+          green rather than a glyph the mono face renders at a different weight
+          from the counts beside it */}
       <SidebarMenuBadge className="font-mono" title={earned.long}>
-        {earned.done ? "✓" : earned.short}
+        {earned.done ? (
+          <CheckIcon className="size-3.5 text-chart-3" aria-label="complete" />
+        ) : (
+          earned.short
+        )}
       </SidebarMenuBadge>
     </SidebarMenuItem>
   )

@@ -34,6 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The table asks, for every position, which of the earlier positions it can extend — that inner scan is the whole n² cost. The patience version stores one number per achievable length instead: the smallest tail a run of that length can have. That list is sorted by construction, so the right slot is a binary search rather than a scan.",
+  arc: "Three rungs, and each one shrinks what a position has to remember. The recursion remembers the entire run built so far, which is why the same suffix is re-solved once per path that reaches it. The quadratic table remembers one number per index — the longest run ending exactly there — and that is the key collapse: two runs ending at the same index with the same length are interchangeable from that point on. What it still does is scan every earlier index looking for a feeder, and that inner loop is the whole n². The tails list removes it by storing one number per achievable LENGTH instead of per index: the smallest value a run of that length can end with. That list is sorted by construction, so the slot is a binary search. Be clear that the list is not itself a subsequence — it is a ledger of what is achievable, and only its length is the answer. Know the n² version for the variants that count or rebuild runs, and the tails version for the n log n.",
   approach:
     "Keep a list of tails, where tails[k] is the smallest value that any increasing run of length k+1 can end with. For each value, binary search for the first tail that is not smaller than it: overwrite that tail (a run of that length can now end lower, which can only help later), or append if the value beats every tail (a longer run just became possible). The list is not itself a subsequence — it is a ledger of what is achievable — but its length is the answer.",
   complexity: { time: "O(n log n)", space: "O(n)" },
@@ -82,7 +83,7 @@ def length_of_lis(nums: list[int]) -> int:
     {
       name: "Every subsequence",
       summary:
-        "Try both choices at every index — take this element if it is larger than the last one taken, or skip it — and report the deepest run found.",
+        "Take or skip each element and report the deepest chain built. Exponential, because the choice at every index doubles the tree — and the doubling is unnecessary: what happens after index i depends only on the last value taken, not on the whole history of how you got there.",
       complexity: { time: "O(2^n)", space: "O(n)" },
       python: `def length_of_lis(nums: list[int]) -> int:
     def walk(i: int, previous: int) -> int:
@@ -121,9 +122,7 @@ public int lengthOfLis(int[] nums) {
     {
       name: "Table of best-ending-here",
       summary:
-        "Let best[i] be the length of the longest increasing run ending exactly at index i, built by scanning every earlier index that could feed it.",
-      whyNow:
-        "The recursion re-solves the same suffix once per path that reaches it, which is where the exponential comes from. Writing each position's answer down once turns those repeats into a single lookup.",
+        "Let best[i] be the longest run ending exactly at i, built by scanning every earlier index with a smaller value. Quadratic, and the step that costs is the scan: it asks every predecessor in turn whether it can be extended, when the only thing it needs to know is the smallest value a run of each length can end with.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def length_of_lis(nums: list[int]) -> int:
     if not nums:

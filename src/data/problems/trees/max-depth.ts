@@ -22,6 +22,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Both iterative versions manage a container by hand to do what the call stack already does. The recursion is three lines and says exactly what depth means.",
+  arc: "Depth is defined in terms of itself — a node is one more than the deeper of its two subtrees, and a missing node is zero — so the shortest correct program is that sentence typed out. The two iterative rungs earn their place by showing what the recursion is quietly using: the call stack IS the traversal, and managing a container by hand only makes the same walk explicit. Counting BFS rounds holds a whole level at once, so its memory is the widest part of the tree; an explicit stack of node-and-depth pairs holds one root-to-leaf path, which is the height. That trade is the thing to remember, because the recursion inherits the second half of it — O(h), which on a tree degenerated into a linked list is a frame per node, and the reason to reach for the iterative version at all. Know the post-order return cold: ask both children, combine, hand one value up. It is the same shape that answers balanced-tree, tree-diameter, and every question where a node's answer is a function of its subtrees' answers.",
   approach:
     "Pure structural recursion. A missing node contributes 0; any real node contributes 1 plus the deeper of its two subtrees. The recursion visits every node once. (An iterative BFS counting levels gives the same answer if recursion depth is a concern.)",
   complexity: { time: "O(n)", space: "O(h) recursion stack" },
@@ -41,7 +42,7 @@ export const problem: Problem = {
     {
       name: "Iterative BFS",
       summary:
-        "Count levels with a queue — one increment per BFS round. Same O(n), no recursion-depth risk on degenerate (linked-list-shaped) trees.",
+        "Sweep the tree level by level with a queue, draining exactly the nodes present at the start of each round and adding one to the depth per round. Same linear time with no recursion at all, so a tree degenerated into a 10,000-node chain cannot blow the stack. The price is that the memory tracks the WIDEST level rather than the height.",
       complexity: { time: "O(n)", space: "O(w) widest level" },
       python: `from collections import deque
 
@@ -99,7 +100,7 @@ def max_depth(root) -> int:
       whyNow:
         "Counting levels means holding a whole level in memory, which is the widest part of the tree. A stack of node-and-depth pairs carries one path at a time instead.",
       summary:
-        "Explicit stack of (node, depth) pairs — recursion without the call stack.",
+        "Push (node, depth) pairs onto an explicit stack, popping and keeping the largest depth seen. It is the recursion with the call stack written out by hand, which makes the traversal visible, and the stack holds every node whose sibling is still pending, so on a bushy tree it can carry far more than the h frames the recursion would.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def max_depth(root) -> int:
     best = 0

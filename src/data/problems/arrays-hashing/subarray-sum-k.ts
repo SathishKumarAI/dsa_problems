@@ -34,8 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Prefix sums already cut the re-adding, but they still ask, for every endpoint, which of the earlier starts work — that inner scan is the remaining n². Storing how many times each prefix sum has been seen turns that scan into a single lookup, and counts rather than positions are all the question needs.",
-  arc:
-    "The insight is arithmetic, not cleverness: the sum of a subarray is the difference of two prefix sums, so 'a subarray summing to k ending here' means 'a prefix sum equal to current minus k has been seen before'. That turns a question about ranges into a question about membership, which a hash map answers in one step — and the counting version stores how MANY times each prefix sum occurred, because several earlier positions can all qualify. Carry two details that catch people: the map must start with prefix sum zero counted once, or subarrays beginning at index 0 go missing; and this works with negative numbers, which is exactly why a sliding window does not.",
+  arc: "The insight is arithmetic, not cleverness: the sum of a subarray is the difference of two prefix sums, so 'a subarray summing to k ending here' means 'a prefix sum equal to current minus k has been seen before'. That turns a question about ranges into a question about membership, which a hash map answers in one step — and the counting version stores how MANY times each prefix sum occurred, because several earlier positions can all qualify. Carry two details that catch people: the map must start with prefix sum zero counted once, or subarrays beginning at index 0 go missing; and this works with negative numbers, which is exactly why a sliding window does not.",
   approach:
     "Carry a running total and a map from prefix sum to the number of times it has occurred. At each element, any earlier prefix equal to running − k marks the start of a stretch summing to k, so add that count to the answer. Then record the current running total. Seeding the map with {0: 1} is what lets a stretch that starts at index 0 be counted — the empty prefix has sum zero and has occurred once. Counting occurrences rather than indices is why duplicates and negatives need no special handling.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -75,7 +74,7 @@ export const problem: Problem = {
     {
       name: "Sum every subarray",
       summary:
-        "Take each start, extend to each end adding as you go, and count the totals that land on k.",
+        "Take each start, extend to each end adding as you go, and count the totals landing on k. Quadratic, and the waste is specific: the sum of a window is almost the sum of the previous window, and this throws that away at every step.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def subarray_sum(nums: list[int], k: int) -> int:
     total = 0
@@ -113,9 +112,7 @@ export const problem: Problem = {
     {
       name: "Prefix sums, compared pairwise",
       summary:
-        "Build the array of running totals once, then check every pair of endpoints by subtracting one prefix from another.",
-      whyNow:
-        "The nested loop re-adds the same prefix over and over. Computing each running total once means a stretch's sum is a single subtraction — the same quadratic number of pairs, but no arithmetic repeated inside them.",
+        "Build the running totals once, then test every pair of endpoints by subtracting one prefix from another. The re-adding is gone and the arithmetic is now O(1) per pair — but the pairs themselves are still quadratic, because it asks which earlier prefix makes this work by searching rather than by looking up.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def subarray_sum(nums: list[int], k: int) -> int:
     prefix = [0] * (len(nums) + 1)

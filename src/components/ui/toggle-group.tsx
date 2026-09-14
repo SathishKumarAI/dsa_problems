@@ -18,6 +18,13 @@ const ToggleGroupContext = React.createContext<
   orientation: "horizontal",
 })
 
+// `max-w-full flex-wrap`: a filter group is as wide as its labels, and
+// `w-fit` alone let it size to max-content and push the PAGE sideways — the
+// stats flashcards' five topic tags measured 543px inside a 390px phone
+// (scrollWidth 559). Wrapping is safe at the default spacing, where the items
+// are separate pills with a gap between them; at `spacing={0}` they are a
+// joined segmented control whose first/last radii and shared borders only read
+// correctly on one line, so that case keeps `flex-nowrap`.
 function ToggleGroup({
   className,
   variant,
@@ -40,7 +47,7 @@ function ToggleGroup({
       data-orientation={orientation}
       style={{ "--gap": spacing } as React.CSSProperties}
       className={cn(
-        "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] rounded-lg data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-vertical:flex-col data-vertical:items-stretch",
+        "group/toggle-group flex w-fit max-w-full flex-row flex-wrap items-center gap-[--spacing(var(--gap))] rounded-lg data-[size=sm]:rounded-[min(var(--radius-md),10px)] data-[spacing=0]:flex-nowrap data-vertical:flex-col data-vertical:items-stretch",
         className
       )}
       {...props}

@@ -35,6 +35,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The greedy version — take the longest matching word and continue — fails on inputs like catsandog, where an early long match ruins a later split. Backtracking fixes that but re-solves the same suffix along every path that reaches it. One boolean per position asks each question once, and reachability is exactly what the later positions need.",
+  arc: "Three ideas stack here. Greedy is wrong first: taking the longest matching word and continuing dies on catsandog, where an early long match ruins a later split, and that counterexample is worth keeping. Backtracking fixes correctness and then re-solves the same suffix along every path that reaches it, which is the familiar exponential. The real move is storing reachability rather than the split itself — two different segmentations ending at the same position are interchangeable from there on, so one boolean per position holds everything the later positions need. Entry 0 is true because the empty prefix needs nothing, and the last entry is the answer. Know the double loop, for each end looking back at every reachable start and testing the text between, and know the dictionary belongs in a set because that inner test is the hot line. Word-break-II asks for the actual sentences, and there the boolean table can no longer stand alone.",
   approach:
     "Keep a boolean per position, where entry i means the first i characters can be segmented. Entry 0 is true, since the empty prefix needs nothing. For each position, look back at every earlier reachable position and check whether the text between them is a dictionary word; one hit is enough to mark the position reachable. The last entry is the answer. Storing reachability rather than the actual split is what collapses the exponential search — two different segmentations that end at the same place are interchangeable from there on.",
   complexity: { time: "O(n^2 · k)", space: "O(n)" },
@@ -76,7 +77,7 @@ export const problem: Problem = {
     {
       name: "Backtrack over every split",
       summary:
-        "Try every dictionary word as a prefix, and recurse on whatever is left, reporting success if any chain of choices consumes the whole string.",
+        "Try each dictionary word as a prefix and recurse on what is left. Exponential in the worst case, and the waste is that the same suffix is re-tested after every different way of segmenting the text before it — whether the tail can be broken up has nothing to do with how the head was cut.",
       complexity: { time: "O(2^n)", space: "O(n)" },
       python: `def walk(s: str, at: int, allowed: set[str]) -> bool:
     if at == len(s):

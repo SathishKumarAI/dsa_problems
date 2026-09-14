@@ -28,8 +28,9 @@ export const problem: Problem = {
     'The question is: "have I already seen target - nums[i]?" A hash map answers that in O(1).',
     "Store value → index as you scan. Check for the complement before inserting the current value, so you never pair an element with itself.",
   ],
-  arc:
-    "Every step follows one idea applied twice: do not redo work you do not need to. Brute force re-scans the array for every element, so you reorder it to make the scan directional — sort, then converge two pointers — and the cost drops to the sort. Then you notice the sort itself is wasted, because the question never needed order, only 'have I seen this value before', which a hash map answers in one step without touching order at all. That is the whole progression: unordered scan, imposed order, remembered values. Know brute force, the one-pass hash map and the sort-plus-two-pointer shape cold — those three cover most pair and sum follow-ups, and the two-pointer version is the one that survives when the array arrives already sorted.",
+  arc: "Every step follows one idea applied twice: do not redo work you do not need to. Brute force re-scans the array for every element, so you reorder it to make the scan directional — sort, then converge two pointers — and the cost drops to the sort. Then you notice the sort itself is wasted, because the question never needed order, only 'have I seen this value before', which a hash map answers in one step without touching order at all. That is the whole progression: unordered scan, imposed order, remembered values. Know brute force, the one-pass hash map and the sort-plus-two-pointer shape cold — those three cover most pair and sum follow-ups, and the two-pointer version is the one that survives when the array arrives already sorted.",
+  whyNow:
+    "The sort exists only to make searching fast, and the question is not a comparison at all: it is whether the value target - x is present, and where. That is a lookup, which a map answers in one step with no ordering. Sorting also destroys the indices the answer is made of, so they have to be carried along separately.",
   approach:
     "Walk the array once, keeping a map from value to index. At each element, compute the complement target - nums[i]. If the complement is already in the map, the current index and the stored index are the answer. Otherwise record the current value and move on. One pass, one lookup and one insert per element.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -62,7 +63,7 @@ export const problem: Problem = {
     {
       name: "Brute force",
       summary:
-        "Check every pair. Correct, trivial to write, and the baseline every interviewer expects you to name before improving on it.",
+        "Check every pair until one sums to the target. No memory, nothing to get wrong, and the right thing to say first in an interview — but it re-reads the whole array for every element, asking a question it has already asked n times. On the 10^4 upper bound that is fifty million pairs to find one.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def pair_sum(nums: list[int], target: int) -> list[int]:
     for i in range(len(nums)):
@@ -86,6 +87,8 @@ export const problem: Problem = {
     },
     {
       name: "Sort + two pointers",
+      whyNow:
+        "Brute force re-reads the whole array for every element, asking the same question n times. Sorting answers it once: on ordered values, comparing the two ends tells you which end can never reach the target, so a single comparison retires a whole row of the table.",
       summary:
         "Sort (value, index) pairs and run the converging-pointer scan. Beats brute force, but sorting costs the O(n log n) and the original indices must be carried along — the hash map wins on both counts.",
       complexity: { time: "O(n log n)", space: "O(n)" },

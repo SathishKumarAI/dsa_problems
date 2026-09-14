@@ -32,6 +32,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The loop still has to remember the new head before it starts, and skip the relink on the first pair because there is nothing behind it. A dummy in front of the head turns the first pair into an ordinary pair, and its next is the answer at the end.",
+  arc: "The requirement is that the NODES move, and the bottom rung is the one that fails it: exchanging payloads is two lines, leaves every node where it was, and is wrong the moment a node carries more than an int or anything outside holds a pointer into the list. Everything above it really relinks, and the rungs differ only in how they get hold of the node after the pair. The array buys a second copy of the list to see one node ahead, which the pair already points at. Recursion asks the tail to swap itself and costs a frame per pair. A prev pointer does the same three assignments in a loop, but with nothing in front of the head it must remember the answer before it starts and skip the relink on the first pair — two branches that exist only because the head has no predecessor. A dummy node supplies one, and then every pair is an ordinary pair and dummy.next is the new head for free. That is the piece to take away: the same dummy turns remove-nth-from-end, remove-list-elements and merge-two-sorted into single-branch loops, and a guard testing both the node and its successor is what leaves an odd tail alone.",
   approach:
     "Put a dummy in front of the head and keep a prev pointer on the node before the pair being swapped. While there are two nodes ahead of prev, grab first and second, hang second.next onto first, put first behind second, and point prev at second. Then prev moves onto first, which is now the back of the swapped pair. Return dummy.next, which absorbs both the head change and the empty-list case.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -153,7 +154,7 @@ export const problem: Problem = {
       whyNow:
         "The array exists only so the code can name the node after the pair, and the pair already points at it. Recursion asks the tail to swap itself and hangs the answer off the pair it is holding.",
       summary:
-        "Swap the first two, then let the recursion own everything after them. The clearest statement of the idea, at one stack frame per pair.",
+        "Swap the first two nodes, then hand the rest of the list to the recursion and hook the result behind them. It is the clearest statement of the idea and needs no dummy node at all, because the recursion returns the new head of each pair. It costs one stack frame per pair, so it is the version to explain and not the version to ship.",
       complexity: { time: "O(n)", space: "O(n) stack" },
       python: `def swap_pairs(head):
     if head is None or head.next is None:

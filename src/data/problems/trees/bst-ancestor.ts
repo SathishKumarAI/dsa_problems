@@ -30,6 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The general-tree version searches both subtrees at every node because it has no idea where the targets are. A search tree tells you: comparing the two values against the current node names the direction, so the walk is a single path down and never explores a subtree it will not use.",
+  arc: "The general lowest-common-ancestor routine descends into both subtrees at every node, and it has to: in an arbitrary tree nothing says where the targets are, so you learn a side was wrong only by searching it and finding nothing. A search tree answers that before you move. Compare both target values against the current node and the answer is a direction — both smaller means go left, both larger means go right, and anything else means they straddle this node, either one on each side or one of them being the node itself. Straddling is precisely what lowest common ancestor means, so the first node that straddles is the answer and there is nothing to backtrack. Both rungs are worth holding: the comparison-driven descent is the shape of every BST operation, from plain search to insert, floor and ceiling and range sum, and the both-sides version is the fallback for a tree with no ordering to exploit. The costs tell the story — O(h) down one path with no stack at all, against O(n) spent exploring subtrees the ordering had already ruled out.",
   approach:
     "From the root, compare both target values against the current node. If both are smaller, the answer lies entirely in the left subtree; if both are larger, in the right. Otherwise they straddle the current node — one on each side, or one of them IS the current node — and that is the lowest common ancestor. The walk is a single root-to-node path, so the depth of the tree bounds the work and no backtracking is needed.",
   complexity: { time: "O(h)", space: "O(1)" },
@@ -72,7 +73,7 @@ def lowest_common_ancestor(root: TreeNode | None, p: int, q: int) -> int:
     {
       name: "Search both sides, ignoring the ordering",
       summary:
-        "Recurse into both subtrees looking for either target; a node is the answer when the two targets are found on different sides, or when it is itself one of them.",
+        "Recurse into both subtrees looking for either target; a node is the answer when the two come back from different sides, or when it is one of them itself. This is the general binary-tree solution and it is correct here too. It just refuses to use the one fact that makes this a BST question, so it can visit every node instead of walking a single root-to-answer path.",
       complexity: { time: "O(n)", space: "O(h)" },
       python: `class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):

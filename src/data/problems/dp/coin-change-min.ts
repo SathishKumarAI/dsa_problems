@@ -26,6 +26,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "BFS is correct but carries a frontier and a visited set. The same shortest path written as a table over amounts is the standard bottom-up form, and it leaves the answer readable for every amount, not only the one asked for.",
+  arc: "The first rung is a trap and belongs in memory as one: largest coin first spends three coins on 6 with [1, 3, 4] when 3 + 3 does it in two, so greedy is safe only for coin systems that happen to be canonical, and nothing in the constraints promises that. What replaces it is the observation that an amount is a state and a coin is an edge out of it, after which two standard machines apply. BFS explores by number of coins, so the first time it touches 0 that count is minimal — a concrete demonstration that shortest-path and DP-minimisation are the same search. The table computes it in the pattern's own idiom, one entry per amount, each the cheapest of 1 + best(amount − coin), and it wins on what it leaves behind: the answer for every amount rather than only the one asked. Know the table and know the counterexample. Coin-change-II counts combinations over the same table with the loops swapped, and that swap is worth understanding before you need it.",
   approach:
     "Bottom-up table over amounts 0..amount. best(0) = 0; every other entry is 1 + the minimum over best(amount - coin) for each coin that fits, or infinity if none is reachable. The table order guarantees subproblems are ready when needed. Greedy fails here precisely because local largest-coin choices don't compose into a global optimum — the counterexample in hint 1 is worth memorizing.",
   complexity: { time: "O(amount × coins)", space: "O(amount)" },
@@ -68,7 +69,7 @@ export const problem: Problem = {
     {
       name: "Greedy (broken)",
       summary:
-        "Largest coin first. Included as a warning: for [1, 3, 4] and amount 6 it answers 3 (4+1+1) when 2 (3+3) exists. Greedy is only safe for canonical coin systems.",
+        "Take the largest coin that fits, repeat. It is here because it is WRONG, and the counterexample is small enough to hold in your head: coins [1, 3, 4] and amount 6 gives 4+1+1, three coins, when 3+3 is two. Greedy works only when the denominations are such that a big coin is never worth breaking up, and no line in this statement promises that.",
       complexity: { time: "O(amount)", space: "O(1)" },
       python: `def min_coins_WRONG(coins: list[int], amount: int) -> int:
     count = 0

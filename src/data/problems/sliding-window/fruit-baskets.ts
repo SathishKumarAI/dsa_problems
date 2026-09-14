@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "sliding-window",
   difficulty: "medium",
   leetcode: "fruit-into-baskets",
-  brief: "Pick from a row of trees with two baskets: find the longest run holding at most two kinds.",
+  brief:
+    "Pick from a row of trees with two baskets: find the longest run holding at most two kinds.",
   statement:
     "Each value in the array is the kind of fruit on that tree. You walk the row picking one fruit per tree and may hold at most two kinds in total; you must stop as soon as a third kind appears. Return the largest number of fruits you can pick, which is the length of the longest run containing at most two distinct values.",
   constraints: [
@@ -17,7 +18,11 @@ export const problem: Problem = {
     "repeats do not count against the limit: [1,1,1,2,2] is five fruits and only two kinds",
   ],
   examples: [
-    { input: "fruits = [1, 2, 1]", output: "3", note: "Two kinds, the whole row." },
+    {
+      input: "fruits = [1, 2, 1]",
+      output: "3",
+      note: "Two kinds, the whole row.",
+    },
     {
       input: "fruits = [0, 1, 2, 2]",
       output: "3",
@@ -36,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The shrinking window is already linear — every index enters and leaves once — but it spends that work restoring legality after every violation, and the answer is a MAXIMUM, which never needs the window to be legal again. Letting the window keep its size and slide instead of shrink makes the left edge move at most once per step, removes the inner loop entirely, and the final width is the answer by construction.",
-  arc:
-    "The problem is 'longest run with at most two distinct values' wearing a story, and recognising that is most of the work — the same window answers at most K distinct, and K = 2 is just the version with a nice picture. The rungs then argue about the left edge: restart it per start index and you are quadratic; shrink it until the window is legal again and you are linear with an inner loop; move it exactly one step and you are linear with none. The last version is worth understanding rather than memorising — it works because the answer is a MAXIMUM, so the window never needs to be legal again, only never wider than the best legal width seen. The one detail people get wrong is removal: a kind leaves the window when its count hits zero, not when one of its occurrences slides out.",
+  arc: "The problem is 'longest run with at most two distinct values' wearing a story, and recognising that is most of the work — the same window answers at most K distinct, and K = 2 is just the version with a nice picture. The rungs then argue about the left edge: restart it per start index and you are quadratic; shrink it until the window is legal again and you are linear with an inner loop; move it exactly one step and you are linear with none. The last version is worth understanding rather than memorising — it works because the answer is a MAXIMUM, so the window never needs to be legal again, only never wider than the best legal width seen. The one detail people get wrong is removal: a kind leaves the window when its count hits zero, not when one of its occurrences slides out.",
   approach:
     "Keep a count per kind inside the window. Extend the right edge one tree at a time; whenever the window holds more than two kinds, advance the left edge by exactly one — never more — dropping that tree's count and forgetting a kind when its count reaches zero. The window can therefore never grow while illegal and never shrinks below the best legal width seen, so after the walk the window's own width is the answer.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -131,7 +135,7 @@ export const problem: Problem = {
     {
       name: "Try every starting tree",
       summary:
-        "For each tree, walk forward collecting kinds until a third appears, and remember the longest run found.",
+        "For every tree, walk forward collecting kinds until a third one appears, and keep the longest run found. It is the problem statement read literally, and every start re-walks ground the previous start already covered, so the row is traversed once per tree rather than once in total.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def fruit_baskets(fruits: list[int]) -> int:
     best = 0

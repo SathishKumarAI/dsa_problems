@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "dp",
   difficulty: "medium",
   leetcode: "maximum-product-subarray",
-  brief: "Find the largest product of any contiguous run — negatives and zeros included.",
+  brief:
+    "Find the largest product of any contiguous run — negatives and zeros included.",
   statement:
     "Given an integer array, return the largest product achievable by multiplying together the values of one contiguous, non-empty run.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The two prefix sweeps are linear and correct, but they need the array twice and the argument for why 'scan left, scan right, take the best' finds the answer is a proof about where zeros and sign changes sit — it is a trick that works rather than a rule you can restate. Carrying the best AND the worst product ending at the current index says the reason out loud: a negative swaps them. One pass, two numbers, and the recurrence explains itself.",
-  arc:
-    "This problem exists to break a habit. Kadane's algorithm works for sums because extending a run can only be better or worse in one direction; multiplication has a sign, and a negative number reverses which running value is worth keeping. The fix is not a bigger table but a second variable — carry the WORST product as well as the best, and let a negative swap them. The general lesson is worth more than the problem: when a running quantity is not monotone under the operation you are applying, carry the extremes on both sides. The same move solves maximum product of three numbers and several sign-flipping interval problems. Know that the value alone is always one of the candidates, too — that is what restarts a run after a zero, without a single special case.",
+  arc: "This problem exists to break a habit. Kadane's algorithm works for sums because extending a run can only be better or worse in one direction; multiplication has a sign, and a negative number reverses which running value is worth keeping. The fix is not a bigger table but a second variable — carry the WORST product as well as the best, and let a negative swap them. The general lesson is worth more than the problem: when a running quantity is not monotone under the operation you are applying, carry the extremes on both sides. The same move solves maximum product of three numbers and several sign-flipping interval problems. Know that the value alone is always one of the candidates, too — that is what restarts a run after a zero, without a single special case.",
   approach:
     "Walk once, carrying the best and the worst product of a run ending at the current index. At each value, the new best is the largest of the value alone, best × value and worst × value; the new worst is the smallest of the same three. Taking the value alone is what restarts a run after a zero; including the worst is what catches a pair of negatives. Track the maximum best ever seen and return it.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -125,7 +125,7 @@ export const problem: Problem = {
     {
       name: "Multiply out every run",
       summary:
-        "Two nested loops over start and end, multiplying the values of each run from scratch and keeping the largest product seen.",
+        "Two nested loops over start and end, multiplying each run from scratch. Cubic, because the multiplication inside the pair of loops walks the run again — the same product, rebuilt from its factors, once per endpoint.",
       complexity: { time: "O(n³)", space: "O(1)" },
       python: `def max_product(nums: list[int]) -> int:
     answer = nums[0]
@@ -163,7 +163,7 @@ export const problem: Problem = {
     {
       name: "Grow each run in place",
       summary:
-        "Same pairs of endpoints, but the product of a run is carried as the end moves instead of being recomputed: one multiplication per extension.",
+        "The same pairs of endpoints, but the product is carried as the end moves instead of being rebuilt: one multiplication per step. The cubic collapses to quadratic, and what is left is the starts — the loop still tries every one, when a single pass can decide whether extending or restarting is better at each position.",
       complexity: { time: "O(n²)", space: "O(1)" },
       whyNow:
         "The innermost loop recomputes a product the loop before it already had — extending a run by one value is one multiplication, not a fresh pass over the run. Dropping that loop costs nothing in clarity and removes a whole factor of n.",

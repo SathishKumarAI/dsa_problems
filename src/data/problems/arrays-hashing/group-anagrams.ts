@@ -33,8 +33,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting each word costs k log k just to make a label, and the label throws away nothing the counts do not already capture. A 26-slot tally is built in one pass over the word — linear in its length instead of linearithmic — and two anagrams produce the same tally by definition.",
-  arc:
-    "One question drives every rung: what is the KEY that makes two words the same? Comparing pairs avoids choosing a key and pays quadratically for it. Sorted letters are a valid key and cost k log k per word. A 26-slot count signature is the same key without sorting, built in k steps. Once the key exists, grouping is a hash map with a list per bucket — the part nobody argues about. The transferable habit is to look for a canonical form: anagram grouping, isomorphic strings, and 'group by shape' problems are all the same shape once the key is chosen. In an interview, name both keys and the trade — sorted strings are shorter to write, count signatures are faster and immune to long words.",
+  arc: "One question drives every rung: what is the KEY that makes two words the same? Comparing pairs avoids choosing a key and pays quadratically for it. Sorted letters are a valid key and cost k log k per word. A 26-slot count signature is the same key without sorting, built in k steps. Once the key exists, grouping is a hash map with a list per bucket — the part nobody argues about. The transferable habit is to look for a canonical form: anagram grouping, isomorphic strings, and 'group by shape' problems are all the same shape once the key is chosen. In an interview, name both keys and the trade — sorted strings are shorter to write, count signatures are faster and immune to long words.",
   approach:
     "Give every word a canonical key that is invariant under rearrangement, then let a hash map collect words by that key. The key here is the letter tally rendered as text: twenty-six counts joined by commas, which two anagrams always agree on and two non-anagrams never do. The separator matters — without it, counts of 1,11 and 11,1 would collide. Finally sort inside each group and between groups so the answer has one shape rather than many.",
   complexity: { time: "O(n · k)", space: "O(n · k)" },
@@ -98,7 +97,7 @@ export const problem: Problem = {
     {
       name: "Compare every pair",
       summary:
-        "Walk the words, and for each one scan the groups built so far for one whose first member is an anagram of it, creating a new group when none matches.",
+        "For each word, scan the groups built so far for one whose first member is an anagram of it. Correct, and quadratic in the number of words with an anagram test inside every comparison — it asks whether two words match, over and over, instead of asking each word once what it IS.",
       complexity: { time: "O(n² · k)", space: "O(n · k)" },
       python: `def group_anagrams(words: list[str]) -> list[list[str]]:
     groups: list[list[str]] = []
@@ -173,9 +172,7 @@ export const problem: Problem = {
     {
       name: "Sorted letters as the key",
       summary:
-        "Use the word's own letters in sorted order as a map key, so every anagram of it lands on the same string.",
-      whyNow:
-        "The pairwise scan re-sorts a group's representative once for every word it compares against. A map lookup replaces that whole scan with one hash, turning the quadratic search into a single pass.",
+        "Use the word's own letters, sorted, as a map key, so every anagram lands on the same string. The pairwise scan collapses to one pass, and the only remaining cost is the sort inside each key — k log k per word, paid to produce a label that a 26-slot count could produce in k.",
       complexity: { time: "O(n · k log k)", space: "O(n · k)" },
       python: `def group_anagrams(words: list[str]) -> list[list[str]]:
     groups: dict[str, list[str]] = {}

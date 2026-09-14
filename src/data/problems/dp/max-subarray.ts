@@ -34,6 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The table version is already linear, but every entry is read exactly once, by the very next step. A value read once and never again does not need to be stored — so the whole table collapses to a single running number, and the space goes from n to a constant.",
+  arc: "The same collapse as the rest of the pattern, compressed into two steps. The double loop re-adds prefixes it has already summed; writing down the best run ending at each position builds each entry from its predecessor in constant time, because a run ending at i either extends the run ending at i−1 or starts fresh — and it starts fresh exactly when the carried sum is negative, which is the one decision the algorithm ever makes. Then the table turns out to be read only by the very next step, and a value read once and never again does not need storing, so n cells become one running number. That move is mechanical and worth naming: see how far back the recurrence reaches, keep that much, throw the rest away. The edge case is where implementations quietly break — seed both numbers with the first element rather than with zero, because an empty run is not legal and an all-negative array must return its largest element.",
   approach:
     "Walk once carrying two numbers: the best sum of a run ending at the current position, and the best sum seen anywhere. At each element the run either continues or restarts, and it restarts exactly when the run so far is a liability — a negative carried sum. That single decision is the recurrence. Seeding both numbers with the first element, rather than with zero, is what keeps the all-negative case honest: an empty run is not an allowed answer.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -66,7 +67,7 @@ export const problem: Problem = {
     {
       name: "Every subarray",
       summary:
-        "Take each start and each end, add up the elements between them, and keep the largest total found.",
+        "Take each start and each end and add up everything between them. Quadratic, and the redundancy is exact: the sum for a run is the sum of the run one shorter plus one element, and this recomputes it from scratch every time.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def max_subarray(nums: list[int]) -> int:
     best = nums[0]
@@ -104,9 +105,7 @@ export const problem: Problem = {
     {
       name: "Table of best-ending-here",
       summary:
-        "Fill an array where entry i is the largest sum of a run ending exactly at i, each entry built from the one before it, then take the largest entry.",
-      whyNow:
-        "The double loop re-adds prefixes it has already summed. Writing down the best run ending at each position means every entry is built from its predecessor in constant time — the same answer, once through the array instead of n times.",
+        "Fill an array where entry i is the best sum of a run ending exactly at i, each entry built from the one before, then take the maximum. Linear, and it names the idea that makes the problem work — a run ending here either extends the one before or starts fresh. What it still pays is n slots to hold a history nothing reads twice.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def max_subarray(nums: list[int]) -> int:
     ending = [0] * len(nums)

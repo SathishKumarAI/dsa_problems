@@ -26,8 +26,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The heap still pays a logarithm on every count. Counts are bounded by n, so they can be array indices: bucket the values by count and read the top k off the end, with no comparison sort anywhere.",
-  arc:
-    "Counting is the easy half; the ladder is entirely about how much ordering the answer really needs. A full sort orders every distinct value to hand back k of them. A heap of size k orders only the candidates, so the logarithm follows k rather than n. Buckets drop comparisons altogether, because a count is a small bounded integer — it can never exceed n — and small bounded integers can be array indices instead of sort keys. That last substitution, comparison becomes placement, is the same move behind counting sort, bucket sort and radix sort. Pick by which quantity is small: tiny k favours the heap, k near n favours sorting, and a tight bound on the key favours buckets.",
+  arc: "Counting is the easy half; the ladder is entirely about how much ordering the answer really needs. A full sort orders every distinct value to hand back k of them. A heap of size k orders only the candidates, so the logarithm follows k rather than n. Buckets drop comparisons altogether, because a count is a small bounded integer — it can never exceed n — and small bounded integers can be array indices instead of sort keys. That last substitution, comparison becomes placement, is the same move behind counting sort, bucket sort and radix sort. Pick by which quantity is small: tiny k favours the heap, k near n favours sorting, and a tight bound on the key favours buckets.",
   approach:
     "Count occurrences with a hash map. Then bucket-sort by count: index c of a length n+1 array collects all values appearing exactly c times. Scanning buckets from n down to 1 and collecting values until you have k avoids any comparison sort, because a count can never exceed n.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -92,7 +91,7 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
     {
       name: "Sort by count",
       summary:
-        "Count, then sort the distinct values by frequency and slice the top k. Simplest to write; the sort is the only thing costing more than linear.",
+        "Count the values, then sort the distinct ones by frequency and slice the top k. The simplest thing that works, and the sort is the only step costing more than linear — it orders ALL the distinct values to answer a question about k of them, which is wasted whenever k is small.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `from collections import Counter
 
@@ -139,7 +138,7 @@ def top_k_frequent(nums: list[int], k: int) -> list[int]:
       whyNow:
         "Sorting puts every distinct value in order when only k of them are wanted. A heap of size k keeps just the frontrunners, so the cost follows k instead of the whole set of values.",
       summary:
-        "Keep a min-heap of the k most frequent seen while iterating counts. Better than sorting when k ≪ distinct values; stdlib nlargest does exactly this.",
+        "Keep a min-heap of size k while walking the counts: push, and drop the smallest whenever the heap grows past k. Now the ordering work is bounded by k rather than by the number of distinct values, which is the whole gain — n log k instead of n log n, and it matters exactly when k is much smaller than the alphabet.",
       complexity: { time: "O(n log k)", space: "O(n)" },
       python: `import heapq
 from collections import Counter

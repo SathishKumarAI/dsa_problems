@@ -31,8 +31,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Trying every combination of removals is exponential in k, and almost all of those combinations differ only in a prefix that a single comparison settles. A digit followed by a smaller one is always worth removing — the leftmost such removal lowers the most significant position it can — so greedy popping reaches the same answer in one pass.",
-  arc:
-    "Greedy plus a monotonic stack, and the greedy is the part to be able to justify: removing a digit that is larger than the digit after it always lowers the number, because the more significant position improves. So scan left to right, pop while the stack top is larger and removals remain, and the result is the smallest possible arrangement in order. Two details finish it — leftover removals are taken from the END, since a non-decreasing remainder is smallest when truncated, and leading zeros must be stripped with an empty result meaning zero. Those two are where almost every failure lives, and they are worth writing as separate lines rather than folding into the loop.",
+  arc: "Greedy plus a monotonic stack, and the greedy is the part to be able to justify: removing a digit that is larger than the digit after it always lowers the number, because the more significant position improves. So scan left to right, pop while the stack top is larger and removals remain, and the result is the smallest possible arrangement in order. Two details finish it — leftover removals are taken from the END, since a non-decreasing remainder is smallest when truncated, and leading zeros must be stripped with an empty result meaning zero. Those two are where almost every failure lives, and they are worth writing as separate lines rather than folding into the loop.",
   approach:
     'Keep the digits on a stack, and before pushing a digit, pop any larger digit on top while budget remains. That leaves the kept digits non-decreasing, which is the smallest arrangement reachable by deletion alone. If budget is still unspent afterwards the sequence never decreased, so the removals must come off the end, where they cost the least. Finally strip leading zeroes and return "0" if nothing survives.',
   complexity: { time: "O(n)", space: "O(n)" },
@@ -92,7 +91,7 @@ export const problem: Problem = {
     {
       name: "Pick the smallest digit at each step",
       summary:
-        "Choose the answer one digit at a time: for each position, scan the window of digits still allowed and take the smallest, then continue after it.",
+        "Build the answer one digit at a time: for each output position, scan the window of digits still reachable, take the smallest, and continue from just past it. Directly greedy and correct, and each of the n output positions rescans a window of up to k digits, which the stack collapses into a single pass.",
       complexity: { time: "O(n · k)", space: "O(n)" },
       python: `def remove_k_digits(num: str, k: int) -> str:
     keep = len(num) - k

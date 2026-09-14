@@ -9,7 +9,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
-| A problem's whole ladder as ONE page, code and a runnable script | `docs/explained/<id>.md` — generated, `npm run docs:explained` |
+| **Everything about one problem, on one page** | `docs/learn/<id>.md` — generated, `npm run docs:learn`. Merges the data (statement, hints, every rung in three languages) with the authored teaching document from `docs/deep/<id>_explained.md`. Shows the ending, so the app links it only when the ladder is not capped |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
@@ -22,12 +22,13 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
 | How the animations work, and how to build one in Python / for an LLM | `docs/VISUALIZING.md` |
 | Which model wrote what, and what it cost in tokens | `docs/MODELS.md` |
+| How to run subagents here — the roster, the rules, how to resume one | `docs/AGENTS.md` |
 | What shipped when | `docs/WORKLOG.md` |
 | Why an item exists | `docs/RESEARCH.md`, `docs/PRD.md` |
 
 ## The pedagogy (do not regress this)
 
-- **107 problems, 87 journeys.** The twenty newest (batch 6) ship a static walkthrough instead, and
+- **127 problems, 93 journeys.** The other **34** ship a static walkthrough instead, and
   `problems.test.ts` forbids carrying both — so a journey written for one of them DELETES that
   problem's `walkthrough` in the same commit (B63).
 - **Progressive disclosure is the product.** No unearned act or pattern name anywhere a learner
@@ -61,6 +62,23 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## Traps
 
+- **A bare `#id` href is a ROUTE change, not a scroll.** This is a hash-routed app, so
+  `href="#rung-brute"` sets the route to `rung-brute` and the app renders HOME — the page the
+  reader was on is gone. Every in-page anchor needs `preventDefault()` + `scrollIntoView`.
+  Shipped broken on the approach ladder for months; `learn-page-view.tsx` had guarded it all
+  along. Gate: *"a jump to an approach scrolls, and lands clear of the sticky bar"*.
+- **An anchor lands under the phone's sticky bar** unless the SCROLL CONTAINER reserves it.
+  `html { scroll-padding-top }` below `md` fixes every jump at once (index.css); a `scroll-mt-*`
+  on each target is the version you forget on the next one.
+- **A flex item defaults to `min-width: auto`**, i.e. its content's min-content — and that floor
+  propagates up until the whole document is wider than the viewport. One 16px chevron took home
+  sideways at 1440. The guard is `min-w-0` on `SidebarInset` (`App.tsx`); `markdown.tsx` documents
+  the same trap for its column.
+- **The R6 motion audit only walks `main`.** Everything outside it — the rail, dialogs, the sheet —
+  had drifted to a third duration and a second curve. Audit document-wide, not `main`-wide.
+- **A clipped element still reports a bounding rect.** An overlap detector that does not intersect
+  against every scrolling ancestor will call clipped text "covered" and send you fixing the wrong
+  bar. Cost one wrong diagnosis on 2026-09-13.
 - **`localStorage` written while a page is mounted is undone** — the store caches per key. Write it
   on another route, then navigate for real (that is what `test/ui-smoke.test.mjs` does).
 - **Applying a preset restarts the act**, so a script that picks the act first measures the story act.

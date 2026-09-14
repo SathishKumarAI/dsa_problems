@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "binary-search",
   difficulty: "medium",
   leetcode: "capacity-to-ship-packages-within-d-days",
-  brief: "Packages must ship in order within d days — find the smallest daily capacity that works.",
+  brief:
+    "Packages must ship in order within d days — find the smallest daily capacity that works.",
   statement:
     "Packages sit on a belt in a fixed order and must be shipped in that order. Each day you load packages onto the ship until the next one would exceed its capacity. Return the smallest capacity that gets everything shipped within d days.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Searching from 1 makes half the range meaningless: any capacity below the heaviest package can never ship it, so the simulation has to carry a special 'impossible' result and the search wastes its first steps on values that were never candidates. Anchoring the low end at the heaviest package makes every capacity in the range feasible-or-not by day COUNT alone — the predicate becomes a plain comparison, and the range shrinks to the one that can actually contain the answer.",
-  arc:
-    "This is the problem that teaches 'binary search the ANSWER'. The array is not sorted and nothing is being looked up; what is monotone is a yes/no question — can capacity C ship everything in time — which is false for a while and then true forever. Any question with that shape can be halved, and the pattern covers Koko eating bananas, split array largest sum, the smallest divisor, and most 'minimum X such that Y fits' phrasings. Two habits to take away: write the feasibility check as its own function and make it a plain simulation, because that is where the bugs live; and choose the bounds so that every candidate inside them is meaningful. Starting the range at the heaviest package rather than at 1 removes an entire class of impossible capacities and the special case they would need.",
+  arc: "This is the problem that teaches 'binary search the ANSWER'. The array is not sorted and nothing is being looked up; what is monotone is a yes/no question — can capacity C ship everything in time — which is false for a while and then true forever. Any question with that shape can be halved, and the pattern covers Koko eating bananas, split array largest sum, the smallest divisor, and most 'minimum X such that Y fits' phrasings. Two habits to take away: write the feasibility check as its own function and make it a plain simulation, because that is where the bugs live; and choose the bounds so that every candidate inside them is meaningful. Starting the range at the heaviest package rather than at 1 removes an entire class of impossible capacities and the special case they would need.",
   approach:
     "Binary search on the capacity itself, between the heaviest package and the total weight. For a candidate, sweep the packages once counting days: keep a running load, and when the next package would overflow, close the day and start a new one. If the day count fits within d the candidate works, so remember it and search lower; otherwise search higher. Each probe is one linear pass, and the range halves every probe.",
   complexity: { time: "O(n log(sum))", space: "O(1)" },

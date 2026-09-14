@@ -363,10 +363,15 @@ const eq = (a: number, b: number, sum: number, target: number): SumModel => ({
 })
 
 function needPanel(f: F, d: TwoSumData, label: string): StageModel["panel"] {
+  // Pass 1 has no `need`, so it used to pass probe: null and the panel showed
+  // the bucket table with no arithmetic at all. The key being FILED is just as
+  // worth explaining as the key being looked up.
+  const inserting = f.need === undefined && f.i !== undefined
   const map = hashLayout(entriesOf(f.seen ?? []), {
-    probe: f.need ?? null,
+    probe: f.need ?? (inserting ? d.nums[f.i!] : null),
     hit: !!f.hit,
     label,
+    mode: inserting ? "insert" : "lookup",
   })
   return f.need !== undefined && f.i !== undefined
     ? {

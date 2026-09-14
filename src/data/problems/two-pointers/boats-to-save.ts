@@ -37,8 +37,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Counting weights into buckets is fast, but the table is sized by the weight LIMIT rather than by the crowd: a limit of 30000 allocates 30000 counters to ferry two people, and the walk still has to skip over every empty weight in between. Sorting the array once puts the same weights in the same order using memory proportional to the people who actually exist, and the whole remaining state is two indices.",
-  arc:
-    "The greedy sits on one sentence: the heaviest person is boarding a boat no matter what, so the only decision is whether the lightest person rides with them. If the lightest cannot, nobody can; if they can, pairing them there never blocks a pairing that mattered, because any other partner is heavier and therefore harder to place. That exchange argument is the proof, and being able to state it is the difference between guessing and knowing. The bucket rung is a good foil — it is linear in the crowd but allocates by the weight LIMIT, which is a reminder that 'linear' means nothing until you say linear in what. Sorting plus two converging pointers is the version to remember.",
+  arc: "The greedy sits on one sentence: the heaviest person is boarding a boat no matter what, so the only decision is whether the lightest person rides with them. If the lightest cannot, nobody can; if they can, pairing them there never blocks a pairing that mattered, because any other partner is heavier and therefore harder to place. That exchange argument is the proof, and being able to state it is the difference between guessing and knowing. The bucket rung is a good foil — it is linear in the crowd but allocates by the weight LIMIT, which is a reminder that 'linear' means nothing until you say linear in what. Sorting plus two converging pointers is the version to remember.",
   approach:
     "Sort the weights, then put one index at the lightest person and one at the heaviest. Each round launches exactly one boat for the heaviest person still waiting. If the lightest person fits alongside them, that person boards too and the light index advances; otherwise the heaviest sails alone. Either way the heavy index steps back and the boat count goes up. The greedy choice is safe because the lightest person is the easiest passenger to place: if they cannot ride with the heaviest, nobody can, and if they can, using them here never blocks a pairing that mattered later.",
   complexity: { time: "O(n log n)", space: "O(1)" },
@@ -211,7 +210,7 @@ export const problem: Problem = {
     {
       name: "Rescan for the heaviest and the lightest",
       summary:
-        "Keep a used flag per person. Each round, scan for the heaviest person still waiting, then scan again for the lightest, and put them on one boat if they fit.",
+        "Keep a used flag per person; each round, scan for the heaviest still waiting, then scan again for the lightest that fits beside them. The greedy pairing is already right — the cost is rediscovering the two extremes every round, which one sort establishes once and for all.",
       complexity: { time: "O(n^2)", space: "O(n)" },
       whyNow:
         "The subset table doubles in size with every extra person — fifty thousand people is not a bigger table, it is an impossible one. The greedy rule replaces the whole table: the heaviest person's boat is best shared with the lightest who fits, so each round needs only those two people, not a record of every group that could have sailed.",
@@ -284,7 +283,7 @@ export const problem: Problem = {
     {
       name: "Sort, then empty the queue from both ends",
       summary:
-        "Sort the weights into a queue, then repeatedly take the person off the heavy end and, if they fit together, the person off the light end.",
+        "Sort into a queue, then repeatedly take the person at the heavy end and, if they fit together, the one at the light end. The right pairing with the wrong container: removing from the front of a list shifts everything behind it, so a walk that should be linear becomes quadratic.",
       complexity: { time: "O(n^2)", space: "O(n)" },
       whyNow:
         "Rescanning finds the same extremes over and over: the weights never change, so n rounds of two full scans re-derive an ordering that one sort settles for good. Sorting once turns 'find the heaviest' into 'look at the end'.",
@@ -330,7 +329,7 @@ export const problem: Problem = {
     {
       name: "Count the weights into buckets",
       summary:
-        "Weights are small integers, so count how many people share each weight and walk one cursor down from the limit and one up from 1 over the bucket table.",
+        "Weights are small integers, so count how many people share each weight and walk one cursor down from the limit while another walks up. Linear in people plus the weight range, which beats sorting — and it is bought entirely with the bound on weights, so it disappears the moment that bound widens.",
       complexity: { time: "O(n + limit)", space: "O(limit)" },
       whyNow:
         "Taking a person off the front of a queue shifts every remaining person one slot, so the sorted version is still quadratic — the sort fixed the searching and left the removing. A bucket table removes a person by decrementing a counter, which is one write, and it never compares two weights at all.",

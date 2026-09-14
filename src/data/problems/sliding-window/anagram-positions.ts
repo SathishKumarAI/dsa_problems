@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "sliding-window",
   difficulty: "medium",
   leetcode: "find-all-anagrams-in-a-string",
-  brief: "List every start index where a window of the text is an anagram of the pattern.",
+  brief:
+    "List every start index where a window of the text is an anagram of the pattern.",
   statement:
     "Given a text and a pattern, return the start index of every substring of the text that is an anagram of the pattern — the same letters in any order.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Comparing the two count tables at every step is a fixed 26 comparisons, which is cheap but still repeats work the update already knew about: a slide changes exactly two letters, so at most two of the 26 verdicts can change. Carrying a count of how many letters currently match turns each step into two increments and a single equality test — the answer is 'match count is 26', and the alphabet never gets walked again.",
-  arc:
-    "Anagram means multiset, and multiset means counts — once that substitution is made, every rung is an argument about how much of the counting to redo. Sorting each window redoes all of it; recounting each window redoes k characters; sliding the tally redoes two; and tracking how many letters AGREE redoes nothing at all, because only a letter whose count changed can change its verdict. That last step is the one worth stealing: keep a summary of the comparison rather than recomputing the comparison, and update the summary exactly where the data changed. It is the same move that turns the minimum-window-substring check from 26 comparisons into one integer, and knowing the fixed-width window shape — enter one, leave one, test — covers a whole family of string problems.",
+  arc: "Anagram means multiset, and multiset means counts — once that substitution is made, every rung is an argument about how much of the counting to redo. Sorting each window redoes all of it; recounting each window redoes k characters; sliding the tally redoes two; and tracking how many letters AGREE redoes nothing at all, because only a letter whose count changed can change its verdict. That last step is the one worth stealing: keep a summary of the comparison rather than recomputing the comparison, and update the summary exactly where the data changed. It is the same move that turns the minimum-window-substring check from 26 comparisons into one integer, and knowing the fixed-width window shape — enter one, leave one, test — covers a whole family of string problems.",
   approach:
     "Count the pattern's letters, then run a window of that width over the text keeping a live count for the window and a counter of how many of the 26 letters agree with the pattern. Sliding adds the incoming letter and removes the outgoing one, adjusting the agreement counter only for those two letters — a letter's verdict can flip only when its own count changes. A window is an anagram exactly when all 26 letters agree.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -168,7 +168,7 @@ export const problem: Problem = {
     {
       name: "Sort every window",
       summary:
-        "Sort the pattern once, then sort each window of the text and compare the two strings. The definition of an anagram, typed directly.",
+        "Sort the pattern once, then sort each window of the text and compare the two strings. It is the definition of an anagram typed straight out, and it re-sorts k characters at every one of the n positions, even though consecutive windows differ by a single letter at each end.",
       complexity: { time: "O(n · k log k)", space: "O(k)" },
       python: `def anagram_positions(text: str, pattern: str) -> list[int]:
     k = len(pattern)
@@ -206,7 +206,7 @@ export const problem: Problem = {
     {
       name: "Count every window from scratch",
       summary:
-        "Replace sorting with counting: build a 26-slot tally for the pattern once, and a fresh tally for each window, then compare the two tallies.",
+        "Replace the sorting with counting: build a 26-slot tally of the pattern once, then a fresh tally for each window of the text and compare. That drops the log factor, and it still rebuilds the whole window tally from nothing at every position instead of editing the one it already had.",
       complexity: { time: "O(n · k)", space: "O(1)" },
       whyNow:
         "Sorting a window costs k log k to answer a question that does not care about order at all — and it throws the sorted string away immediately. A tally of 26 counts decides the same thing in k steps, and two tallies compare in a fixed 26.",
@@ -251,7 +251,7 @@ export const problem: Problem = {
     {
       name: "Slide the tally, compare all 26",
       summary:
-        "Keep one tally and update it as the window moves — add the entering letter, remove the leaving one — then compare the two tallies at each position.",
+        "Keep one tally and edit it as the window moves, adding the entering letter and subtracting the leaving one, then compare the two 26-slot tallies. The update is constant now; the comparison is still 26 slots per step, re-checking 24 counts that could not have changed since the previous move.",
       complexity: { time: "O(26n)", space: "O(1)" },
       whyNow:
         "Two neighbouring windows share all but two letters, yet the per-window tally recounts every one of the k characters. Updating the tally instead of rebuilding it makes each step two operations, which is where the k disappears from the running time.",

@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "binary-search",
   difficulty: "medium",
   leetcode: "find-k-closest-elements",
-  brief: "From a sorted array, return the k values closest to x — in sorted order, ties going left.",
+  brief:
+    "From a sorted array, return the k values closest to x — in sorted order, ties going left.",
   statement:
     "Given a sorted array, a count k and a target x, return the k values closest to x, sorted ascending. When two values are equally far from x, the smaller one wins.",
   constraints: [
@@ -36,8 +37,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Converging two pointers is linear because it steps one index at a time from the ends of a 10^4-element array to a window of size k — but the decision it makes at each step is the same monotone comparison every time. Binary searching the window's START makes those steps logarithmic in the number of candidate windows: the answer is a slice, and its position is found in about fourteen comparisons rather than ten thousand.",
-  arc:
-    "The insight comes before the algorithm: because the array is sorted, the answer is k CONTIGUOUS values, so the only unknown is where the window starts. Once the search space is 'window positions' rather than 'values', binary search applies to a comparison between arr[mid] and arr[mid + k] — the value that would leave against the value that would join — and the whole problem is four lines. Two lessons generalise. First, when a problem says 'sorted' and asks for a set, check whether the set has to be an interval; it usually does, and that collapses the search space. Second, a two-part rule (closest, then smallest) has to be honoured in the comparison itself: here it is the difference between > and >=, and getting it backwards silently returns a window one step too far right.",
+  arc: "The insight comes before the algorithm: because the array is sorted, the answer is k CONTIGUOUS values, so the only unknown is where the window starts. Once the search space is 'window positions' rather than 'values', binary search applies to a comparison between arr[mid] and arr[mid + k] — the value that would leave against the value that would join — and the whole problem is four lines. Two lessons generalise. First, when a problem says 'sorted' and asks for a set, check whether the set has to be an interval; it usually does, and that collapses the search space. Second, a two-part rule (closest, then smallest) has to be honoured in the comparison itself: here it is the difference between > and >=, and getting it backwards silently returns a window one step too far right.",
   approach:
     "The answer is a window of exactly k contiguous values, so search for its left edge in the range 0 … n − k. For a candidate edge, compare x − arr[edge] against arr[edge + k] − x: if the value leaving on the left is strictly further from x than the one that would join on the right, the window should move right; otherwise it should not. That comparison is monotone in the edge, so binary search finds the smallest edge that should not move — and taking the tie in favour of not moving is exactly the 'ties go left' rule.",
   complexity: { time: "O(log(n − k) + k)", space: "O(1)" },
@@ -104,7 +104,8 @@ export const problem: Problem = {
         values: [1, 2, 3, 4, 5],
         marks: { 0: "done", 1: "done", 2: "done", 3: "done" },
       },
-      caption: "The range closes on start 0 and the answer is the slice [1, 2, 3, 4].",
+      caption:
+        "The range closes on start 0 and the answer is the slice [1, 2, 3, 4].",
     },
     {
       cells: {
@@ -120,7 +121,7 @@ export const problem: Problem = {
     {
       name: "Sort by distance",
       summary:
-        "Order every value by how far it is from x, breaking ties in favour of the smaller value, take the first k, and sort those back into ascending order.",
+        "Order every value by how far it is from x, take the first k, then sort those back into ascending order. Correct including the tie rule, and it sorts all n values by a key that only k of them will be judged on — and it destroys the input's own ordering, which is the property the answer depends on.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def k_closest_values(arr: list[int], k: int, x: int) -> list[int]:
     ranked = sorted(arr, key=lambda value: (abs(value - x), value))
@@ -152,7 +153,7 @@ export const problem: Problem = {
     {
       name: "A heap of the k best so far",
       summary:
-        "Walk the array keeping a heap of size k ordered by the same two-part rule, evicting the current worst whenever a better value arrives. Sort what is left.",
+        "Walk the array keeping a heap of size k under the same two-part rule, evicting the current worst whenever something better arrives. The sort's n log n becomes n log k, which matters when k is small — and it still reads every element, when the answer is a contiguous window whose position the sortedness already pins down.",
       complexity: { time: "O(n log k)", space: "O(k)" },
       whyNow:
         "Sorting the whole array orders values that will never be looked at — with k = 3 and ten thousand values, 9997 of those comparisons are wasted. A heap of size k only ever orders the candidates, so the log follows k instead of n.",
@@ -202,7 +203,7 @@ def k_closest_values(arr: list[int], k: int, x: int) -> list[int]:
     {
       name: "Two pointers, closing in",
       summary:
-        "Put one index at each end of the array and drop the further of the two values — ties dropping from the right — until exactly k values remain between them.",
+        "Put an index at each end and drop the further of the two values, ties dropping from the right, until k remain. No extra memory and no sorting, and it is the first rung to use the fact that the answer is contiguous — but it discards one value per step, so a k much smaller than n means nearly n steps to throw almost everything away.",
       complexity: { time: "O(n − k)", space: "O(1)" },
       whyNow:
         "A heap re-derives an ordering the array already has: it is sorted, so the k closest values are contiguous and the only things that can be discarded are at the two ends. Comparing the two ends and dropping the worse one needs no ordering structure at all.",

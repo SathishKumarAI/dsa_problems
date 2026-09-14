@@ -22,6 +22,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The cache holds n entries and a stack n deep for a recurrence that only ever looks back two steps. Two variables carry the same state.",
+  arc: "The whole standard route in one easy problem, which is why it is worth doing slowly. The recurrence is the only piece of thinking: a route to step n arrives from n−1 or from n−2, the two sets never overlap, so the counts add — Fibonacci wearing a different hat. Naive recursion translates that literally and recomputes the same step exponentially often. Memoising answers each step once at the price of a table of n and a stack of n. Tabulating upward removes the stack and keeps the table. Then you notice the recurrence reads exactly two cells back, so everything older is dead storage, and two variables rolling forward hold all of it. Brute force, memoise, tabulate, roll — every problem in this pattern walks that ladder, and the last step is always the same question: how far back does the recurrence actually look? Know the rolling version cold, because min-cost-stairs and house-robber are this recurrence accumulating something else.",
   approach:
     "The recurrence is Fibonacci: every route to step n arrives from n-1 (then +1) or from n-2 (then +2), and those sets never overlap. Naive recursion recomputes subproblems exponentially; iterating upward with two rolling variables computes each once. This is DP at its smallest: state = step index, transition = sum of the two predecessors.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -54,7 +55,7 @@ export const problem: Problem = {
     {
       name: "Naive recursion",
       summary:
-        "Direct translation of the recurrence. Exponential — ways(n) recomputes ways(n-2) all the way down. This is what memoization exists to fix.",
+        "The recurrence typed out: ways(n) is ways(n-1) plus ways(n-2). Exponential, and for a precise reason worth seeing — the two branches overlap almost entirely, so ways(n-2) is computed once inside the first branch and again as the whole second branch, all the way down. The work is the number of leaves in that tree, not the number of distinct questions.",
       complexity: { time: "O(2ⁿ)", space: "O(n) stack" },
       python: `def climb_ways(n: int) -> int:
     if n <= 1:
@@ -74,7 +75,7 @@ export const problem: Problem = {
       whyNow:
         "The plain recursion recomputes the same step counts exponentially often. Caching each one makes every subproblem happen exactly once.",
       summary:
-        "Same recursion, each subproblem cached and computed once. Top-down DP — the systematic step between naive recursion and the iterative table.",
+        "The same recursion with each answer cached the first time it is computed. The tree collapses to n distinct questions, which is the entire gain — nothing about the logic changed, only how often it runs. What is left is a call stack n deep and a table holding every answer when only the last two are ever read.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `from functools import lru_cache
 

@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Finding one occurrence and then walking outward is logarithmic plus linear, and the linear part dominates whenever the run is long — an array that is entirely the target degrades to a full scan. Biasing the search itself keeps both halves logarithmic, because the walk outward is replaced by more halving.",
-  arc:
-    "Two searches, not one, and the insight is to stop searching for the VALUE and start searching for a boundary: the first index whose value is at least the target, and the first whose value is greater. Those are lower and upper bound, they are the same loop with one comparison changed, and together they give the run and its length. Learning them as primitives pays off far beyond this problem — counting occurrences, insert positions, and most 'range of equal values' questions reduce to a pair of bounds. The rung that finds one occurrence then walks outward is the trap worth seeing: it is logarithmic plus the run length, which is linear when the array is all one value.",
+  arc: "Two searches, not one, and the insight is to stop searching for the VALUE and start searching for a boundary: the first index whose value is at least the target, and the first whose value is greater. Those are lower and upper bound, they are the same loop with one comparison changed, and together they give the run and its length. Learning them as primitives pays off far beyond this problem — counting occurrences, insert positions, and most 'range of equal values' questions reduce to a pair of bounds. The rung that finds one occurrence then walks outward is the trap worth seeing: it is logarithmic plus the run length, which is linear when the array is all one value.",
   approach:
     "Run binary search twice with one change: on a hit, record the index and then keep going in a chosen direction rather than returning. Biased left, the search continues into the left half after a hit, so the last thing recorded is the earliest occurrence; biased right it continues into the right half and records the latest. Both searches still halve the range every step, so a run of a million equal values costs the same as a run of one. The absent case falls out for free — nothing was ever recorded, so the answer stays −1.",
   complexity: { time: "O(log n)", space: "O(1)" },
@@ -99,7 +98,7 @@ vector<int> searchRange(const vector<int>& nums, int target) {
     {
       name: "Scan both ends",
       summary:
-        "Walk from the front for the first occurrence and from the back for the last, comparing each value to the target.",
+        "Walk in from the front for the first occurrence and in from the back for the last. Correct and linear, and on an array that is 10^5 long and entirely one value it touches every element twice — a run of duplicates is the exact input this problem is built from.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def search_range(nums: list[int], target: int) -> list[int]:
     first = -1
@@ -149,9 +148,7 @@ vector<int> searchRange(const vector<int>& nums, int target) {
     {
       name: "Find one, then walk outward",
       summary:
-        "Binary search for any occurrence, then step left and right from it while the neighbours still equal the target.",
-      whyNow:
-        "The scan ignores the ordering entirely. Binary search finds a foothold in log n — but the walk outward is still linear in the length of the run, so an array that is all target costs a full pass.",
+        "Binary search for any occurrence, then step left and right while the neighbours still match. Fast when the run is short and no better than a scan when it is long — and the long run is the case that matters, because the answer is defined by the run's two ends. Walking a boundary is what a binary search should be finding.",
       complexity: { time: "O(log n + run)", space: "O(1)" },
       python: `def search_range(nums: list[int], target: int) -> list[int]:
     lo, hi = 0, len(nums) - 1

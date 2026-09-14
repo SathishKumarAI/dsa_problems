@@ -75,11 +75,38 @@ export interface Problem extends Code {
   alternatives?: Solution[] // other ways in, worst-to-best order; optimal stays top-level
 }
 
+// Somewhere outside this repo that teaches the same idea properly.
+//
+// Why references are attached to a PATTERN and not to a problem: the good
+// sources are about the technique, not about one instance of it. There is an
+// authoritative page on hash tables; there is no authoritative page on
+// "Pair With Target Sum". Attaching them per problem would have meant 127
+// rows of mostly the same three links.
+//
+// Every one of these is a link OUT. Nothing in this repo copies text from
+// them — the README's claim that all the material here is an original
+// write-up is load-bearing, and a references list is how you honour a source
+// without borrowing from it. `data/problems.test.ts` holds the shape to that:
+// https only, no dead-obvious placeholders, and a note on every row saying
+// what the source is FOR, because a bare link is a chore and not a reading.
+export interface Reference {
+  title: string
+  href: string
+  /** picks the mark beside the row — a text, an official manual, or a course */
+  kind: "reference" | "docs" | "course"
+  /** one line: why THIS source, and what it answers that the app does not */
+  note: string
+}
+
 export interface Pattern {
   id: string
   name: string
   glyph: string // monospace signature shown in nav + headers
   blurb: string // when to reach for this pattern
+  // Checked with a real HTTP request when they were added (2026-09-13); three
+  // candidates were dropped for 404 and one — the Wikipedia "sliding window
+  // protocol" — for being the NETWORKING thing of the same name.
+  references?: Reference[]
 }
 
 export interface SqlProblem {

@@ -1,0 +1,797 @@
+# The Maximum Depth of a Binary Tree — Explained
+
+## Understanding the Problem
+
+You are handed the top node of a family tree that has branched and branched, and asked a single
+question: **how many generations deep does it go at its deepest point?** Not how many people are in
+it, not which branch is longest — just the count of levels from the top down to the furthest
+descendant.
+
+The statement defines depth as *the number of nodes on the longest root-to-leaf path*. Read that
+twice, because it fixes two things people get wrong later: it counts **nodes, not edges** (a single
+lonely node has depth `1`, not `0`), and it is about the **longest** path, so the answer is decided
+by one branch and every other branch is irrelevant to the final number — though you cannot know
+which branch wins without looking at all of them.
+
+**The core question:** *what does a node need to know in order to state its own depth?* Nothing about
+its parent, nothing about its siblings — only how deep its two subtrees go. That single observation
+is the whole problem, and the reason the best solution is three lines long.
+
+The naive reading suggests work: enumerate the paths, measure them, take the maximum. That is
+correct, and it is the thing worth outgrowing, because building the paths costs far more than
+answering the question does.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it unlocks |
+|---|---|
+| `0 <= node count <= 10^4` | Zero is a legal input. **An empty tree is not an edge case you may skip** — it is in the constraint, and it is the base case the whole recursion is built on |
+| `-100 <= node value <= 100` | Values are **irrelevant**. This is a pure shape question; a solution that reads `node.val` at all is doing something unnecessary |
+| a binary tree (no cycle, one parent each) | Every node is reached exactly once with no `visited` set. A graph would need one; a tree pays nothing |
+| an empty tree has depth `0` | The statement hands you the base case. `depth(None) = 0` is not a convention someone invented — it is in the problem |
+| `10^4` nodes, with **no promise of balance** | The killer. A legal input is a tree shaped like a linked list, `10 000` nodes tall. Any solution whose memory is *height*-shaped must survive a height of `10 000` — and in CPython, one of them does not |
+
+> **Intuition.** Depth is defined in terms of itself. A node is one more than the deeper of its two
+> subtrees; a missing node is zero. Everything below is either that sentence typed out, or that
+> sentence with the bookkeeping done by hand.
+
+Throughout this document, one input:
+
+```
+        3          <- level 1
+       / \
+      9   20       <- level 2
+         /  \
+        15   7     <- level 3
+```
+
+`root = [3, 9, 20, null, null, 15, 7]`, and the answer is `3`. The deepest path is `3 -> 20 -> 15`
+(or `3 -> 20 -> 7`; both are length 3). Note that `9` is a leaf at level 2 — a **short** branch, and
+it exists precisely to catch solutions that stop at the first leaf they meet.
+
+---
+
+## Approach 1: Build every root-to-leaf path, then measure them
+
+> This rung is **an addition to the app's ladder**, which starts at BFS. It is here because it is
+> what the statement literally says, and because most people do think it first.
+
+### The idea
+
+*What is the most direct translation of "the number of nodes on the longest root-to-leaf path"?*
+Produce all the root-to-leaf paths, take the length of the longest. It fixes nothing — it is the
+starting point — but it is honest about what the statement asks, and every later approach is a
+subtraction from it.
+
+### How to think about it
+
+> **Intuition.** Walk the tree carrying a breadcrumb list. Step into a node, drop a breadcrumb;
+> when you reach a leaf, photograph the trail; when you back out of a node, pick your breadcrumb
+> back up. The photographs are the paths, and the answer is the size of the biggest photograph.
+
+The picking-up is the part that matters, and it is the part that looks like magic to someone new.
+There is one trail, not many — you *reuse* it, mutating it as you descend and ascend. That is
+cheaper than building a fresh list at every node, and it is the source of this approach's one
+famous bug.
+
+### Worked example
+
+`path` is the live trail, `paths` the photographs taken so far.
+
+| Step | At node | `path` after entering | Leaf? | `paths` |
+|---|---|---|---|---|
+| 1 | `3` | `[3]` | no | `[]` |
+| 2 | `9` | `[3, 9]` | **yes** | `[[3, 9]]` |
+| 3 | back out of `9` | `[3]` | — | `[[3, 9]]` |
+| 4 | `20` | `[3, 20]` | no | `[[3, 9]]` |
+| 5 | `15` | `[3, 20, 15]` | **yes** | `[[3, 9], [3, 20, 15]]` |
+| 6 | back out of `15` | `[3, 20]` | — | — |
+| 7 | `7` | `[3, 20, 7]` | **yes** | `[[3, 9], [3, 20, 15], [3, 20, 7]]` |
+| 8 | back out to the top | `[]` | — | three paths, longest is `3` |
+
+Read row 8 with the bug in mind: **at the end, `path` is empty again.** Anything still pointing at
+it is pointing at an empty list.
+
+### Code
+
+```python
+def max_depth_paths(root: Optional[TreeNode]) -> int:
+    """The statement, transcribed. Builds every path, then measures them."""
+    paths: list[list[int]] = []
+
+    def walk(node: Optional[TreeNode], path: list[int]) -> None:
+        if node is None:
+            return
+        path.append(node.val)
+        if node.left is None and node.right is None:
+            paths.append(list(path))          # a COPY: `path` is about to change
+        else:
+            walk(node.left, path)
+            walk(node.right, path)
+        path.pop()
+
+    walk(root, [])
+    return max((len(p) for p in paths), default=0)
+```
+
+`default=0` earns its place: an empty tree produces no paths at all, and `max()` of nothing raises
+rather than returning zero.
+
+### Common mistake
+
+> **Watch out.** `paths.append(path)` instead of `paths.append(list(path))`. It looks like it stores
+> the path. It stores a **reference to the single trail**, which is about to be unwound by every
+> `path.pop()` on the way home. The misconception is "appending a list to a list copies it" — it
+> does not, in any language with references.
+
+The failure has a cruel signature: it does not crash, and it does not return something obviously
+wrong-shaped. Run on the example, the aliased version returns **`0`** — three entries in `paths`,
+all of them the same now-empty list. Every recorded path evaporates between recording and reading.
+
+> **In an interview.** If you write the mutate-and-backtrack walk, say "copy on record" out loud as
+> you type `list(path)`. It is the single line an interviewer is watching for, and naming it
+> pre-empts the question.
+
+### Complexity and when to use this
+
+- **Time — `O(n · h)`.** Every node is visited once, which is `O(n)`, but each leaf copies a path of
+  up to `h` values. A perfect tree has `n/2` leaves and `h = log n`, so the copying alone is
+  `O(n log n)`; a degenerate tree has one leaf and one path of `n`.
+- **Space — `O(n · h)`.** Every path is kept, and they are kept simultaneously. This is the only
+  approach here whose memory grows with the number of *leaves*, and it is why it is the worst rung.
+
+**When it is still right:** when the paths *are* the answer — "print every root-to-leaf path", "find
+the path that sums to `k`", "return the deepest path, not its length". Then this is not the naive
+approach; it is the correct one, and the ones below cannot be adapted to it. Recognise which
+question you were actually asked.
+
+---
+
+## Approach 2: Count levels with a queue
+
+### The idea
+
+*The last approach kept data we immediately threw away — all that path content, to read only its
+length. Can we count depth without ever recording a path?* Yes: depth is the **number of levels**, so
+walk the tree level by level and count the levels. Nothing about any individual path is retained.
+
+### How to think about it
+
+> **Intuition.** A ripple spreading out from the root. The first ring is `{3}`, the second is
+> `{9, 20}`, the third is `{15, 7}` — and the answer is simply *how many rings there were*. You never
+> ask how deep a node is; you only count how many times the ripple expanded before it stopped.
+
+The mechanism that makes rings out of a flat queue is one line: **before draining, note how many
+nodes are in the queue right now**, and pop exactly that many. Those are one level, by definition —
+they were all put there by the previous level and nothing else has been added yet. The children they
+push are the next ring, and they wait their turn.
+
+### Worked example
+
+| Round | Queue at round start | `depth` after `+= 1` | Popped | Pushed |
+|---|---|---|---|---|
+| 1 | `[3]` | `1` | `3` | `9`, `20` |
+| 2 | `[9, 20]` | `2` | `9`, `20` | `15`, `7` (from `20`; `9` has no children) |
+| 3 | `[15, 7]` | `3` | `15`, `7` | nothing |
+| — | `[]` | — | loop ends | answer **`3`** |
+
+The short branch `9` does its job here: it pushes nothing, and the round still completes because the
+round size was fixed before the draining started.
+
+### Code
+
+```python
+def max_depth_bfs(root: Optional[TreeNode]) -> int:
+    """Depth is the number of levels, so count levels — a queue drained a level at a time."""
+    if root is None:
+        return 0
+    depth = 0
+    queue = deque([root])
+    while queue:
+        depth += 1
+        for _ in range(len(queue)):           # len() snapshot: this level only
+            node = queue.popleft()
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+    return depth
+```
+
+`deque` and not a list: `list.pop(0)` is `O(n)` because every remaining element shifts down one, which
+would quietly turn this `O(n)` walk into an `O(n²)` one on a wide tree. `popleft()` is `O(1)`.
+
+### Common mistake
+
+> **Watch out.** Dropping the inner loop and incrementing `depth` once per **node**. The code still
+> runs, still terminates, still returns a number — it returns the node count. On the example that is
+> **`5`**, not `3`. The misconception is that a queue "knows" about levels. It does not; a queue is a
+> flat line. The level boundary exists only because you drew it with `len(queue)`.
+
+The sibling error, in languages without a `range(len(...))` snapshot: reading the queue's size
+*inside* the loop condition while pushing to it. The level then never ends, because you keep
+extending the thing you are measuring.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`.** Each node is enqueued once and dequeued once.
+- **Space — `O(w)`, the widest level.** This is the honest cost, and on a perfect tree the widest
+  level holds half the nodes. Measured, on a perfect tree of `32 767` nodes: the queue peaks at
+  **`16 384`**. Half the tree, in memory, at once.
+
+**When it is right:** when the question is about levels — level order, the right-side view, the
+minimum depth (where BFS can stop at the first leaf and beat DFS outright). And when recursion is
+unsafe: this approach has no call-stack cost at all, which is exactly the `10 000`-node spine problem
+that breaks approach 4.
+
+---
+
+## Approach 3: One explicit stack of `(node, depth)` pairs
+
+### The idea
+
+*BFS holds a whole level to count levels — and on a wide tree a level is half the tree. Can we hold
+less?* Swap the queue for a stack, and the walk stops going wide and starts going **deep**: instead
+of a whole level, memory now holds one root-to-leaf path plus the siblings waiting beside it. Each
+node carries its own depth, so nothing has to be inferred from position.
+
+### How to think about it
+
+> **Intuition.** Approach 2 asks "which ring am I in?" and needs the whole ring present to answer.
+> This one gives every node a **luggage tag** with its depth written on it at the moment it is
+> pushed. A node's depth is then a fact it carries, not a property of when it is visited — so the
+> order of visits stops mattering entirely, and you are free to go depth-first and hold far less.
+
+Once depth is on the tag, the loop body is trivial: pop, compare against the best seen, push both
+children with `depth + 1`. There is no "level" concept left to get wrong.
+
+### Worked example
+
+Stack shown left-to-right with the **top on the right** (the next pop).
+
+| Step | Stack | Popped | `best` | Pushed |
+|---|---|---|---|---|
+| 1 | `[(3,1)]` | `(3,1)` | `1` | `(9,2)`, `(20,2)` |
+| 2 | `[(9,2), (20,2)]` | `(20,2)` | `2` | `(15,3)`, `(7,3)` |
+| 3 | `[(9,2), (15,3), (7,3)]` | `(7,3)` | **`3`** | — |
+| 4 | `[(9,2), (15,3)]` | `(15,3)` | `3` | — |
+| 5 | `[(9,2)]` | `(9,2)` | `3` | — |
+| 6 | `[]` | — | `3` | answer **`3`** |
+
+Row 3 is the point of the whole approach: the stack holds three entries at its peak and never more,
+on a tree where BFS also held two. The gap widens with the tree.
+
+### Code
+
+```python
+def max_depth_stack(root: Optional[TreeNode]) -> int:
+    """One root-to-leaf path in memory instead of one whole level."""
+    best = 0
+    stack: list[tuple[TreeNode, int]] = [(root, 1)] if root else []
+    while stack:
+        node, depth = stack.pop()
+        if depth > best:
+            best = depth
+        if node.left:
+            stack.append((node.left, depth + 1))
+        if node.right:
+            stack.append((node.right, depth + 1))
+    return best
+```
+
+The `if root else []` is the empty-tree base case, and it is doing real work: `[(None, 1)]` would put
+a `None` on the stack and crash on `node.left` at the first pop. `best = 0` then falls straight out
+of the empty loop, which is the answer the statement asks for.
+
+### Common mistake
+
+> **Watch out.** Pushing the root as `(root, 0)`. This is the node-versus-edge confusion wearing a
+> disguise: depth `0` for the root means you are counting **edges**, and the answer comes back one
+> short — **`2`** on the example instead of `3`. The tell is that it is right on an empty tree and
+> wrong on every other input, so a test suite that starts with the empty case looks green for a
+> moment.
+
+The reason to distrust yourself here: `0` genuinely *is* the right initial depth in the many tree
+problems that measure height in edges. The mistake is not ignorance, it is a correct habit from a
+neighbouring problem.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`.** One push and one pop per node.
+- **Space — `O(h)`.** At any moment the stack holds, for each level of the path you are on, at most
+  one sibling still waiting — so it is bounded by the height, not the width. Measured on that same
+  perfect tree of `32 767` nodes: the stack peaks at **`15`** where the BFS queue peaked at
+  `16 384`. The app's data files quote `O(n)` for this rung, which is the same bound at its worst:
+  on a tree degenerated into a spine, `h = n`.
+
+**When it is right:** almost any time you would write the recursion but cannot — deep trees,
+languages with small stacks, or an environment where a stack overflow is a crash rather than an
+exception. It is the recursion with the frames made visible.
+
+| Shape | BFS queue peak | DFS stack peak |
+|---|---|---|
+| perfect tree, `1 023` nodes, height `10` | `512` | `10` |
+| perfect tree, `32 767` nodes, height `15` | `16 384` | `15` |
+| left spine, `1 000` nodes | `1` | `1` |
+
+Every number in that table was printed by the script at the foot of this document. Note the last
+row: on a spine there are **no siblings to hold**, so both containers hold one node — and yet the
+recursion below needs a thousand frames on the very same input. The explicit stack and the call
+stack are not the same size.
+
+---
+
+## Approach 4: The definition, typed out
+
+### The idea
+
+*Every approach so far manages a container by hand — a list of paths, a queue, a stack of pairs. What
+if the language already has a container that does exactly this walk?* It does: the call stack. Ask
+each child how deep it goes, take the larger, add one for yourself.
+
+### How to think about it
+
+> **Intuition.** Stop thinking about traversal. Ask a manager how many levels are below them; they
+> ask each of their two reports the same question, wait, take the bigger answer, add one for
+> themselves, and report up. An empty chair answers `0`. Nobody needs to know where they are in the
+> company — only what came back from below.
+
+This is the **post-order** shape: do nothing on the way down, combine on the way up. It is worth
+recognising by sight, because it answers a whole family of questions — is the tree balanced, what is
+its diameter, what is the largest BST inside it — and they are all "a node's answer is a function of
+its subtrees' answers".
+
+### Worked example
+
+The trace is the return values, unwinding:
+
+| Call | Left returns | Right returns | Returns |
+|---|---|---|---|
+| `depth(None)` (children of `9`, `15`, `7`) | — | — | `0` |
+| `depth(9)` | `0` | `0` | `1` |
+| `depth(15)` | `0` | `0` | `1` |
+| `depth(7)` | `0` | `0` | `1` |
+| `depth(20)` | `1` (from `15`) | `1` (from `7`) | `2` |
+| `depth(3)` | `1` (from `9`) | `2` (from `20`) | **`3`** |
+
+The short branch is visible in the last row: `9` came back with `1`, `20` came back with `2`, and
+`max` discarded the short one. No comparison of paths ever happened — the discarding is the
+comparison.
+
+### Code
+
+```python
+def max_depth_recursive(root: Optional[TreeNode]) -> int:
+    """depth(node) = 1 + max(depth(left), depth(right)); depth(None) = 0."""
+    if root is None:
+        return 0
+    return 1 + max(max_depth_recursive(root.left), max_depth_recursive(root.right))
+```
+
+### Common mistake
+
+> **Watch out.** Basing the recursion on the **leaf** instead of on the **missing node**:
+> `if root.left is None and root.right is None: return 1`. It is the more natural sentence in
+> English — "a leaf is one level deep" — and it passes the statement's own example, returning
+> **`3`**. Then it meets a node with exactly one child, recurses into the `None` side, and raises
+> `AttributeError: 'NoneType' object has no attribute 'left'`. On `[1, 2]`. On an empty tree it fails
+> on the very first line.
+
+The misconception worth naming: *the base case belongs at the smallest **real** thing.* It does not.
+It belongs at the smallest thing the recursion can actually **reach**, and what a recursive descent
+reaches is `None` — from a leaf, and from every half-empty node on the way. A tree with one child is
+not an exotic input; it is most of a real tree.
+
+> **Watch out, again — and this one is not a beginner's error.** The constraint allows `10 000`
+> nodes with no promise of balance, so a legal input is a spine `10 000` tall. CPython's default
+> recursion limit is `1 000`. Run on such a tree, this three-line "best" solution raises
+> `RecursionError: maximum recursion depth exceeded`, while approaches 2 and 3 both return `10 000`
+> without complaint. The elegant answer is the one that breaks first on legal input.
+
+> **In an interview.** Write the recursion, then say: "this is `O(h)` on the call stack, and with
+> `n` up to ten thousand and no balance guarantee, a degenerate tree would exceed Python's default
+> limit — the iterative version with an explicit stack is the same walk without that risk." That
+> sentence is the answer to the follow-up they were about to ask.
+
+### Complexity and when to use this
+
+- **Time — `O(n)`.** One call per node, constant work in each.
+- **Space — `O(h)` of call frames,** which is `O(log n)` on a balanced tree and `O(n)` on a spine.
+  This is the same bound as approach 3, with one difference that matters: it is spent on the
+  interpreter's stack, which is small and fixed, rather than on the heap, which is not.
+
+**When it is right:** by default, and in an interview, and any time the tree's shape is known to be
+sane. It is the clearest statement of what depth *means*, and clarity is the thing you are being
+graded on — provided you can name its limit when asked.
+
+---
+
+## The Overall Arc
+
+Every approach here computes the same number, and the whole ladder is the progressive removal of
+things that were never needed to compute it. The literal reading builds every root-to-leaf path and
+then reads only their lengths, so it pays `O(n · h)` to store content it discards — the first
+subtraction is to stop keeping the paths and keep only a count, which turns the problem from
+"enumerate and measure" into "count the levels", and BFS does that with a queue and a snapshot of its
+length. But counting levels forces you to hold an entire level at once, and a level can be half the
+tree, so the second subtraction attaches the depth to each node as a tag rather than inferring it
+from position — and the moment depth travels *with* the node, the traversal order stops mattering and
+a stack can replace the queue, trading the tree's width for its height. What remains is bookkeeping
+that the language was already doing: a stack of nodes and their depths, pushed and popped around a
+recursive descent, *is* a call stack. Removing that hand-written container leaves the three lines
+that simply state the definition — a node is one more than its deeper subtree, a missing node is
+zero — and the arc ends where it should, with the shortest program being the one that says what the
+answer means. The sting in the tail is that the last subtraction gives something back: the explicit
+stack is a container you control and can grow to `10 000`, while the call stack is the interpreter's
+and caps at `1 000`, which is why the most elegant rung is the only one that fails on an input the
+constraints explicitly permit.
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Enumerate every path | `O(n · h)` | `O(n · h)` | Keeps everything, reads almost none of it | The paths themselves are the answer |
+| BFS, count levels | `O(n)` | `O(w)` — up to `n/2` | Holds a whole level to know a level ended | The question is about levels; or recursion is unsafe |
+| Explicit `(node, depth)` stack | `O(n)` | `O(h)` | Hand-rolls what the call stack does | Deep trees, small stacks, no recursion available |
+| Recursion | `O(n)` | `O(h)` frames | Shortest and clearest; capped by the interpreter | Default choice — with the depth caveat said out loud |
+
+## Interview Priority
+
+**Know cold:** the recursion, and the BFS level count. The recursion because it is three lines and
+because its post-order shape (*ask both children, combine, return upward*) is the reusable idea —
+balanced-tree, tree-diameter and same-tree are the same skeleton with a different combine step. The
+BFS because the level-snapshot trick (`for _ in range(len(queue))`) is the backbone of every
+level-order question you will be asked next, and because it is your answer when someone says "now do
+it without recursion".
+
+**Understand, do not memorise:** the explicit `(node, depth)` stack — it is worth being able to
+derive on demand, but it is the recursion in longhand, and deriving it from the recursion in the
+room is more convincing than reciting it. The path-enumeration rung is not an interview answer at
+all; it is there so you recognise when a *different* question actually needs it.
+
+> **In an interview.** Say the definition before you write anything: "the depth of a node is one plus
+> the max of its subtrees, and an empty tree is zero" — then the code is just that sentence, and you
+> have already justified it. Expect the follow-up "what if the tree is very deep?", and have the
+> explicit stack ready. If asked for **minimum** depth instead, do not just swap `max` for `min` —
+> that is wrong for a node with one child, whose missing side returns `0` and reports a false
+> shallow answer. That is the trap this problem's sibling is built on.
+
+## Full Runnable Script
+
+`TreeNode`, `build`, `chain`, `perfect` and `random_tree` are **scaffolding, not part of the
+answer** — an interviewer hands you a `root` with the node class already defined. They are here so
+this file can build inputs from ordinary Python lists, and so the claims above about memory and
+recursion limits can be *measured* rather than asserted.
+
+The `_bug_*` functions are the "common mistake" from each section, kept in the file and executed, so
+that every specific wrong answer this document quotes — `0`, `5`, `2`, the two `AttributeError`s —
+is printed by the run rather than remembered by the author.
+
+```python
+"""Maximum Depth of a Binary Tree — every approach in one file, cross-checked.
+
+Run:  python max_depth.py
+"""
+
+from __future__ import annotations
+
+import random
+import sys
+from collections import deque
+from typing import Callable, Optional
+
+
+# ---------------------------------------------------------------- scaffolding
+class TreeNode:
+    """The node an interviewer hands you. Scaffolding, not part of any answer."""
+
+    __slots__ = ("val", "left", "right")
+
+    def __init__(self, val: int = 0, left: "TreeNode | None" = None,
+                 right: "TreeNode | None" = None) -> None:
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def build(values: list[Optional[int]]) -> Optional[TreeNode]:
+    """Level-order list with `None` holes -> tree, so tests can be written as lists."""
+    if not values or values[0] is None:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        for side in ("left", "right"):
+            if i >= len(values):
+                break
+            v = values[i]
+            i += 1
+            if v is not None:
+                child = TreeNode(v)
+                setattr(node, side, child)
+                queue.append(child)
+    return root
+
+
+def chain(n: int) -> Optional[TreeNode]:
+    """A tree degenerated into a linked list: n nodes, each the left child of the last."""
+    root = None
+    for v in range(n, 0, -1):
+        root = TreeNode(v, left=root)
+    return root
+
+
+def perfect(height: int) -> Optional[TreeNode]:
+    """A perfect tree of the given height — 2**height - 1 nodes."""
+    if height == 0:
+        return None
+    return TreeNode(height, perfect(height - 1), perfect(height - 1))
+
+
+def random_tree(n: int, rng: random.Random) -> Optional[TreeNode]:
+    """A tree of exactly n nodes with an arbitrary shape — the stress-test input."""
+    if n == 0:
+        return None
+    root = TreeNode(rng.randint(-100, 100))
+    open_slots = [root]
+    for _ in range(n - 1):
+        parent = rng.choice(open_slots)
+        node = TreeNode(rng.randint(-100, 100))
+        if parent.left is None and (parent.right is not None or rng.random() < 0.5):
+            parent.left = node
+        else:
+            parent.right = node
+        if parent.left is not None and parent.right is not None:
+            open_slots.remove(parent)
+        open_slots.append(node)
+    return root
+
+
+# ------------- approach 1: enumerate every root-to-leaf path, take the longest
+def max_depth_paths(root: Optional[TreeNode]) -> int:
+    """The statement, transcribed. Builds every path, then measures them."""
+    paths: list[list[int]] = []
+
+    def walk(node: Optional[TreeNode], path: list[int]) -> None:
+        if node is None:
+            return
+        path.append(node.val)
+        if node.left is None and node.right is None:
+            paths.append(list(path))          # a COPY: `path` is about to change
+        else:
+            walk(node.left, path)
+            walk(node.right, path)
+        path.pop()
+
+    walk(root, [])
+    return max((len(p) for p in paths), default=0)
+
+
+# ------------------- approach 2: BFS, one increment per completed level
+def max_depth_bfs(root: Optional[TreeNode]) -> int:
+    """Depth is the number of levels, so count levels — a queue drained a level at a time."""
+    if root is None:
+        return 0
+    depth = 0
+    queue = deque([root])
+    while queue:
+        depth += 1
+        for _ in range(len(queue)):           # len() snapshot: this level only
+            node = queue.popleft()
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+    return depth
+
+
+# -------------- approach 3: DFS with an explicit stack of (node, depth) pairs
+def max_depth_stack(root: Optional[TreeNode]) -> int:
+    """One root-to-leaf path in memory instead of one whole level."""
+    best = 0
+    stack: list[tuple[TreeNode, int]] = [(root, 1)] if root else []
+    while stack:
+        node, depth = stack.pop()
+        if depth > best:
+            best = depth
+        if node.left:
+            stack.append((node.left, depth + 1))
+        if node.right:
+            stack.append((node.right, depth + 1))
+    return best
+
+
+# ---------------------------------------- approach 4: the definition, typed out
+def max_depth_recursive(root: Optional[TreeNode]) -> int:
+    """depth(node) = 1 + max(depth(left), depth(right)); depth(None) = 0."""
+    if root is None:
+        return 0
+    return 1 + max(max_depth_recursive(root.left), max_depth_recursive(root.right))
+
+
+# --------------------------------------------------------- the buggy variants
+# Every "common mistake" in the document is one of these, and every number the
+# document quotes for one was printed by the run below. Nothing here is an answer.
+def _bug_aliased_path(root: Optional[TreeNode]) -> int:
+    """Approach 1, recording the live list instead of a copy of it."""
+    paths: list[list[int]] = []
+
+    def walk(node: Optional[TreeNode], path: list[int]) -> None:
+        if node is None:
+            return
+        path.append(node.val)
+        if node.left is None and node.right is None:
+            paths.append(path)                # aliased — every entry is the SAME list
+        else:
+            walk(node.left, path)
+            walk(node.right, path)
+        path.pop()
+
+    walk(root, [])
+    return max((len(p) for p in paths), default=0)
+
+
+def _bug_bfs_counts_nodes(root: Optional[TreeNode]) -> int:
+    """Approach 2 without the inner loop: one increment per node, not per level."""
+    if root is None:
+        return 0
+    depth = 0
+    queue = deque([root])
+    while queue:
+        node = queue.popleft()
+        depth += 1
+        if node.left:
+            queue.append(node.left)
+        if node.right:
+            queue.append(node.right)
+    return depth
+
+
+def _bug_stack_from_zero(root: Optional[TreeNode]) -> int:
+    """Approach 3 pushing the root at depth 0 — counting edges, not nodes."""
+    best = 0
+    stack: list[tuple[TreeNode, int]] = [(root, 0)] if root else []
+    while stack:
+        node, depth = stack.pop()
+        if depth > best:
+            best = depth
+        if node.left:
+            stack.append((node.left, depth + 1))
+        if node.right:
+            stack.append((node.right, depth + 1))
+    return best
+
+
+def _bug_leaf_base_case(root: Optional[TreeNode]) -> int:
+    """Approach 4 with the base case on a LEAF instead of on a missing node."""
+    if root.left is None and root.right is None:
+        return 1
+    return 1 + max(_bug_leaf_base_case(root.left), _bug_leaf_base_case(root.right))
+
+
+# ------------------------------------------------- measuring the memory trade
+# Not answers either: the same two walks, instrumented to report how many nodes
+# they ever held at once. This is the whole difference between approach 2 and 3.
+def peak_queue(root: Optional[TreeNode]) -> int:
+    if root is None:
+        return 0
+    peak = 1
+    queue = deque([root])
+    while queue:
+        for _ in range(len(queue)):
+            node = queue.popleft()
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+            peak = max(peak, len(queue))
+    return peak
+
+
+def peak_stack(root: Optional[TreeNode]) -> int:
+    peak = 0
+    stack: list[tuple[TreeNode, int]] = [(root, 1)] if root else []
+    while stack:
+        peak = max(peak, len(stack))
+        node, depth = stack.pop()
+        if node.left:
+            stack.append((node.left, depth + 1))
+        if node.right:
+            stack.append((node.right, depth + 1))
+    return peak
+
+
+APPROACHES: list[tuple[str, Callable[[Optional[TreeNode]], int]]] = [
+    ("paths", max_depth_paths),
+    ("bfs", max_depth_bfs),
+    ("stack", max_depth_stack),
+    ("recursive", max_depth_recursive),
+]
+
+EXAMPLE: list[Optional[int]] = [3, 9, 20, None, None, 15, 7]
+
+
+def _try(label: str, fn: Callable[[], int]) -> None:
+    """Print what a call returns, or which exception it raises. Used for the bugs."""
+    try:
+        print(f"  {label:<46} {fn()}")
+    except Exception as exc:                  # noqa: BLE001 — the point is which one
+        print(f"  {label:<46} {type(exc).__name__}: {exc}")
+
+
+def main() -> None:
+    cases: list[tuple[str, list[Optional[int]]]] = [
+        ("statement example", EXAMPLE),
+        ("empty tree", []),
+        ("single node", [1]),
+        ("one child only, left", [1, 2]),
+        ("one child only, right", [1, None, 2]),
+        ("perfect tree of 7", [1, 2, 3, 4, 5, 6, 7]),
+        ("left spine of 4", [1, 2, None, 3, None, 4]),
+        ("duplicate values throughout", [5, 5, 5, 5, None, None, 5]),
+        ("negative values", [-1, -2, -3]),
+    ]
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+    shown = 0
+
+    for label, values in cases:
+        results = {name: fn(build(values)) for name, fn in APPROACHES}
+        if shown < 6:
+            shown += 1
+            print(f"\n{label}: {values}")
+            for name, got in results.items():
+                print(f"  {name:<{width}} -> {got}")
+        if len(set(results.values())) != 1:
+            all_agreed = False
+            print(f"  DISAGREEMENT on {label}: {results}")
+
+    rng = random.Random(20260913)
+    for _ in range(400):
+        n = rng.randint(0, 60)
+        tree = random_tree(n, rng)
+        results = {name: fn(tree) for name, fn in APPROACHES}
+        if len(set(results.values())) != 1:
+            all_agreed = False
+            print(f"  DISAGREEMENT on a random tree of {n}: {results}")
+
+    print("\n=== what this document claims about wrong code, run ===")
+    _try("aliased path list, statement example", lambda: _bug_aliased_path(build(EXAMPLE)))
+    _try("BFS counting nodes, statement example", lambda: _bug_bfs_counts_nodes(build(EXAMPLE)))
+    _try("stack pushed at depth 0, statement example", lambda: _bug_stack_from_zero(build(EXAMPLE)))
+    _try("leaf base case, statement example", lambda: _bug_leaf_base_case(build(EXAMPLE)))
+    _try("leaf base case, [1, 2]", lambda: _bug_leaf_base_case(build([1, 2])))
+    _try("leaf base case, empty tree", lambda: _bug_leaf_base_case(build([])))
+
+    print("\n=== how many nodes each walk holds at once ===")
+    shapes = [
+        ("perfect tree, 1023 nodes, height 10", perfect(10)),
+        ("perfect tree, 32767 nodes, height 15", perfect(15)),
+        ("left spine, 1000 nodes", chain(1000)),
+    ]
+    print(f"  {'shape':<38} {'BFS queue':>10} {'DFS stack':>10}")
+    for label, tree in shapes:
+        print(f"  {label:<38} {peak_queue(tree):>10} {peak_stack(tree):>10}")
+
+    print("\n=== the call stack, at the constraint's own upper limit ===")
+    print(f"  sys.getrecursionlimit() = {sys.getrecursionlimit()}")
+    spine = chain(10_000)
+    _try("recursive on a 10000-node left spine", lambda: max_depth_recursive(spine))
+    _try("paths on a 10000-node left spine", lambda: max_depth_paths(spine))
+    _try("stack on a 10000-node left spine", lambda: max_depth_stack(spine))
+    _try("bfs on a 10000-node left spine", lambda: max_depth_bfs(spine))
+
+    print(f"\n{len(cases)} listed cases + 400 random trees, {len(APPROACHES)} approaches.")
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()
+```

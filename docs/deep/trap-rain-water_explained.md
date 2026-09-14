@@ -1,0 +1,596 @@
+# Water Held by an Elevation Map — explained
+
+## Understanding the Problem
+
+Picture a city skyline drawn on graph paper: a row of solid columns, each one square wide, each as
+tall as the number at its position. Now let it rain. Water lands everywhere, runs off the peaks, and
+settles in the dips between taller columns. Count the squares of water left standing. Unlike the
+container problem, the columns here are **solid** — they take up space, water rests *on top of*
+them, and the bars in between two walls are part of the landscape rather than empty air.
+
+**The core question is: for each column, how high does the water stand above it?** The naive
+approach is slow because it answers that question independently for every column, and answering it
+once requires scanning the whole array in both directions — so n columns each cost n work.
+
+The single most useful reframing is this: **stop thinking about pools and think about columns.**
+A pool is an irregular shape with a left wall, a right wall and a floor, and reasoning about pools
+means finding boundaries and handling nested cases. A column is one number. The water standing on
+column `i` is
+
+```
+water(i) = min( tallest bar at or before i , tallest bar at or after i ) − height[i]
+```
+
+and it is never negative. Water is held in by the taller wall on each side, but it can only rise to
+the height of the *lower* of those two walls, because above that level it spills out over the low
+side. Sum `water(i)` over every column and you are done. Every approach below is a different way of
+computing those two maxima cheaply.
+
+The constraints, and what each one buys:
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= height.length <= 2 * 10^4` | n² is 4 × 10⁸ — borderline-to-failing, so the per-column rescan must go. The bound also means the array is never empty, so `n = 1` is a real case you must handle (it traps nothing). |
+| `0 <= height[i] <= 10^5` | Heights are bounded and non-negative, so `0` is a legal bar and the total fits comfortably in a 64-bit integer. Non-negativity matters: it means a running maximum can be seeded at `0` rather than at negative infinity, which is what makes the two-pointer version's `left_max = right_max = 0` initialisation correct. |
+| water needs a taller bar on **both** sides; the two ends never hold any | This is the `min(left, right)` in the formula, and it is also the reason no clamp to zero is needed once you define both maxima as *inclusive* of column `i` itself — a column that is its own prefix maximum gets `min(…) = height[i]` and contributes exactly 0. |
+| a strictly increasing or strictly decreasing map traps nothing, whatever its size | A useful sanity check and a useful intuition: water needs a dip, and a monotone landscape has none. Check your implementation against `[1,2,3,4,5]` before anything else. |
+
+Note what this problem does **not** give you: the array is not sorted, and sorting it would be
+meaningless — the whole question is about which bar stands where, so rearranging them destroys the
+problem. As with container-with-most-water, the two-pointer solution here earns its correctness from
+a structural argument about maxima, not from ordering. Sortedness is doing no work in this document
+at all, and that is worth noticing, because it is the standard misconception about when two pointers
+apply.
+
+---
+
+## Approach 1 — Brute force, one column at a time
+
+### The idea
+
+*How much water stands on column `i`?* It is capped by the shorter of the tallest bar to its left
+and the tallest bar to its right, so find both by scanning, subtract the column's own height, and
+add it up over every column. This is the column formula transcribed literally, with no attempt to
+avoid repeated work.
+
+### How to think about it
+
+Walk along the skyline and stop at each column in turn. Standing on that column, look all the way
+left to find the tallest thing in that direction, then all the way right for the same. The water
+above your head rises to the lower of those two horizons — any higher and it would pour over the
+lower one — so the depth here is that horizon minus the ground you are standing on. Do this at every
+column and add up the depths. The shape to notice is the waste: every column repeats almost exactly
+the same two scans its neighbour just did, and the answers differ by at most one bar.
+
+### Worked example
+
+Input: `height = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]` — twelve columns.
+
+| i | `height[i]` | tallest at or before i | tallest at or after i | `min` | water here |
+|---|---|---|---|---|---|
+| 0 | 0 | 0 | 3 | 0 | 0 |
+| 1 | 1 | 1 | 3 | 1 | 0 |
+| 2 | 0 | 1 | 3 | 1 | **1** |
+| 3 | 2 | 2 | 3 | 2 | 0 |
+| 4 | 1 | 2 | 3 | 2 | **1** |
+| 5 | 0 | 2 | 3 | 2 | **2** |
+| 6 | 1 | 2 | 3 | 2 | **1** |
+| 7 | 3 | 3 | 3 | 3 | 0 |
+| 8 | 2 | 3 | 2 | 2 | 0 |
+| 9 | 1 | 3 | 2 | 2 | **1** |
+| 10 | 2 | 3 | 2 | 2 | 0 |
+| 11 | 1 | 3 | 1 | 1 | 0 |
+
+Total: 1 + 1 + 2 + 1 + 1 = **6**. Look at column 8: the tallest bar to its right is only 2, so even
+though a 3 stands to its left, the water level is 2 — and the column is already 2 tall, so it holds
+nothing. That is `min` doing its job. Column 9 is the mirror case that *does* hold water: level 2,
+ground 1, depth 1.
+
+### Code
+
+```python
+def trap_rain_water_brute_force(height: list[int]) -> int:
+    total = 0
+    for i in range(len(height)):
+        left = max(height[: i + 1])   # inclusive of i, so a peak gets min(...) == height[i]
+        right = max(height[i:])       # inclusive of i as well
+        total += min(left, right) - height[i]
+    return total
+```
+
+### Common mistake
+
+Making the two scans **exclusive** of column `i` — `max(height[:i])` and `max(height[i+1:])` — and
+then forgetting to clamp the result at zero. On a peak, the tallest bar strictly to one side is
+shorter than the column itself, so `min(left, right) - height[i]` goes *negative* and silently
+subtracts water that other columns correctly found. On the statement's example that returns 1
+instead of 6; on `[4, 2, 3]` it returns −6 instead of 1. There are two correct repairs and they are
+not the same code: either make both scans inclusive (as above, which makes the term exactly 0 at a
+peak), or keep them exclusive and write `total += max(0, min(left, right) - height[i])`. Pick one
+deliberately. The inclusive version is the one that generalises cleanly to the next two approaches,
+which is why it is written that way here.
+
+### Complexity and when to use this
+
+**Time O(n²), space O(1).** Each of the n columns pays two scans of up to n elements to recompute
+maxima that its neighbour has almost entirely already computed. Space is a running total and two
+scalars — the slicing in the Python above allocates, but the Java and C++ equivalents use explicit
+inner loops and are genuinely O(1).
+
+Use it to establish the column formula out loud before optimising, and as the oracle that validates
+the fast versions — which is what it does in the stress test at the bottom of this file. At
+n = 2 × 10⁴ it is around 4 × 10⁸ operations, which is exactly the kind of "might squeak through in
+C++, will certainly not in Python" that you should name and then discard.
+
+---
+
+## Approach 2 — Precomputed prefix and suffix maxima
+
+### The idea
+
+*The per-column version recomputes the same two maxima from scratch n times — can each one be
+computed once and looked up?* Yes: the tallest bar at or before `i` is just the tallest at or before
+`i−1` compared against `height[i]`, so one forward pass fills an entire array of prefix maxima, and
+one backward pass fills the suffix maxima. This fixes the brute force's exact weakness — the
+repeated scanning — by spending memory to remember it.
+
+### How to think about it
+
+Two horizons drawn along the skyline. The left horizon is a staircase that only ever goes up as you
+walk rightward: at each column it records the highest thing you have seen so far. The right horizon
+is the same staircase walked from the other end. Draw both, and the water level at any column is
+simply the lower of the two staircases there, with the column's own height subtracted. The insight
+is that a running maximum is *incremental* — each step is one comparison against the previous
+answer — so both horizons cost one pass each. Three passes total, and no scan ever restarts.
+
+### Worked example
+
+Input: `height = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]`, the same input as above.
+
+Forward pass builds `left`, each entry `max(previous entry, height[i])`:
+
+| i | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `height` | 0 | 1 | 0 | 2 | 1 | 0 | 1 | 3 | 2 | 1 | 2 | 1 |
+| `left` | 0 | 1 | 1 | 2 | 2 | 2 | 2 | 3 | 3 | 3 | 3 | 3 |
+| `right` | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 3 | 2 | 2 | 2 | 1 |
+| `min` | 0 | 1 | 1 | 2 | 2 | 2 | 2 | 3 | 2 | 2 | 2 | 1 |
+| water | 0 | 0 | **1** | 0 | **1** | **2** | **1** | 0 | 0 | **1** | 0 | 0 |
+
+Total **6**, identical to the brute force column by column — as it must be, since it computes the
+same two numbers by a cheaper route. Notice the `left` staircase never descends and the `right`
+staircase never ascends; that monotonicity is the whole reason a single pass suffices, and it is
+also the seed of the next approach.
+
+### Code
+
+```python
+def trap_rain_water_prefix_suffix(height: list[int]) -> int:
+    n = len(height)
+    if n == 0:
+        return 0
+    left = [0] * n
+    right = [0] * n
+    left[0] = height[0]              # seeding with the bar itself, not 0, keeps it inclusive
+    for i in range(1, n):
+        left[i] = max(left[i - 1], height[i])
+    right[n - 1] = height[n - 1]     # the matching seed at the other end — easy to forget
+    for i in range(n - 2, -1, -1):
+        right[i] = max(right[i + 1], height[i])
+    return sum(min(left[i], right[i]) - height[i] for i in range(n))
+```
+
+### Common mistake
+
+Forgetting to seed `right[n - 1] = height[n - 1]` and letting it stay at the zero the array was
+allocated with. The backward pass then propagates a right-horizon that is short by however tall the
+last bar is, and every column to its left gets a water level that is too low or, worse, negative.
+On the statement's example it returns 5 instead of 6; on `[4, 2, 3]` it returns −3; on
+`[5, 0, 0, 0, 5]` it returns −5. Negative totals are the tell: any time this problem's answer comes
+out below zero, a maximum array is unseeded or a max is being taken over the wrong range.
+
+The related slip is direction. The suffix loop must run from `n - 2` **down** to `0` and read
+`right[i + 1]`; writing the same loop forward and reading `right[i - 1]` compiles, runs, and
+computes a second copy of the prefix maxima under a different name, so `min(left[i], right[i])`
+becomes `left[i]` and the answer is wildly too large.
+
+### Complexity and when to use this
+
+**Time O(n), space O(n).** Three linear passes — forward for `left`, backward for `right`, and one
+more to sum — and two extra arrays of n integers each, which is where the space goes.
+
+This is a genuinely good answer and worth keeping in your head even though the next rung beats it on
+space. Two reasons. First, it is far easier to *derive* under pressure: write the column formula,
+notice each maximum is a running one, and the code writes itself, with no correctness argument
+needed beyond "a prefix maximum is a prefix maximum". Second, it is the version that generalises —
+the two-dimensional variant of this problem (water trapped on a height *grid*) has no two-pointer
+analogue at all and is solved with a priority queue processing the boundary inward, which is much
+closer in spirit to precomputed horizons than to converging pointers. If an interviewer asks for
+linear time and does not mention space, this answer is complete.
+
+---
+
+## Approach 3 — Two converging pointers (optimal)
+
+### The idea
+
+*The previous rung stores both horizons in full, but the water level at a column is `min` of the
+two — so you only ever need the **smaller** one. Can you always know which side is smaller without
+having computed both?* Yes. Stand a pointer at each end. Whichever pointer is on the shorter bar has
+the guarantee it needs: a taller bar exists on the far side, so its own running maximum is already
+the binding constraint. This fixes the prefix/suffix rung's weakness — the 2n integers of storage —
+by keeping only two running maxima in two variables.
+
+### How to think about it
+
+Two surveyors walking toward each other, each carrying one number: the tallest bar seen so far on
+their own side. At each step they compare the bars they are standing on, and **the one standing on
+the shorter bar takes the next step**. That surveyor can settle their column immediately, because
+the other surveyor is standing on something taller, which proves a sufficiently tall wall exists
+somewhere on the far side — so the far side is not what is limiting the water here; their own
+running maximum is. Settle the column, step inward, repeat. The picture to hold is that you never
+need both horizons at once, only the lower one, and the shorter bar tells you for free which one
+that is.
+
+### Worked example
+
+Input: `height = [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]`, the same input again.
+
+| Step | i (`h[i]`) | j (`h[j]`) | Side taken | `left_max` | `right_max` | Water added | Total |
+|---|---|---|---|---|---|---|---|
+| 1 | 0 (0) | 11 (1) | left (0 < 1) | 0 | 0 | 0 − 0 = 0 | 0 |
+| 2 | 1 (1) | 11 (1) | right (1 < 1 false) | 0 | 1 | 1 − 1 = 0 | 0 |
+| 3 | 1 (1) | 10 (2) | left (1 < 2) | 1 | 1 | 1 − 1 = 0 | 0 |
+| 4 | 2 (0) | 10 (2) | left (0 < 2) | 1 | 1 | 1 − 0 = **1** | 1 |
+| 5 | 3 (2) | 10 (2) | right (2 < 2 false) | 1 | 2 | 2 − 2 = 0 | 1 |
+| 6 | 3 (2) | 9 (1) | right (2 < 1 false) | 1 | 2 | 2 − 1 = **1** | 2 |
+| 7 | 3 (2) | 8 (2) | right (2 < 2 false) | 1 | 2 | 2 − 2 = 0 | 2 |
+| 8 | 3 (2) | 7 (3) | left (2 < 3) | 2 | 2 | 2 − 2 = 0 | 2 |
+| 9 | 4 (1) | 7 (3) | left (1 < 3) | 2 | 2 | 2 − 1 = **1** | 3 |
+| 10 | 5 (0) | 7 (3) | left (0 < 3) | 2 | 2 | 2 − 0 = **2** | 5 |
+| 11 | 6 (1) | 7 (3) | left (1 < 3) | 2 | 2 | 2 − 1 = **1** | 6 |
+
+After step 11 the pointers meet at index 7 and the loop stops. Total **6** — and every column's
+contribution matches the brute-force table exactly, column 2 giving 1, column 5 giving 2, and so on,
+though they were settled in a completely different order. Eleven iterations, two arrays fewer.
+
+Note the running maxima at each moment are *not* the true left and right maxima of the whole array —
+at step 4, `left_max` is 1 while the array's overall maximum is 3. That is fine and it is the point:
+`left_max` is the true maximum of everything the left pointer has *walked past*, which is exactly
+what limits column 2, and the argument below is what guarantees the other side never limits it more.
+
+### Code
+
+```python
+def trap_rain_water_two_pointers(height: list[int]) -> int:
+    i, j = 0, len(height) - 1
+    left_max = right_max = 0          # 0 is a safe seed only because heights are non-negative
+    total = 0
+    while i < j:
+        if height[i] < height[j]:
+            # a taller bar stands at j, so the right side is not the binding wall here
+            left_max = max(left_max, height[i])
+            total += left_max - height[i]
+            i += 1
+        else:
+            right_max = max(right_max, height[j])
+            total += right_max - height[j]
+            j -= 1
+    return total
+```
+
+### Common mistake
+
+**Adding the water before updating the running maximum.** Writing
+`total += left_max - height[i]` and only then `left_max = max(left_max, height[i])` looks like a
+harmless reordering, but when `height[i]` is taller than everything seen so far the subtraction goes
+negative and quietly steals water from the total. On the statement's example that returns 2 instead
+of 6. Update the maximum first; then the term is guaranteed non-negative, because `left_max` is now
+at least `height[i]` by construction — which is also why no `max(0, …)` clamp is needed anywhere in
+this function.
+
+The other classic is comparing the wrong things: `if left_max < right_max` instead of
+`if height[i] < height[j]`. That variant happens to also be correct (it is the other standard
+formulation of this algorithm), which makes it a dangerous thing to half-remember — mix the two, as
+in `if height[i] < right_max`, and you get code that passes small tests and fails on inputs where the
+two conditions diverge. Commit to one formulation and keep its argument attached to it.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** Each iteration settles exactly one column and moves exactly one pointer
+inward, so the loop runs at most n − 1 times; the only storage is two indices, two running maxima
+and a total. Compared with the previous rung this is one pass instead of three and two variables
+instead of 2n integers.
+
+This is the answer to ship when space is constrained or when the interviewer says "now do it in
+constant space" — which, on this problem, they will. Keep the prefix/suffix version in your pocket
+anyway: it is the safer thing to write first if you are unsure, and it is the version you can extend
+when the question turns two-dimensional.
+
+### The exchange argument — why settling a column early is safe
+
+This is the crux, and it is the part most write-ups replace with "and then it works". The algorithm
+commits to a final answer for column `i` while knowing the true maximum of only *one* side. That
+needs justification.
+
+**The claim.** When `height[i] < height[j]`, the water on column `i` is exactly
+`left_max − height[i]`, where `left_max = max(height[0..i])` — the right side can be ignored
+entirely.
+
+**Why.** By definition, `water(i) = min(L, R) − height[i]` where `L = max(height[0..i])` and
+`R = max(height[i..n−1])`. The code's `left_max` after its update *is* `L`, so the claim reduces to
+showing `L <= R`, which makes `min(L, R) = L`. Two cases:
+
+1. **Column `i` is itself the tallest so far**, i.e. `L = height[i]`. Then, since `j > i` and
+   `height[j] > height[i]`, we have `R >= height[j] > height[i] = L`. So `L < R`, and the water is
+   `L − height[i] = 0` — correct, a column that is its own prefix maximum holds nothing from the
+   left.
+
+2. **Something earlier is taller**, i.e. `L = height[p]` for some `p < i`. Here is the key
+   observation: the left pointer only ever advanced past position `p` *because* at that moment
+   `height[p] < height[j_p]` for whatever index `j_p` the right pointer held. The right pointer only
+   ever moves leftward, so `j_p >= j > i`, meaning that taller bar at `j_p` is **still to the right
+   of `i`**. Therefore `R >= height[j_p] > height[p] = L`. Again `L < R`.
+
+In both cases `L <= R`, so `min(L, R) = L` and the column can be settled on the left maximum alone.
+The mirror argument covers the other branch: when `height[j] <= height[i]`, the right pointer is on
+the shorter (or equal) bar, the same reasoning gives `R <= L`, and column `j` is settled on
+`right_max` alone.
+
+**What this buys, and why it is an "exchange" argument.** The thing being discarded is not a
+candidate answer — it is the *obligation to look at the other side*. Every step trades a full
+right-scan for a single comparison, justified by the fact that the taller bar you can currently see
+is proof that a tall-enough wall exists over there, whatever its exact height. You never learn the
+true `R` for the columns you settle from the left, and you never need to.
+
+**Termination and completeness.** Each iteration settles one column and retires that pointer's
+position permanently, so the loop runs exactly `n − 1` times at most and every column except the
+final meeting point is settled exactly once. The column at the meeting point is the tallest bar in
+the array (or tied for it) and holds no water, which is why the strict `i < j` loses nothing. And no
+column is settled twice, so nothing is double-counted.
+
+---
+
+## The Overall Arc
+
+The principle this problem chases is *find the one number that decides the answer, then find the
+cheapest way to know it*. The first move is not an optimisation at all but a reframing: stop trying
+to identify pools, with their walls and floors and nested shapes, and ask instead what a single
+column holds — which is `min(tallest to the left, tallest to the right) − its own height`, never
+negative. Write that down and the entire ladder is forced. Compute the two maxima honestly for every
+column and you have the brute force, quadratic because each column repeats almost exactly the scans
+its neighbour just finished. Notice that "tallest so far" is a *running* quantity — each value is one
+comparison away from the previous one — and the repeated scanning collapses into two linear passes
+that fill a prefix-maxima array and a suffix-maxima array, giving linear time at the cost of 2n
+integers and three traversals. Then look again at the formula and notice what it actually asks for:
+not both maxima, but the **smaller** of them. That is the whole of the final step. You do not need to
+know the exact height of the taller side, only that it is taller — and the two end pointers hand you
+that fact for free, because whichever pointer stands on the shorter bar is looking across at proof
+that a taller wall exists on the far side, which means its own running maximum is the binding
+constraint and its column can be settled on the spot. So the two arrays shrink to two variables and
+the three passes to one. That last argument — *the shorter wall is the one that decides, and the
+shorter wall is therefore the one you can safely advance* — is what makes the final version correct
+rather than merely shorter, and it is the same greedy shape as container-with-most-water wearing
+different clothes: identify which endpoint is the bottleneck, prove that advancing it discards
+nothing you need, and sweep. Keep the prefix/suffix rung even so. It is easier to derive when the
+pressure is on, it needs no cleverness to justify, and it is the one that survives the jump to the
+two-dimensional version of this problem, where the boundary is a ring rather than two ends and the
+tool becomes a priority queue.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Brute force per column | O(n²) | O(1) | Transcribes the column formula exactly; recomputes both maxima n times | Explaining the formula, and as the oracle a fast version is stress-tested against |
+| Prefix and suffix maxima | O(n) | O(n) | Buys linear time with 2n integers; needs no correctness argument beyond "running maximum" | Linear time is required but space is not constrained; the version to derive under pressure; the one that extends to the 2-D grid variant |
+| Two converging pointers | O(n) | O(1) | Keeps only the smaller horizon, and proves the larger one is irrelevant — fastest and smallest, but must be justified | Constant space is required; the expected final answer in an interview |
+
+---
+
+## Interview Priority
+
+**Memorise cold: the two-pointer version, and the column formula it is built on.** The formula
+`water(i) = min(left_max, right_max) − height[i]` is the thing to say in the first thirty seconds,
+because it converts a confusing picture into arithmetic and it is what every subsequent sentence
+rests on. Then the pointer sweep, with the update-before-add ordering correct, `left_max` and
+`right_max` seeded at 0, and the strict `i < j`. Most importantly, be able to answer "how can you
+finalise that column without knowing the right maximum?" — the answer being that the bar under the
+*other* pointer is taller, which proves a tall-enough wall exists on that side, so your own running
+maximum is what is binding. That question is the entire interview for this problem.
+
+**Memorise second: the prefix and suffix maxima version.** It is short, it is obviously correct, and
+it is the safe thing to write if the two-pointer argument deserts you mid-whiteboard — better a
+working O(n)/O(n) solution with a clean explanation than a mangled O(1) one. It also sets up the
+natural follow-ups: "reduce the space" leads to the pointers, and "now the map is two-dimensional"
+leads to the priority-queue variant, which is much closer to this version in spirit.
+
+**Understand but do not drill: the brute force.** Its job is to make the column formula concrete and
+to be the reference your stress test compares against. Say it, price it at O(n²) against the stated
+n = 2 × 10⁴, and move up. Worth ten seconds, not ten minutes.
+
+One more thing worth knowing about but not memorising: there is a monotonic-stack solution to this
+problem that accumulates water in horizontal layers rather than vertical columns. It is O(n) time and
+O(n) space, it is no better than either linear approach above, and its real value is that the same
+stack technique solves neighbouring problems (largest rectangle in a histogram, next greater
+element). If it comes up, recognise it; do not lead with it.
+
+---
+
+## Full Runnable Script
+
+All three approaches in one file, checked against both of the statement's examples, the smallest
+legal input (`n = 1`), a two-bar map with no interior, strictly increasing and strictly decreasing
+maps that must trap nothing, an all-equal map, a clean rectangular pool, and a randomised stress test
+over 800 maps with small heights so that dips and pools occur constantly.
+
+```python
+"""Water Held by an Elevation Map — every approach in one file, cross-checked.
+
+Run: python trap_rain_water.py
+"""
+
+from __future__ import annotations
+
+import random
+
+
+def trap_rain_water_brute_force(height: list[int]) -> int:
+    total = 0
+    for i in range(len(height)):
+        left = max(height[: i + 1])   # tallest bar at or before i, rescanned every time
+        right = max(height[i:])       # tallest bar at or after i
+        total += min(left, right) - height[i]
+    return total
+
+
+def trap_rain_water_prefix_suffix(height: list[int]) -> int:
+    n = len(height)
+    if n == 0:
+        return 0
+    left = [0] * n
+    right = [0] * n
+    left[0] = height[0]
+    for i in range(1, n):
+        left[i] = max(left[i - 1], height[i])
+    right[n - 1] = height[n - 1]
+    for i in range(n - 2, -1, -1):
+        right[i] = max(right[i + 1], height[i])
+    return sum(min(left[i], right[i]) - height[i] for i in range(n))
+
+
+def trap_rain_water_two_pointers(height: list[int]) -> int:
+    i, j = 0, len(height) - 1
+    left_max = right_max = 0
+    total = 0
+    while i < j:
+        if height[i] < height[j]:
+            # height[j] is taller, so SOME wall at least this tall stands to the right:
+            # left_max alone decides this column's water level.
+            left_max = max(left_max, height[i])
+            total += left_max - height[i]
+            i += 1
+        else:
+            right_max = max(right_max, height[j])
+            total += right_max - height[j]
+            j -= 1
+    return total
+
+
+APPROACHES: list[tuple[str, object]] = [
+    ("brute force", trap_rain_water_brute_force),
+    ("prefix/suffix", trap_rain_water_prefix_suffix),
+    ("two pointers", trap_rain_water_two_pointers),
+]
+
+
+def run_case(label: str, height: list[int]) -> bool:
+    results = [(name, fn(list(height))) for name, fn in APPROACHES]
+    agree = all(r == results[0][1] for _, r in results)
+    print(f"{label}")
+    print(f"  height={height}")
+    for name, r in results:
+        print(f"    {name:<14} -> {r}")
+    print(f"    all agree: {agree}")
+    return agree
+
+
+def main() -> None:
+    ok = True
+
+    # The statement's first example.
+    ok &= run_case("example from the statement", [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])
+
+    # The statement's second example: one dip, min(4, 3) - 2 = 1.
+    ok &= run_case("second example", [4, 2, 3])
+
+    # Smallest legal input: a single bar traps nothing.
+    ok &= run_case("smallest legal input (n = 1)", [5])
+
+    # Two bars have no interior, so nothing is trapped either.
+    ok &= run_case("two bars", [5, 9])
+
+    # Monotone maps trap nothing however large they get.
+    ok &= run_case("strictly increasing", [1, 2, 3, 4, 5])
+    ok &= run_case("strictly decreasing", [5, 4, 3, 2, 1])
+
+    # All equal — flat ground, no dips.
+    ok &= run_case("all duplicates", [3, 3, 3, 3])
+
+    # Flat floor between two tall walls: a clean rectangular pool.
+    ok &= run_case("one wide pool", [5, 0, 0, 0, 5])
+
+    # Randomised stress against brute force, small heights so pools are common.
+    random.seed(21)
+    for _ in range(800):
+        height = [random.randint(0, 9) for _ in range(random.randint(1, 40))]
+        results = [fn(list(height)) for _, fn in APPROACHES]
+        if any(r != results[0] for r in results):
+            ok = False
+            print(f"  STRESS DISAGREEMENT height={height} -> {results}")
+    print("stress: 800 random elevation maps cross-checked, all three approaches")
+
+    print()
+    print("ALL APPROACHES AGREED ON EVERY CASE." if ok else "APPROACHES DISAGREED — see above.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Output when run
+
+```
+example from the statement
+  height=[0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]
+    brute force    -> 6
+    prefix/suffix  -> 6
+    two pointers   -> 6
+    all agree: True
+second example
+  height=[4, 2, 3]
+    brute force    -> 1
+    prefix/suffix  -> 1
+    two pointers   -> 1
+    all agree: True
+smallest legal input (n = 1)
+  height=[5]
+    brute force    -> 0
+    prefix/suffix  -> 0
+    two pointers   -> 0
+    all agree: True
+two bars
+  height=[5, 9]
+    brute force    -> 0
+    prefix/suffix  -> 0
+    two pointers   -> 0
+    all agree: True
+strictly increasing
+  height=[1, 2, 3, 4, 5]
+    brute force    -> 0
+    prefix/suffix  -> 0
+    two pointers   -> 0
+    all agree: True
+strictly decreasing
+  height=[5, 4, 3, 2, 1]
+    brute force    -> 0
+    prefix/suffix  -> 0
+    two pointers   -> 0
+    all agree: True
+all duplicates
+  height=[3, 3, 3, 3]
+    brute force    -> 0
+    prefix/suffix  -> 0
+    two pointers   -> 0
+    all agree: True
+one wide pool
+  height=[5, 0, 0, 0, 5]
+    brute force    -> 15
+    prefix/suffix  -> 15
+    two pointers   -> 15
+    all agree: True
+stress: 800 random elevation maps cross-checked, all three approaches
+
+ALL APPROACHES AGREED ON EVERY CASE.
+```

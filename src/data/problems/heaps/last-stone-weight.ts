@@ -34,6 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting recomputes the full order every round when only one stone changed. A heap maintains just enough order to answer 'what is the largest?', so each round costs log n instead of n log n — and the remainder drops back in without disturbing anything else.",
+  arc: "Each round asks one small question — what are the two heaviest stones — and a full sort answers a far larger one, ranking the whole pile when only the top two get read, then doing it again after a single value changed. That gap between the question asked and the order computed is the entire ladder. A heap maintains exactly the invariant a round needs, that the top is the largest, and nothing more, so a smash costs two pops, one push and a logarithm instead of another n log n. The detail worth carrying is that the remainder drops straight back in: a structure that only promises its root absorbs a changed value without re-deriving everything else, which is why heaps suit simulations where the pile keeps mutating. The other thing to know cold is the negation trick — Python hands you a min-heap only, and negating on the way in and out is how you get a max-heap anywhere.",
   approach:
     "Put every stone into a max-heap. While two or more remain, pop the two largest; if they differ, push the difference back. The heap keeps the invariant that the top is the heaviest, which is the only fact each round needs. When at most one stone is left, that stone (or 0 for an empty heap) is the answer. Languages without a max-heap get one by negating on the way in and out.",
   complexity: { time: "O(n log n)", space: "O(n)" },
@@ -74,7 +75,7 @@ def last_stone_weight(stones: list[int]) -> int:
     {
       name: "Re-sort every round",
       summary:
-        "Sort the pile, take the two largest off the end, push any remainder back, and sort again for the next round.",
+        "Sort the pile, smash the two largest off the end, push any remainder back, and sort again for the next round. Each round re-sorts a list that was sorted a moment ago and changed in one place, and there are n rounds, so the repeated sorting dominates everything the problem actually asks for.",
       complexity: { time: "O(n² log n)", space: "O(n)" },
       python: `def last_stone_weight(stones: list[int]) -> int:
     pile = list(stones)

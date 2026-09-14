@@ -30,6 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Serialising both trees and comparing the strings works only if the serialisation records the empty children too; leave those out and a mirrored pair compares equal. Comparing structurally never has that ambiguity, and it stops at the first disagreement instead of building two whole strings first.",
+  arc: "Identical means identical in SHAPE as much as in values, and the ladder is really about how easily the shape gets lost. Serialising both trees and comparing the strings works only if the serialisation records the empty children too — leave those out and a tree leaning left compares equal to its mirror, a bug that passes every test built from balanced examples. It also builds two whole strings before it is allowed to disagree. Comparing structurally has no such ambiguity, because the recursion walks the two trees in lockstep and three cases are the entire program: both empty is true, exactly one empty is false, otherwise the values must match and both pairs of subtrees must match in turn. Short-circuiting means a difference at the root costs one comparison rather than a traversal. That lockstep, two-pointers-into-two-trees recursion is the piece to carry: symmetric-tree is this function with the child pairs crossed over, and subtree-of-another-tree calls it at every node.",
   approach:
     "Compare the two roots. Both empty means identical; exactly one empty means not; otherwise the values must match and both pairs of subtrees must match in turn. The recursion mirrors the structure it is checking, which is why there is nothing to write beyond the three cases. Short-circuit evaluation means a tree that differs at the root costs one comparison rather than a full traversal.",
   complexity: { time: "O(n)", space: "O(h)" },
@@ -64,7 +65,7 @@ def is_same_tree(p: TreeNode | None, q: TreeNode | None) -> bool:
     {
       name: "Serialise and compare",
       summary:
-        "Turn each tree into a string that records every value and every empty child, then compare the two strings.",
+        "Turn each tree into a string that records every value AND every empty child, then compare the two strings. The null markers are the whole trick, because without them two differently shaped trees serialise identically, and it builds two full O(n) strings to answer a question that needs no storage at all.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):

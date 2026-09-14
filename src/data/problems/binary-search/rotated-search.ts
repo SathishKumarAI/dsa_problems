@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Finding the pivot first and then binary searching the right piece works and is also logarithmic, but it walks the array twice and needs the pivot search to be correct on its own. Deciding which half is sorted at every step folds both jobs into one loop: the same comparison that narrows the range also identifies the ordered side.",
-  arc:
-    "One probe, three questions: which half is sorted, is the target inside that sorted half, and therefore which half to discard. That is the entire algorithm, and writing it as those three lines is what keeps it from becoming a thicket of conditions. Comparing the middle against the LEFT end to identify the sorted half is the usual formulation, with equality needing care when the window is two elements wide. The version worth practising for interviews is the single pass, not the find-the-pivot-then-search one, because the follow-up is always duplicates — which break the 'which half is sorted' test and reintroduce a linear worst case.",
+  arc: "One probe, three questions: which half is sorted, is the target inside that sorted half, and therefore which half to discard. That is the entire algorithm, and writing it as those three lines is what keeps it from becoming a thicket of conditions. Comparing the middle against the LEFT end to identify the sorted half is the usual formulation, with equality needing care when the window is two elements wide. The version worth practising for interviews is the single pass, not the find-the-pivot-then-search one, because the follow-up is always duplicates — which break the 'which half is sorted' test and reintroduce a linear worst case.",
   approach:
     "Standard binary search, with one extra question at each step. Compare nums[mid] to nums[lo]: if it is at least as large, the left half is unrotated and therefore sorted; otherwise the right half is. Whichever half is sorted, you can test membership with two comparisons against its endpoints — and that test is decisive, because a sorted range contains a value exactly when the value lies between its ends. Recurse into that half if the target is inside it, and into the other half if not. The rotation never has to be located.",
   complexity: { time: "O(log n)", space: "O(1)" },
@@ -86,7 +85,7 @@ export const problem: Problem = {
     {
       name: "Scan for it",
       summary:
-        "Walk the array from the front comparing each value to the target, ignoring the order entirely.",
+        "Walk from the front comparing each value to the target, ignoring the order entirely. It is the answer that survives ANY rearrangement of the input, which is exactly why it cannot beat linear: a rotated sorted array still promises that one half of any split is properly sorted, and a scan never asks which half.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def search_rotated(nums: list[int], target: int) -> int:
     for i in range(len(nums)):
@@ -109,9 +108,7 @@ export const problem: Problem = {
     {
       name: "Find the pivot, then search one side",
       summary:
-        "Binary search for the rotation point, then run an ordinary binary search on whichever of the two sorted pieces could contain the target.",
-      whyNow:
-        "The scan ignores the structure completely. Locating the pivot recovers two genuinely sorted ranges and gets to log n — at the cost of two searches, and a pivot search that has to be right on its own before the second one means anything.",
+        "Binary search for the rotation point, then run an ordinary binary search on whichever sorted piece could hold the target. Logarithmic and completely correct, and it walks the array twice to do what one pass can: each midpoint already reveals which side is sorted, so the pivot never has to be located on its own.",
       complexity: { time: "O(log n)", space: "O(1)" },
       python: `def search_rotated(nums: list[int], target: int) -> int:
     lo, hi = 0, len(nums) - 1

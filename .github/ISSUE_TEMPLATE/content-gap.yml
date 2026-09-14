@@ -1,0 +1,59 @@
+name: "Content gap — something is unclear or missing"
+description: "A problem whose explanation left you stuck, or a missing teaching document / journey."
+title: "[content] "
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `docs/LEARN-GAPS.md` already counts what is missing — 45 problems with no
+        teaching document, 117 missing one of the three required sections. If your gap is
+        one of those, you can claim it here and open a PR; see `CONTRIBUTING.md`.
+
+        This template is for the other kind: **the page exists and still left you stuck.**
+        That is the more useful report, because a counter cannot find it.
+
+  - type: input
+    id: problem
+    attributes:
+      label: Which problem
+      placeholder: "two-sum, or pair-sum, or the id from the URL"
+    validations:
+      required: true
+
+  - type: textarea
+    id: stuck
+    attributes:
+      label: Where exactly you stopped following
+      description: |
+        Quote the line or name the step. Be specific about the *first* place it stopped
+        making sense, not the place you gave up — those are usually different.
+
+        This project exists partly because of one report of exactly this kind: a reader
+        said they could not follow the two-pass hash map's arithmetic, and were right
+        twice, because the page never said which bucket a value lands in or why. Two
+        required sections were added to every document as a result.
+      placeholder: |
+        The line "hash(25) = 25 mod 8". I could not tell where the 8 came from,
+        or why the first element did not go into the first bucket.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reader
+    attributes:
+      label: Which reader are you today
+      description: The documents owe four different readers different things. Knowing which one you are tells us which section failed.
+      options:
+        - "Learning this for the first time — I need every symbol named"
+        - "Working engineer — I need to know which rung to reach for and when not to"
+        - "Interview candidate — I need to know what to say out loud"
+        - "Systems / ML — I need to know what the structure actually costs"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What would have unstuck you
+      description: Optional, and often the most useful field in the form.

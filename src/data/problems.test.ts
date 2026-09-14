@@ -251,3 +251,53 @@ test("problems: no block qualifies what the scaffolding already imports", () => 
       }
   }
 })
+
+// The references gate. These are the only outbound links in the product that
+// are not a LeetCode slug, and a reading list is worth exactly nothing the
+// moment one row 404s — so the shape is held here, and the URLs themselves
+// were checked with a real HTTP request when they were written (three
+// candidates were dropped for 404, and one for being the networking protocol
+// that shares a name with the sliding-window technique).
+//
+// What is NOT checked here: that the links are still alive. That needs the
+// network, and a content gate that fails when somebody's CDN hiccups is a
+// gate that gets disabled. Re-run the check by hand when a row is added.
+test("patterns: every reference is a usable, attributed reading", () => {
+  const seen = new Map<string, string>()
+  for (const pattern of PATTERNS) {
+    const refs = pattern.references ?? []
+    assert.ok(
+      refs.length >= 3,
+      `${pattern.id}: ${refs.length} references — a pattern earns at least three`
+    )
+    for (const r of refs) {
+      const where = `${pattern.id} → ${r.title}`
+      // https only: an http link is a mixed-content warning on a page served
+      // over TLS, which is every page this app is ever served from
+      assert.match(r.href, /^https:\/\//, `${where}: not an https URL`)
+      assert.ok(
+        !/example\.com|localhost|TODO/i.test(r.href),
+        `${where}: placeholder URL`
+      )
+      // a bare link is a chore; the note is what makes it a reading
+      assert.ok(
+        r.note.length > 40,
+        `${where}: the note must say what the source is FOR (${r.note.length} chars)`
+      )
+      assert.ok(
+        r.title.length > 0 && !r.title.includes("http"),
+        `${where}: the title should name the source, not repeat its URL`
+      )
+      // the same URL may serve two patterns — the deque page is genuinely
+      // both a stack and a sliding-window reading — but the NOTE has to be
+      // written for the pattern it appears under, or it is filler
+      const prior = seen.get(r.href + "|" + r.note)
+      assert.equal(
+        prior,
+        undefined,
+        `${where}: identical note copied from ${prior}`
+      )
+      seen.set(r.href + "|" + r.note, where)
+    }
+  }
+})

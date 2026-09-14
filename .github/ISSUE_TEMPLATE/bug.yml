@@ -1,0 +1,61 @@
+name: "Bug — the app did something wrong"
+description: "A crash, a wrong answer, a broken route, or something that renders badly."
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: A URL is ideal — routes are hash-based, so the whole state is usually in the link.
+      placeholder: |
+        1. Open http://localhost:5173/#/journey/two-sum?act=twopass&step=3
+        2. Click …
+        3. …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - "A journey (the animated, act-by-act pages)"
+        - "A problem page or the practice list"
+        - "A learn page (#/learn/<id>)"
+        - "The algorithm visualizer"
+        - "The shell — sidebar, dialogs, keyboard, theme"
+        - "A script or gate (npm run check, verify:*, docs:learn)"
+        - "Something else"
+    validations:
+      required: true
+
+  - type: input
+    id: env
+    attributes:
+      label: Browser and OS
+      placeholder: "Chrome 141, Windows 11 / Firefox 133, Ubuntu 24.04"
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Anything in the browser console or the terminal. Paste the shortest decisive lines, not the whole log.
+      render: text
+
+  - type: checkboxes
+    id: gates
+    attributes:
+      label: Did you run the gates
+      description: Only relevant if you were working in the repo rather than using the site.
+      options:
+        - label: "`npm run check` exits 0 on my checkout"
+        - label: "`npm run test:ui` exits 0 on my checkout"
+        - label: "Not applicable — I was using the app, not the repo"

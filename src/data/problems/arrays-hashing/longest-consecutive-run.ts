@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sorting spends n log n to learn something a set already knows - whether a number is present. Ask that question directly, start a walk only from a value with no left neighbour, and the whole thing is linear.",
-  arc:
-    "Sorting is the obvious way to make neighbours adjacent, and it is also the thing to question: the answer needs to know which values EXIST, not what order they come in. Once every value is in a set, the run starting at v can be walked directly — and the trick that keeps it linear is refusing to start a walk at a value whose predecessor exists, so each run is walked exactly once from its true beginning. Without that guard the same run is re-walked from every member and the whole thing is quadratic. Carry two habits: when a solution sorts, ask whether membership would do instead; and when several starting points share work, find the rule that elects one of them.",
+  arc: "Sorting is the obvious way to make neighbours adjacent, and it is also the thing to question: the answer needs to know which values EXIST, not what order they come in. Once every value is in a set, the run starting at v can be walked directly — and the trick that keeps it linear is refusing to start a walk at a value whose predecessor exists, so each run is walked exactly once from its true beginning. Without that guard the same run is re-walked from every member and the whole thing is quadratic. Carry two habits: when a solution sorts, ask whether membership would do instead; and when several starting points share work, find the rule that elects one of them.",
   approach:
     "Load all values into a hash set. For each value x, if x - 1 is not in the set then x is the left end of a run — walk x+1, x+2, … while they exist and track the length. Every element is visited at most twice (once in the outer loop, once inside a walk), so the total work is linear despite the nested-looking loops.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -74,7 +73,7 @@ export const problem: Problem = {
     {
       name: "Sort",
       summary:
-        "Sort, then walk once counting runs (skip duplicates, reset on gaps). Violates the O(n) target but is the honest first answer and handles everything correctly.",
+        "Sort, then walk once counting runs, skipping duplicates and resetting on gaps. Honest, short, and it breaks the one rule the statement sets — O(n log n) against a demanded O(n). It is here because it names what sorting is being used FOR: putting neighbours next to each other, which a hash set can do without any ordering at all.",
       complexity: { time: "O(n log n)", space: "O(1)" },
       python: `def longest_consecutive(nums: list[int]) -> int:
     if not nums:

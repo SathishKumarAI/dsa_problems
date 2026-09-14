@@ -29,8 +29,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The map spends O(n) memory to remember what the ordering already tells you. Two pointers read the same information off the array itself, in constant space.",
-  arc:
-    "The same question as the unsorted version, with one promise added — and the whole point is what that promise buys. A hash map still works and still costs linear memory; sorted order makes the memory unnecessary, because the sum of the two ends tells you which end is wrong. Too small means the small end must grow, too big means the big end must shrink, and each pointer only ever moves one way, so the scan is linear and constant-space. That is the converging-pointer pattern in its purest form. Learn to spot its precondition — a sorted sequence and a monotone response to moving each end — because it is what unlocks three-sum, container with most water, and every k-sum built on top of them.",
+  arc: "The same question as the unsorted version, with one promise added — and the whole point is what that promise buys. A hash map still works and still costs linear memory; sorted order makes the memory unnecessary, because the sum of the two ends tells you which end is wrong. Too small means the small end must grow, too big means the big end must shrink, and each pointer only ever moves one way, so the scan is linear and constant-space. That is the converging-pointer pattern in its purest form. Learn to spot its precondition — a sorted sequence and a monotone response to moving each end — because it is what unlocks three-sum, container with most water, and every k-sum built on top of them.",
   approach:
     "Start i at the front, j at the back. If nums[i] + nums[j] is too small, no pair using nums[i] can work with anything left of j (those are smaller still), so advance i. If too big, retreat j by the mirror argument. Each step permanently discards one element, so the walk terminates in n steps.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -97,7 +96,7 @@ export const problem: Problem = {
       whyNow:
         "The double loop asks whether a partner exists by trying every candidate. One pass with a map answers it in a single lookup - but this is the answer for an unsorted array, and this array is sorted.",
       summary:
-        "The unsorted-array solution still works — but it spends O(n) memory to ignore information the input already gives you for free.",
+        "The unsorted-array solution still works: remember each value's index and look up the complement. Linear, and it spends O(n) memory to ignore the one thing this input hands you free. Sortedness means a comparison tells you about everything you have not looked at, and a map throws that away.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def sorted_pair_sum(nums: list[int], target: int) -> list[int]:
     seen: dict[int, int] = {}

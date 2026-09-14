@@ -34,8 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Scanning for a peak reads the whole array even though the answer is only ever local. The slope at any point tells you which side must contain a peak — a rising slope cannot rise forever, because the boundary is negative infinity — so half the range can be discarded on a single comparison, with no sortedness required.",
-  arc:
-    "The surprise is that a peak can be found in logarithmic time in an UNSORTED array, and the reason is a slope argument rather than an ordering one: if the middle is lower than its right neighbour, the right half must contain a peak, because the sequence either keeps rising to the boundary or turns somewhere. With the ends treated as negative infinity, a peak always exists, so the search never fails. Carry the general form: binary search needs a monotone PREDICATE, not sorted data, and 'the answer is on the rising side' is such a predicate. It is the same idea that makes peak-finding in a bitonic array and several optimisation searches logarithmic.",
+  arc: "The surprise is that a peak can be found in logarithmic time in an UNSORTED array, and the reason is a slope argument rather than an ordering one: if the middle is lower than its right neighbour, the right half must contain a peak, because the sequence either keeps rising to the boundary or turns somewhere. With the ends treated as negative infinity, a peak always exists, so the search never fails. Carry the general form: binary search needs a monotone PREDICATE, not sorted data, and 'the answer is on the rising side' is such a predicate. It is the same idea that makes peak-finding in a bitonic array and several optimisation searches logarithmic.",
   approach:
     "Compare the midpoint with its right neighbour. If it is smaller, the sequence is rising there, and since it must eventually fall — the edge acts as negative infinity — a peak lies strictly to the right. If it is larger, the sequence is falling, so the midpoint itself or something to its left is a peak. Neither branch can discard every peak, which is what makes the halving safe. When the range narrows to one index, that index is a peak.",
   complexity: { time: "O(log n)", space: "O(1)" },
@@ -70,7 +69,7 @@ export const problem: Problem = {
     {
       name: "Scan for the turn",
       summary:
-        "Walk forward and return the first index whose value is larger than the value after it, or the last index if the array never turns down.",
+        "Walk forward and return the first index whose value exceeds the one after it. Linear, and it hides the fact that makes a logarithmic answer possible: neighbours are never equal, so a rising step guarantees a peak somewhere to the right. The scan waits to see the turn; a binary search can infer which side must contain one.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def find_peak_element(nums: list[int]) -> int:
     for i in range(len(nums) - 1):

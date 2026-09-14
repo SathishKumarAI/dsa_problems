@@ -12,7 +12,7 @@ import { Suspense, lazy } from "react"
 import { navigate, useRoute } from "@/lib/route"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
-import { CircleHelpIcon } from "lucide-react"
+import { CircleHelpIcon, LoaderCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AppDialogs } from "./components/app-dialogs"
 import { AppSidebar } from "./components/app-sidebar"
@@ -30,8 +30,15 @@ const AlgorithmsPage = lazy(() =>
     default: m.AlgorithmsPage,
   }))
 )
+// the learn pages are fetched per problem, so the reader itself is lazy too
+const LearnPageView = lazy(() =>
+  import("@/components/learn-page-view").then((m) => ({
+    default: m.LearnPageView,
+  }))
+)
 const Loading = () => (
-  <div className="py-16 text-center text-ui text-muted-foreground">
+  <div className="flex items-center justify-center gap-2 py-16 text-ui text-muted-foreground">
+    <LoaderCircleIcon className="size-4 animate-spin" aria-hidden />
     loading…
   </div>
 )
@@ -49,6 +56,7 @@ function View() {
     if (j) return <JourneyPage key={j.slug} journey={j} />
   }
   if (root === "algorithms") return <AlgorithmsPage />
+  if (root === "learn" && a) return <LearnPageView key={a} id={a} />
   if (root === "sql") return <SqlView />
   if (root === "flashcards") return <FlashcardsView />
   if (root === "p") {
@@ -86,7 +94,7 @@ function View() {
 }
 
 export default function App() {
-  const { parts } = useRoute()
+  const { parts, path } = useRoute()
   const view = parts[0] === "p" ? parts[1] : (parts[0] ?? "home")
   const wide = parts[0] === "journey" || parts[0] === "algorithms"
   // the journey and the visualizer are panel layouts (≥ lg): the inset is
@@ -105,7 +113,20 @@ export default function App() {
             auto, grew to 1202px against a 788px viewport, and every
             descendant height became content-driven — the transport rode the
             page instead of sitting still. Bounded at every width now. */}
-        <SidebarInset className={cn(panels && "h-svh overflow-hidden")}>
+        {/* `min-w-0` is the shell's one guard against sideways scroll, and it
+            belongs on the INSET — the flex item in the sidebar row — not on
+            the page inside it. A flex item's default `min-width: auto` is its
+            content's MIN-CONTENT, so that floor propagates up from a single
+            row all the way to the document. Measured on home at 1440: one
+            16px chevron added to a journey row pushed the column's
+            min-content past `max-w-page`, which clamped at 1120, which made
+            the inset 1184 against the 1174 available — scrollWidth 1440
+            against clientWidth 1430. Every page sets its own `max-w-*` and
+            scrolls its own wide boxes, so the inset never needs to be as wide
+            as its widest child. */}
+        <SidebarInset
+          className={cn("min-w-0", panels && "h-svh overflow-hidden")}
+        >
           {/* On a phone there is no rail, so this bar IS the shell: it stays
               put and lets the page pass under it, blurred, the way every other
               floating surface here does. It used to scroll away with the
@@ -131,7 +152,14 @@ export default function App() {
           {!panels && (
             <SearchTrigger className="fixed top-3 right-4 z-20 hidden md:inline-flex" />
           )}
+          {/* `key={path}` is the route-change moment. `main` already carries
+              the one authored arrival animation (index.css, `surface-in`), but
+              it never replayed: the element is mounted once and every route
+              swapped its children underneath it. Keying on the PATH — not on
+              the query — replays it when the page actually changes and leaves
+              a deep link that only moves `?act=` alone. */}
           <main
+            key={path}
             className={cn(
               wide ? "flex-1 px-4 py-6 md:px-6" : "flex-1 px-4 py-8 md:px-8",
               panels && "min-h-0 overflow-hidden py-4 lg:py-4"

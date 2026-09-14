@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "heaps",
   difficulty: "medium",
   leetcode: "top-k-frequent-words",
-  brief: "Rank words by how often they appear, breaking ties alphabetically, and return the top k.",
+  brief:
+    "Rank words by how often they appear, breaking ties alphabetically, and return the top k.",
   statement:
     "Given a list of words and a number k, return the k most frequent words, ordered by count from high to low. Words with the same count are ordered alphabetically, smallest first.",
   constraints: [
@@ -41,8 +42,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Bucketing by count is linear, but it still sorts each bucket, and a corpus where every word appears once puts every word in one bucket — the full sort, back again, wearing a different hat. Heapifying the pairs is linear and then each of the k answers costs one logarithmic pop, so the work follows k rather than the vocabulary: 500 distinct words and k = 2 is two pops, not 500 comparisons.",
-  arc:
-    "Two ideas, and the second is the transferable one. First: a ranking with two keys pointing opposite ways — count descending, word ascending — should live in exactly ONE comparison function; every rung that writes the rule twice eventually disagrees with itself on ties. Second: do not order what you will not read. A sort orders the whole vocabulary to hand back k entries; a heap orders only the candidates; buckets skip comparisons on the count entirely because counts are small bounded integers, and small bounded integers can be array indices rather than comparison keys. Choose by which quantity is small: k tiny against a big vocabulary favours the heap, k close to n favours the sort, and a tight bound on counts favours the buckets.",
+  arc: "Two ideas, and the second is the transferable one. First: a ranking with two keys pointing opposite ways — count descending, word ascending — should live in exactly ONE comparison function; every rung that writes the rule twice eventually disagrees with itself on ties. Second: do not order what you will not read. A sort orders the whole vocabulary to hand back k entries; a heap orders only the candidates; buckets skip comparisons on the count entirely because counts are small bounded integers, and small bounded integers can be array indices rather than comparison keys. Choose by which quantity is small: k tiny against a big vocabulary favours the heap, k close to n favours the sort, and a tight bound on counts favours the buckets.",
   approach:
     "Count the words into a map, then heapify the (count, word) pairs under the answer's own ordering — count descending, word ascending — and pop k times. Building the heap is linear in the number of distinct words and each pop is logarithmic, so the ranking costs what the answer costs rather than what the vocabulary costs. The comparison lives in one place, which is also what keeps the two-key tie rule from being written twice.",
   complexity: { time: "O(n + k log n)", space: "O(n)" },
@@ -132,7 +132,7 @@ def top_k_frequent_words(words: list[str], k: int) -> list[str]:
     {
       name: "Count, then sort everything",
       summary:
-        "Build the counts, turn them into a list of pairs, and sort that list by the answer's rule — count descending, word ascending — then cut the first k.",
+        "Build the counts, turn them into a list of pairs, and sort by the answer's own rule: count descending, then word ascending so ties break alphabetically. Short and correct, and the two-key ordering is the part to get right. It just fully orders every distinct word when only the first k are ever read.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `from collections import Counter
 

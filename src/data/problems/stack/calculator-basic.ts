@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "stack",
   difficulty: "medium",
   leetcode: "basic-calculator-ii",
-  brief: "Evaluate an arithmetic string honouring precedence, with integer division truncated toward zero.",
+  brief:
+    "Evaluate an arithmetic string honouring precedence, with integer division truncated toward zero.",
   statement:
     "Given a string holding non-negative integers and the operators +, -, * and /, evaluate it. Multiplication and division bind tighter than addition and subtraction, division truncates toward zero, and spaces may appear anywhere.",
   constraints: [
@@ -17,7 +18,11 @@ export const problem: Problem = {
     "division truncates TOWARD ZERO, which differs from Python's floor division the moment the left side is negative",
   ],
   examples: [
-    { input: 's = "3+2*2"', output: "7", note: "The multiplication happens first." },
+    {
+      input: 's = "3+2*2"',
+      output: "7",
+      note: "The multiplication happens first.",
+    },
     {
       input: 's = " 3/2 "',
       output: "1",
@@ -37,8 +42,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The stack holds one number per term and then adds them all up, which is a second pass over data the first pass already had — and for a long sum it is a list whose only use is being summed. The only entry the algorithm ever touches is the top one, so keeping the running total and the last term in two integers does the same work with constant memory, and the sum falls out as the walk ends.",
-  arc:
-    "Precedence with two levels has a shape you can hold in your head: the expression is a sum of terms, and * and / build a term while + and - close one. Once that is said, the ladder is just how much of the expression you keep in memory — two passes over materialised tokens, a stack holding one number per term, or two integers holding the total and the term in progress. The stack version is the one to write first in an interview because it generalises: add parentheses and the stack starts holding the enclosing state rather than just numbers, which is exactly Basic Calculator III. The detail that bites is division. Truncation toward zero and floor division differ the moment the left side is negative, and the term carrying a minus sign is what makes that happen here.",
+  arc: "Precedence with two levels has a shape you can hold in your head: the expression is a sum of terms, and * and / build a term while + and - close one. Once that is said, the ladder is just how much of the expression you keep in memory — two passes over materialised tokens, a stack holding one number per term, or two integers holding the total and the term in progress. The stack version is the one to write first in an interview because it generalises: add parentheses and the stack starts holding the enclosing state rather than just numbers, which is exactly Basic Calculator III. The detail that bites is division. Truncation toward zero and floor division differ the moment the left side is negative, and the term carrying a minus sign is what makes that happen here.",
   approach:
     "One pass with two numbers: the total of the terms already closed, and the value of the term in progress. Read a full number, then look at the operator that preceded it — for + or -, close the current term into the total and start a new one with the sign; for * or /, fold the number straight into the term in progress. At the end, close the last term. Division is done by dividing magnitudes and reapplying the sign, which is truncation toward zero in every language.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -169,7 +173,7 @@ export const problem: Problem = {
     {
       name: "Two passes over the tokens",
       summary:
-        "Tokenise the string into numbers and operators, sweep once collapsing every * and / into their left operand, then add and subtract what is left.",
+        "Tokenise into numbers and operators, sweep once collapsing every * and / into their left operand, then add and subtract what is left. Doing the high-precedence pass first makes precedence obvious, and it materialises the whole token list, so the memory tracks the length of the expression rather than staying constant.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def evaluate_expression(s: str) -> int:
     def trunc_div(a: int, b: int) -> int:

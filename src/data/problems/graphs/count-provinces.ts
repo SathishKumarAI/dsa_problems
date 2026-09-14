@@ -34,6 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The flood fill answers the question fine, and for a static matrix it is the simpler code. Union-find earns its place when the edges arrive over time — it never needs to re-traverse, because merging is what maintains the answer. Both are here because the choice is about the shape of the input, not about speed.",
+  arc: "Connected components again, only the graph arrives as an adjacency matrix rather than a grid, and the statement turns on one word: connection is TRANSITIVE, so a and c share a province through b with no direct link between them. Flood fill makes that happen by walking it — start at an unvisited city, mark everything reachable, add one per fill started. Union-find makes it happen by construction: merging at every edge collapses the chain without anyone walking it, and the answer is the count of cities still acting as their own representative. Neither wins on speed, and the honest reason to know both is the shape of the input. A static matrix favours the fill, which is less code; edges arriving over time favour union-find, because there is nothing to re-traverse — the answer is maintained rather than derived. Path compression in find and the count of roots at the end are the two lines to write from memory. Redundant-connection is this with the edges streaming.",
   approach:
     "Give every city its own group, then merge the groups at the two ends of every edge. `find` walks to a group's representative and flattens the path as it goes, so later lookups are almost immediate; `union` points one representative at the other. Because merging is transitive by construction, a chain of connections collapses into a single group without anyone having to walk the chain. The answer is the number of cities that are still their own representative at the end.",
   complexity: { time: "O(n² · α(n))", space: "O(n)" },
@@ -112,7 +113,7 @@ int findCircleNum(const vector<vector<int>>& matrix) {
     {
       name: "Flood fill from each city",
       summary:
-        "Walk the cities; when one has not been visited, run a depth-first search marking everything it can reach, and add one to the count for each fill started.",
+        "Walk the cities; when one has not been visited, depth-first search everything it can reach through the matrix, marking as you go, and add one province per fill started. This is the right answer and it reads the matrix as what it is, an adjacency table. Note that finding a city's neighbours means scanning a full row of n entries whether the graph is dense or nearly empty.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def sink(matrix: list[list[int]], seen: list[bool], i: int) -> None:
     seen[i] = True

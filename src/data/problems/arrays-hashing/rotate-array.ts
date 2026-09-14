@@ -35,8 +35,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Cyclic replacements already run in place, but they need a count of how many values have moved (or a gcd) to know how many chains to start, and that bookkeeping is the part people get wrong. Three reversals reach the same arrangement with one primitive applied three times and nothing to count.",
-  arc:
-    "Three genuinely different ideas share this ladder: copy into place using modular arithmetic, follow the cycles of the rotation permutation, or reverse three times. The reversal trick is the one to memorise — reverse everything, then reverse the first k and the rest — because it is short, constant-space, and easy to argue: reversing puts the tail in front in the wrong internal order, and the two local reversals repair that. The cyclic version teaches something the reversal hides: a rotation decomposes into gcd(n, k) cycles, which is why a naive single-cycle walk misses elements. And reducing k modulo n first is not a detail — without it, k larger than n does pointless full turns or indexes out of range.",
+  arc: "Three genuinely different ideas share this ladder: copy into place using modular arithmetic, follow the cycles of the rotation permutation, or reverse three times. The reversal trick is the one to memorise — reverse everything, then reverse the first k and the rest — because it is short, constant-space, and easy to argue: reversing puts the tail in front in the wrong internal order, and the two local reversals repair that. The cyclic version teaches something the reversal hides: a rotation decomposes into gcd(n, k) cycles, which is why a naive single-cycle walk misses elements. And reducing k modulo n first is not a detail — without it, k larger than n does pointless full turns or indexes out of range.",
   approach:
     "Reduce k to k % n, because a rotation by a multiple of n changes nothing. Then reverse the whole array: the last k values are now at the front and the first n - k at the back, which is the right arrangement of blocks with each block written backwards. Reverse the first k, then reverse the rest, and both blocks read forwards again. Three passes over the array with a swap loop, no allocation, and no index formula to get the direction wrong.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -110,7 +109,7 @@ export const problem: Problem = {
     {
       name: "One step at a time",
       summary:
-        "Shift every value one place right, put the value that fell off the end at the front, and repeat that k times.",
+        "Shift every value one place right, move the one that fell off to the front, and do that k times. Faithful to the word 'rotate' and disastrous: n·k work, so a k near n is quadratic — and all of it recomputed, since every value's final home was knowable before the first shift.",
       complexity: { time: "O(n * k)", space: "O(1)" },
       python: `def rotate_array(nums: list[int], k: int) -> list[int]:
     n = len(nums)
@@ -142,7 +141,7 @@ export const problem: Problem = {
     {
       name: "Copy into a second array",
       summary:
-        "Every value's destination is known up front: nums[i] belongs at (i + k) % n. Write each one there in a new array, then copy that back.",
+        "Every value's destination is known up front — nums[i] belongs at (i + k) % n — so write each one there in a fresh array and copy it back. Linear and clear, and the cost is the second array: n extra slots to express a permutation the array can perform on itself.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "Shifting by one rewrites all n values k times over, which is 10^10 writes at the stated limits. The destination of a value never depended on the steps in between — (i + k) % n names it directly, so one pass places everything, at the cost of a full-size scratch array.",

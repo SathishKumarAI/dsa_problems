@@ -47,16 +47,27 @@ export function DrawerTabs({
   j,
   journey,
   problem,
+  value,
+  onValueChange,
 }: {
   j: JourneyController
   journey: AnyJourney
   problem?: Problem
+  /** controlled tab — the phone's bottom nav bar opens straight to one.
+   *  Omit both and the strip stays uncontrolled, opening on Explain. */
+  value?: string
+  onValueChange?: (v: string) => void
 }) {
   const { act, frame } = j
   const input = j.data ? journey.describe(j.data) : ""
   const hints = journey.acts[0]?.hints ?? []
   return (
-    <Tabs defaultValue="explain" className="flex min-h-0 flex-1 flex-col gap-3">
+    <Tabs
+      {...(value === undefined
+        ? { defaultValue: "explain" }
+        : { value, onValueChange: (v: string) => onValueChange?.(v) })}
+      className="flex min-h-0 flex-1 flex-col gap-3"
+    >
       {/* Base UI's Tabs gives arrow-key movement and a roving tabindex for
         free — the reason not to hand-roll a tab strip. */}
       <TabsList variant="line" aria-label="approach panels">

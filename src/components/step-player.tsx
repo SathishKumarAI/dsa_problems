@@ -40,7 +40,7 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
         <div key={i} className="flex flex-col items-center gap-1.5">
           <div
             className={cn(
-              "flex size-12 items-center justify-center rounded-lg border font-mono text-body tabular-nums transition-all duration-300",
+              "flex size-12 items-center justify-center rounded-lg border font-mono text-body tabular-nums transition-all duration-(--duration-reveal)",
               frame.marks?.[i]
                 ? roleClass[frame.marks[i]]
                 : "border-border/60 bg-background/60 text-foreground/80"
@@ -128,7 +128,7 @@ export function StepPlayer({ frames }: { frames: Frame[] }) {
       {/* stage — key remount animates each frame in */}
       <div
         key={step}
-        className="flex min-h-48 animate-in items-center justify-center px-6 py-8 duration-300 fade-in slide-in-from-bottom-1"
+        className="flex min-h-48 animate-in items-center justify-center px-6 py-8 duration-(--duration-reveal) fade-in slide-in-from-bottom-1"
       >
         <Cells frame={frame.cells} />
       </div>

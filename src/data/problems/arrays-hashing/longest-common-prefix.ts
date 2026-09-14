@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Growing the answer by comparing pairs re-reads the same leading characters for every pair. Reading down one column at a time touches each character at most once and stops at the first disagreement, so a list that shares nothing costs one column rather than a full scan of every string.",
-  arc:
-    "Two ways to slice the same work: compare strings against a shrinking candidate, or compare column by column across all strings and stop at the first disagreement. The second is worth internalising because it needs no accumulator string at all — the answer is a prefix of the first word, so its LENGTH is the only unknown. The general habit: when the answer is a slice of an input, search for its boundary instead of building it. The early exits do the heavy lifting on real inputs, since one short or one very different string settles the answer immediately, and the corner cases to rehearse are an empty string in the list and a list of one word.",
+  arc: "Two ways to slice the same work: compare strings against a shrinking candidate, or compare column by column across all strings and stop at the first disagreement. The second is worth internalising because it needs no accumulator string at all — the answer is a prefix of the first word, so its LENGTH is the only unknown. The general habit: when the answer is a slice of an input, search for its boundary instead of building it. The early exits do the heavy lifting on real inputs, since one short or one very different string settles the answer immediately, and the corner cases to rehearse are an empty string in the list and a list of one word.",
   approach:
     "Walk the columns of the first string. At each column, check every other string: if it has ended, or its character differs, the prefix stops right there. Otherwise the column is common and the walk continues. The first string is a safe ruler because the answer is a prefix of it, and the early exit means a list with nothing in common is rejected after a single column.",
   complexity: { time: "O(n · k)", space: "O(1)" },
@@ -68,7 +67,7 @@ export const problem: Problem = {
     {
       name: "Shrink against each string",
       summary:
-        "Start with the first string as the answer and, for each later string, trim the answer until it is a prefix of that one too.",
+        "Hold the first string as a candidate answer and trim it against each later string until it is a prefix of that one too. Correct and linear in the total input, but it builds and discards a new string at every step, and it reads words to the end that disagreed at character one.",
       complexity: { time: "O(n · k)", space: "O(k)" },
       python: `def longest_common_prefix(words: list[str]) -> str:
     if not words:

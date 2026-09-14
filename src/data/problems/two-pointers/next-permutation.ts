@@ -38,8 +38,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Copying the tail out, reversing it, and writing it straight back allocates a second array whose entire purpose is to be poured into the first — memory proportional to the input for an operation that changes nothing but the order of what is already there. Two indices walking toward each other from the ends of the tail swap it into place where it lies, which is the constant-space requirement met rather than approximated.",
-  arc:
-    "Four observations, in order, and the algorithm is just their consequence: the suffix that is already descending is the largest arrangement of those values, so it cannot be advanced; the first value below its successor is therefore the pivot; the smallest value in the suffix that still exceeds the pivot is its replacement; and once swapped, the suffix must become the SMALLEST arrangement, which — because it is still descending — means reversing it rather than sorting it. That last step is where the linear time comes from and where most attempts pay an unnecessary n log n. Rehearse the fully-descending input, which has no pivot and must wrap to the sorted order, since it is the case that separates a correct implementation from a lucky one.",
+  arc: "Four observations, in order, and the algorithm is just their consequence: the suffix that is already descending is the largest arrangement of those values, so it cannot be advanced; the first value below its successor is therefore the pivot; the smallest value in the suffix that still exceeds the pivot is its replacement; and once swapped, the suffix must become the SMALLEST arrangement, which — because it is still descending — means reversing it rather than sorting it. That last step is where the linear time comes from and where most attempts pay an unnecessary n log n. Rehearse the fully-descending input, which has no pivot and must wrap to the sorted order, since it is the case that separates a correct implementation from a lucky one.",
   approach:
     "Walk in from the right to find the pivot: the last position whose value is smaller than the one after it. Everything to its right is non-increasing, which is exactly the statement that the tail is already at its largest arrangement — so the pivot is the rightmost place where anything can grow. Find the last value in that tail still greater than the pivot and swap the two; the pivot's slot has now grown by the smallest amount possible, and the tail stays non-increasing because the swap traded two values in the right order. Reverse the tail in place with two indices to turn the largest tail into the smallest, and the result is the immediate successor. If no pivot exists the array was the final arrangement: the tail is the whole array, and reversing it wraps to the sorted order.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -319,7 +318,7 @@ export const problem: Problem = {
     {
       name: "Find the pivot, then sort the tail",
       summary:
-        "Scan in from the right for the pivot, sort the tail ascending, then swap the pivot with the first tail value that exceeds it.",
+        "Scan in from the right for the pivot, sort the tail ascending, then swap the pivot with the first tail value that exceeds it. The pivot insight has landed and the tail work has not: everything right of the pivot is already non-increasing, so sorting it is paying n log n to reverse a sequence whose order you were handed.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       whyNow:
         "Trying every pair tests n^2 candidates when only one position can ever change first: the rightmost index whose value is smaller than its neighbour. Everything to its right is descending, so it is already maximal and nothing there can grow — naming that pivot collapses the whole search to a single scan.",
@@ -375,7 +374,7 @@ export const problem: Problem = {
     {
       name: "Pivot, swap, rebuild the tail backwards",
       summary:
-        "Find the pivot, swap it with the last value that still beats it, then read the tail from the end into a fresh list and copy that list back.",
+        "Find the pivot, swap it with the last value that still beats it, then read the tail from the end into a fresh list and copy it back. Linear at last, and the only thing left is the list: reading a run backwards into new storage is a reversal, and a reversal is two indices walking towards each other in place.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "Sorting the tail spends O(n log n) comparisons discovering an order that is already known: the tail was descending before the swap, and swapping a smaller value into the slot of a larger one keeps it descending. Reading it backwards produces the ascending version for free, which drops the whole solution to a linear pass.",

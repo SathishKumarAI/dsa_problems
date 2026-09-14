@@ -24,6 +24,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The table keeps n values, but each step reads only the two before it. Two variables are enough, and the space drops to constant.",
+  arc: "The state is the whole problem, and it is smaller than it looks: standing at element i, the only thing the past can still tell you is the best total using everything before it, so best(i) is either best(i−1) with i skipped or nums[i] plus best(i−2) with i taken. Nothing about WHICH elements were chosen ever matters again, and that collapse from a subset to one number per position is what turns an exponential choice tree into a linear walk. The rest is the usual descent. Memoising asks each position once but leaves a call stack in the way; the explicit table removes the stack and makes the fill order visible, and it is the version to keep when a follow-up asks which elements were taken; and since the recurrence reads only two cells back, two rolling variables finish it in constant space. Know the two-variable version cold and practise naming the state out loud — the circular and tree variants are this recurrence with a different neighbour rule.",
   approach:
     "State: best(i), the maximum sum using only the first i+1 elements. Transition: either element i is skipped (carry best(i-1)) or taken (nums[i] + best(i-2), since i-1 is then forbidden). Take the max. Roll two variables left to right; the final value is the answer.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -56,7 +57,7 @@ export const problem: Problem = {
     {
       name: "Recursion + memo",
       summary:
-        "best(i) tried top-down with caching. Same recurrence; the table version just removes the stack.",
+        "best(i) computed top-down with a cache, so each index is solved once. The recurrence is already the final one; this rung exists to show that the exponential version and the linear version differ by a dictionary. The cost still carried is the stack — one frame per house — which the table below removes by asking the questions in an order that needs no stack.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `from functools import lru_cache
 
@@ -98,7 +99,7 @@ private int best(int[] nums, int i, Integer[] memo) {
       whyNow:
         "The memo already computes bottom-up, with a call stack in the way. Filling the array in order removes the recursion and makes the order of computation visible.",
       summary:
-        "Explicit dp array before the two-variable compression. Easier to debug and to extend (e.g. recovering WHICH elements were taken).",
+        "The same answers in an explicit array, filled front to back. No recursion and nothing to overflow, and it is the version to write when you need to recover WHICH houses were taken, because the table is a record of the decisions. The waste is that the transition reads only the previous two entries, so n slots are kept to serve a window of two.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def max_take(nums: list[int]) -> int:
     if not nums:

@@ -30,8 +30,9 @@ export const problem: Problem = {
     "x XOR x = 0 and x XOR 0 = x, and XOR is commutative — order never matters.",
     "XOR every element into one accumulator. Pairs annihilate bit by bit; only the loner survives.",
   ],
-  arc:
-    "Three rungs, three different ideas about what to remember. A hash map remembers everything and throws almost all of it away. Sorting remembers nothing but pays to impose order the question never asked for. XOR remembers exactly one number, because the operation itself cancels pairs: a ^ a is zero, zero ^ x is x, and order does not matter. That is the lesson worth keeping — when duplicates come in pairs and you need the odd one out, reach for an operation with an inverse rather than for a container. Know why XOR is safe here (commutative, associative, self-inverse) because the follow-ups change the pairing to threes, where XOR alone stops working and bit counting takes over.",
+  arc: "Three rungs, three different ideas about what to remember. A hash map remembers everything and throws almost all of it away. Sorting remembers nothing but pays to impose order the question never asked for. XOR remembers exactly one number, because the operation itself cancels pairs: a ^ a is zero, zero ^ x is x, and order does not matter. That is the lesson worth keeping — when duplicates come in pairs and you need the odd one out, reach for an operation with an inverse rather than for a container. Know why XOR is safe here (commutative, associative, self-inverse) because the follow-ups change the pairing to threes, where XOR alone stops working and bit counting takes over.",
+  whyNow:
+    "Sorting spends O(n log n) arranging data whose ORDER the answer never uses. The only fact that matters is that pairs cancel, and XOR cancels them in place: one pass, one integer of state, no rearrangement.",
   approach:
     "Fold the array with XOR. Because x ^ x = 0 and the operation is commutative and associative, every paired value cancels regardless of position, leaving the single value in the accumulator. One pass, one integer of state. The trick leans entirely on the promise that exactly one value is unpaired.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -54,7 +55,7 @@ export const problem: Problem = {
     {
       name: "Hash map",
       summary:
-        "Count every value, then return the one with count 1. Linear time, but the map is O(n) extra space — exactly what the follow-up forbids.",
+        "Count every value, then return the one whose count is 1. Linear and obvious, and it pays O(n) memory to store 'appears twice' for every value in the array — facts the answer never reads. That is exactly the extra space the follow-up question forbids.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def single_number(nums: list[int]) -> int:
     counts: dict[int, int] = {}
@@ -81,8 +82,10 @@ export const problem: Problem = {
     },
     {
       name: "Sort & scan",
+      whyNow:
+        "The map counts every value in order to find the one whose count is odd: n entries of bookkeeping for a single answer, which is exactly the O(n) space the follow-up forbids. Sorting puts twins next to each other instead, so the pairing becomes visible without storing anything.",
       summary:
-        "Sort, then twins are adjacent: walk in steps of two until a pair breaks. No map, but the sort costs O(n log n).",
+        "Sort, so twins land next to each other, then walk in steps of two until a pair fails to match. Memory drops to nothing, but n log n is spent arranging the whole array to expose a fact about pairing — and it rearranges the caller's data to do it.",
       complexity: { time: "O(n log n)", space: "O(1)" },
       python: `def single_number(nums: list[int]) -> int:
     s = sorted(nums)

@@ -39,8 +39,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Sweeping the list repeatedly until nothing changes is correct but pays a whole pass for each collision, and a chain of them makes that quadratic. A stack makes the opponent explicit: the asteroid a newcomer meets is always the one on top, so every collision is resolved the moment it becomes possible and each asteroid is pushed and popped at most once.",
-  arc:
-    "The stack is holding survivors, and the whole problem is a case analysis that must be written before any code: a right-moving asteroid always survives for now, a left-moving one fights everything right-moving on the stack, and each fight either destroys the incoming one, the stack top, or both. The trap is the both-destroyed case, which must break out of the loop without pushing anything. Sweeping the array until nothing changes is the honest baseline and shows why the stack is worth it — collisions cascade, and a stack processes the cascade in one pass. The same shape solves 'remove adjacent duplicates' and other neighbour-annihilation problems.",
+  arc: "The stack is holding survivors, and the whole problem is a case analysis that must be written before any code: a right-moving asteroid always survives for now, a left-moving one fights everything right-moving on the stack, and each fight either destroys the incoming one, the stack top, or both. The trap is the both-destroyed case, which must break out of the loop without pushing anything. Sweeping the array until nothing changes is the honest baseline and shows why the stack is worth it — collisions cascade, and a stack processes the cascade in one pass. The same shape solves 'remove adjacent duplicates' and other neighbour-annihilation problems.",
   approach:
     "Walk left to right holding the survivors on a stack. A right-mover is simply pushed. A left-mover fights: while the top of the stack is a right-mover smaller than it, pop — those are destroyed. If the top is equal, both are destroyed and the newcomer stops. If the top is larger, the newcomer is destroyed. Only if the stack empties, or its top is itself a left-mover, does the newcomer survive and get pushed. The three outcomes of one comparison — pop and continue, both die, newcomer dies — are the whole problem.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -97,7 +96,7 @@ export const problem: Problem = {
     {
       name: "Sweep until nothing changes",
       summary:
-        "Scan the list for an adjacent pair that would collide, resolve that one pair, and start over — repeating until a full scan finds nothing to do.",
+        "Scan for an adjacent pair that would collide, resolve that one pair, and start the scan over, repeating until a full pass finds nothing. It is the physics written out literally and it is easy to believe, and each resolved collision restarts the whole sweep, so a row that collapses one pair at a time costs a full pass per collision.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def asteroid_collision(asteroids: list[int]) -> list[int]:
     current = list(asteroids)

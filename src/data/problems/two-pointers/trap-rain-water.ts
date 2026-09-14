@@ -34,8 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Precomputing the two maxima arrays is already linear, but it reads the array three times and holds 2n extra numbers. Walking inward from both ends carries the same two maxima in two variables, because the shorter wall is always the one that decides — and the shorter wall is always the one you can safely move.",
-  arc:
-    "Water above a column is decided by one number: the smaller of the tallest wall to its left and the tallest to its right. Write that down and the ladder builds itself — recompute both maxima per column and you are quadratic, precompute them into two arrays and you are linear with linear memory, and then the final rung notices you only ever need the SMALLER of the two, so whichever side is currently lower can be advanced safely while its running maximum is already known. That last argument is the one to practise saying, because it is the reason the two-pointer version is correct rather than merely shorter. Know the prefix/suffix-maxima version too: it is easier to derive under pressure and generalises to the two-dimensional variant.",
+  arc: "Water above a column is decided by one number: the smaller of the tallest wall to its left and the tallest to its right. Write that down and the ladder builds itself — recompute both maxima per column and you are quadratic, precompute them into two arrays and you are linear with linear memory, and then the final rung notices you only ever need the SMALLER of the two, so whichever side is currently lower can be advanced safely while its running maximum is already known. That last argument is the one to practise saying, because it is the reason the two-pointer version is correct rather than merely shorter. Know the prefix/suffix-maxima version too: it is easier to derive under pressure and generalises to the two-dimensional variant.",
   approach:
     "Put i at the left and j at the right, carrying leftMax and rightMax. Whichever side is shorter is the side whose water level is already fixed: nothing outside it can raise the level, because the other side is taller. So process that side — add its trapped water and step inward — and repeat. Each bar is visited once and the two maxima are only ever updated, never recomputed.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -89,7 +88,7 @@ export const problem: Problem = {
     {
       name: "Brute force per column",
       summary:
-        "For each column, scan the whole array left and right to find the tallest bar on each side, then take the smaller of the two minus this column's height.",
+        "For each column, scan left and right for the tallest bar on each side; the water above it is the smaller of those minus its own height. Correct, and quadratic because each column re-derives maxima its neighbour just computed — the same scan, one position over.",
       complexity: { time: "O(n²)", space: "O(1)" },
       python: `def trap(height: list[int]) -> int:
     total = 0
@@ -123,9 +122,7 @@ export const problem: Problem = {
     {
       name: "Prefix and suffix maxima",
       summary:
-        "Precompute, for every index, the tallest bar at or before it and the tallest at or after it, then read both off in a third pass.",
-      whyNow:
-        "The per-column scan recomputes the same two maxima from scratch for every index, so the same prefix is walked n times. Storing each maximum once turns the whole thing linear — at the cost of two extra arrays.",
+        "Precompute the tallest bar at or before every index and at or after it, then read both off in a third pass. The rescanning is gone and it is genuinely linear; what remains is two arrays of n, holding numbers that two travelling variables could carry instead.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def trap(height: list[int]) -> int:
     n = len(height)

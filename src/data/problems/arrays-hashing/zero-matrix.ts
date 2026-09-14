@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "arrays-hashing",
   difficulty: "medium",
   leetcode: "set-matrix-zeroes",
-  brief: "Every zero in the matrix blanks its whole row and column — done in place.",
+  brief:
+    "Every zero in the matrix blanks its whole row and column — done in place.",
   statement:
     "Given a matrix, set the entire row and the entire column of every zero to 0. The wipe is decided by the ORIGINAL matrix, and the classic follow-up asks for it in place with constant extra memory.",
   constraints: [
@@ -40,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Two marker arrays are already linear and correct, but they allocate memory proportional to the matrix's sides to hold one bit per row and per column — and the matrix already has a row and a column that can hold exactly that many bits. Moving the marks into the first row and first column makes the extra memory two booleans, and the only price is deciding the fate of that row and column before they are overwritten.",
-  arc:
-    "Two ideas, both worth keeping. The first is sequencing: a sweep that writes into the same structure it reads from will start reacting to its own output, so DECIDE in one pass and APPLY in another. That is the whole reason the naive in-place attempt fails, and the same discipline shows up in game-of-life and in any grid update with simultaneous semantics. The second is the space trick: information worth one bit per row and per column does not need arrays of its own when the matrix already contains a row and a column that can hold it. Storing marks inside the input is a genuine O(1) technique, and its price is always the same — the cells doing the storing need their own fate recorded first, which is exactly what the two booleans are for.",
+  arc: "Two ideas, both worth keeping. The first is sequencing: a sweep that writes into the same structure it reads from will start reacting to its own output, so DECIDE in one pass and APPLY in another. That is the whole reason the naive in-place attempt fails, and the same discipline shows up in game-of-life and in any grid update with simultaneous semantics. The second is the space trick: information worth one bit per row and per column does not need arrays of its own when the matrix already contains a row and a column that can hold it. Storing marks inside the input is a genuine O(1) technique, and its price is always the same — the cells doing the storing need their own fate recorded first, which is exactly what the two booleans are for.",
   approach:
     "Read whether the first row and the first column contain a zero of their own, and keep those as two booleans. Then use row 0 as the column marks and column 0 as the row marks: for every inner cell that is zero, blank its row's mark and its column's mark. Apply the marks to the inner cells, then — last, so their marks survive until they are read — blank the first row and the first column if their booleans said so. Two sweeps, constant extra memory.",
   complexity: { time: "O(rows · cols)", space: "O(1)" },
@@ -154,7 +154,7 @@ export const problem: Problem = {
     {
       name: "Write into a copy",
       summary:
-        "Build a second matrix. Read the original to decide, write the answer into the copy, and hand the copy back — so nothing ever reacts to its own output.",
+        "Build a second matrix: read the original to decide, write into the copy, hand the copy back. This is the rung that names the actual hazard — every later approach writes zeros into the grid it is still reading, so a cell blanked early would be mistaken for an original zero and wipe a row that was never doomed.",
       complexity: { time: "O(rows · cols)", space: "O(rows · cols)" },
       python: `def zero_matrix(matrix: list[list[int]]) -> list[list[int]]:
     rows, cols = len(matrix), len(matrix[0])
@@ -197,7 +197,7 @@ export const problem: Problem = {
     {
       name: "Two lists of doomed lines",
       summary:
-        "One pass collects the rows and columns that hold a zero; a second pass blanks every cell whose row or column is on those lists. No copy of the matrix.",
+        "One pass collects the rows and columns holding a zero; a second blanks every cell on those lists. The full copy is gone and the hazard with it, and what remains is rows + cols of bookkeeping — two lists the matrix could store in its own first row and column.",
       complexity: { time: "O(rows · cols)", space: "O(rows + cols)" },
       whyNow:
         "The copy doubles the memory to hold information worth one bit per row and per column — a 200 × 200 matrix duplicates 40 000 values to remember at most 400 facts. Which rows and columns are doomed is all the second pass needs.",

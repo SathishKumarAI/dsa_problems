@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "graphs",
   difficulty: "medium",
   leetcode: "shortest-path-in-binary-matrix",
-  brief: "Cross a 0/1 grid corner to corner through open cells, diagonals allowed, in the fewest cells.",
+  brief:
+    "Cross a 0/1 grid corner to corner through open cells, diagonals allowed, in the fewest cells.",
   statement:
     "Given an n × n grid where 0 is open and 1 is blocked, return the length of the shortest path from the top-left cell to the bottom-right cell, counted in CELLS visited, moving to any of the eight neighbours. Return -1 when no such path exists.",
   constraints: [
@@ -17,7 +18,11 @@ export const problem: Problem = {
     "either corner may itself be blocked, in which case the answer is -1 before any search starts",
   ],
   examples: [
-    { input: "grid = [[0,1],[1,0]]", output: "2", note: "Straight down the diagonal." },
+    {
+      input: "grid = [[0,1],[1,0]]",
+      output: "2",
+      note: "Straight down the diagonal.",
+    },
     {
       input: "grid = [[0,0,0],[1,1,0],[1,1,0]]",
       output: "4",
@@ -36,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Marking cells as seen only when they come off the queue lets the same cell be enqueued once per neighbour that reaches it — up to eight copies each, so the queue grows to several times the grid and the same cell is expanded more than once. The distance is already decided the moment a cell is first enqueued, so marking there keeps the queue at one entry per cell and makes the memory bound exact.",
-  arc:
-    "The whole ladder is about paying exactly for what the edges cost. Backtracking pays for every path; Dijkstra pays a logarithm to keep the frontier sorted; breadth-first pays nothing extra, because with unit edges the arrival order IS the distance order. The rule to internalise: use BFS when every step costs the same, Dijkstra when they do not, and be able to say which you are in — that single sentence answers a surprising share of graph interviews. The second rule is about marking. Mark on ENQUEUE, not on dequeue: a cell's distance is fixed the moment it is first reached, so marking later lets each of its eight neighbours queue a copy and the queue swells to several times the grid. Both versions are correct; only one of them is bounded by the grid.",
+  arc: "The whole ladder is about paying exactly for what the edges cost. Backtracking pays for every path; Dijkstra pays a logarithm to keep the frontier sorted; breadth-first pays nothing extra, because with unit edges the arrival order IS the distance order. The rule to internalise: use BFS when every step costs the same, Dijkstra when they do not, and be able to say which you are in — that single sentence answers a surprising share of graph interviews. The second rule is about marking. Mark on ENQUEUE, not on dequeue: a cell's distance is fixed the moment it is first reached, so marking later lets each of its eight neighbours queue a copy and the queue swells to several times the grid. Both versions are correct; only one of them is bounded by the grid.",
   approach:
     "Breadth-first from the top-left, if it is open. Keep a queue of cells and a distance for each; pop a cell, and for each of its eight neighbours that is open and unseen, mark it seen, record distance + 1, and enqueue it. Because every edge costs one, the first arrival at the bottom-right is the shortest path, so the search can return the moment that cell is enqueued. If the queue empties first, the corner is unreachable and the answer is -1.",
   complexity: { time: "O(n²)", space: "O(n²)" },
@@ -240,7 +244,7 @@ int shortestPath(vector<vector<int>> grid) {
     {
       name: "Dijkstra with a heap",
       summary:
-        "Treat it as a weighted graph and always expand the cheapest frontier cell, pulled from a min-heap keyed by distance so far.",
+        "Treat the open cells as a weighted graph and always expand the cheapest frontier cell, pulled from a min-heap keyed by distance so far. It is the right answer and the tool to reach for the moment steps cost different amounts. Here every step costs exactly one, and when all edges weigh the same a plain queue already dequeues in distance order, so the heap buys nothing but its log factor.",
       complexity: { time: "O(n² log n)", space: "O(n²)" },
       whyNow:
         "Backtracking re-walks the same cells through every route that can reach them, which on an open grid is exponential — the same cell is visited once per path rather than once. A shortest-path algorithm visits each cell once by keeping the frontier sorted by distance, and Dijkstra is the general one that does it for any edge cost.",

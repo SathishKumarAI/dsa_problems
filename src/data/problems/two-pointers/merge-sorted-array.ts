@@ -40,8 +40,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Merging forward still needs a private copy of a's live prefix, because the very first write to a[0] would clobber a value that has not been placed yet. That copy is only needed because of the direction of travel. Turn around and the problem disappears: the last slot of a is padding, every later write moves further left into space that has just been vacated, and the merge runs with no scratch memory at all.",
-  arc:
-    "Merging is easy; merging IN PLACE is the exercise. Writing from the front would overwrite values not yet read, so the whole ladder converges on one observation: the end of the first array is spare room, so filling from the BACK writes only into cells already consumed or empty. That is the generalisable move — when in-place writing collides with reading, reverse the direction. Two details pay off: the loop can stop as soon as the second array is exhausted, because the rest of the first array is already where it belongs; and the case where the second array's values are all smaller is the one that exercises the leftover copy, so it belongs in your test list.",
+  arc: "Merging is easy; merging IN PLACE is the exercise. Writing from the front would overwrite values not yet read, so the whole ladder converges on one observation: the end of the first array is spare room, so filling from the BACK writes only into cells already consumed or empty. That is the generalisable move — when in-place writing collides with reading, reverse the direction. Two details pay off: the loop can stop as soon as the second array is exhausted, because the rest of the first array is already where it belongs; and the case where the second array's values are all smaller is the one that exercises the leftover copy, so it belongs in your test list.",
   approach:
     "Walk both arrays from their largest values and fill a from its last slot backwards. Compare a's current value with b's, write whichever is larger into the write slot, and step that index back one. Writing backwards is safe by construction: the write index starts on padding and is always at least as far right as the read index into a, so it can never overwrite a value still waiting to be placed. The loop only has to run until b is exhausted — if a runs out first the rest of b is copied straight down, and if b runs out first everything left in a is already in its final position and needs no work. One pass over m + n slots, nothing allocated.",
   complexity: { time: "O(m + n)", space: "O(1)" },
@@ -135,7 +134,7 @@ export const problem: Problem = {
     {
       name: "Insert one at a time",
       summary:
-        "Take each value of b in turn, find where it belongs among a's live values, and shift everything after it one slot right to open a gap.",
+        "Take each value of b, find its place among the live values of a, and shift the tail right to make room. Faithful to the picture of inserting into a sorted list, and the shifting is quadratic — every insertion moves elements the next insertion will move again.",
       complexity: { time: "O(n * (m + n))", space: "O(1)" },
       python: `def merge_sorted(a: list[int], m: int, b: list[int], n: int) -> list[int]:
     live = m
@@ -174,7 +173,7 @@ export const problem: Problem = {
     {
       name: "Append and sort",
       summary:
-        "Drop b's values into a's padding without thinking about order, then sort the whole array and let the sort work out the interleaving.",
+        "Drop b into the padding of a without thinking, then sort the whole thing. Two lines, hard to get wrong, and it pays a full sort to rediscover an order both inputs already had — the sort is being asked to find structure that was handed to it.",
       complexity: { time: "O((m + n) log(m + n))", space: "O(1)" },
       whyNow:
         "Inserting one value at a time re-shifts a growing tail for every element of b, so a large b pays roughly n * (m + n) moves — and the shifting is pure bookkeeping, not comparison. Handing the whole thing to a sort replaces all of it with one call whose cost grows only logarithmically.",
@@ -201,7 +200,7 @@ export const problem: Problem = {
     {
       name: "Merge into a scratch array",
       summary:
-        "Do a textbook forward merge of the two runs into a brand new array of size m + n, then copy the result back over a.",
+        "The textbook forward merge into a fresh array of size m plus n, then copied back. Linear, and the first rung that actually uses both inputs being sorted; the price is the scratch array, which exists only because writing forward into a would overwrite values not yet read.",
       complexity: { time: "O(m + n)", space: "O(m + n)" },
       whyNow:
         "The sort throws away the one fact the input is handing you for free — both halves are already ordered — and pays log(m + n) per element to rediscover it. A merge exploits it: each comparison places one value for good, so the whole thing is linear.",
@@ -252,7 +251,7 @@ export const problem: Problem = {
     {
       name: "Copy only a's prefix",
       summary:
-        "Save just a's m live values in a small buffer, then merge that buffer with b forward into a — the padding is never copied.",
+        "Save the m live values of a in a small buffer, then merge that buffer with b forward into a. The padding is never copied, so the extra memory drops from m plus n to m — and it is still a copy, made for the same reason: a forward merge writes onto ground it has not read.",
       complexity: { time: "O(m + n)", space: "O(m)" },
       whyNow:
         "The scratch array is sized m + n and then copied back wholesale, so every value is written twice and n of the copied slots were empty padding to begin with. Only a's own prefix is actually at risk of being overwritten, so only the prefix needs saving: the buffer shrinks to m and the copy-back disappears.",

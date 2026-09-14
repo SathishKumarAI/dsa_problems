@@ -1,0 +1,733 @@
+# The Number That Is Not There — explained
+
+## Understanding the Problem
+
+You are handed an array of n distinct integers, every one of them drawn from the range 0 to n
+inclusive. That range holds n+1 numbers and the array has only n slots, so exactly one number from the
+range never shows up. Name it. The follow-up asks for linear time and constant extra memory.
+
+**The core question is: which of the n+1 candidates 0, 1, …, n is absent?** The naive instinct is
+slow because it answers that by searching the whole array once per candidate — and notice that no
+single element of the array can answer the question on its own. The answer is a property of the
+*whole set*, not of any one value in it.
+
+The constraints, and what each one buys:
+
+| Constraint | What it unlocks |
+|---|---|
+| `n == nums.length`, `1 <= n <= 10^4` | Small enough that even a quadratic scan finishes, so the interest here is not survival but elegance. Every rung below is O(n log n) or better. |
+| **`0 <= nums[i] <= n`** | The load-bearing one. Every value is a legal index of a table of n+1 slots, and every value except n is a legal index of the array itself. That is what lets the flag table index directly and what lets the in-place rung use the array as its own table. |
+| **every value is distinct** | This is what makes it a *near-permutation*: the array is the set 0..n with one element deleted and the rest shuffled. No counting is ever needed, only presence — and it is what makes both arithmetic rungs work, because each present value contributes exactly once to the sum or the XOR. |
+| **exactly one number is missing** | You are not searching, you are *deducing*. Any invariant of the complete set 0..n, compared against the same invariant computed over the array, differs by precisely the missing number. |
+| the answer may be 0 or n itself | A scan that only looks between the smallest and largest value present is wrong. `[1]` is missing 0 and `[0]` is missing 1 — both ends have to work, and a solution that only finds interior gaps fails both. |
+| `n` may be 1 | The two smallest legal inputs, `[0]` and `[1]`, are exactly the two end cases above. They are cheap to test and they catch most off-by-ones. |
+
+The whole arc of this problem is one sentence: **the values are promised to lie in 0..n, so the array
+itself can become the lookup table — and because they are also promised to be distinct, you do not
+even need a table, because arithmetic over the whole set can name the hole without ever looking for
+it.** This problem is the one place in this family where the arithmetic route beats the indexing
+route outright.
+
+---
+
+## Approach 1 — Sort and scan
+
+### The idea
+
+*The answer is decided by which candidate is absent — how do I find an absence?* Put the values in
+order. A sorted array of distinct values drawn from 0..n *should* read 0, 1, 2, 3, … with the value at
+each index equal to the index itself. The first index where that breaks is the missing number, and if
+it never breaks, the hole is at the very end. This is the baseline that uses nothing but
+comparability.
+
+### How to think about it
+
+Think of n+1 numbered seats in a row and n people who were each assigned a seat by number, with one
+person absent. Sorting is asking everyone to line up in seat order. Then you walk the line counting
+0, 1, 2 — and the first person whose badge does not match your count is standing where the absentee
+should be. The count tells you who is missing. If you get all the way to the end of the line without
+a mismatch, the absentee was the last seat, n.
+
+### Worked example
+
+Input: `nums = [3, 0, 1]` — the same input traced through every approach in this document. n = 3, so
+the candidates are 0, 1, 2, 3.
+
+Sorted, that is `[0, 1, 3]`.
+
+| i | `ordered[i]` | Matches i? |
+|---|---|---|
+| 0 | 0 | yes |
+| 1 | 1 | yes |
+| 2 | **3** | **no → answer 2** |
+
+Three steps plus the sort. Had the input been `[0, 1]`, every index would match and the loop would
+fall off the end, returning `len(ordered)` = 2 — which is the case that catches people who forget the
+final `return`.
+
+### Code
+
+```python
+def missing_number_sort_and_scan(nums: list[int]) -> int:
+    ordered = sorted(nums)  # a COPY — nums.sort() would rearrange the caller's array
+    for i, x in enumerate(ordered):
+        if x != i:
+            return i
+    return len(ordered)  # every slot matched, so the gap is n itself
+```
+
+### Common mistake
+
+Omitting the final `return len(ordered)`. Every index matched means the missing number is n, which is
+past the end of the array and therefore never visited by the loop. In Python a function that falls off
+the end returns `None`, so `[0, 1]` returns `None` instead of 2 — and `None` will not raise until it
+is used somewhere far away. The statement's second example exists to catch precisely this: *the gap is
+past the end of the array, and nothing inside the data points at it — only the promise about the range
+does.*
+
+### Complexity and when to use this
+
+**Time O(n log n), space O(n).** The time is entirely the sort; the scan afterwards is one linear pass.
+The space is the sorted copy (sorting in place would drop it, at the cost of permuting the caller's
+array).
+
+This is the right choice when the input arrives already sorted — then it is an O(n) answer requiring no
+insight at all — or when the values are not integers in a known range, so nothing below this line
+applies. In an interview it is the honest first thing to say, and its real job is to set up the
+question that starts the climb: *why am I ordering these values when the question only asks which one
+is absent?*
+
+---
+
+## Approach 2 — A table of flags
+
+### The idea
+
+*Sorting spends O(n log n) arranging values into an order the answer never reads — it only asks "is
+this candidate present?". Can that be asked directly?* Yes: since every value lies in 0..n, allocate
+n+1 booleans, tick off each value in its own slot, then walk 0..n and return the first slot never
+ticked. This fixes sorting's weakness — the ordering work the answer makes no use of — and it leaves
+the input untouched.
+
+### How to think about it
+
+**The table is a row of numbered pigeonholes, and the value tells you which hole it belongs in.**
+Hole 0 is for the value 0, hole 3 for the value 3, up to hole n. As each number walks past, it drops a
+token in its own hole — no searching, no comparing, just a direct array write at a computed address.
+Then walk the holes from 0 upward and the first empty one is the answer. Because there are n+1 holes
+and only n numbers, exactly one hole is guaranteed to be empty.
+
+This rung is where the next two become visible. Once you see the answer as "a row of n+1 pigeonholes
+indexed by the values", the obvious question is: *the input is already a row of n slots and the values
+are already legal indexes — why am I allocating a second row?*
+
+### Worked example
+
+Input: `nums = [3, 0, 1]`. n = 3, so `seen` is four `False` flags, indices 0..3.
+
+Pass 1, ticking off:
+
+| Value | `seen` after |
+|---|---|
+| 3 | `[F, F, F, T]` |
+| 0 | `[T, F, F, T]` |
+| 1 | `[T, T, F, T]` |
+
+Pass 2, walking the candidates:
+
+| Candidate | `seen[c]` | Action |
+|---|---|---|
+| 0 | True | keep going |
+| 1 | True | keep going |
+| 2 | **False** | return 2 |
+
+Answer 2. Two linear passes, and the array comes back exactly as it went in.
+
+### Code
+
+```python
+def missing_number_table_of_flags(nums: list[int]) -> int:
+    n = len(nums)
+    seen = [False] * (n + 1)
+    for x in nums:
+        seen[x] = True
+    for i in range(n + 1):
+        if not seen[i]:
+            return i
+    return -1  # unreachable: n + 1 candidates and only n values
+```
+
+### Common mistake
+
+Allocating `[False] * n` instead of `n + 1`. The values run up to n inclusive, so `seen[n]` has to
+exist. On `[1]` (n = 1, value 1 needs slot 1) the undersized table has only slot 0 and the code raises
+`IndexError` on the smallest legal input. The same off-by-one hides in the second loop written as
+`range(n)`: it never examines candidate n, so `[0, 1]` finds no empty slot, falls through, and returns
+the sentinel `-1` for an input whose answer is 2. The range here is `0..n` inclusive — n+1 candidates
+— and every loop bound in this function has to say so.
+
+### Complexity and when to use this
+
+**Time O(n), space O(n).** One pass to tick off and one pass over n+1 candidates to find the hole,
+with a direct array read or write at each step. Space is n+1 booleans.
+
+This is the right choice when the value range is known and dense, allocation is allowed, and the input
+must survive intact. It is also the only rung in this file that generalises cleanly to "more than one
+number is missing" — the arithmetic rungs below collapse completely if two values are gone, because a
+single sum or a single XOR cannot separate two unknowns, while the table simply reports two empty
+holes.
+
+---
+
+## Approach 3 — Put each value at its own index
+
+### The idea
+
+*The flag table has n+1 slots indexed by the values 0..n, and the input has n slots indexed 0..n−1.
+Those are nearly the same structure. Why are there two?* This rung deletes the second one. Instead of
+writing a flag at `seen[v]`, move the value `v` itself into slot `v`. Afterwards, "is candidate c
+present?" is a single read: slot c holds c if and only if c was in the array. This fixes the flag
+table's weakness — the fresh allocation — and drops extra space to O(1). The price is that the array
+is permuted and does not come back.
+
+### How to think about it
+
+**Every value is trying to go home, and its home is the slot with its own number on the door.** The
+value 0 belongs in slot 0, the value 2 in slot 2. The one exception is the value n: the array's slots
+stop at n−1, so n has no home and is left wherever it lands — which is fine, because n being present
+is not what you are looking for. So you walk the array and, at each position, ask the value standing
+there where it belongs. If it belongs elsewhere and that slot does not already hold it, swap the two.
+The swap hands you a *new* value at the current position, which may itself belong elsewhere, so you
+ask again — and only step forward when the value at hand is homeless (it is n) or already home.
+
+When the walk is done, the array reads 0, 1, 2, … up to the hole, and the first slot that disagrees
+with its own door number names the answer.
+
+### Worked example
+
+Input: `nums = [3, 0, 1]`, n = 3. This is the real trace of the placing pass.
+
+| At | Value there | Belongs in | What is there | Action | Array after |
+|---|---|---|---|---|---|
+| i = 0 | 3 | — (`v == n`, no slot) | — | homeless, step forward | `[3, 0, 1]` |
+| i = 1 | 0 | slot 0 | 3, not 0 | swap slots 1 and 0 | `[0, 3, 1]` |
+| i = 1 | 3 | — (`v == n`, no slot) | — | homeless, step forward | `[0, 3, 1]` |
+| i = 2 | 1 | slot 1 | 3, not 1 | swap slots 2 and 1 | `[0, 1, 3]` |
+| i = 2 | 3 | — (`v == n`, no slot) | — | homeless, step forward | `[0, 1, 3]` |
+
+Two swaps for a three-element array. Now the reading pass:
+
+| Slot | Holds | Wants | Verdict |
+|---|---|---|---|
+| 0 | 0 | 0 | correct |
+| 1 | 1 | 1 | correct |
+| 2 | **3** | 2 | 2 was never placed → **answer 2** |
+
+The array left behind is `[0, 1, 3]` — sorted, as it happens, but that is a coincidence of this input,
+not a guarantee, and it is certainly not the order the caller handed over.
+
+### Why the walk is still linear, despite the inner loop
+
+There is a loop inside a loop here — the cursor `i` only advances when the value at hand is settled,
+so a single position can trigger several swaps before moving on. That shape usually spells O(n²). It
+does not here, and the reason is an accounting argument worth knowing because it is the standard
+justification for every in-place permutation trick.
+
+Look at what a swap does: it takes a value `v` with `v < n` and puts it in slot `v`, its home. The
+guard `nums[v] != v` is what makes this true — the swap only fires when the destination does *not*
+already hold `v`, so after the swap, slot `v` holds `v` for the first time. And once a slot holds its
+own value, nothing can ever move it again: any later swap aimed at that slot would have to pass the
+same guard, which now reads "the destination already holds this value", and fails.
+
+So every swap in the entire run permanently settles one value that had never been settled before.
+There are at most n values that can be settled, so there are at most n swaps in total — across every
+iteration of the outer loop combined, not per iteration. The inner work is not "up to n steps each
+time"; it is drawn from a shared budget of n for the whole run. Add the n advances of the cursor and
+the placing pass costs at most 2n operations, plus n more for the reading pass. Linear.
+
+The quantity that makes the argument work is "number of values sitting at home": it strictly increases
+with every unit of inner work and never decreases, and it is bounded by n. Find that quantity and the
+bound follows; fail to find it and you have no right to claim the loop is linear.
+
+### Code
+
+```python
+def missing_number_place_at_own_index(nums: list[int]) -> int:
+    """Destroys nums: every value < n is swapped into slot value."""
+    n = len(nums)
+    i = 0
+    while i < n:
+        v = nums[i]
+        if v < n and nums[v] != v:  # v == n has no slot; already-home values are done
+            nums[i], nums[v] = nums[v], nums[i]
+        else:
+            i += 1
+    for i in range(n):
+        if nums[i] != i:
+            return i
+    return n
+```
+
+### Common mistake
+
+Advancing the cursor after a swap — writing `i += 1` unconditionally instead of only in the `else`
+branch. A swap hands the current position a brand-new value that has not been examined yet, and
+stepping past it abandons that value wherever it happens to have landed. On `[3, 0, 1]` the
+unconditional version swaps slot 1 into slot 0, steps to slot 2, and never notices that slot 1 now
+holds a 3 that displaced the 0 it was meant to place — the final scan then reports the wrong hole. The
+cursor must stay put until the value it is standing on is settled.
+
+The second mistake is dropping the `v < n` guard. The value n is legal and common, and `nums[n]` is
+one past the end — in Python that is an `IndexError`, and in C or Java it is an out-of-bounds write
+into whatever memory follows. This is not an edge case you can hope to avoid: `[0, 1]` contains no n
+and works, but `[1, 2]`, whose answer is 0, has n = 2 sitting right there in the data.
+
+### The cost of mutation — who it hurts, and can it be undone
+
+The array does not come back. This rung **permutes** it: values are moved between slots, so the
+caller's ordering is destroyed even though no value is created or lost.
+
+Who gets hurt:
+
+- **A caller that still needs the array.** Every value is still present, but at a different position.
+  Anything depending on position — a parallel array of labels indexed the same way, a previously
+  computed index, a slice boundary — is now silently wrong. Nothing throws.
+- **A concurrent reader.** This function writes to much of the array, and another thread reading it
+  mid-run sees a state where a value can legitimately appear twice or not at all. That is a data race,
+  and careful reading on the other side does not fix it.
+- **A read-only or shared buffer.** A read-only memory mapping faults; a copy-on-write page is
+  dirtied; a caller who passed a view into a larger array has that larger array scrambled too.
+
+**Can it be undone?** Not for free. A permutation is invertible in principle, but only if you recorded
+which swaps you made — and recording them costs O(n) memory, which defeats the entire point. Compare
+the sign-flip trick in `find-all-duplicates`, which only changes signs and never moves anything, so
+one pass of `abs` restores it exactly. Here there is no such inverse. The only honest ways to get the
+original array back are to copy it before you start (O(n) space, at which point the flag table is
+simpler and just as fast) or to accept the loss.
+
+Which is exactly why this rung, alone among the five, is the one this problem does **not** want. It is
+constant space, but so is the next one — and the next one does not touch the array at all. *An
+in-place trick is only worth its cost when there is no cheaper way to get the same guarantee*, and
+here there is.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** The placing pass is at most n cursor advances plus at most n swaps in total
+by the accounting argument above, and the reading pass is one more walk of n. Space is one index and a
+temporary.
+
+Use it when you need constant space *and* the values are a near-permutation *and* no arithmetic
+invariant is available — which happens when there are several missing values, or several duplicates,
+or the values are not summable. For this exact problem it is dominated by the arithmetic rungs below,
+which are constant space *and* leave the input alone. Its real value here is as practice: this is the
+same machinery `first-missing-positive` needs, where it genuinely is the best answer.
+
+---
+
+## Approach 4 — Subtract from the total
+
+### The idea
+
+*Placing values home is constant space, but it destroys the caller's array and still needs a second
+scan to locate the hole. Is there a way to name the missing number without looking for it at all?*
+Yes. The numbers 0 through n add up to a value you can compute from n alone: n(n+1)/2. The array
+contains all of them except one. Subtract what the array actually holds from what the complete set
+should hold, and what is left over is the missing number. This fixes the in-place rung's two
+weaknesses at once — the mutation and the second pass.
+
+### How to think about it
+
+Weigh the bag. You know what a complete set of these numbers weighs, because there is a closed-form
+formula for it. You put the actual bag on the scale and it comes out light. The difference is the
+weight of the one item that is not in it — and you never had to open the bag, sort it, or look for a
+gap. This is a *different kind of reasoning* from every rung above: those three all searched for an
+absence, and this one deduces it from a property of the whole. That switch, from searching to
+deducing, is the idea this problem exists to teach.
+
+The distinctness constraint is what makes it valid. If a value could appear twice, the sum would be
+off by that value too, and the difference would no longer name a single number.
+
+### Worked example
+
+Input: `nums = [3, 0, 1]`, n = 3.
+
+The complete set 0+1+2+3 = 3 × 4 / 2 = **6**.
+
+| Step | Value subtracted | Running total |
+|---|---|---|
+| start | — | 6 |
+| 1 | 3 | 3 |
+| 2 | 0 | 3 |
+| 3 | 1 | **2** |
+
+Answer 2. One pass, one integer of state, no second scan, and the array is never touched. Compare with
+the in-place rung on the same input: two swaps, a permuted array, and a second walk.
+
+### Code
+
+```python
+def missing_number_subtract_from_total(nums: list[int]) -> int:
+    n = len(nums)
+    total = n * (n + 1) // 2  # integer division: n*(n+1) is always even
+    for x in nums:
+        total -= x
+    return total
+```
+
+### Common mistake
+
+Computing the sum of the array first and then subtracting — `return total - sum(nums)` — is fine in
+Python, where integers are arbitrary precision, and is a genuine bug in Java, C++, C# or Rust. With
+n = 10⁵ the expected total is about 5 × 10⁹, which overflows a signed 32-bit `int` and produces a
+negative number; the subtraction then yields garbage. Subtracting *as you go*, as the code above does,
+keeps the running value bounded by n(n+1)/2 only at the start and shrinking thereafter — which helps
+but does not save you, because the initial `n * (n + 1) / 2` itself overflows at n ≈ 65,536 in 32-bit
+arithmetic. The real fixes in a fixed-width language are to use a 64-bit accumulator, or to interleave
+(`total += i - nums[i]` for each i, which never grows past n), or to use the XOR version below, which
+cannot overflow at all.
+
+The second mistake is writing `n * (n + 1) / 2` in Python with a single slash. That is float division:
+it returns `6.0`, and the function returns `2.0` instead of `2`. Comparisons against an integer answer
+still pass, so this survives testing and then fails when the result is used as an index.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** One pass, one subtraction per element, and one integer of state. The
+closed-form total is computed in constant time, which is the whole trick — you never enumerate the
+complete set, you just know what it weighs.
+
+This is the right choice when you want the shortest correct code, the input must survive, and you are
+working in a language where the intermediate value cannot overflow (or you have reached for a wide
+enough accumulator deliberately). It is also the one to derive on the spot if you have forgotten
+everything else, because Gauss's formula is easier to recall under pressure than any bit trick.
+
+---
+
+## Approach 5 — XOR the indices against the values
+
+### The idea
+
+*The running total is correct but it builds a number around n²/2 before subtracting anything, so a
+fixed-width integer can overflow long before the answer comes out. Is there an invariant that cancels
+just as cleanly but never grows?* Yes: XOR. Because `x ^ x = 0` and `x ^ 0 = x`, any value that
+appears an even number of times vanishes from a running XOR, and the operation does not care about
+order. Fold every index 0..n and every value together, and every present number appears exactly twice
+— once as an index, once as a value — and cancels. The missing number appears only as an index, so it
+is what survives. This fixes the sum's weakness: no intermediate value ever exceeds n.
+
+### How to think about it
+
+Imagine pairing everything up. Write down the n+1 candidate numbers 0, 1, …, n (these come from the
+indices, plus n itself which no index reaches). Then write down the n values the array actually holds.
+Every candidate that is present now appears on both lists, so it has a partner. The one missing
+candidate is on the first list with nobody to pair with. XOR is a machine that silently discards
+anything with a partner and keeps anything without one — you do not have to find the partners, sort
+the lists, or even know which numbers are involved. Pour everything in and the unpaired one falls out.
+
+The seed value matters and is easy to get wrong: the loop visits indices 0 through n−1, but the
+candidate range goes up to n. So `n` itself must be XOR'd in by hand at the start, because no index
+ever supplies it.
+
+### Worked example
+
+Input: `nums = [3, 0, 1]`, n = 3. The accumulator starts at 3 — the candidate the loop never visits.
+
+| Step | XOR'd in | Arithmetic | `acc` after |
+|---|---|---|---|
+| seed | n = 3 | — | 3 |
+| i = 0, value 3 | 0 and 3 | 3 ^ 0 ^ 3 | 0 |
+| i = 1, value 0 | 1 and 0 | 0 ^ 1 ^ 0 | 1 |
+| i = 2, value 1 | 2 and 1 | 1 ^ 2 ^ 1 | **2** |
+
+Answer 2. Trace what cancelled: the 3 from the seed met the value 3 at step 1; the 0 from index 0 met
+the value 0 at step 2; the 1 from index 1 met the value 1 at step 3. Only index 2 was left without a
+partner, because no value 2 ever arrived. One pass, one integer of state that never exceeds n, and the
+array is never touched.
+
+### Code
+
+```python
+def missing_number_xor(nums: list[int]) -> int:
+    acc = len(nums)  # index n is in the range 0..n but the loop never visits it
+    for i, x in enumerate(nums):
+        acc ^= i ^ x
+    return acc
+```
+
+### Common mistake
+
+Seeding the accumulator with `0` instead of `len(nums)`. The loop supplies indices 0 through n−1 and
+every value, so the candidate n is never introduced — and if n is the missing number, nothing detects
+its absence, while if n *is* present, its value XORs in unpaired and corrupts the result. On `[0, 1]`
+(n = 2, answer 2) the badly seeded version computes `0 ^ 0 ^ 0 ^ 1 ^ 1 = 0` and returns 0, which is
+present. The statement's second example is written to catch exactly this: *the gap is past the end of
+the array, and nothing inside the data points at it.*
+
+The second mistake is reaching for `+` or `-` where the code says `^`, out of muscle memory. `acc +=
+i + x` is not the sum solution and is not anything; it happens to produce the right answer on some
+inputs by coincidence, which makes it worse than a clean failure.
+
+### Complexity and when to use this
+
+**Time O(n), space O(1).** One pass with two XOR operations per element and a single accumulator. Every
+intermediate value is bounded by the largest number involved — never more than n, since XOR of numbers
+below 2^k stays below 2^k — so there is no overflow at any n, in any fixed-width type wide enough to
+hold n itself.
+
+This is the right choice for the follow-up as asked: linear time, constant space, the input untouched,
+and no arithmetic that can overflow. It is also the version that generalises to the harder relatives
+of this problem — "every value appears twice except one", "two values appear once" — where XOR's
+cancelling property does work a sum cannot. The one thing it does *not* do is survive a second missing
+value: one accumulator holds one unknown, and with two holes you get their XOR rather than either of
+them. If that is the question, go back to the flag table.
+
+---
+
+## The Overall Arc
+
+The principle every rung chases is *stop re-deriving what the constraints already handed you* — and
+this problem is where that principle splits into two genuinely different families. Sorting, the flag
+table and the in-place placement all belong to the first family: they **find** the hole by imposing
+structure until the absence becomes visible. Sorting pays n log n for an ordering the answer never
+reads; the flag table drops the ordering and indexes straight into a row of n+1 pigeonholes, which is
+linear but allocates a second array; the in-place rung notices that this second row is nearly the
+input itself — the values 0..n are already legal indexes — and collapses the two into one by sending
+each value home, buying constant space at the cost of permuting the caller's array irreversibly. That
+collapse is the same move that solves `find-all-duplicates` and `first-missing-positive`, and it is
+worth practising for its own sake. But here it is a trap, because the second family exists: since the
+values are **distinct** and exactly one is gone, the array is a complete set with a single hole, and
+any invariant of the complete set will name the hole without searching for it at all. Sum does it —
+n(n+1)/2 minus what you actually have — and XOR does it better, because the sum builds a number around
+n²/2 that a 32-bit accumulator cannot hold while XOR never exceeds n and cancels every paired value by
+its own algebra. So the ladder ends by *not* mutating anything: the last two rungs are constant space,
+single pass, and leave the input exactly as they found it, which strictly dominates the clever
+in-place trick two rungs below. That is the lesson to carry beyond this problem. The instinct to turn
+the array into its own lookup table is right and it is powerful, but it is a means, not a goal, and it
+always costs the caller's data — so before you spend that, ask whether the constraints have handed you
+something cheaper. Here they had: a promise of distinctness, which turns a search into a subtraction.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Sort and scan | O(n log n) | O(n) | Buys a visible gap with ordering work the answer never reads | The input is already sorted, or the values are not integers in a known range |
+| Table of flags | O(n) | O(n) | Linear time for a second array; input untouched | Allocation is fine, and especially when *several* numbers may be missing |
+| Place at own index | O(n) | O(1) | Constant space bought by permuting the caller's array irreversibly | You need constant space and no arithmetic invariant exists — practice for `first-missing-positive` |
+| Subtract from the total | O(n) | O(1) | Shortest code, no mutation — but the intermediate sum can overflow a 32-bit int | You want the two-line answer, in a language where the total cannot overflow |
+| XOR indices against values | O(n) | O(1) | Same as the sum with no overflow, at the cost of one non-obvious identity | The follow-up as asked: linear, constant space, input intact, any n |
+
+---
+
+## Interview Priority
+
+**Know cold: the XOR fold, and the sum.** They are the same idea — an invariant of the complete set
+compared against the array — and the interview is usually about producing one, then the other, then
+saying why the second is safer. Derive the sum first, because n(n+1)/2 is easy to state and
+obviously correct, then volunteer the overflow problem yourself rather than waiting to be asked: *"at
+n = 10⁵ the total is about 5 × 10⁹, which does not fit in a 32-bit int."* Then give XOR and say the
+one sentence that carries it: *"every present number appears once as an index and once as a value, so
+it cancels; the missing one appears only as an index."* Get the seed right — `acc` starts at n,
+because index n does not exist — and be ready for the follow-up family: *two numbers missing?* (one
+accumulator cannot separate two unknowns; go back to a table, or split by a differing bit) and *values
+not distinct?* (both arithmetic rungs collapse).
+
+**Worth naming in ten seconds: the flag table.** It is the version that survives the generalisations
+the arithmetic ones do not, and mentioning it shows you know the arithmetic trick has a domain rather
+than being magic.
+
+**Understand but do not drill here: sorting, and the in-place placement.** Sorting is the baseline
+worth one sentence of dismissal. The placement rung deserves more attention than its usefulness on
+*this* problem justifies, because it is the exact machinery `first-missing-positive` is built on — but
+study it there, where it is the intended answer, not here, where it destroys the caller's array to
+achieve what one subtraction achieves without touching it.
+
+---
+
+## Full Runnable Script
+
+Every approach in one file, checked against all three examples from the statement, both smallest legal
+inputs (`[0]`, missing n, and `[1]`, missing 0), and a case where the gap is at the very bottom, plus a
+randomised stress test that builds each array by deleting a known value from 0..n and shuffling — so
+every approach is checked against the answer the generator knows, not merely against each other. Each
+approach is handed **its own copy of the data**, because the placing rung rearranges the array it is
+given and the next approach would otherwise read corrupted input.
+
+There is no "no answer" case and no duplicates case: the statement promises exactly one missing value
+and promises the values are distinct, so neither situation is a legal input.
+
+```python
+"""The Number That Is Not There — every approach in one file, cross-checked.
+
+Run: python missing_number.py
+"""
+
+from __future__ import annotations
+
+import random
+from typing import Callable
+
+
+def missing_number_sort_and_scan(nums: list[int]) -> int:
+    ordered = sorted(nums)
+    for i, x in enumerate(ordered):
+        if x != i:
+            return i
+    return len(ordered)  # every slot matched, so the gap is n itself
+
+
+def missing_number_table_of_flags(nums: list[int]) -> int:
+    n = len(nums)
+    seen = [False] * (n + 1)
+    for x in nums:
+        seen[x] = True
+    for i in range(n + 1):
+        if not seen[i]:
+            return i
+    return -1  # unreachable: n + 1 candidates and only n values
+
+
+def missing_number_place_at_own_index(nums: list[int]) -> int:
+    """Destroys nums: every value < n is swapped into slot value."""
+    n = len(nums)
+    i = 0
+    while i < n:
+        v = nums[i]
+        if v < n and nums[v] != v:  # v == n has no slot; already-home values are done
+            nums[i], nums[v] = nums[v], nums[i]
+        else:
+            i += 1
+    for i in range(n):
+        if nums[i] != i:
+            return i
+    return n
+
+
+def missing_number_subtract_from_total(nums: list[int]) -> int:
+    n = len(nums)
+    total = n * (n + 1) // 2
+    for x in nums:
+        total -= x
+    return total
+
+
+def missing_number_xor(nums: list[int]) -> int:
+    acc = len(nums)  # index n is in the range 0..n but the loop never visits it
+    for i, x in enumerate(nums):
+        acc ^= i ^ x
+    return acc
+
+
+APPROACHES: list[tuple[str, Callable[[list[int]], int]]] = [
+    ("sort and scan", missing_number_sort_and_scan),
+    ("table of flags", missing_number_table_of_flags),
+    ("place at own index", missing_number_place_at_own_index),
+    ("subtract from total", missing_number_subtract_from_total),
+    ("xor", missing_number_xor),
+]
+
+
+def run_case(label: str, nums: list[int]) -> bool:
+    # Each approach gets its OWN copy: the placing rung rearranges what it is handed.
+    results = [(name, fn(list(nums))) for name, fn in APPROACHES]
+    agree = all(r == results[0][1] for _, r in results)
+    print(label)
+    print(f"  nums={nums}")
+    for name, r in results:
+        print(f"    {name:<20} -> {r}")
+    print(f"    all agree: {agree}")
+    return agree
+
+
+def main() -> None:
+    ok = True
+    ok &= run_case("example from the statement", [3, 0, 1])
+    ok &= run_case("the gap is past the end", [0, 1])
+    ok &= run_case("a longer array", [9, 6, 4, 2, 3, 5, 7, 0, 1])
+    ok &= run_case("smallest legal input, missing n", [0])
+    ok &= run_case("smallest legal input, missing 0", [1])
+    ok &= run_case("the gap is 0", [2, 1])
+    # There is no 'no answer' case here: exactly one of 0..n is always absent.
+    # Duplicates are impossible too — the statement promises distinct values.
+
+    random.seed(3)
+    checked = 0
+    for _ in range(500):
+        n = random.randint(1, 40)
+        pool = list(range(n + 1))
+        gap = random.choice(pool)
+        nums = [x for x in pool if x != gap]
+        random.shuffle(nums)
+        for name, fn in APPROACHES:
+            got = fn(list(nums))
+            if got != gap:
+                ok = False
+                print(f"  STRESS DISAGREEMENT {name} nums={nums} {got} != {gap}")
+        checked += 1
+    print(f"stress: {checked} random shuffles of 0..n with one value removed, all five "
+          f"approaches checked against the known gap")
+
+    print()
+    print("ALL APPROACHES AGREED ON EVERY CASE." if ok else "APPROACHES DISAGREED — see above.")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+### Output when run
+
+```
+example from the statement
+  nums=[3, 0, 1]
+    sort and scan        -> 2
+    table of flags       -> 2
+    place at own index   -> 2
+    subtract from total  -> 2
+    xor                  -> 2
+    all agree: True
+the gap is past the end
+  nums=[0, 1]
+    sort and scan        -> 2
+    table of flags       -> 2
+    place at own index   -> 2
+    subtract from total  -> 2
+    xor                  -> 2
+    all agree: True
+a longer array
+  nums=[9, 6, 4, 2, 3, 5, 7, 0, 1]
+    sort and scan        -> 8
+    table of flags       -> 8
+    place at own index   -> 8
+    subtract from total  -> 8
+    xor                  -> 8
+    all agree: True
+smallest legal input, missing n
+  nums=[0]
+    sort and scan        -> 1
+    table of flags       -> 1
+    place at own index   -> 1
+    subtract from total  -> 1
+    xor                  -> 1
+    all agree: True
+smallest legal input, missing 0
+  nums=[1]
+    sort and scan        -> 0
+    table of flags       -> 0
+    place at own index   -> 0
+    subtract from total  -> 0
+    xor                  -> 0
+    all agree: True
+the gap is 0
+  nums=[2, 1]
+    sort and scan        -> 0
+    table of flags       -> 0
+    place at own index   -> 0
+    subtract from total  -> 0
+    xor                  -> 0
+    all agree: True
+stress: 500 random shuffles of 0..n with one value removed, all five approaches checked against the known gap
+
+ALL APPROACHES AGREED ON EVERY CASE.
+```

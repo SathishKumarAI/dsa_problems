@@ -35,8 +35,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Trying both meanings for every star is exponential in the number of stars, and most of those branches differ only in a count nobody can distinguish later. What actually matters at any point is how many opens are outstanding — so tracking the smallest and largest that count could be collapses the entire tree into two integers.",
-  arc:
-    "Two rungs, two entirely different mental models, and both are worth owning. Trying both meanings of every star is exponential and obviously correct. The linear version tracks a RANGE of possible open counts — a low and a high — where a star pushes the low down and the high up; the answer is valid when the range can still reach zero and the high never goes negative. Clamping the low at zero is the subtle step, because a negative low would mean unmatched closers that the stars cannot undo. That 'carry an interval of possible states instead of enumerating states' idea is the transferable one, and it reappears whenever a wildcard makes the state space branch.",
+  arc: "Two rungs, two entirely different mental models, and both are worth owning. Trying both meanings of every star is exponential and obviously correct. The linear version tracks a RANGE of possible open counts — a low and a high — where a star pushes the low down and the high up; the answer is valid when the range can still reach zero and the high never goes negative. Clamping the low at zero is the subtle step, because a negative low would mean unmatched closers that the stars cannot undo. That 'carry an interval of possible states instead of enumerating states' idea is the transferable one, and it reappears whenever a wildcard makes the state space branch.",
   approach:
     "Sweep left to right carrying two numbers: `low`, the fewest unmatched opens any legal reading could have, and `high`, the most. An '(' raises both. A ')' lowers both. A '*' lowers `low` (read it as ')') and raises `high` (read it as '('), and the empty reading is covered because the range spans it. If `high` ever goes negative there are more closes than any reading can match, so the answer is false immediately. Clamp `low` at zero — a reading that dipped below zero was already illegal and must not drag the range down. The string is valid when `low` returns to zero, meaning some reading closed everything it opened.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -99,7 +98,7 @@ export const problem: Problem = {
     {
       name: "Try both meanings for every star",
       summary:
-        "Recurse over the string; at each '*' branch three ways — open, close, or nothing — and report whether any branch balances.",
+        "Recurse over the string, branching three ways at each star, as an open bracket, a close bracket, or nothing, and report whether any branch balances. It is the definition of 'can be read as' and it is the version that proves the answer, and it explores 3 to the power of the star count, so twenty stars is already billions of readings.",
       complexity: { time: "O(3^n)", space: "O(n)" },
       python: `def walk(s: str, at: int, open_count: int) -> bool:
     if open_count < 0:

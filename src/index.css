@@ -342,16 +342,32 @@
     transition-timing-function: var(--default-transition-timing-function);
   }
 
+  /* Keyboard parity: a surface that lifts under the pointer lifts under the
+     focus ring too. Without this the only person who could not see which card
+     was about to open was the one navigating by Tab — the ring said "here",
+     and nothing else moved. */
   a[class*="bg-card"]:hover,
-  button[class*="bg-card"]:hover {
+  button[class*="bg-card"]:hover,
+  a[class*="bg-card"]:focus-visible,
+  button[class*="bg-card"]:focus-visible {
     transform: translateY(-1px);
     box-shadow: var(--shadow-lift);
+  }
+
+  /* …and it goes back DOWN under the press, which is the other half of the
+     gesture: a surface that only ever rises has no moment of contact. */
+  a[class*="bg-card"]:active,
+  button[class*="bg-card"]:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-panel);
   }
 
   /* …and the raised surface lifts from where it already is, not down to the
      resting shadow. */
   a[data-surface="raised"]:hover,
-  button[data-surface="raised"]:hover {
+  button[data-surface="raised"]:hover,
+  a[data-surface="raised"]:focus-visible,
+  button[data-surface="raised"]:focus-visible {
     box-shadow:
       var(--shadow-raised),
       0 28px 56px -30px rgb(0 0 0 / 0.95);
@@ -374,12 +390,67 @@
     box-shadow: 0 6px 24px -14px var(--primary);
   }
 
+  /* …and it answers the pointer and the Tab key by burning a little brighter.
+     The button already carries `transition-all`, so this rides the default
+     duration and curve rather than naming a third one. */
+  [data-slot="button"][data-variant="default"]:hover,
+  [data-slot="button"][data-variant="default"]:focus-visible,
+  .btn-glow:hover,
+  .btn-glow:focus-visible {
+    box-shadow: 0 10px 30px -12px var(--primary);
+  }
+
+  /* An icon that points the way moves when the row it belongs to is pointed
+     at — one nudge, written once, so a dozen components do not each invent it.
+     Transform and colour only: it composites, and it never reflows the row it
+     sits in (DESIGN.md — never animate layout in a list).
+
+     The whole thing lives HERE rather than as `transition-colors` +
+     `translate-x-0.5` on the element, because a `transition-*` utility beats
+     @layer base whatever the specificity and would silently drop `transform`
+     from the property list — the same trap that stopped the card lift running
+     for months. And the resting state is a COLOUR (`--dim`, 5.8:1), not an
+     opacity: a faded icon is invisible, not quiet. */
+  [data-affordance="nudge"] {
+    color: var(--dim);
+    transition-property: transform, color;
+    transition-duration: var(--default-transition-duration);
+    transition-timing-function: var(--default-transition-timing-function);
+  }
+
+  .group:hover [data-affordance="nudge"],
+  .group:focus-visible [data-affordance="nudge"],
+  .group:focus-within [data-affordance="nudge"] {
+    color: var(--foreground);
+    transform: translateX(3px);
+  }
+
   /* The surfaces nobody draws, which ship with browser defaults that belong to
      no design system — and are the cheapest tell that a page was assembled
      rather than built. */
   ::selection {
     background-color: color-mix(in oklab, var(--primary) 32%, transparent);
     color: var(--foreground);
+  }
+
+  /* Anchors must not land under the bar that is covering the landing site.
+     Below `md` the shell's own bar is `sticky top-0` and measured 61px tall,
+     and every in-page jump — the approach ladder's "01 Brute Force" links, the
+     learn page's contents rail, a markdown heading — scrolled its target to
+     y=0, i.e. entirely beneath it. Measured on a 390px phone: heading top 0,
+     covered 61px.
+
+     `scroll-padding-top` on the scroll container is the fix for ALL of them at
+     once, rather than a `scroll-mt-*` retrofitted onto every anchor target and
+     forgotten on the next one. It is honoured by `scrollIntoView` as well as
+     by hash navigation, which is what the contents rail uses.
+
+     Scoped to the width where the bar exists: above `md` there is no top bar,
+     and padding the scroll there would throw anchors 72px low for no reason. */
+  @media (width < 48rem) {
+    html {
+      scroll-padding-top: 4.5rem;
+    }
   }
 
   html {

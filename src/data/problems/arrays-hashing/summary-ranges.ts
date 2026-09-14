@@ -40,8 +40,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Collecting the break positions still needs a second pass and a list of positions that grows with the number of runs. But a range can be written down the instant its break is seen, so nothing has to survive the pass except the value the current run started at — one number of state, and the output is built in the same walk that finds the runs.",
-  arc:
-    "The useful observation arrives before any code: in a sorted array a consecutive run is exactly a maximal block where value minus index is constant. Once that is said, the bucketing rung and the boundary-scan rung are two ways of using the same fact, and the final version does not even need the arithmetic — it simply walks until the next value is not one more than the current, which is the same test written locally. The general habit is to look for an invariant that is constant within a group and changes between groups; it turns grouping problems into scans. The corner cases are the empty array and a single-element run, whose formatting differs — a detail worth writing down first, because it is where the output format bites.",
+  arc: "The useful observation arrives before any code: in a sorted array a consecutive run is exactly a maximal block where value minus index is constant. Once that is said, the bucketing rung and the boundary-scan rung are two ways of using the same fact, and the final version does not even need the arithmetic — it simply walks until the next value is not one more than the current, which is the same test written locally. The general habit is to look for an invariant that is constant within a group and changes between groups; it turns grouping problems into scans. The corner cases are the empty array and a single-element run, whose formatting differs — a detail worth writing down first, because it is where the output format bites.",
   approach:
     "One walk with an anchor. At index i, remember nums[i] as the start of a run, then advance i while the next value is exactly one more than the current one. When that stops, i sits on the last value of the run: emit the bare start if start equals nums[i], otherwise start->nums[i]. Step past it and begin the next run. Because the inner advance never revisits an index, the two loops together touch each element once. The empty array simply never enters the outer loop, and a lone value is a run whose inner loop advances zero times.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -85,7 +84,7 @@ export const problem: Problem = {
     {
       name: "Paint the number line",
       summary:
-        "Mark every present value on a flat line spanning the smallest value to the largest, then walk that line from end to end and read off the painted stretches.",
+        "Mark every present value on a flat line spanning the smallest value to the largest, then read the runs off it. Independent of how many values there are and dependent on the SPREAD between them — one array spanning -10^9 to 10^9 for three numbers, which is why the constraint on the values, not their count, rules this out.",
       complexity: { time: "O(hi - lo)", space: "O(hi - lo)" },
       python: `def summary_ranges(nums: list[int]) -> list[str]:
     if not nums:
@@ -228,7 +227,7 @@ export const problem: Problem = {
     {
       name: "Collect the break points",
       summary:
-        "First pass records every index where the chain breaks; second pass pairs consecutive break points into ranges. No values are copied, only positions.",
+        "One pass records every index where the chain breaks; a second pairs consecutive break points into ranges. No values are copied and the memory is proportional to the number of runs rather than the input — close to the answer, and still two passes where the walk can emit a range the moment it ends.",
       complexity: { time: "O(n)", space: "O(k) for k runs" },
       whyNow:
         "The run lists hold every element a second time when only two of each run — its first and last value — ever reach the output. Recording the positions where the chain breaks keeps one number per run instead of one per element.",

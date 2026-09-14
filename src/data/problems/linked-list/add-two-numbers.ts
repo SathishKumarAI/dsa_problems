@@ -32,6 +32,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Padding destroys both input lists and spends a whole pass writing zeros just to make the lengths match. Treating a missing node as a zero inside the same loop needs neither the pass nor the damage, and it writes only the answer.",
+  arc: "Every rung is school addition — one column at a time, least significant first, carrying the tens digit — so the ladder is really a list of things you can stop keeping. Reading each list into an integer keeps the whole number, which is why it dies at the twentieth digit rather than the hundredth: a long holds nineteen. Digit arrays never build the number, but they keep three copies of data the two lists already hold in exactly the right order. Recursion drops the arrays and keeps a frame per digit instead. Padding drops the frames and keeps the damage — a pass writing nothing but zeros, into inputs it does not own. What survives is the loop worth knowing cold: a dummy head, a running carry, and a condition reading l1 or l2 or carry. A missing node is a zero, not the end, and that trailing carry is a real digit, because 999 plus 1 is four nodes long. The same dummy-and-carry shape solves the most-significant-first variant, once a stack or a reversal lines the digits up.",
   approach:
     "Walk both lists together behind a dummy head. Each step sums whatever digits are still available plus the carry, appends the ones digit of that sum as a new node, and keeps the tens digit as the next carry. The loop condition is l1 or l2 or carry — that third term is what lets the answer be longer than either input. Returning dummy.next means the first node needs no special handling.",
   complexity: { time: "O(n + m)", space: "O(1) beyond the answer" },
@@ -80,26 +81,6 @@ export const problem: Problem = {
     }
     return dummy->next;
 }`,
-  walkthrough: [
-    {
-      cells: { values: [2, 4, 3], marks: { 0: "focus" }, labels: { 0: "l1" } },
-      caption:
-        "342 + 465, both written backwards. The two heads are ones digits, so add them straight across: 2 + 5 = 7, carry 0.",
-    },
-    {
-      cells: { values: [7], marks: { 0: "done" } },
-      caption: "First answer node is 7. Step both inputs forward.",
-    },
-    {
-      cells: { values: [7, 0], marks: { 1: "focus" } },
-      caption: "4 + 6 = 10 — write the 0, keep a carry of 1.",
-    },
-    {
-      cells: { values: [7, 0, 8], marks: { 2: "focus" } },
-      caption:
-        "3 + 4 + carry 1 = 8. Both lists are empty and the carry is 0, so the loop stops: [7,0,8], which is 807.",
-    },
-  ],
   alternatives: [
     {
       name: "Turn both lists into numbers",
@@ -247,7 +228,7 @@ export const problem: Problem = {
       whyNow:
         "The two arrays are a third copy of an input the lists already hold in exactly the right order. Recursion adds one column per call and spills any carry into the node ahead, so nothing gets copied.",
       summary:
-        "Add the second digit into the first node, spill anything over nine into the next node, recurse on the tails. Neat and in place — and one stack frame per digit.",
+        "Add the second list's digit into the first node, push anything over nine into the next node as a carry, and recurse on both tails. Compact, and it mutates one input in place. It costs a stack frame per digit, and when one list runs out first the recursion has to grow new nodes mid-descent, which is where this version usually goes wrong.",
       complexity: { time: "O(n + m)", space: "O(n + m) stack" },
       python: `def add_two_numbers(l1, l2):
     if l1 is None and l2 is None:

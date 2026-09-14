@@ -30,6 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Flood filling each interior region and asking afterwards whether it touched the border means carrying a verdict through the traversal and undoing work when the answer turns out to be no. Starting from the border inverts the question into one with no verdict to carry: everything reached is safe, everything else is captured.",
+  arc: "Both rungs are linear, and the whole difference is in what the traversal has to carry. Filling each interior region and asking afterwards whether it touched the border means every fill collects its cells and drags a verdict along, then goes back and rewrites them when the verdict says survive. Starting from the border removes the verdict entirely: reachability from the border IS the definition of not being enclosed, so everything the fill reaches is safe, everything it misses is captured, and one sweep at the end decides it with nothing to undo. That inversion — solve for the complement when the complement needs no per-case bookkeeping — is the transferable part. The temporary third mark is what keeps the final sweep to a single pass: safe cells carry it, captured cells do not, and one walk restores the one and flips the other. Pacific-atlantic water flow is this arc run twice, once from each shore.",
   approach:
     "Run a flood fill from every 0 on the border, marking each cell it reaches with a temporary value. Those are exactly the regions that survive, because reachability from the border is the definition of not being enclosed. Then sweep the grid once: any remaining 0 was unreachable, so it is captured and becomes 1, while every temporary mark is restored to 0. Inverting the question is the whole idea — it replaces a per-region verdict with a single global one.",
   complexity: { time: "O(rows · cols)", space: "O(rows · cols)" },
@@ -118,7 +119,7 @@ vector<vector<int>> solve(vector<vector<int>> board) {
     {
       name: "Fill each region and check afterwards",
       summary:
-        "Flood fill every region of 0s, collecting its cells and noting whether any of them sat on the border, then flip the regions that did not.",
+        "Flood fill every region of 0s, collect the cells of each one, and note whether any of them sat on the border, then flip the regions that did not. It answers the question in the direction it was asked, and it holds a whole region in memory to decide it. The border-first version asks the same question backwards and needs no cell list at all.",
       complexity: { time: "O(rows · cols)", space: "O(rows · cols)" },
       python: `def collect(grid: list[list[int]], seen: list[list[bool]], r: int, c: int, cells: list[tuple[int, int]]) -> bool:
     if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[0]):

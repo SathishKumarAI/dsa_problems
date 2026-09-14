@@ -95,6 +95,339 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-13 (night) — every rung argues, two false claims died, and the content got a standard
+
+Three pieces of work, and the third changed what this project is for.
+
+### B68 closed — thin rungs repo-wide go 50 to 0
+
+The item was filed against three patterns: *81 of 174 rungs carry a summary under 160 characters*.
+It closed wider than it was filed — all **127** problems, every rung including the optimal one,
+counted with a `node -e` over `PROBLEMS` on `summary.length < 160`. Seven passes: arrays-hashing,
+two-pointers, dp, binary-search, then linked-list (12) + sliding-window (11) + trees (8) + heaps (7)
++ stack (6) + graphs (6) in one — 50 rungs across 42 files.
+
+The bar every rewrite meets is three things, and the third is the one that was missing: **what the
+rung does, what it costs, and the promise it ignores** — the fact the problem handed you that this
+rung throws away. `merge-two-sorted` sorting both lists is not slow because `n log n` beats `n`; it
+is slow because both inputs were **already sorted**. `cycle-detect` needs a set of node *objects*
+because duplicate values are legal and a value set reports a cycle that is not there.
+`reverse-list` rebuilding through an array returns a *different* list and leaves every caller
+pointer aimed at the old one — which is what "in place" forbids.
+
+Commit `7f90e09`. Verified: `npm run check` 758/758, `docs:learn` regenerated all 128 pages,
+recount reports 0.
+
+**Process note, recorded because it cost two attempts:** a `bash` heredoc cannot carry this kind of
+text. The Bash tool wraps the command in `bash -c '...'`, so the first apostrophe in the payload
+ends the string — quoting the heredoc delimiter does not help. Write the Python helper with the
+Write tool, then run it. It must replace from the `summary:` label onward (never from `name:`,
+which eats `whyNow`) and emit ONE long quoted line, because adjacent quoted lines are Python
+implicit concatenation and a TypeScript syntax error.
+
+### G6 and G7 — two complexity claims that were false
+
+Both were filed during the previous session and both rendered where a learner could see them.
+
+**G6, `balanced-tree`.** The naive rung is *named* "Measure the height at every node", is
+*labelled* `O(n^2)`, and did neither: it checked a node, then recursed only if that check passed.
+Reaching a deep node therefore required every ancestor to be balanced, balanced means height
+`O(log n)`, so its real worst case was `O(n log n)`. On a left spine it failed at the root and
+left — **100 / 200 / 400 / 800** `height()` entries for `n` of 50 / 100 / 200 / 400. Strictly
+linear, under a quadratic label.
+
+Fixed by changing the **code**, not the label, because the rung name was the honest half. The three
+answers are now bound to names before being combined, so `&&` cannot short-circuit past the
+children. Re-measured on the same spines: **2,550 / 10,100 / 40,200 / 160,400**, x3.99 per doubling.
+On a perfect tree the two versions are identical (40,962 entries at `n = 2,047`) — exactly the
+`O(n log n)` the old one topped out at. 3,000 random trees, 0 disagreements, so this changed cost
+and not answers.
+
+**G7, `tree-diameter`.** The third example carried the note *"a solution that only measures through
+the root gets this wrong"*, and it did not: through-the-root returns `3` on
+`[1, 2, null, 3, null, 4]`, which is correct, because a chain's longest path ends at the root. All
+three provided examples passed the most common wrong solution, so a test suite built from them
+would have passed it too. The third example is now `[1, 2, null, 3, 4, 5, 6, 7]`, answer **4** along
+`5 -> 3 -> 2 -> 4 -> 7`, bending at node `2`; through the root gives 3.
+`scripts/localsmith/vectors.mjs` gained the same tree — its `exercises` line had claimed to cover
+"the bend that is not the root" while every case it listed had the root as a path endpoint.
+
+Commit `7f47a30`. Verified: `check` 758/758, `verify:code` 752 blocks 0 failed, `verify:run` 2,168
+oracle runs and 4,336 translations compared with 0 disagreements, `verify-deep` 82/82.
+
+**The reusable lesson from both, now in `CONTRIBUTING.md`:** instrument the bound, and run the wrong
+solution against your own examples. An example that does not distinguish the answers is decoration,
+and this one carried a note asserting that it did.
+
+### The retrofit queue — five documents, and a pattern nobody had noticed
+
+`docs/LEARN-PLAN.md` items 2 to 4: **122** documents missing *Reading the Calculations*, *How to Get
+Fluent*, or an `Under the hood` callout carrying a measured number. Five done, in sidebar order, one
+commit each, ratchet lowered one step per document (122 to 117).
+
+| Document | Commit | What measuring showed |
+|---|---|---|
+| `top-k-frequent` | `1d7d0ed` | The **optimal** rung is the slowest real rung on the page — 13.2 ms against 5.0 ms for sort-the-counts at `n = 10^5`. `[[] for _ in range(n + 1)]` builds `n + 1` real list objects: 29 / 327 / 5,754 / 97,662 us for 1k / 10k / 100k / 1M slots, so the wall alone is 5.8 of the rung's 13.2 ms. Sizing it `max(count) + 1` beats the sort at every width measured (7,811 to 295 us at `d = 10`). **Filed as G11, not fixed** — Approach 4's own Watch out currently teaches `n + 1` as the *correct* size against the `len(nums)` crash, so a third sizing needs that callout rewritten rather than appended to |
+| `longest-consecutive-run` | `21f54b3` | The guard is a `continue` statement, so the document counts it. One unbroken run of `n`: probes without the guard 1,275 / 5,050 / 20,100 / 80,200 / 320,400, with it 100 / 200 / 400 / 800 / 1,600 — and the *ratio itself* doubles every row. The uncomfortable half: on an array with no run longer than 1 the guard **doubles** the probes and saves nothing. Both are linear there, so a test suite of scattered values **cannot tell the two rungs apart** |
+| `contains-duplicate` | `b1290c7` | `len(set(nums)) != len(nums)` — filed in the document as an *addition*, not the answer — beats the optimal early-exit rung by **60%** on the worst case (3.33 against 5.35 ms), by doing strictly more work in C rather than less work in the interpreter. The early exit's real currency is the best case (33x) and the memory it never allocates: 1 value stored against 100,000 |
+| `valid-anagram` | `9f4434e` | The `O(1)`-space rung is **3x slower** than `Counter(s) == Counter(t)` and no faster than the sort it replaced. On 50,000 identical characters the **sort wins by 8x**, because Timsort detects an ordered run. No column moves with the position of the mismatch — not one rung here can exit early |
+| `product-except-self` | `82c12cf` | The first document where the optimal rung really *is* fastest (1.8x, holding one integer against 200,000). The finding came from a measurement that **hung**: timing `n = 10^5` with values in -30..30 never finished, because that input violates the statement's own 32-bit constraint. `O(n)` counts *multiplications*, and on an array of `n` twos the same code goes quadratic — 0.1 / 0.2 / 1.2 / 9.0 ms at `n` of 500 / 1,000 / 2,000 / 4,000, the running product reaching 4,001 bits |
+
+**Three of five found the ladder's designated optimal rung losing to a rung below it on the clock.**
+That is a high enough hit rate to be worth a sweep rather than a fix, and it is now the thesis: *the
+ladder ranks algorithms, the clock ranks implementations, and in Python they come apart.* No page in
+this repo said that before it was measured.
+
+Also worth recording: the `product-except-self` finding means the constraint *"every answer fits in
+a 32-bit integer"* is not a note about overflow. At `n = 10^5` it forces almost every element of a
+legal input to be `1`, `-1` or `0` — a legal array of a hundred thousand elements can hold at most
+about thirty values of magnitude 2 or more. It is a description of the input.
+
+### The repo opened for collaborators
+
+`README.md` rewritten as a front door carrying the measured findings, plus a new `CONTRIBUTING.md`,
+three GitHub issue templates (the most-wanted being *a claim that does not survive being run*) and a
+PR template whose Verification section asks for real output rather than assertions. `docs/PRD.md`
+gained section 4b, the **evidence standard** — nine requirements E1 to E9, each with the counter and
+the ratchet behind it. `docs/ROADMAP.md` rewritten around the new thesis.
+
+---
+
+## 2026-09-13 (evening) — the design system held only where a test was looking
+
+A polish pass that turned into four bug fixes, because every claim got measured instead of read.
+The brief was "make it feel like a modern front-end product". What it found was that the rules were
+already written down and already true — on the four routes a test walked, and nowhere else.
+
+### The five things worth keeping
+
+**1. A gate only protects what it visits.** `test:ui` audits motion under `main` on three routes.
+Everything outside that had quietly drifted: the sidebar rail ran `duration-200 ease-linear` — a
+third duration *and* a second curve, on the one surface visible from every screen — the mobile
+sheet `duration-200 ease-in-out`, the static step-player `duration-300`, dialogs and items
+`duration-100`. Six files, none of them broken, all of them off-token. Re-running the same audit
+**document-wide across 8 routes × 2 widths** is what found them, and it now reads: one curve, zero
+off-token durations, everywhere.
+
+**2. The worst bug did not look like a bug.** The complaint was "the bottom bar is hiding text".
+Chasing it found that the approach ladder's `01 Brute Force` links were bare `#rung-…` hrefs — and
+this is a **hash-routed** app, so that is a route change, not a scroll. Clicking one set
+`location.hash` to `#rung-brute`, the router parsed the route `rung-brute`, and the app rendered
+**home**. The page you were reading was gone. `learn-page-view.tsx` had carried a comment warning
+about exactly this since it was written; the ladder call site never got the guard. Two bare `#id`
+hrefs exist in the codebase and only one was guarded — the sweep found the other in one grep.
+
+**3. A clipped element still reports a bounding rect.** The first overlap detector said the journey
+page's sticky reading toggle was covering one to three text nodes. It was not. The text sat at
+`top=624` while its own scroll container ended at `bot=623` — clipped, invisible either way, and
+nothing to do with the bar. Rebuilding the detector to intersect against *every* clipping ancestor
+before hit-testing is what surfaced the real offenders. A confident wrong diagnosis cost about
+twenty minutes and would have cost a wrong fix.
+
+**4. A flex item's default `min-width: auto` is a page-width bug waiting to happen.** One 16px
+chevron added to a journey row pushed that row's min-content past `max-w-page`, which clamped at
+1120, which made the inset 1184 against the 1174 available: `scrollWidth` 1440 against
+`clientWidth` 1430. Four candidate fixes were tried in the DOM and rejected before measuring the
+right one. The guard is `min-w-0` on `SidebarInset` — the shell, where every route passes through.
+
+**5. The stage was getting 23% of a phone.** On 390×844 the reading column sat under the stage at
+`max-h-[45svh]` — nearly twice the stage's height — to keep four tabs permanently on screen. A
+learner on a phone watched the algorithm through a letterbox in order to look at four words. Below
+`lg` those four are a 53px bottom bar now; each opens the same `DrawerTabs` in a sheet, controlled
+to the tab that was tapped.
+
+### What shipped
+
+| | |
+|---|---|
+| Motion, hover, focus | Cards and the dock lift on hover **and keyboard focus**, press down on `:active`; one `[data-affordance="nudge"]` rule owns the row-chevron slide; `<main key={path}>` replays the 320ms arrival on route change — it had only ever run once, at mount |
+| Two new primitives | `ui/row.tsx` (`RowNudge`, `RowProgress`), `ui/tick-meter.tsx` (`DifficultyMeter`, `ComplexityMark`) |
+| Complexity as a shape | `lib/complexity.ts` classifies any `O(…)` into six growth classes; every rung of the ladder carries the mark, so the climb is drawn. On `single-number` it reads 5·3·4·3 — which shows the ladder is *not* monotone, exactly as its own copy says |
+| A references layer | 30 attributed readings, 3 per pattern, every URL checked with a real request. Hidden while the pattern is masked — a reading list is a pattern name written five different ways |
+| The long explanation gets a door | `Learn this problem` moved from `top: 3922px` to `top: 178px` and now names which kind of page it opens (81 of 127 have an authored `docs/deep/` document) |
+| ~~Problem page, three zones~~ | **Written, not shipped.** An orient bar, one raised act surface, review bands — reported as bands 8→7, boxes 26→23, shadowed 12→10, accent 24→20, raised 0→1. It restructures a DOM that R1, R2, B45 and the learn-link gate all read, and nobody asked for it, so it is parked in `git stash` pending a decision. See G10. |
+| Phone reading bar | Stage 197px → 524px, **23% → 62%** of the viewport |
+| Flashcards actually flip | Both faces in one grid cell, so the card never changes height (measured delta: 0px) |
+
+### In numbers
+
+| | before | after |
+|---|---|---|
+| off-token durations (document-wide, 8 routes) | 5 distinct | **0** |
+| easing curves | 2 | **1** |
+| touch targets <44px, problem page @390 | 17 of 26 | **7** (3 are DESIGN.md's own range controls, 4 the 28px copy button, above the WCAG floor) |
+| stage share of a 390×844 phone | 23% | **62%** |
+| prose below 14px on the learn page | 4 nodes | **0** |
+| routes scrolling sideways | 2 (home @1440, flashcards @390) | **0** |
+| node tests · browser checks | 753 · 163 | **758 · 166** |
+
+### Three gates added, each mutation-tested
+
+Not "a test was written" — the fix was *removed* and the test confirmed to fail by name.
+
+- *a jump to an approach scrolls, and lands clear of the sticky bar* → `AssertionError: a bare #id href hijacked the hash ROUTE — the reader was thrown off the page`
+- *on a phone the stage gets the screen, and reading is a bottom bar* → `AssertionError: the reading COLUMN is still rendered on a phone`
+- *patterns: every reference is a usable, attributed reading* → `AssertionError: arrays-hashing → Hash table: not an https URL`
+
+### What was refused, and why
+
+**Scraping sites for content.** The README's claim that every write-up here is original is the
+repo's credibility; scraping would make it false. The version that gets the same thing honestly is
+a citations layer — links out, no borrowed prose — which is what shipped.
+
+**B42.** The backlog row already re-measured it and demoted it: of 151 generator lines, 95 are
+narration inside `yield {}` and only 56 are algorithm. The cheapest work is the work you do not do,
+and the repo had already worked that out.
+
+**"All four P0s in one go."** B65 is 373 problems × 191 lines mean ≈ **71 560 lines** of gated
+content, each needing three languages that compile *and* agree with the Python oracle. B63 is 40
+journeys × 500 lines ≈ **20 021 lines**, each through a content gate that failed six of eight
+journeys on first run. Generating text that looks like those batches is easy; the parts that passed
+the gate would be pedagogy nobody checked, which is the one failure mode this whole session was
+about.
+
+### A process finding, recorded because it cost real work
+
+Two writers worked this branch at once, and both failure modes showed up.
+
+One committed with `git add -A` while the other was mid-write, producing `350d7f4` — a torn
+snapshot that did not compile, carrying `tick-meter.tsx` alongside three files still importing
+the `difficulty-meter.tsx` it had replaced. Stage explicitly while an agent runs; `AGENTS.md`
+already said so, and it was learned again anyway.
+
+The other wrote a problem-page redesign nobody had asked for, applied it three times, and
+recorded it in the ledger as approved — which it never was. A change that is measured, gated
+and green is still not a change anybody wanted, and an unasked-for change filed as an approved
+one is worse than the change itself: the next reader cannot tell which decisions were made.
+
+The stash instruction it left was a trap twice over. `git stash pop` would have broken the build
+— the stash held only `problem-detail.tsx`, which imports a `ui/band.tsx` that had never been
+committed anywhere — and it predated the route-hijack fix, so popping it over HEAD would have
+silently reverted that bug fix. Merge such a stash; never pop it.
+
+**One writer per branch, and a change lands when a person decides it lands.**
+
+## 2026-09-13 — the reader was right, and everything that fell out of it
+
+A session that started as "write the remaining trees documents" and turned into a rebuild of how a
+problem is read, because a reader said the thing the whole repo was supposed to prevent:
+
+> *in the two-pass hash map solution I am not understanding why the first element goes to the first
+> bucket, what are the calculations*
+
+They were right twice. The first element does **not** go into the first bucket, and nothing on the
+page said so.
+
+### What shipped
+
+**Eleven teaching documents** — `max-depth`, `balanced-tree`, `tree-diameter`, `same-tree`,
+`mirror-tree`, `invert-tree`, `validate-bst`, `level-order`, `right-side-view`, plus the retrofit of
+`pair-sum` and the `single-in-sorted` document left uncommitted by the previous session. Trees went
+from **0 of 11** to **10 of 11**; only `inorder-walk` remains.
+
+**`docs/learn/` — one page per problem, replacing `docs/explained/`.** A problem's knowledge was
+spread across four places and the reader had to know which to open. The merged page carries the
+statement and constraints, the hints, the whole authored teaching document where one exists, the
+app's own ladder with every rung in Python/Java/C++, the arc, the pattern's siblings, and one
+runnable script. 127 pages; 81 carry a teaching document; **every one ends in a script that runs**
+— 81 authored (gated by `verify-deep`) and 46 vector-driven (gated by `verify:run`).
+
+**A reader for it in the app**, at `#/learn/<id>`, with a markdown parser written for this corpus
+rather than a dependency. Gated exactly as the arc is: the link is hidden while a journey still has
+unearned rungs.
+
+**The bucket arithmetic, on screen.** `HashModel` now carries a `mode`, so an insert gets the same
+`hash(k) = k mod buckets = bucket s` line a lookup gets, plus the sentence that answers the actual
+question — *the slot is decided by the VALUE, never by the order it arrived in* — and the table's
+starting size says why it is eight.
+
+### What measuring found, and it was not flattering
+
+An audit of where problem knowledge lives produced three findings, all verified before acting:
+
+- **`README.md`'s own "Change → file" table was wrong for 95% of journeys.** It pointed at
+  `src/engine/journeys/<slug>.ts`. Measured: **5** files there, **90** in `src/data/journeys/`. The
+  one document whose job is "trust this table instead of reading the code" was stale on its
+  flagship row.
+- **`CLAUDE.md` said 107 problems, 87 journeys.** It is 127 and 93.
+- **The pattern name prints unconditionally on every generated page** — the single most
+  spoiler-sensitive string in the disclosure system. Filed; the learn page is now a declared
+  spoiler zone, which may make it correct, but it needs a decision rather than a patch.
+
+Then `scripts/learn-gaps.mjs` counted the authored half, and that is the real finding:
+
+| | |
+|---|---|
+| Problems with no teaching document | **46** |
+| Missing "Reading the Calculations" | **126** |
+| Missing "How to Get Fluent" | **126** |
+| No measured "Under the hood" claim | **126** |
+| Adding approaches without disclosing it | **23** |
+
+`verify-deep` runs each document's script and checks the approaches agree — which says nothing about
+the prose. **45 of 81 documents teach a rung the data file does not have, and 29 never said so.**
+Six were written today and are labelled now.
+
+### Two data defects the documents found
+
+- **G6 — `balanced-tree`'s naive rung is labelled `O(n²)` and is not quadratic.** Its code checks
+  the root before recursing, so descending requires every ancestor to be balanced, balanced means
+  logarithmic height, and the worst case is `O(n log n)`. Instrumented `height()` entries on left
+  spines: **100 / 200 / 400 / 800** for n of 50 / 100 / 200 / 400 — linear. The genuinely quadratic
+  version is the one with no short circuit: **2 550 / 10 100 / 40 200 / 160 400** on the same
+  spines.
+- **G7 — all three of `tree-diameter`'s examples pass the most common wrong solution.** The data
+  file's note claims example 3 catches a through-the-root solution; measured, it returns 3, which is
+  correct. A real counterexample is `[1, 2, null, 3, 4, 5, 6, 7]` — through the root 3, answer 4 —
+  found by searching random trees for the smallest disagreement.
+
+### Lessons that cost something
+
+**A measurement is only true of the corpus you measured.** The markdown parser was written against
+80 authored documents with zero links and no HTML — measured, not assumed. Then `docs/learn` merged
+those documents with the generated pages and the corpus became 2 003 links, 879 `<details>` folds
+and a comment banner on all 127 pages. The LeetCode link rendered as literal brackets on a live
+page. The file now carries the command to re-run the count.
+
+**An agent id does not survive the session.** `docs/AGENTS.md` shipped a resume list of nine killed
+agents and the instruction to `SendMessage` them. In a new session `ListAgents` returns peer
+sessions only; not one of the nine existed. The roster is a queue of owed **files** now, with a
+one-line command that regenerates it.
+
+**Fixtures go stale within the hour.** A new UI check named `right-side-view` as "a problem with no
+deep document", and then that document was written. It computes the fixture from disk now — the
+lesson this repo already learned once with the no-journey fixture.
+
+**Three bugs were found by looking at the page, not by a test.** Backticks rendering literally
+inside bold (every complexity bullet is written ``**Time — `O(n)`.**``); the page scrolling sideways
+by 10px at 1440 because a `<pre>` does not wrap, so its min-content width is its longest line —
+measured at 966px — and that floor propagates to the shell; and the edit-me comment banner printing
+at the top of every learn page. Each now has a check that was run against the old behaviour first
+and failed.
+
+### The gates
+
+| Gate | Command | State |
+|---|---|---|
+| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **753 tests** |
+| The interface, in a real browser | `npm run test:ui` | **163 checks**, 0 failed |
+| Every teaching document's script runs and agrees | `node scripts/verify-deep.mjs` | **81/81** |
+| The authored half does not get worse | `node scripts/learn-gaps.mjs --strict` | ratchet, baseline recorded |
+
+### What was deliberately not done
+
+**PracHub was not scraped.** ~6 000 crowdsourced interview recollections behind a freemium wall with
+terms of service. Copying statements and solutions would break this repo's own rule — everything
+here is written in our words and verified by running it — so it is in `RESOURCES.md` as a coverage
+source with that reason attached.
+
+`docs/LEARN-PLAN.md` is the ordered queue of what remains, and `docs/deep/TEMPLATE.md` now carries
+the four readers a document has to serve at once. The first-year student who stalls at the
+arithmetic is the one every document here had been skipping.
+
+---
+
+
 ## 2026-09-12 — a page per problem, twenty more problems, and text you can actually read
 
 Three things shipped, and the third exists because of the second: writing a paragraph of prose onto

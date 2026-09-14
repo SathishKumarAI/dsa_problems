@@ -1654,7 +1654,7 @@ export const VECTORS = {
       [[3, 2, 2, 1]],
     ],
   },
-"flood-fill": {
+  "flood-fill": {
     params: ["int[][]", "int", "int", "int"],
     ret: "int[][]",
     exercises:
@@ -1795,7 +1795,7 @@ export const VECTORS = {
       ],
     ],
   },
-"inorder-walk": {
+  "inorder-walk": {
     params: ["tree"],
     ret: "int[]",
     exercises:
@@ -1829,11 +1829,12 @@ export const VECTORS = {
     params: ["tree"],
     ret: "int",
     exercises:
-      "the bend that is not the root — [1,2,null,3,null,4] is a chain whose longest path never turns, and [4,2,7,1,3,6,9] bends at the top; a single node must answer 0, not 1",
+      "the bend that is not the root — [1,2,null,3,4,5,6,7] answers 4 along 5→3→2→4→7, bending at node 2, and a through-the-root solution says 3; every other case here has the root as a path endpoint, so this is the only one that catches it (G7). [1,2,null,3,null,4] is a chain whose longest path never turns, [4,2,7,1,3,6,9] bends at the top, and a single node must answer 0, not 1",
     cases: [
       [[1, 2, 3, 4, 5]],
       [[1, 2]],
       [[1]],
+      [[1, 2, null, 3, 4, 5, 6, 7]],
       [[1, 2, null, 3, null, 4]],
       [[4, 2, 7, 1, 3, 6, 9]],
       [[1, 2, 3, 4, null, null, 5, 6, null, null, 7]],
@@ -1853,7 +1854,7 @@ export const VECTORS = {
       [[1, 2, 3, 4, 5, 6, 7]],
     ],
   },
-"zero-matrix": {
+  "zero-matrix": {
     params: ["int[][]"],
     ret: "int[][]",
     exercises:
@@ -1881,13 +1882,7 @@ export const VECTORS = {
       ],
       [[[0]]],
       [[[1, 2, 3]]],
-      [
-        [
-          [1],
-          [0],
-          [3],
-        ],
-      ],
+      [[[1], [0], [3]]],
     ],
   },
   "spiral-order": {
@@ -1933,30 +1928,15 @@ export const VECTORS = {
           [7, 8],
         ],
       ],
-      [
-        [
-          [1],
-          [2],
-          [3],
-        ],
-      ],
+      [[[1], [2], [3]]],
     ],
   },
-"decode-ways": {
+  "decode-ways": {
     params: ["string"],
     ret: "int",
     exercises:
-      "the zero that only a pair can absorb — \"10\" answers 1 and \"06\" answers 0, so a solution that decodes digits independently is caught by both",
-    cases: [
-      ["12"],
-      ["226"],
-      ["06"],
-      ["10"],
-      ["0"],
-      ["27"],
-      ["1111"],
-      ["2101"],
-    ],
+      'the zero that only a pair can absorb — "10" answers 1 and "06" answers 0, so a solution that decodes digits independently is caught by both',
+    cases: [["12"], ["226"], ["06"], ["10"], ["0"], ["27"], ["1111"], ["2101"]],
   },
   "jump-game": {
     params: ["int[]"],
@@ -1987,14 +1967,17 @@ export const VECTORS = {
       [[-1, -1]],
     ],
   },
-"top-k-frequent-words": {
+  "top-k-frequent-words": {
     params: ["string[]", "int"],
     ret: "string[]",
     exercises:
-      "the two-key ordering — [\"i\",\"love\",\"leetcode\",\"i\",\"love\",\"coding\"] ties two words at count 2 so the alphabetical rule decides, and [\"b\",\"a\"] is all ties",
+      'the two-key ordering — ["i","love","leetcode","i","love","coding"] ties two words at count 2 so the alphabetical rule decides, and ["b","a"] is all ties',
     cases: [
       [["i", "love", "leetcode", "i", "love", "coding"], 2],
-      [["the", "day", "is", "sunny", "the", "the", "the", "sunny", "is", "is"], 4],
+      [
+        ["the", "day", "is", "sunny", "the", "the", "the", "sunny", "is", "is"],
+        4,
+      ],
       [["b", "a"], 2],
       [["aaa"], 1],
       [["z", "z", "a", "a", "m"], 2],
@@ -2008,11 +1991,11 @@ export const VECTORS = {
       "the value two routes produce — n = 7 lands on 8 only when 6 is emitted ONCE, so advancing a single pointer on a tie shifts every later answer",
     cases: [[10], [1], [7], [2], [11], [150]],
   },
-"anagram-positions": {
+  "anagram-positions": {
     params: ["string", "string"],
     ret: "int[]",
     exercises:
-      "overlapping answers (\"abab\" with \"ab\" answers 0, 1 and 2) and a pattern longer than the text (\"aa\" with \"aaa\" answers nothing), which is the window that never opens",
+      'overlapping answers ("abab" with "ab" answers 0, 1 and 2) and a pattern longer than the text ("aa" with "aaa" answers nothing), which is the window that never opens',
     cases: [
       ["cbaebabacd", "abc"],
       ["abab", "ab"],
@@ -2038,11 +2021,11 @@ export const VECTORS = {
       [[0, 1, 6, 6, 4, 4, 6]],
     ],
   },
-"simplify-path": {
+  "simplify-path": {
     params: ["string"],
     ret: "string",
     exercises:
-      "the '..' with nothing to undo — \"/../\" must answer \"/\" rather than an empty string — and \"/a/.../b\", where a three-dot name is ordinary and must survive",
+      'the \'..\' with nothing to undo — "/../" must answer "/" rather than an empty string — and "/a/.../b", where a three-dot name is ordinary and must survive',
     cases: [
       ["/home/"],
       ["/a/./b/../../c/"],
@@ -2057,7 +2040,7 @@ export const VECTORS = {
     params: ["string"],
     ret: "int",
     exercises:
-      "precedence and the sign of a truncated division — \"1-5/2\" is -1 only when -5 / 2 truncates toward zero, and \" 3+5 / 2 \" proves spaces are noise",
+      'precedence and the sign of a truncated division — "1-5/2" is -1 only when -5 / 2 truncates toward zero, and " 3+5 / 2 " proves spaces are noise',
     cases: [
       ["3+2*2"],
       [" 3/2 "],
@@ -2070,7 +2053,7 @@ export const VECTORS = {
       ["10-2*3+7/2"],
     ],
   },
-"ship-in-d-days": {
+  "ship-in-d-days": {
     params: ["int[]", "int"],
     ret: "int",
     exercises:

@@ -30,6 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Counting the nodes and then walking half of them is correct and simple, but it traverses the list twice and needs the length before it can start. Two pointers at different speeds derive the halfway point from the geometry of the walk itself, so the answer arrives on the first pass with nothing stored.",
+  arc: "Two rungs, one idea: the halfway point is a fact about how far you have walked, and the only question is whether the list has to be measured before that fact is usable. Counting first is correct and is the version to name before improving on it, but it cannot begin until it has finished — two passes, and it needs the length as a number in hand. Running one pointer one node a step and another two makes the arithmetic happen inside the walk itself: when the fast one falls off the end the slow one has travelled exactly half as far, and nothing was stored to work that out. The loop condition is the part that actually gets marked wrong, because it decides the even case — continuing while both the fast node and its successor exist lands on the SECOND middle, and stopping one step earlier lands on the first. Know the fast and slow pair cold. It splits the list for reorder-list and palindrome-list, and it is the same pair that detects a cycle.",
   approach:
     "Advance a slow pointer one node at a time and a fast pointer two. When the fast pointer falls off the end, the slow one has travelled exactly half as far, which is the middle. The loop condition decides the even case: continuing while both the fast node and its successor exist makes the slow pointer land on the SECOND middle, which is what the problem asks for. Stopping one step earlier would return the first.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -68,7 +69,7 @@ def middle_node(head: ListNode | None) -> ListNode | None:
     {
       name: "Count, then walk half",
       summary:
-        "Traverse once to count the nodes, then traverse again stopping at index length // 2.",
+        "Walk the list once to count the nodes, then walk again as far as the middle. Linear and constant-space, and the honest baseline — but it needs the whole list to exist before it can start, which rules it out for a stream, and it touches one and a half times as many nodes as the one-pass version.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `class ListNode:
     def __init__(self, val: int = 0, nxt: "ListNode | None" = None):

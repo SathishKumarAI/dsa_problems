@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "trees",
   difficulty: "easy",
   leetcode: "binary-tree-inorder-traversal",
-  brief: "List a binary tree's values in left-node-right order, without recursion.",
+  brief:
+    "List a binary tree's values in left-node-right order, without recursion.",
   statement:
     "Given the root of a binary tree, return its values in inorder: everything in a node's left subtree, then the node, then everything in its right subtree.",
   constraints: [
@@ -37,8 +38,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Threading gets space to O(1) but it REWIRES the tree while walking and repairs it afterwards, so any reader has to trust the repair — and a walk that stops early (an exception, a break, a caller that only wanted the first three values) leaves the tree wired wrong. An explicit stack holds exactly what the recursion held, keeps the tree read-only, and costs memory proportional to the height rather than the node count.",
-  arc:
-    "Every rung here is the same walk — left, node, right — and what changes is WHERE the unfinished work is kept. The first version keeps it in the values it returns, and pays for that by rebuilding a list at every node. The second keeps it in the call stack, which is what recursion is for and costs the height of the tree. The third keeps it in an explicit stack, which is the same thing with the lid off: you can see the nodes owed a visit, bound the memory, and stop early. The fourth keeps it inside the tree's own empty pointers, trading a mutation for constant space. That ladder — return value, call stack, explicit stack, the structure itself — reappears in every traversal question you will be asked. Know the explicit-stack version cold; it is the one an interviewer means by 'without recursion', and the pre-order and post-order variants are the same loop with the pushes reordered.",
+  arc: "Every rung here is the same walk — left, node, right — and what changes is WHERE the unfinished work is kept. The first version keeps it in the values it returns, and pays for that by rebuilding a list at every node. The second keeps it in the call stack, which is what recursion is for and costs the height of the tree. The third keeps it in an explicit stack, which is the same thing with the lid off: you can see the nodes owed a visit, bound the memory, and stop early. The fourth keeps it inside the tree's own empty pointers, trading a mutation for constant space. That ladder — return value, call stack, explicit stack, the structure itself — reappears in every traversal question you will be asked. Know the explicit-stack version cold; it is the one an interviewer means by 'without recursion', and the pre-order and post-order variants are the same loop with the pushes reordered.",
   approach:
     "Keep a stack of nodes owed a visit and a cursor. Push the cursor and walk left until there is no left child; then pop, record that value, and move the cursor to the popped node's right child, which restarts the same descent one subtree over. The loop ends when both the stack and the cursor are empty. Each node is pushed once and popped once, so the walk is linear, and the stack never holds more than one node per level.",
   complexity: { time: "O(n)", space: "O(h)" },
@@ -110,7 +110,10 @@ export const problem: Problem = {
         "From 2 the descent pushes 2 onto the stack and walks left to 3. 3 has no left child, so it is the next value owed.",
     },
     {
-      cells: { values: [1, "·", 2, 3], marks: { 0: "done", 3: "done", 2: "focus" } },
+      cells: {
+        values: [1, "·", 2, 3],
+        marks: { 0: "done", 3: "done", 2: "focus" },
+      },
       caption:
         "Record 3, step to its right child — there is none — so the loop pops the node still owed: 2. Answer so far: [1, 3].",
     },

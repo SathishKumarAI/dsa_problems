@@ -34,6 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Counting an island by repeatedly re-scanning the grid for cells adjacent to what you already have re-reads the whole grid once per growth step. A flood fill visits each cell exactly once, because a visited cell is marked the moment it is claimed — the traversal itself carries the frontier.",
+  arc: "The rescanning rung fails for a reason worth naming: it has no frontier. Sweeping the whole grid for any land cell touching the island so far re-reads every cell once per growth step, so a fifty-cell island costs fifty full sweeps. A traversal carries its frontier implicitly — in the recursion stack, or in a queue — so each cell is visited exactly once and the sweeping disappears. The other half is when the mark goes down. Claim the cell on ENTRY, before recursing, and the mark doubles as the visited set; claim it on the way out and two neighbours both descend into it, which is duplicated work at best and a loop between two adjacent cells at worst. Everything else is bookkeeping: one plus the sum of what the four neighbours return, and the largest value the outer scan ever sees. A grid of all water answers 0, which is an answer. Island-count is this fill counting starts rather than cells, and surrounded-regions is it started from the border.",
   approach:
     "Walk every cell. When you find land that has not been claimed, run a flood fill from it: claim the cell, add one to the running area, and recurse into the four neighbours that are in bounds and still land. The value that comes back is the island's area; keep the largest seen. Marking on entry rather than on exit is what stops the fill revisiting cells and looping — the mark is the visited set.",
   complexity: { time: "O(m · n)", space: "O(m · n)" },
@@ -97,7 +98,7 @@ int maxAreaOfIsland(vector<vector<int>> grid) {
     {
       name: "Grow by rescanning",
       summary:
-        "Claim one land cell as a seed, then sweep the whole grid over and over adding any land cell touching the island, until a full sweep adds nothing.",
+        "Claim one land cell as a seed, then sweep the entire grid over and over adding any land cell that touches what is already claimed, until a full sweep adds nothing. It needs no stack or queue and is easy to argue correct, and each sweep costs the whole grid while it may add as little as one cell.",
       complexity: { time: "O((m · n)²)", space: "O(m · n)" },
       python: `def max_area_of_island(grid: list[list[int]]) -> int:
     rows, cols = len(grid), len(grid[0])

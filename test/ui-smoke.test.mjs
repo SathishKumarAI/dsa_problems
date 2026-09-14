@@ -11,6 +11,16 @@
 import assert from "node:assert/strict"
 import { after, before, describe, test } from "node:test"
 import { JOURNEYS } from "../src/engine/index.ts"
+import { readdirSync } from "node:fs"
+import { PROBLEMS } from "../src/data/index.ts"
+
+// which problems actually have a learn page, read from disk rather than
+// listed here, so this file cannot go stale as pages are written
+const LEARN_PAGES = new Set(
+  readdirSync("docs/learn")
+    .filter((f) => f.endsWith(".md") && f !== "README.md")
+    .map((f) => f.replace(/\.md$/, ""))
+)
 import { chromePath, launch, startServer } from "./browser.mjs"
 
 const exe = chromePath()
@@ -313,12 +323,19 @@ describe(
     // first run in which `step-player.tsx` is reachable at all. If the
     // decision was wrong, it is wrong here.
     test("a problem with no journey draws its static walkthrough (B61, batch 6)", async () => {
-      const unjourneyed = [
-        ["arrays-hashing", "rotate-array"],
-        ["arrays-hashing", "first-missing-positive"],
-        ["two-pointers", "backspace-compare"],
-        ["linked-list", "reorder-list"],
-      ]
+      // COMPUTED, not hard-coded. This list used to name four problems by id,
+      // and B67 falsified it the moment one of them (reorder-list) got a
+      // journey — which correctly deleted the very walkthrough this asserts.
+      // A fixture that goes stale every time the product improves is a gate
+      // that cries wolf, so ask the data which problems still have no journey.
+      const journeyed = new Set(JOURNEYS.map((j) => j.problemId))
+      const unjourneyed = PROBLEMS.filter((p) => !journeyed.has(p.id))
+        .slice(0, 4)
+        .map((p) => [p.pattern, p.id])
+      assert.ok(
+        unjourneyed.length > 0,
+        "every problem has a journey now — this test, and B61's static player, are done"
+      )
       for (const [pattern, id] of unjourneyed) {
         await page.goto(`${server.base}/#/p/${pattern}/${id}`)
         const out = await page.run(`
@@ -993,6 +1010,44 @@ describe(
 
     // ---------- 3b. the catalogue keeps the secret ----------
 
+    test("the reading list is masked with the pattern it would name", async () => {
+      // A references panel is a pattern name written five different ways —
+      // "Hash table", "Dijkstra's algorithm", "Binary search tree". It is a
+      // NEW surface on the catalogue page and nothing was checking it, so it
+      // could have leaked the exact word B45 exists to withhold.
+      const read = `
+        const panel = [...document.querySelectorAll('section')]
+          .find(s => /read further/i.test(s.innerText || ''));
+        return {
+          panel: !!panel,
+          rows: panel ? panel.querySelectorAll('a[href^="http"]').length : 0,
+          text: panel ? panel.innerText : '',
+        };
+      `
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const shown = await page.run(read)
+      assert.ok(shown.panel, "no reading list on an unmasked pattern")
+      assert.ok(shown.rows >= 3, `only ${shown.rows} readings`)
+
+      // mid-journey: the panel goes entirely, not merely its heading
+      await page.run(
+        `localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
+      )
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const masked = await page.run(read)
+      assert.equal(
+        masked.panel,
+        false,
+        "the reading list rendered while the pattern was masked"
+      )
+
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:two-sum'); return 1`)
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("a pattern a started journey is still teaching is masked, and earning it reveals the name", async () => {
       const read = `
         return {
@@ -1262,6 +1317,54 @@ describe(
       assert.ok(out.inViewport, "the narration is off screen")
     })
 
+    // Two bugs that shipped together, both about an in-page jump. Written
+    // after a user reported "the bar is hiding the text I want to see".
+    //
+    //   1. The ladder's "01 Brute Force" links were bare `#rung-…` hrefs. In a
+    //      HASH-ROUTED app that is a route change: location.hash became
+    //      "#rung-brute", the router parsed the route `rung-brute`, and the app
+    //      rendered HOME. The problem page you were reading was gone.
+    //   2. Even once it scrolled, the target landed at y=0 — under the phone's
+    //      61px `sticky top-0` bar. `scroll-padding-top` (index.css) fixes that
+    //      for every anchor in the app at once, which is why this asserts the
+    //      LANDING and not the CSS.
+    test("a jump to an approach scrolls, and lands clear of the sticky bar", async () => {
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const bar = document.querySelector('.sticky.top-0');
+        const barH = bar ? Math.round(bar.getBoundingClientRect().height) : 0;
+        const link = [...document.querySelectorAll('nav a')]
+          .find(a => /^0[0-9]/.test(a.innerText.trim()));
+        if (!link) return { noLink: true };
+        const target = document.getElementById(link.getAttribute('href').slice(1));
+        link.click();
+        await wait(900);
+        const heading = target.querySelector('b');
+        return {
+          barH,
+          route: location.hash,
+          stillHere: !!document.querySelector('[aria-label="approach ladder"]'),
+          headingTop: Math.round(heading.getBoundingClientRect().top),
+          moved: Math.round(target.getBoundingClientRect().top) !== 0,
+        };
+      `)
+      await page.resize(1440)
+      assert.ok(!out.noLink, "the ladder drew no jump links to test")
+      assert.equal(
+        out.route,
+        "#/p/arrays-hashing/pair-sum",
+        "a bare #id href hijacked the hash ROUTE — the reader was thrown off the page"
+      )
+      assert.ok(out.stillHere, "the problem page unmounted on an in-page jump")
+      assert.ok(
+        out.headingTop >= out.barH,
+        `the rung landed at ${out.headingTop}px, under a ${out.barH}px sticky bar`
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the reading-column toggle does not sit on top of the text (U8)", async () => {
       await page.goto(`${server.base}/#/journey/two-sum?act=recap&step=1`)
       const out = await page.run(`
@@ -1351,6 +1454,52 @@ describe(
       )
       assert.ok(out.sheetActs >= 7, "the sheet did not list the acts")
       assert.equal(out.scrollW, 390)
+    })
+
+    // The stage is the product. On a 390x844 phone it used to get 197px — 23%
+    // of the viewport — because the reading column sat under it at
+    // `max-h-[45svh]`, nearly twice the stage's size, to keep four tabs
+    // permanently on screen. Below lg those four are a 53px bottom bar now and
+    // each opens the same DrawerTabs in a sheet. This asserts the SHARE, not
+    // the pixels, so it survives a different phone.
+    test("on a phone the stage gets the screen, and reading is a bottom bar", async () => {
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/journey/two-sum?act=story`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const h = el => el ? Math.round(el.getBoundingClientRect().height) : 0;
+        const stage = document.querySelector('[aria-label=stage]');
+        const nav = document.querySelector('nav[aria-label=reading]');
+        const btns = nav ? [...nav.querySelectorAll('button')] : [];
+        btns[2]?.click();
+        await wait(700);
+        return {
+          stagePct: Math.round(h(stage) / window.innerHeight * 100),
+          navH: h(nav),
+          buttons: btns.length,
+          allTouch: btns.every(b => b.getBoundingClientRect().height >= 44),
+          columnHidden: h(document.querySelector('aside[aria-label="approach"]')) === 0,
+          sheetOpened: !!document.querySelector('[role=dialog]'),
+          landedOnEdges: !!document.querySelector('[aria-label="corner cases"]'),
+          scrollW: document.documentElement.scrollWidth,
+        };
+      `)
+      await page.resize(1440)
+      assert.equal(out.buttons, 4, "the reading bar lost a destination")
+      assert.ok(out.allTouch, "a reading-bar button is under the 44px touch target")
+      assert.ok(out.columnHidden, "the reading COLUMN is still rendered on a phone")
+      assert.ok(
+        out.navH <= 80,
+        `the reading bar is ${out.navH}px — it is a bar, not a column`
+      )
+      assert.ok(
+        out.stagePct >= 50,
+        `the stage gets only ${out.stagePct}% of a phone screen`
+      )
+      assert.ok(out.sheetOpened, "a reading-bar button did not open its sheet")
+      assert.ok(out.landedOnEdges, "the sheet did not open on the tab that was tapped")
+      assert.equal(out.scrollW, 390)
+      assert.deepEqual(page.errors(), [])
     })
 
     test("the visualizer fills the viewport it is given (U9)", async () => {
@@ -1657,6 +1806,146 @@ describe(
         false,
         "a static walkthrough player rendered — some problem has no journey (see B61)"
       )
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("a learn page renders as a page, not as raw markdown", async () => {
+      // The reader parses `docs/learn/<id>.md` in the browser, so the
+      // things that can break are exactly the things node cannot see: an
+      // unclosed fence swallowing the rest of the file, a table that never
+      // became a table, a `#` heading printed literally.
+      await page.goto(`${server.base}/#/learn/max-depth`)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+      const out = await page.run(`
+        // The PROSE elements only, each read live. Two things this had to
+        // learn: a Python comment inside a code block legitimately starts
+        // with '# ', so code is excluded rather than filtered; and innerText
+        // on a DETACHED clone silently degrades to textContent — no layout,
+        // so no line breaks — which made a per-line check see one long line.
+        const prose = [...document.querySelectorAll(
+          'article h2, article h3, article p, article li, article td, article th'
+        )].map(el => el.innerText);
+        // built from a string with NO backslashes on purpose: this whole
+        // script is sent as a template literal, which eats them — '\\s' arrives
+        // as 's' and '\\|' as '|', which turned an earlier version of this
+        // pattern into one that matched every line
+        const marker = new RegExp('^[ ]*(#{1,3}[ ]|[|][ ]*-{3})');
+        return {
+          h1: (document.querySelector('h1') || {}).textContent || '',
+          headings: document.querySelectorAll('h2, h3').length,
+          tables: document.querySelectorAll('table').length,
+          codeBlocks: document.querySelectorAll('pre code').length,
+          callouts: document.querySelectorAll('blockquote').length,
+          // a literal marker on screen means a block was never parsed
+          rawMarkers: prose.filter(line => marker.test(line)).slice(0, 5),
+          // a backtick on screen means an inline span was not parsed — it is
+          // how nested code inside bold ("**Time — \`O(n)\`.**") showed up
+          backticks: prose.filter(line => line.includes('\`')).slice(0, 3),
+          rawFence: prose.some(line => line.includes('\`\`\`')),
+          // the merged page brought three constructs the parser had never
+          // seen: an edit-me comment on every page, 2003 links and 879 folds
+          rawComment: document.body.innerText.includes('<!--'),
+          folds: document.querySelectorAll('details').length,
+          links: document.querySelectorAll('article a[href]').length,
+          // includes(), not a regex: this script is sent as a template literal
+          // and backslashes do not survive it (it has bitten this file twice)
+          rawBrackets: prose.filter(l => l.includes('](http')).length,
+          scrollW: document.documentElement.scrollWidth,
+          clientW: document.documentElement.clientWidth,
+        };
+      `)
+      assert.match(out.h1, /maximum depth/i, "the document title is missing")
+      assert.ok(out.headings > 20, `only ${out.headings} section headings`)
+      assert.ok(out.tables >= 4, `only ${out.tables} tables rendered`)
+      assert.ok(out.codeBlocks >= 5, `only ${out.codeBlocks} code blocks`)
+      assert.ok(out.callouts >= 4, `only ${out.callouts} callouts`)
+      assert.deepEqual(
+        out.rawMarkers,
+        [],
+        "markdown syntax reached the screen"
+      )
+      assert.equal(out.rawFence, false, "a code fence marker reached the screen")
+      assert.equal(out.rawComment, false, "the edit-me banner reached the screen")
+      assert.ok(out.folds >= 1, "the hints fold did not render as a <details>")
+      assert.ok(out.links >= 1, "no link rendered — markdown links reached the screen raw")
+      assert.equal(out.rawBrackets, 0, "an unparsed markdown link is on screen")
+      assert.deepEqual(
+        out.backticks,
+        [],
+        "a backtick reached the screen — an inline code span was not parsed"
+      )
+      assert.equal(out.scrollW, out.clientW, "the learn page scrolls sideways")
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("every problem has a learn page, and a started journey hides the link", async () => {
+      // This check used to prove "no page, no link". Since docs/learn merged
+      // the generated and authored pages, ALL 127 problems have one — so the
+      // premise is gone and the question that remains is the one that matters:
+      // the page carries the whole ladder and the ending, so a learner partway
+      // through a journey must not be offered it (the same gate the arc gets).
+      assert.equal(
+        PROBLEMS.filter((p) => !LEARN_PAGES.has(p.id)).length,
+        0,
+        "a problem has no page in docs/learn — run npm run docs:learn"
+      )
+
+      const journeyed = PROBLEMS.find((p) =>
+        JOURNEYS.some((j) => j.problemId === p.id && j.acts.length > 2)
+      )
+      const slug = JOURNEYS.find((j) => j.problemId === journeyed.id).slug
+
+      // not started: the whole ladder shows, so the link is offered
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
+      await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
+      const offered = await page.run(`
+        return !![...document.querySelectorAll('a')]
+          .find(a => /learn this problem/i.test(a.textContent || ''));
+      `)
+
+      // started and unfinished: the ladder is capped, so the link must go.
+      // Written on another route first — the store caches per key, so a write
+      // while the page is mounted is undone (CLAUDE.md).
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:${slug}', '2'); return 1`)
+      await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
+      const gated = await page.run(`
+        return {
+          link: !![...document.querySelectorAll('a')]
+            .find(a => /learn this problem/i.test(a.textContent || '')),
+          capped: /still ahead of you/.test(document.body.innerText),
+        };
+      `)
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
+
+      assert.ok(offered, `${journeyed.id}: no link on an unstarted journey`)
+      assert.ok(gated.capped, `${journeyed.id}: unlocked=2 did not cap the ladder`)
+      assert.equal(
+        gated.link,
+        false,
+        `${journeyed.id}: the learn page was offered mid-journey — it gives the ending away`
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
+    test("390 px wide: a learn page does not scroll sideways", async () => {
+      // Its tables are the widest things in the app; they must scroll inside
+      // their own box rather than taking the page with them.
+      await page.resize(390)
+      await page.goto(`${server.base}/#/learn/balanced-tree`)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+      const out = await page.run(`
+        return {
+          scrollW: document.documentElement.scrollWidth,
+          clientW: document.documentElement.clientWidth,
+          tables: document.querySelectorAll('table').length,
+        };
+      `)
+      await page.resize(1440)
+      assert.ok(out.tables >= 4, "the document did not render its tables")
+      assert.equal(out.scrollW, out.clientW, "the page scrolls sideways at 390 px")
       assert.deepEqual(page.errors(), [])
     })
 

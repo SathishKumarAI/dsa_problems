@@ -28,14 +28,33 @@ export function CodeBlock({
     }
   }
 
+  const label = failed
+    ? "Copying is blocked here"
+    : copied
+      ? "Copied"
+      : "Copy code"
+
   return (
-    <div className={cn("relative rounded-lg border bg-card", className)}>
+    <div className={cn("group relative rounded-lg border bg-card", className)}>
       <Button
         variant="ghost"
         size="icon-sm"
-        className="absolute top-2 right-2 text-muted-foreground"
+        // Quiet at rest, present the moment the block is pointed at or
+        // anything inside it takes focus — and a COLOUR rather than an
+        // opacity, because a faded control is an invisible one. The two
+        // outcomes are said in the palette's own words: chart-3 is "this is
+        // correct" and `destructive` is the error role — neither is spent on
+        // decoration.
         onClick={copy}
-        aria-label={failed ? "Copying is blocked here" : "Copy code"}
+        aria-label={label}
+        title={label}
+        data-state={copied ? "copied" : failed ? "failed" : "idle"}
+        className={cn(
+          "absolute top-2 right-2 text-dim",
+          "group-hover:text-foreground group-focus-within:text-foreground",
+          copied && "text-chart-3 group-hover:text-chart-3",
+          failed && "text-destructive group-hover:text-destructive"
+        )}
       >
         {copied ? <CheckIcon /> : failed ? <XIcon /> : <CopyIcon />}
       </Button>

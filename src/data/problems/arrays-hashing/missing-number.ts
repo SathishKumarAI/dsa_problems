@@ -32,8 +32,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The running total is correct but it builds a number roughly n^2/2 large before subtracting anything, so a fixed-width int can overflow long before the answer comes out. XOR cancels the same pairs without any value ever growing past n.",
-  arc:
-    "Five rungs, and they split into two families: find the gap by imposing order (sort, flags, placing each value at its own index) or compute the gap by arithmetic (subtract the sum, or XOR the indices against the values). The arithmetic family is the lesson — when the input is a permutation with one hole, an invariant of the whole set can name the hole without looking for it. Sum is the easiest to derive on the spot; XOR is the one to prefer when overflow is a concern, since it needs no range assumption at all. Being able to produce both, and to say why XOR is safer for very large n, is what makes this a five-minute question rather than a one-minute one.",
+  arc: "Five rungs, and they split into two families: find the gap by imposing order (sort, flags, placing each value at its own index) or compute the gap by arithmetic (subtract the sum, or XOR the indices against the values). The arithmetic family is the lesson — when the input is a permutation with one hole, an invariant of the whole set can name the hole without looking for it. Sum is the easiest to derive on the spot; XOR is the one to prefer when overflow is a concern, since it needs no range assumption at all. Being able to produce both, and to say why XOR is safer for very large n, is what makes this a five-minute question rather than a one-minute one.",
   approach:
     "Fold indices and values into one accumulator with XOR. Seed it with n — the one index the loop never visits — then XOR in each index i and each value nums[i]. Every number that is present appears once as a value and once as an index, and x ^ x = 0, so all of them cancel. The missing number appears only as an index, so it is what survives. One pass, one integer of state, and no arithmetic that can overflow.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -80,7 +79,7 @@ export const problem: Problem = {
     {
       name: "Sort and scan",
       summary:
-        "Sorted, the array should read 0, 1, 2, ... — the first index whose value does not match itself is the answer. If every one matches, the gap is at the end.",
+        "Sorted, the array should read 0, 1, 2, … so the first index whose value does not match it is the answer. Honest and easy to defend, and it spends n log n imposing an order the question never needed — the answer depends on WHICH values are present, not on their arrangement.",
       complexity: { time: "O(n log n)", space: "O(n)" },
       python: `def missing_number(nums: list[int]) -> int:
     ordered = sorted(nums)
@@ -107,7 +106,7 @@ export const problem: Problem = {
     {
       name: "Table of flags",
       summary:
-        "Mark each value present in an array of n + 1 flags, then walk 0..n and return the first flag never set.",
+        "Mark each value present in an array of n + 1 flags, then walk 0..n and return the first never set. Linear, and the flags are the thing to notice: they store one bit per value to recover a single number, which the next two rungs get for free from arithmetic the input already satisfies.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "Sorting rearranges all n values to answer a question about presence, and it charges n log n for the privilege. A flag per candidate answers presence directly in one pass — the price is n + 1 slots of memory the follow-up does not allow.",
@@ -142,7 +141,7 @@ export const problem: Problem = {
     {
       name: "Put each value at its own index",
       summary:
-        "Swap values around until every value that can sit at its own index does. Then the first index holding something else is the missing number.",
+        "Swap values around until every one that can sit at its own index does; the first index holding something else is the answer. Constant extra space, and the price is that it rearranges the caller's array — a destructive answer to a read-only question.",
       complexity: { time: "O(n)", space: "O(1)" },
       whyNow:
         "The flag table spends n + 1 fresh slots to record what the input already contains. Because every value is a legal index, the array can be its own table: send each value home and the hole shows itself — no extra memory, at the cost of rearranging the caller's array.",
@@ -196,7 +195,7 @@ export const problem: Problem = {
     {
       name: "Subtract from the total",
       summary:
-        "The numbers 0..n add up to n * (n + 1) / 2. Subtract what the array actually holds and the difference is the value that never arrived.",
+        "The numbers 0..n sum to n(n+1)/2, so subtracting what the array actually holds leaves the value that never arrived. One pass, one accumulator, nothing touched — and the one place it can bite is a language where that product overflows before the subtraction happens.",
       complexity: { time: "O(n)", space: "O(1)" },
       whyNow:
         "Placing values home is constant space but it destroys the caller's array and still needs a second scan to find the hole. A running total needs neither: one accumulator, one pass, and the input untouched.",

@@ -32,6 +32,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The two dummy nodes exist only to answer is this the first node of its chain? — but the first odd node IS the head and the first even node IS head.next, both known before the loop begins. Two runners weaving through the list allocate nothing at all.",
+  arc: "Every rung is splitting one list into two chains and joining them at the end, and each gives up a different piece of waste. Unlinking each even node and appending it to the tail re-walks the list to find that tail every time, so ten thousand nodes cost twenty-five million steps for an answer that needs ten thousand. Collecting the values into two arrays is finally linear, but it rebuilds the list out of copies — a quiet data-loss bug the moment a node carries more than an int, or anyone outside holds a pointer into it. Parking the real even nodes in an array fixes that and still buys memory to remember an order the nodes can remember themselves, by pointing at each other. Two dummy heads remove the array, and two runners remove the dummies, because the first odd node IS the head and the first even node IS head.next, both known before the loop starts. Keep the weave itself: odd.next jumps to even.next, even.next jumps to the new odd, and one saved pointer to the even head splices the chains at the end. The stopping test is the trap — check even AND even.next, or a two-node list walks into a null.",
   approach:
     "Point odd at the head and even at head.next, and remember even as the head of the even chain. Each iteration unhooks two nodes: odd.next jumps over the even node to even.next, then even.next jumps over the new odd node. Stop when even is null or has nothing after it — the odd runner is then the last odd node, and pointing it at the saved even head splices the two chains together.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -77,45 +78,11 @@ export const problem: Problem = {
     odd->next = evenHead;
     return head;
 }`,
-  walkthrough: [
-    {
-      cells: {
-        values: [1, 2, 3, 4, 5],
-        marks: { 0: "focus", 1: "compare" },
-        labels: { 0: "odd", 1: "even" },
-      },
-      caption:
-        "odd sits on the head, even on head.next. That second node is saved — it is where the even chain will start.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 2, 4],
-        marks: { 0: "done", 1: "focus", 3: "compare" },
-        labels: { 1: "odd", 3: "even" },
-      },
-      caption:
-        "First hop: 1.next skips to 3, and 2.next skips to 4. The two chains are now interleaved in pointers, not in position.",
-    },
-    {
-      cells: {
-        values: [1, 3, 5, 2, 4],
-        marks: { 0: "done", 1: "done", 2: "focus", 4: "compare" },
-        labels: { 2: "odd", 4: "even" },
-      },
-      caption:
-        "Second hop lands odd on 5 and even on 4. even.next is null, so the loop stops here.",
-    },
-    {
-      cells: { values: [1, 3, 5, 2, 4], marks: { 2: "focus", 3: "window" } },
-      caption:
-        "Last odd node is 5; point it at the saved even head 2. The result is [1,3,5,2,4] and not one node was copied.",
-    },
-  ],
   alternatives: [
     {
       name: "Move the second node to the tail, repeatedly",
       summary:
-        "For each even-positioned node, unlink it and append it to the end. Obviously correct, and it re-walks the whole list to find the tail every single time.",
+        "Repeatedly unlink the node at the current even position and append it to the very end, walking to the tail each time. Obviously correct and easy to argue about, and quadratic: every relocation re-walks the whole list to find its end, so the list is traversed once per even-positioned node to do a linear job.",
       complexity: { time: "O(n^2)", space: "O(1)" },
       python: `def odd_even_list(head):
     if head is None or head.next is None:
@@ -176,7 +143,7 @@ export const problem: Problem = {
       whyNow:
         "The repeated tail hunt walks the whole list once per moved node — a 10^4-node list costs 25 million steps for an answer that needs 10^4. One pass into two buckets is linear.",
       summary:
-        "Collect the values by position parity, concatenate, rebuild. Linear at last, but it allocates a whole second list and throws the original nodes away.",
+        "Collect the values into two arrays by position parity, concatenate them, and rebuild the list. Linear at last, and it allocates a whole second list of n nodes and hands back different node objects. Any caller still holding a pointer into the original list now points into a list that this answer no longer includes.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `def odd_even_list(head):
     odds = []

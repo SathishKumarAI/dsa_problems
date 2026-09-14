@@ -29,6 +29,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Shifting is still linear per add, and nothing here needs the full order - only the kth value. A min-heap of size k keeps that value at the root and costs a logarithm per add.",
+  arc: "A stream turns every cost into a per-add cost, and that is what exposes the waste: re-sorting rebuilds an order that was already correct a moment ago, so inserting into the sorted list is the obvious repair — but keeping the whole list ordered still maintains n values when the caller only ever reads one of them, and the shifting is linear either way. The fix is to stop storing what will never be returned. Only the k largest values seen can ever be the answer, so a heap bounded at k holds exactly the candidates and its root IS the kth largest, with no search at all. Know that bounded-heap invariant cold, including the part that reads backwards — a MIN-heap answers a max question, because its weakest member is the rank being asked for. It is the same move behind kth-largest-element, k-closest-points and top-k-frequent, and it is what makes those problems work on input that never ends.",
   approach:
     "Maintain a min-heap holding exactly the k largest values seen. On add, push the new value; if the heap grows past k, pop the minimum (which by definition is no longer in the top k). The root is then the kth largest at all times. Keeping the heap small (k, not n) is the entire point.",
   complexity: { time: "O(log k) per add", space: "O(k)" },
@@ -85,7 +86,7 @@ public:
     {
       name: "Sort per add",
       summary:
-        "Keep a list, re-sort on every add, index the kth from the end. Each add costs n log n — painful for a hot path the heap serves in log k.",
+        "Keep every value in a list, re-sort the whole list on every add, and index the kth from the end. Each add pays n log n to re-establish an order that was already correct except for one new element, and add is the hot path here: this is a class that gets called repeatedly, not a function that runs once.",
       complexity: { time: "O(n log n) per add", space: "O(n)" },
       python: `class KthLargest:
     def __init__(self, k: int, nums: list[int]):

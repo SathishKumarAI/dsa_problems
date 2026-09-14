@@ -1,0 +1,71 @@
+name: "A claim that does not survive being run"
+description: "A complexity label, worked example, or corner case in this repo that is not true when measured. The most valuable issue you can file."
+title: "[claim] "
+labels: ["false-claim", "content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you — this is the issue type this project most wants.
+
+        Three defects have been found this way so far, and every one of them survived
+        reading and died on a measurement: a rung labelled `O(n²)` that measured strictly
+        linear, a worked example whose note claimed it caught a wrong solution it did not
+        catch, and a rung called *optimal* that is the slowest one on its page.
+
+        **You do not need to fix it.** A measurement and a location is a complete report.
+
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: File and, if you have it, the line. A problem id is fine too.
+      placeholder: "docs/deep/balanced-tree_explained.md, or the balanced-tree problem page"
+    validations:
+      required: true
+
+  - type: textarea
+    id: claim
+    attributes:
+      label: The claim, quoted
+      description: Copy the sentence, label or note exactly as it appears.
+      placeholder: 'The naive rung is labelled `O(n^2)`.'
+    validations:
+      required: true
+
+  - type: textarea
+    id: measurement
+    attributes:
+      label: What you measured
+      description: |
+        The numbers, and how you got them. Exact counts (probes, comparisons, allocations)
+        are better than timings because they reproduce anywhere — but timings are welcome
+        if you say which machine and note that the *shape* is the claim.
+      placeholder: |
+        Instrumented height() and counted entries on a left spine:
+          n = 50 -> 100, n = 100 -> 200, n = 200 -> 400, n = 400 -> 800
+        Strictly linear. A quadratic rung would show 2,550 / 10,100 / 40,200 / 160,400.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce it
+      description: A script, or the steps. If the document's own script can show it, say which section.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Does this render where a learner can see it?
+      description: A wrong label on the problem page matters more than one in a comment.
+      options:
+        - "Yes — it is on the problem page or a learn page"
+        - "Yes — it is in a teaching document"
+        - "No — it is in a code comment or an internal doc"
+        - "Not sure"
+    validations:
+      required: true

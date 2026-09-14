@@ -34,8 +34,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Checking every substring re-counts letters it has already counted. A window carries those counts forward, so each character is added once and removed at most once — and the most-common count only ever needs to grow, because a smaller one could never have produced a longer answer.",
-  arc:
-    "The trick here is what the window does NOT track. A window is legal when its length minus the count of its most frequent character is at most k, and the surprise is that the most-frequent count never has to be recomputed downward: since the answer is a maximum, letting it go stale can only make the window refuse to grow, never make it grow wrongly. That is why the linear version has no inner maximum scan and looks almost too simple. Understand the argument before you trust it, because it is the same 'the answer is a maximum, so the window need never shrink' reasoning behind the fruit-baskets version, and it is the part interviewers probe.",
+  arc: "The trick here is what the window does NOT track. A window is legal when its length minus the count of its most frequent character is at most k, and the surprise is that the most-frequent count never has to be recomputed downward: since the answer is a maximum, letting it go stale can only make the window refuse to grow, never make it grow wrongly. That is why the linear version has no inner maximum scan and looks almost too simple. Understand the argument before you trust it, because it is the same 'the answer is a maximum, so the window need never shrink' reasoning behind the fruit-baskets version, and it is the part interviewers probe.",
   approach:
     "Slide a window over the string keeping a tally of the letters inside it and the highest count that tally has ever reached. The window needs (length − highest count) rewrites; while that exceeds k, drop the leftmost character and shrink. Because the answer only cares about the largest window ever seen, the highest count never has to be recomputed downward — a window that shrinks can never beat the record that set it.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -84,7 +83,7 @@ export const problem: Problem = {
     {
       name: "Every substring",
       summary:
-        "Take each start and each end, count the letters in that substring, and check whether the rewrites it needs fit the budget.",
+        "Take every start and every end, tally the 26 letters inside that substring, and keep it when the rewrites it needs, its length minus its most common letter's count, fit inside k. It checks the definition literally and is the version to reason from, and the n-squared substrings make it hours of work for a problem one window answers in a single pass.",
       complexity: { time: "O(n² · 26)", space: "O(1)" },
       python: `def character_replacement(s: str, k: int) -> int:
     best = 0

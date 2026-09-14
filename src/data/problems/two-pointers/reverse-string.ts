@@ -35,8 +35,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Copying back to front still reads all n positions and writes all n into a buffer the same size as the input, so it does twice the work of the thing it is describing. A swap moves two characters at once, which means the walk only has to reach the middle: n/2 swaps, no output buffer beyond the one being reversed, and the two indices are the entire state.",
-  arc:
-    "The point of this problem is to see how many plausible solutions are quietly quadratic: building a new string by concatenation, recursion that slices, or anything that copies the tail on every step. In a language with immutable strings, 'append in a loop' is the trap. Once the input is a mutable array, the answer is the smallest possible loop — swap the ends and walk inward, n/2 swaps and no allocation. Take two habits: check whether your language's string concatenation is O(1) or O(n) before using it in a loop, and remember that the two-pointer swap is the base pattern behind reversing a sub-range, which is what rotate-array and next-permutation both lean on.",
+  arc: "The point of this problem is to see how many plausible solutions are quietly quadratic: building a new string by concatenation, recursion that slices, or anything that copies the tail on every step. In a language with immutable strings, 'append in a loop' is the trap. Once the input is a mutable array, the answer is the smallest possible loop — swap the ends and walk inward, n/2 swaps and no allocation. Take two habits: check whether your language's string concatenation is O(1) or O(n) before using it in a loop, and remember that the two-pointer swap is the base pattern behind reversing a sub-range, which is what rotate-array and next-permutation both lean on.",
   approach:
     "Reversal is a pairing, not a rebuild: whatever is at position i belongs at position n - 1 - i, and the same is true the other way round, so the two can simply trade. Put one index at each end of a mutable buffer, swap what they point at, and step them toward each other. Every swap places two characters permanently, so the loop finishes after n/2 of them. Stopping while the indices are still apart is what protects an odd-length string: the middle character is paired with itself, and swapping it would be a no-op at best. Nothing is allocated beyond the buffer holding the answer, and the character count is never needed again after the right index is set.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -112,7 +111,7 @@ export const problem: Problem = {
     {
       name: "Recursion",
       summary:
-        "Reverse everything after the first character, then stick that first character on the end of the result.",
+        "Reverse everything after the first character, then put that character on the end. It reads like the definition and it is quadratic: each of the n levels builds a new string by concatenation, and it spends a call frame per character on top of that.",
       complexity: { time: "O(n^2)", space: "O(n)" },
       python: `def reverse_string(s: str) -> str:
     if len(s) <= 1:
@@ -134,7 +133,7 @@ export const problem: Problem = {
     {
       name: "Grow a new string",
       summary:
-        "Walk the input forward and put each character in front of everything collected so far, so the answer grows backwards.",
+        "Walk forward, putting each character in front of everything collected so far, so the answer grows backwards. Neat — and each prepend copies the entire accumulated string, so the total work is quadratic even though the loop is linear.",
       complexity: { time: "O(n^2)", space: "O(n)" },
       whyNow:
         "The recursion copies a fresh substring at every level AND opens a stack frame per character, so a long string overflows the stack before it finishes being wrong about the cost. The same prepending done in a loop is still quadratic, but it cannot blow the stack — a real improvement, and it makes the actual expense visible: every step rebuilds the whole answer so far.",
@@ -161,7 +160,7 @@ export const problem: Problem = {
     {
       name: "Stack of characters",
       summary:
-        "Push every character onto a stack, then pop them off — last in, first out is exactly the reversed order.",
+        "Push every character, then pop them all: last in, first out is exactly the reversed order. Linear at last, and the stack is a container holding the whole input to express a relationship — position i belongs at n-1-i — that needs no container at all.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "Prepending copies everything already collected on every single step, which is n copies of an average of n/2 characters. A stack appends and removes at one end in constant time, so the whole reversal finally becomes linear instead of quadratic.",
@@ -200,7 +199,7 @@ export const problem: Problem = {
     {
       name: "Copy back to front",
       summary:
-        "Read the input from the last index down to the first, appending each character to a buffer as you go.",
+        "Read the input from the last index down to the first, appending to a buffer. Linear, one pass, no stack — and still a second array of n, because it treats reversal as building a new thing rather than as swapping pairs that are already in place.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "The stack is doing nothing an index could not do: the characters come out in decreasing position order, which is just the input read backwards. Dropping it removes n pushes, n pops and a whole container whose ordering was already implied by the string itself.",

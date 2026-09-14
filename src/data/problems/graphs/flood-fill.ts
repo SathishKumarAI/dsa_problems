@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "graphs",
   difficulty: "easy",
   leetcode: "flood-fill",
-  brief: "Recolour the connected region of equal colours around a starting pixel.",
+  brief:
+    "Recolour the connected region of equal colours around a starting pixel.",
   statement:
     "Given a grid of colours, a starting row and column, and a new colour, repaint the starting pixel and every pixel connected to it through up/down/left/right neighbours of the SAME original colour. Return the grid.",
   constraints: [
@@ -35,8 +36,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Recursion is the same walk, but its depth is the size of the region: a 50 × 50 image of one colour is 2500 nested calls, past Python's default limit and deep enough to be a real stack frame cost elsewhere. Moving the frontier into an explicit stack keeps the traversal identical and makes the memory a list you can see and bound.",
-  arc:
-    "This is the smallest honest graph problem: the grid is the graph, four neighbours are the edges, and a region is a connected component. Every rung differs only in where the frontier lives — searched for by sweeping the grid, held in a queue, held in the call stack, held in an explicit stack — which is exactly the choice you make in every traversal for the rest of the pattern. The other lesson is the visited mark. Repainting a pixel is a beautiful visited mark right up until the new colour equals the old one, and then it marks nothing and the walk never terminates. Any time you encode 'seen' by mutating the data, ask what input makes that mutation invisible. Know the stack or queue version cold and keep the recursion for small grids, where 2500 nested calls is still a real stack.",
+  arc: "This is the smallest honest graph problem: the grid is the graph, four neighbours are the edges, and a region is a connected component. Every rung differs only in where the frontier lives — searched for by sweeping the grid, held in a queue, held in the call stack, held in an explicit stack — which is exactly the choice you make in every traversal for the rest of the pattern. The other lesson is the visited mark. Repainting a pixel is a beautiful visited mark right up until the new colour equals the old one, and then it marks nothing and the walk never terminates. Any time you encode 'seen' by mutating the data, ask what input makes that mutation invisible. Know the stack or queue version cold and keep the recursion for small grids, where 2500 nested calls is still a real stack.",
   approach:
     "Return immediately when the new colour equals the original — that is the only way the fill can fail to terminate. Otherwise push the start pixel and loop: pop a pixel, repaint it, and push each of its four neighbours that still holds the original colour. Repainting is the visited mark, so no pixel is ever queued twice and the walk is linear in the region's size.",
   complexity: { time: "O(rows · cols)", space: "O(rows · cols)" },
@@ -106,7 +106,13 @@ export const problem: Problem = {
     {
       cells: {
         values: [1, 1, 1, 1, 2, 0, 1, 0, 1],
-        marks: { 4: "done", 1: "compare", 3: "compare", 7: "compare", 5: "compare" },
+        marks: {
+          4: "done",
+          1: "compare",
+          3: "compare",
+          7: "compare",
+          5: "compare",
+        },
       },
       caption:
         "Repaint the start to 2 and offer its four neighbours. Up (1) and left (1) match the original colour; right is a 0 and down is a 0, so both are dropped.",

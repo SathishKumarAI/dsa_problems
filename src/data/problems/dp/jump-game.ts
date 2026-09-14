@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "dp",
   difficulty: "medium",
   leetcode: "jump-game",
-  brief: "Each cell says how far you may jump from it. Decide whether the end is reachable.",
+  brief:
+    "Each cell says how far you may jump from it. Decide whether the end is reachable.",
   statement:
     "You start at index 0 of an array. The value at an index is the maximum number of steps you may jump forward from it. Return true when some sequence of jumps reaches the last index.",
   constraints: [
@@ -27,7 +28,11 @@ export const problem: Problem = {
       output: "false",
       note: "Every route lands on the 0 at index 3 and stops there. The 4 beyond it is unreachable.",
     },
-    { input: "nums = [0]", output: "true", note: "Already standing on the last index." },
+    {
+      input: "nums = [0]",
+      output: "true",
+      note: "Already standing on the last index.",
+    },
   ],
   hints: [
     "You never need to know WHICH jumps were taken — only whether the end is reachable at all.",
@@ -36,8 +41,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Scanning backwards for the nearest good index is linear, but it reads the array right to left while the problem runs left to right, and it keeps the answer in terms of a moving target index. Carrying the furthest reachable index forward answers the same question in one left-to-right pass with a single integer of state, and it can stop the moment the reach falls behind — which is the same failure the backwards scan only discovers at the end.",
-  arc:
-    "Notice what the question does NOT ask: it never wants the jumps, only whether the end is reachable. Every rung that tries to construct a route — backtracking, then a table of good indices — is answering a harder question than the one asked, and pays for it. Once you keep only the furthest index reachable so far, the whole problem collapses into one number and one comparison. That is the greedy test in general: find a quantity that is a maximum over everything seen, and check that extending it never invalidates an earlier choice. Know this one cold, and know its sibling — Jump Game II, which asks for the FEWEST jumps and needs the same reach plus a second boundary marking where the current jump ends.",
+  arc: "Notice what the question does NOT ask: it never wants the jumps, only whether the end is reachable. Every rung that tries to construct a route — backtracking, then a table of good indices — is answering a harder question than the one asked, and pays for it. Once you keep only the furthest index reachable so far, the whole problem collapses into one number and one comparison. That is the greedy test in general: find a quantity that is a maximum over everything seen, and check that extending it never invalidates an earlier choice. Know this one cold, and know its sibling — Jump Game II, which asks for the FEWEST jumps and needs the same reach plus a second boundary marking where the current jump ends.",
   approach:
     "One pass, one number: the furthest index reachable so far, starting at 0. At each index, if it is beyond the current reach, no sequence of jumps arrives there and the answer is false. Otherwise extend the reach to the larger of itself and index + nums[index]. If the loop survives to the end — or the reach ever covers the last index — the end is reachable. The greedy is safe because reach is a maximum over everything seen, so it never overstates what is possible and never forgets a better jump.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -114,7 +118,7 @@ export const problem: Problem = {
     {
       name: "Try every jump length",
       summary:
-        "Backtracking from index 0: from each index try every jump from 1 up to its value, and report success as soon as any route lands on the last index.",
+        "From each index try every jump from 1 up to its value, and report success as soon as a route lands on the end. Exponential, and the routes overlap: whether the end is reachable FROM an index has nothing to do with which path arrived there, so the same index is re-explored once per way of reaching it.",
       complexity: { time: "O(2^n)", space: "O(n)" },
       python: `def can_jump(nums: list[int]) -> bool:
     last = len(nums) - 1
@@ -152,7 +156,7 @@ bool canJump(vector<int> nums) {
     {
       name: "A good/bad table",
       summary:
-        "Fill a table right to left: an index is good when some jump from it lands on a good index. The answer is whether index 0 is good.",
+        "Fill a table right to left, marking an index good when some jump from it lands on a good index. Quadratic, and the inner scan is the cost — it checks every landing spot in range, when the only thing that matters is whether the jump reaches the leftmost good index found so far.",
       complexity: { time: "O(n²)", space: "O(n)" },
       whyNow:
         "Backtracking re-explores the same index through every route that reaches it, so an array like [5,4,3,2,1,…] revisits the tail exponentially often. Whether an index can reach the end does not depend on how you got to it — one boolean per index, computed once, replaces the whole tree.",

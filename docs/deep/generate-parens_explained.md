@@ -1,0 +1,824 @@
+# Every Well-Formed Bracket String — explained
+
+## Understanding the Problem
+
+Imagine laying down a row of `2n` cards, each one printed either `(` or `)`, and a rule enforced by
+someone reading the row left to right: they keep a tally, add one for every `(`, subtract one for
+every `)`, and the moment the tally goes below zero they stop you — you have closed something that
+was never opened. Your job is to produce **every** row of `n` openers and `n` closers that survives
+that reading all the way to the end and finishes at exactly zero.
+
+For `n = 2` there are four ways to arrange two of each card, and two survive: `(())` and `()()`. The
+other two, `())(` and `)(()`, fail the reading at the third card.
+
+**The core question:** of all the ways to lay down `2n` brackets, which ones never close a bracket
+that is not open? The naive approach is slow because it builds all `2^(2n)` rows and only then hands
+each one to the reader — so nearly all of the work goes into completing rows that were already dead
+at the third card.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= n <= 8` | The row is at most 16 cards, so `2^(2n)` tops out at 65 536. This is the constraint that makes **brute force runnable** — you can execute it, watch it work, and use it as the oracle for everything faster. `n` is never 0, so there is no empty case. |
+| The answer holds the nth **Catalan** number of rows — 1430 at `n = 8` | This is the **floor**. No algorithm beats the cost of printing its own output. Once an approach costs only the output size, it is finished; there is nothing left to shave. |
+| Well formed means the running tally **never goes negative** and ends at zero | The permission slip for this entire document. It says validity is decidable **prefix by prefix** — once a prefix goes negative, no continuation rescues it. A property testable on a partial answer is a property testable at the moment of the choice, and that is the whole distance between the slow rungs and the fast ones. Contrast a rule like "the row must contain a palindrome", which tells you nothing until the last card lands. |
+| Rows come back in the order the construction produces them | Depth-first search trying `(` before `)` emits them in lexicographic order, because `(` is ASCII 40 and `)` is 41. Any approach building them in another order — the composition rung does — produces the same **set** and must be compared as a set. That is why the harness sorts. |
+
+Note what is *absent*: nothing asks for a count, and nothing asks for the k-th row. Both are
+different problems with much better answers — a closed form, and a rank-unrank walk. This one
+genuinely wants every row.
+
+The worked example used in every section below:
+
+```
+n = 3        answer: ["((()))", "(()())", "(())()", "()(())", "()()()"]
+```
+
+---
+
+## Approach 1 — Enumerate all `2^(2n)` rows, then filter
+
+### The idea
+
+*How do I know I have not missed a valid row?* List every row of `2n` brackets — exactly `2^(2n)` of
+them, one per binary number of `2n` bits — and keep the ones that survive the reading. Nothing can be
+missed because nothing was skipped.
+
+### How to think about it
+
+> **Intuition.** A `2n`-digit odometer where every wheel has two positions, `(` and `)`. Turn it
+> through all its readings and write down the legal ones. The method has no idea what a bracket
+> *means*; it treats the row as an opaque bit pattern and consults the rules only at the end, when
+> the pattern is complete. That separation — generate blindly, judge afterwards — is the shape of
+> every **generate-and-test** algorithm, and it is also exactly why it is slow: the generator and the
+> judge never speak, so the generator keeps producing candidates the judge has already rejected a
+> thousand times for the identical reason.
+
+### Worked example
+
+`n = 3`, so six cards and `2^6 = 64` masks. Bit `i` of the mask decides card `i`: set means `(`,
+clear means `)`. The state the machine carries is the running tally, shown after each card:
+
+| mask | row | tally after each card | verdict |
+|---|---|---|---|
+| 0 | `))))))` | −1 | rejected at card 1 |
+| 1 | `()))))` | 1, 0, −1 | rejected at card 3 |
+| 3 | `(())))` | 1, 2, 1, 0, −1 | rejected at card 5 |
+| 7 | `((()))` | 1, 2, 3, 2, 1, 0 | **kept** |
+| 11 | `(()())` | 1, 2, 1, 2, 1, 0 | **kept** |
+| 13 | `()(())` | 1, 0, 1, 2, 1, 0 | **kept** |
+| 19 | `(())()` | 1, 2, 1, 0, 1, 0 | **kept** |
+| 21 | `()()()` | 1, 0, 1, 0, 1, 0 | **kept** |
+| … | *(the remaining 42 masks)* | | all rejected |
+
+64 rows built, 64 readings run, **5 kept**. The ratio is the whole complaint: 59 rows were
+constructed in full, card by card, and discarded — and most were already dead at card one or two.
+
+### Code
+
+```python
+def is_balanced(s: str) -> bool:
+    """Shared predicate for the two generate-and-test rungs. Not part of any answer."""
+    depth = 0
+    for ch in s:
+        depth += 1 if ch == OPEN else -1
+        if depth < 0:  # a closer with nothing to close - dead already
+            return False
+    return depth == 0
+
+
+def generate_parens_enumerate_filter(n: int) -> list[str]:
+    out: list[str] = []
+    for mask in range(1 << (2 * n)):
+        row = "".join(OPEN if mask & (1 << i) else CLOSE for i in range(2 * n))
+        if is_balanced(row):
+            out.append(row)
+    return sorted(out)  # mask order is not the construction order
+```
+
+`OPEN` and `CLOSE` are module constants declared once at the top of the full script; `is_balanced` is
+the shared judge, lifted out because two rungs need exactly the same reading.
+
+### Common mistake
+
+> **Watch out.** You will think the answer is a *list* and reach for `==` to compare it. It is a
+> **set** that happens to arrive in a list, and this rung produces it in mask order, not construction
+> order. Dropping the `sorted()` therefore yields the right answer and a failing test.
+
+At `n = 3`, mask order gives
+
+```
+['((()))', '(()())', '()(())', '(())()', '()()()']
+```
+
+while every other rung produces
+
+```
+['((()))', '(()())', '(())()', '()(())', '()()()']
+```
+
+Entries three and four are swapped. That is a real failure against a judge comparing positionally,
+and it is why the harness canonicalises with `sorted()` before comparing anything.
+
+### Complexity and when to use this
+
+**Time `O(2^(2n) · n)`, space `O(n)`** beyond the output. The `2^(2n)` is one candidate per bit
+pattern and the `· n` is the reading of each; at `n = 8` that is 65 536 rows × 16 cards ≈ one million
+card reads to produce 1430 answers. Space is `O(n)` for the row under construction — nothing but the
+answers is retained.
+
+Use it as the **oracle**. It is correct by exhaustion, which makes it the reference every faster rung
+is checked against — literally its job in the test suite at the foot of this document. In an
+interview, name it, price it at `4^n`, and move on.
+
+---
+
+## Approach 2 — Recurse over both choices, test at the leaf  *(an addition — not in the data file's ladder)*
+
+### The idea
+
+*The odometer rebuilds each row from scratch; can rows share their prefixes?* Yes — recurse,
+appending `(` in one branch and `)` in the other, so a prefix is built once and reused by everything
+beneath it. The judge stays exactly where it was: at the bottom, on the finished row.
+
+This fixes Approach 1's weakness — **each of the 65 536 masks re-derives its whole row from bits,
+rebuilding prefixes that thousands of other masks share.**
+
+### How to think about it
+
+> **Intuition.** A binary tree of depth `2n`. The root is the empty row; every node has a left child
+> appending `(` and a right child appending `)`; the leaves are the `2^(2n)` complete rows. Walking it
+> depth-first *is* the enumeration, but now the **path** from root to node is the prefix, so nothing is
+> rebuilt. The thing to notice — the reason this rung is in the document at all — is that the tree is
+> the same shape as before. The judge still sits at the leaves. Sharing prefixes improved the constant
+> factor and left the asymptotics untouched, because the work was never in the string-building; it was
+> in visiting doomed branches at all.
+
+### Worked example
+
+`n = 3`. The recursion visits **127 nodes** (`2^(2n+1) − 1` = 2⁷ − 1), reaches 64 leaves, keeps 5.
+
+Follow one dead branch and watch the tally the judge will eventually compute:
+
+| depth | prefix | tally | still salvageable? | what the recursion does |
+|---|---|---|---|---|
+| 0 | `""` | 0 | yes | descends both ways |
+| 1 | `"("` | 1 | yes | descends both ways |
+| 2 | `"()"` | 0 | yes | descends both ways |
+| 3 | `"())"` | **−1** | **no** | descends both ways anyway |
+| 4 | `"())("`, `"()))"` | 0, −2 | no — both already dipped to −1 at card 3 | descends both ways anyway |
+| 5 | 4 prefixes | — | no — all share the dip at card 3 | descends both ways anyway |
+| 6 | `"())((("`, `"())(()"`, `"())()("`, … | | | **8 leaves built, 8 full readings, 0 kept** |
+
+The prefix `"())"` was doomed at card three, and the recursion still built all **eight** rows beneath
+it and ran the full six-card reading on each. Multiply by every doomed prefix in the tree and that is
+the entire inefficiency, in one picture.
+
+### Code
+
+```python
+def generate_parens_leaf_test(n: int) -> list[str]:
+    out: list[str] = []
+
+    def build(current: str) -> None:
+        if len(current) == 2 * n:
+            if is_balanced(current):  # the judge lives HERE - at the leaf
+                out.append(current)
+            return
+        build(current + OPEN)
+        build(current + CLOSE)
+
+    build("")
+    return out
+```
+
+### Common mistake
+
+> **Watch out.** You will read the base case as "the `if` that handles the bottom". It is not. The
+> `if` decides *what* happens at the bottom; the **`return`** is what makes there be a bottom at all.
+
+Drop it and the leaf falls through into its own two recursive calls:
+
+```python
+        if len(current) == 2 * n:
+            if is_balanced(current):
+                out.append(current)
+            # missing: return
+        build(current + OPEN)
+        build(current + CLOSE)
+```
+
+Run that at `n = 3` and it does not return a wrong answer — it raises
+`RecursionError: maximum recursion depth exceeded` after 1000 frames, Python's default
+`sys.getrecursionlimit()`. A recursion with no `return` in its base case has no base case.
+
+### Complexity and when to use this
+
+**Time `O(2^(2n) · n)`, space `O(n)`.** Identical to Approach 1 — the same `2^(2n)` leaves, the same
+`n`-card reading at each — with the string-building constant improved because prefixes are shared.
+Space is `O(n)` for the recursion depth plus `O(n)` for the current prefix.
+
+Use it never, in production. Its value is entirely pedagogical: it is the rung where the recursion
+exists but the intelligence does not, and comparing it with Approach 3 isolates **exactly one
+change** — where the judge lives — with everything else held fixed. If you can explain why Approach 3
+is fast and this one is not, you understand backtracking.
+
+---
+
+## Approach 3 — Move the judge to the choice (backtracking)
+
+### The idea
+
+*If a prefix is already dead, why walk the subtree beneath it?* Because the judge is at the leaf. Move
+it to the choice: carry how many brackets of each kind are already down, and simply never make an
+illegal move. A dead prefix is then never created, so its subtree never exists.
+
+This fixes Approach 2's weakness — **it rediscovers that `"())"` is invalid once per leaf beneath it,
+instead of once, at the moment card three is chosen.**
+
+### How to think about it
+
+> **Intuition.** Two counters are all the state a prefix needs: `opened`, how many `(` are down, and
+> `closed`, how many `)`. They give two rules, and the rules are **not symmetric**. You may *open*
+> while `opened < n` — you have openings left in the budget. You may *close* while `closed < opened` —
+> there is something still waiting to be closed. Think of it as a **door policy** rather than a bouncer
+> at the exit: instead of admitting everyone and ejecting the ones who misbehaved, you refuse entry to
+> anyone who cannot possibly behave.
+
+That second rule is the problem's entire content. `closed < opened` says the running tally is about
+to stay non-negative, which is the definition of well formed, tested one card early.
+
+> **Why it works.** Pruning is only sound if it never discards a real answer. Here the argument is in
+> two halves, and both are one line. **Nothing valid is lost:** any valid row, read left to right, has
+> `opened <= n` and `closed < opened` at every point where the next card is an opener and a closer
+> respectively — so every prefix of every valid row passes both rules, and the recursion reaches it.
+> **Nothing invalid is produced:** rule 2 guarantees the tally never drops below zero, and arriving at
+> length `2n` with `opened <= n` and `closed <= opened` forces `opened = closed = n`, so the tally ends
+> at zero. The two conditions are exactly the two halves of the definition, which is why no validity
+> check survives anywhere in the function — **reaching length `2n` is the proof.**
+
+Backtracking is *choose, recurse, undo*. The choice here is appending a card; the undo is removing
+it. In this version the path is a Python string and strings are immutable, so `current + OPEN` makes
+a **new** string for the child while the parent's `current` is untouched — the undo is invisible,
+done for you by the language. Convenient, and also why this version allocates a fresh string at each
+of the 22 nodes. Approach 4 makes the undo explicit and stops paying for it.
+
+### Worked example
+
+`n = 3`. The full traversal — **22 nodes**, in visiting order:
+
+| # | prefix | `opened` | `closed` | may open? `o<3` | may close? `c<o` | what happens |
+|---|---|---|---|---|---|---|
+| 1 | `` | 0 | 0 | yes | **no** | only open |
+| 2 | `(` | 1 | 0 | yes | yes | both branches |
+| 3 | `((` | 2 | 0 | yes | yes | both branches |
+| 4 | `(((` | 3 | 0 | **no** | yes | budget spent — only close |
+| 5 | `((()` | 3 | 1 | no | yes | only close |
+| 6 | `((())` | 3 | 2 | no | yes | only close |
+| 7 | `((()))` | 3 | 3 | — | — | length 6 → **emit `((()))`** |
+| 8 | `(()` | 2 | 1 | yes | yes | back at #3, close branch |
+| 9 | `(()(` | 3 | 1 | no | yes | only close |
+| 10 | `(()()` | 3 | 2 | no | yes | only close |
+| 11 | `(()())` | 3 | 3 | — | — | **emit `(()())`** |
+| 12 | `(())` | 2 | 2 | yes | **no** | nothing open — only open |
+| 13 | `(())(` | 3 | 2 | no | yes | only close |
+| 14 | `(())()` | 3 | 3 | — | — | **emit `(())()`** |
+| 15 | `()` | 1 | 1 | yes | **no** | back at #2, close branch |
+| 16 | `()(` | 2 | 1 | yes | yes | both branches |
+| 17 | `()((` | 3 | 1 | no | yes | only close |
+| 18 | `()(()` | 3 | 2 | no | yes | only close |
+| 19 | `()(())` | 3 | 3 | — | — | **emit `()(())`** |
+| 20 | `()()` | 2 | 2 | yes | **no** | only open |
+| 21 | `()()(` | 3 | 2 | no | yes | only close |
+| 22 | `()()()` | 3 | 3 | — | — | **emit `()()()`** |
+
+Rows 4, 12, 15 and 20 are the rules doing their work. At `(((` the open branch is refused for running
+out of budget. At `(())` the close branch is refused because `closed == opened` — nothing is open, and
+taking that step would produce `(()))`, the doomed prefix Approach 2 would have expanded into two
+leaves.
+
+**The pruning, measured.** Same `n`, same answers, different tree:
+
+| `n` | nodes visited unpruned | nodes visited pruned | answers |
+|---|---|---|---|
+| 3 | 127 | **22** | 5 |
+| 5 | 2 047 | **196** | 42 |
+| 8 | 131 071 | **6 917** | 1 430 |
+
+At `n = 8` the pruning removes 95 % of the tree, and what remains is under five nodes per answer.
+That is the precise sense in which **the cost has become the output size**: the pruned tree holds only
+the answers and the prefixes leading to them, and nothing is visited that does not contribute.
+
+### Code
+
+```python
+def generate_parens_backtrack(n: int) -> list[str]:
+    out: list[str] = []
+
+    def build(opened: int, closed: int, current: str) -> None:
+        if len(current) == 2 * n:
+            out.append(current)  # every step taken was legal, so this row is valid
+            return
+        if opened < n:  # rule 1: open while openings remain
+            build(opened + 1, closed, current + OPEN)
+        if closed < opened:  # rule 2: close only while closings trail openings
+            build(opened, closed + 1, current + CLOSE)
+
+    build(0, 0, "")
+    return out
+```
+
+### Common mistake
+
+> **Watch out.** You will write rule 2 as `closed < n`, mirroring rule 1, because the two rules *look*
+> like they should be symmetric — one budget for openers, one for closers. They are not. `closed < n`
+> enforces only the **budget**; it says nothing about **ordering**.
+
+```python
+        if opened < n:
+            build(opened + 1, closed, current + OPEN)
+        if closed < n:           # WRONG - mirrors rule 1 instead of stating rule 2
+            build(opened, closed + 1, current + CLOSE)
+```
+
+Run it at `n = 3` and it returns **20 rows instead of 5**, including `(()))(` and `)((())`. At `n = 2`
+it returns 6 instead of 2: `['(())', '()()', '())(', ')(()', ')()(', '))((']`. The 20 is `C(6,3)`, the
+number of ways to place three openers among six slots — which names exactly what the buggy version
+generates: every balanced **count**, no balanced **structure**. Rule 2 is not about how many closers
+remain. It is about whether there is anything to close, and only `closed < opened` says that.
+
+### Complexity and when to use this
+
+**Time `O(4ⁿ / √n)`, space `O(n)`** beyond the output. That bound *is* the nth Catalan number
+asymptotically — the output size — times a small constant for the prefixes shared between answers.
+Space is `O(n)` for a recursion at most `2n` frames deep; the output list is the answer, not scratch.
+
+**This is the one to write.** It is the expected solution, it is six lines, and the two rules are
+directly explainable. The only reason to reach past it is the constant factor, which is the next rung.
+
+---
+
+## Approach 4 — A mutable buffer with an explicit undo  *(an addition — not in the data file's ladder)*
+
+### The idea
+
+*Approach 3 allocates a brand-new string at every node — can the prefix be edited in place?* Yes. Keep
+one list of characters, append before recursing, pop after. The list is the path; the pop is the undo.
+
+This fixes Approach 3's weakness — **`current + OPEN` copies the whole prefix on every call**, so a
+prefix of length `k` costs `k` character copies at each node, turning an `O(nodes)` walk into
+`O(nodes · n)`.
+
+### How to think about it
+
+> **Intuition.** Approach 3 gave every call its own private copy of the path — safe, and about as
+> efficient as photocopying the whole map each time you take a turn. Here there is **one** map and one
+> pencil. Descending means writing a card at the end; returning means rubbing it out. The buffer at any
+> moment holds exactly the path from the root to where you stand, which is the same invariant Approach
+> 3 kept — it just keeps it by editing instead of copying.
+
+Two consequences follow, and they are the classic traps of mutable backtracking. **The undo is
+mandatory**, because child and parent now share one object; if the child does not clean up, the parent
+resumes with the child's leftovers. **The emit must copy**, because `out.append(path)` stores a
+reference to a buffer that is about to keep mutating — snapshot it with `"".join(path)`.
+
+This is the shape the data file's Java and C++ solutions use. `StringBuilder.deleteCharAt` and
+`string::pop_back` are that rubbed-out card, because in those languages the copying version is not
+merely slower, it is the difference between idiomatic and wasteful.
+
+### Worked example
+
+`n = 3`, the first descent and the first backtrack, watching the single buffer:
+
+| step | action | `path` after | `out` after |
+|---|---|---|---|
+| 1 | append `(` | `['(']` | `[]` |
+| 2 | append `(` | `['(', '(']` | `[]` |
+| 3 | append `(` | `['(', '(', '(']` | `[]` |
+| 4 | append `)` | `['(', '(', '(', ')']` | `[]` |
+| 5 | append `)` | `['(', '(', '(', ')', ')']` | `[]` |
+| 6 | append `)`, length 6 → snapshot | `['(', '(', '(', ')', ')', ')']` | `['((()))']` |
+| 7 | **pop** — undoes step 6 | `['(', '(', '(', ')', ')']` | `['((()))']` |
+| 8 | **pop** — undoes step 5 | `['(', '(', '(', ')']` | `['((()))']` |
+| 9 | **pop** — undoes step 4 | `['(', '(', '(']` | `['((()))']` |
+| 10 | **pop** — undoes step 3 | `['(', '(']` | `['((()))']` |
+| 11 | append `)` — the close branch at node #3 | `['(', '(', ')']` | `['((()))']` |
+| … | | | eventually `'(()())'` |
+
+Step 10 is the whole idea: the buffer rewound from `(((` to `((` so the close branch could start from
+the right prefix. Without it, step 11 appends to a six-card buffer and produces a seven-card path that
+never matches the length test.
+
+### Code
+
+```python
+def generate_parens_buffer(n: int) -> list[str]:
+    out: list[str] = []
+    path: list[str] = []  # holds the path from the root to the current node
+
+    def build(opened: int, closed: int) -> None:
+        if len(path) == 2 * n:
+            out.append("".join(path))  # snapshot: the buffer keeps mutating
+            return
+        if opened < n:
+            path.append(OPEN)
+            build(opened + 1, closed)
+            path.pop()  # the undo, restoring the invariant for the sibling branch
+        if closed < opened:
+            path.append(CLOSE)
+            build(opened, closed + 1)
+            path.pop()
+
+    build(0, 0)
+    return out
+```
+
+### Common mistake
+
+> **Watch out.** You will think of the buffer as "the string I am building" and forget it is **shared
+> state**. The first answer it produces is correct, which is what makes the bug survive review.
+
+Omit the two `path.pop()` calls and at `n = 3` the function returns
+
+```
+['((()))']
+```
+
+**one row instead of five.** The first descent fills the buffer to `((()))` and emits it correctly.
+Nothing is then rubbed out, so when the call at `((` tries its close branch it appends to a buffer
+still holding all six cards — length 7, which never equals `2n`, so that branch and every branch after
+it descends without ever meeting the base case and returns nothing. A test checking only `result[0]`
+passes.
+
+The mirror-image bug is `out.append(path)` instead of `out.append("".join(path))`. That stores the live
+list five times; by the time the function returns, all five entries are the same object and the buffer
+has been popped back to empty, giving `[[], [], [], [], []]`.
+
+### Complexity and when to use this
+
+**Time `O(4ⁿ / √n)`, space `O(n)`.** Asymptotically identical to Approach 3 — the same pruned tree —
+but the per-node cost drops from "copy a prefix of up to `2n` characters" to "append or pop one", an
+`O(n)` factor of real wall-clock time that the big-O hides.
+
+Use it in any language where string copying is visible — Java, C#, JavaScript — which is why the data
+file's Java and C++ solutions are written this way and its Python is not. Use it in Python too when the
+path holds larger objects (a board, a permutation, a chosen set) rather than characters, because then
+the copy is not a small constant. This is the version whose **shape** — choose, recurse, undo —
+transfers to N-Queens, subsets, permutations and word search.
+
+---
+
+## Approach 5 — Compose from the unique first-bracket split  *(an addition — not in the data file's ladder)*
+
+### The idea
+
+*Instead of building rows card by card, can they be built out of smaller answers?* Yes, and uniquely.
+In any well-formed row, the very first `(` is closed by exactly one `)`. That closer splits the row
+into "what was inside the first pair" and "everything after it", and both parts are themselves well
+formed.
+
+This fixes no complexity weakness — the pruned backtracking already costs the output size. It fixes a
+**conceptual** one: backtracking hands you the rows but no understanding of *why there are
+Catalan-many of them.*
+
+### How to think about it
+
+> **Intuition.** Every non-empty well-formed row is `"(" + A + ")" + B` for exactly one pair of
+> well-formed rows `A` and `B`. Not "at least one" — **exactly** one, because the partner of the first
+> `(` is determined by the row itself. So if `A` uses `i` pairs then `B` uses `n − 1 − i`, the wrapping
+> pair having cost one, and running `i` from 0 to `n − 1` sweeps every possibility with no duplicates
+> and no gaps.
+
+That decomposition is a bijection, and it is where the Catalan numbers come from:
+`C(n) = Σ C(i) · C(n−1−i)`. Seeing the identity fall out of the bracket structure is worth more than
+the code — the same split counts the binary trees with `n` nodes and the triangulations of a polygon,
+because those are the same object in different clothes.
+
+### Worked example
+
+`n = 3`. Build up from the bottom, then sweep the split point:
+
+| `n` | how it is assembled | result |
+|---|---|---|
+| 0 | base case | `[""]` |
+| 1 | `i=0`: `"(" + "" + ")" + ""` | `["()"]` |
+| 2 | `i=0`: `"()" + "()"`; `i=1`: `"(" + "()" + ")"` | `["()()", "(())"]` |
+
+| `i` (pairs inside the first bracket) | `A` ranges over | `B` ranges over | rows produced |
+|---|---|---|---|
+| 0 | `compose(0)` = `[""]` | `compose(2)` = `["()()", "(())"]` | `()()()`, `()(())` |
+| 1 | `compose(1)` = `["()"]` | `compose(1)` = `["()"]` | `(())()` |
+| 2 | `compose(2)` = `["()()", "(())"]` | `compose(0)` = `[""]` | `(()())`, `((()))` |
+
+Five rows — the same five as every other approach, in a completely different order. That is the
+set-shaped-answer trap: correct output, and a positional comparison against the backtracking rung
+would report a disagreement.
+
+### Code
+
+```python
+@lru_cache(maxsize=None)
+def _compose(n: int) -> tuple[str, ...]:
+    """Immutable so a caller cannot mutate a cached answer that later calls share."""
+    if n == 0:
+        return ("",)  # one row of zero pairs: the empty one
+    out: list[str] = []
+    for inside in range(n):  # the first "(" closes around `inside` pairs
+        for a in _compose(inside):
+            for b in _compose(n - 1 - inside):  # n-1: the wrapping pair is spent
+                out.append(OPEN + a + CLOSE + b)
+    return tuple(out)
+
+
+def generate_parens_compose(n: int) -> list[str]:
+    return list(_compose(n))
+```
+
+### Common mistake
+
+> **Watch out.** You will write `for inside in range(1, n)`, reasoning that the inside of a bracket
+> pair "must contain something". It must not — `()` has an empty inside, and `_compose(0)` returning
+> `[""]` is what makes that expressible.
+
+The buggy version returns no wrong row. It returns **no rows at all**, `[]`, for every `n ≥ 1`. At
+`n = 1` the loop `range(1, 1)` is empty, so `_compose(1)` is empty; `_compose(2)` is assembled entirely
+from `_compose(1)` and `_compose(0)`, so it inherits the emptiness, and the collapse propagates upward.
+An empty answer with no error and no crash is the most expensive kind of bug, and the cause is a base
+case that was never reachable. When a recursive construction returns nothing, suspect the base case
+before the recursion.
+
+### Complexity and when to use this
+
+**Time `O(4ⁿ / √n)`, space `O(4ⁿ / √n)`.** Time is again the output size — every row is assembled by
+exactly one `(i, A, B)` triple. The **space** is the difference: this rung memoises every smaller
+answer list, holding `C(0) + … + C(n)` rows in the cache rather than the `O(n)` stack of the
+backtracking rungs. At `n = 8` that is roughly 2900 extra rows, and it concatenates whole strings
+rather than single cards, so the constant factor is worse too.
+
+Use it when you need the **count** rather than the rows: drop the string-building and the same loop is
+the Catalan recurrence, an `O(n²)` count with no exponential anywhere. Use it for anything structural —
+"how many with maximum nesting depth `d`", "the k-th in lexicographic order", "count them modulo a
+prime" — all easy on the split and hard on the character-by-character recursion. For the problem as
+stated, backtracking is simpler and lighter; this is the rung you mention, not the one you write.
+
+---
+
+## The Overall Arc
+
+Every rung here chases one principle: **test a constraint as early as you can afford to, because a
+constraint tested late is paid once per doomed candidate instead of once.** The odometer pays the most
+extreme version of that bill — it builds all `2^(2n)` bit patterns and only then consults the rules, so
+59 of 64 rows at `n = 3` are completed and discarded, almost always for something that was already true
+three cards in. Recursion is the first instinct for killing that redundancy and it half works: sharing
+prefixes means a prefix is built once rather than once per descendant, but the judge is still at the
+leaves, so the doomed prefix `"())"` is still expanded into eight complete rows and rejected eight times
+for the same reason. The insight arrives as a question about the *rule* rather than the algorithm —
+"well formed" is a property of every prefix, not only of the whole, so it can be asked when a card is
+chosen rather than after the last one lands, and that single relocation from leaf to choice turns
+generate-and-test into backtracking. Two counters express it, open while openings remain and close only
+while closings trail openings, the second rule carrying all the content because it is the one keeping
+the running tally non-negative; the tree collapses from 131 071 nodes to 6 917 at `n = 8`, under five
+nodes per answer, and at that point the cost *is* the answer's size, so no asymptotic improvement
+remains and the work moves to constants — stop copying the prefix at every node, keep one mutable
+buffer and rub out the last card on the way back up, which is the choose-recurse-undo skeleton every
+other backtracking problem wears. The last rung stops optimising and starts explaining: because the
+first opener has exactly one partner, every row decomposes uniquely into `"(" + A + ")" + B`, which
+rebuilds the same set from a completely different direction and hands you the Catalan recurrence for
+free — the answer to "why 1430" rather than merely "here are the 1430". Blind enumeration, shared
+prefixes, pruned choices, pruned choices without the copying, and finally structural composition — and
+the two worth carrying out of the room are the pruned backtracking, because it is the answer, and the
+leaf-test version, because holding it alongside is the only way to say precisely what pruning bought.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Enumerate + filter | `O(2^(2n) · n)` | `O(n)` | No feedback from judge to generator: every candidate completed before rejection | You need an obviously-correct oracle for the fast versions |
+| Recurse, test at the leaf | `O(2^(2n) · n)` | `O(n)` | Shares prefixes, but the judge is still at the bottom, so doomed subtrees are still walked | Teaching only — it isolates exactly what pruning changes |
+| **Backtrack, test at the choice** | **`O(4ⁿ / √n)`** | **`O(n)`** | **Two counters buy the pruning; cost becomes the output size, but the prefix is copied at each node** | **The default answer, and the one to write in an interview** |
+| Backtrack into a mutable buffer | `O(4ⁿ / √n)` | `O(n)` | Removes the per-node copy at the price of shared mutable state you must undo | Any language where string copying is visible; any path heavier than characters |
+| Compose from the first split | `O(4ⁿ / √n)` | `O(4ⁿ / √n)` | Buys structural insight and the Catalan recurrence; pays with a cache of every smaller answer | Counting rather than listing; k-th element; anything about the structure of the set |
+
+---
+
+## Interview Priority
+
+**Know cold — the pruned backtracking.** Six lines, written without pausing over which counter bounds
+which rule.
+
+> **In an interview.** Say the two rules in English before writing anything: *open while openings
+> remain, close only while closings trail openings.* That sentence is the solution; the code is a
+> transcription. The follow-up is always some form of "why is it not `2^(2n)`" — answer that no invalid
+> prefix is ever created, so the tree holds only the answers and the prefixes leading to them, and the
+> node count at `n = 8` is 6 917 rather than 131 071. If they push further, give the soundness argument:
+> every prefix of every valid row passes both rules, so nothing is lost; and reaching length `2n` under
+> those rules forces `opened = closed = n` with a never-negative tally, so nothing invalid is produced.
+
+**Know cold — the generate-and-filter baseline.** Ten seconds to state, and it is what makes the
+pruning a **decision** rather than a memorised trick. Price it (`4ⁿ` candidates for `C(n)` answers), say
+why it is wasteful (validity is prefix-decidable and you are deferring it), then improve on it. That
+sequence is what is being scored, not the final code.
+
+**Know cold — the choose/recurse/undo skeleton.** Not for this problem, where the string version is
+fine, but because it is the same skeleton for subsets, permutations, combinations, N-Queens, word search
+and Sudoku — and because forgetting the undo is the single most common backtracking bug. State the
+invariant — "the buffer holds the path from the root to here, and the pop is what keeps that true" — and
+all of those become correct for the same reason.
+
+**Understand but do not memorize — the leaf-test recursion.** Never the right code. Its value is one
+sentence: *test at the leaf and I visit 127 nodes at `n = 3`; test at the choice and I visit 22.* That
+is the clearest one-line definition of pruning available.
+
+**Understand but do not memorize — the composition.** One thing to recognise: a well-formed row splits
+uniquely at the first bracket's partner, which is where the Catalan numbers come from. You will not
+write it here, but if asked "how many are there" or "give me the k-th", the character-by-character
+recursion has nothing to say and this decomposition answers both immediately.
+
+---
+
+## Full Runnable Script
+
+The same five functions, assembled, plus a test suite: both statement examples, the worked example, the
+whole legal range `n = 1..8` on every approach, and `n = 9..12` on the pruned rungs only — the two
+exponential rungs are excluded there, their `4ⁿ` cost stated analytically rather than measured. Every
+count is cross-checked against the nth Catalan number computed independently, and every list is sorted
+before comparison because the answer is a **set** and the composition rung produces it in a different
+order.
+
+```python
+"""Every Well-Formed Bracket String - every approach in one file, plus a self-checking test suite.
+
+Run: python generate_parens_all.py
+"""
+
+from __future__ import annotations
+
+from functools import lru_cache
+
+OPEN = "("
+CLOSE = ")"
+
+
+# --- shared judge, used by the two generate-and-test rungs ----------------------
+
+def is_balanced(s: str) -> bool:
+    """The reading rule itself, lifted out because two rungs need exactly it."""
+    depth = 0
+    for ch in s:
+        depth += 1 if ch == OPEN else -1
+        if depth < 0:  # a closer with nothing to close - dead already
+            return False
+    return depth == 0
+
+
+# --- 1. Enumerate all 2^(2n) rows, then filter ----------------------------------
+
+def generate_parens_enumerate_filter(n: int) -> list[str]:
+    out: list[str] = []
+    for mask in range(1 << (2 * n)):
+        row = "".join(OPEN if mask & (1 << i) else CLOSE for i in range(2 * n))
+        if is_balanced(row):
+            out.append(row)
+    return sorted(out)  # mask order is not the construction order
+
+
+# --- 2. Recurse over both choices, test at the leaf -----------------------------
+
+def generate_parens_leaf_test(n: int) -> list[str]:
+    out: list[str] = []
+
+    def build(current: str) -> None:
+        if len(current) == 2 * n:
+            if is_balanced(current):  # the judge lives HERE - at the leaf
+                out.append(current)
+            return
+        build(current + OPEN)
+        build(current + CLOSE)
+
+    build("")
+    return out
+
+
+# --- 3. Backtracking with the judge moved to the choice -------------------------
+
+def generate_parens_backtrack(n: int) -> list[str]:
+    out: list[str] = []
+
+    def build(opened: int, closed: int, current: str) -> None:
+        if len(current) == 2 * n:
+            out.append(current)  # every step taken was legal, so this row is valid
+            return
+        if opened < n:  # rule 1: open while openings remain
+            build(opened + 1, closed, current + OPEN)
+        if closed < opened:  # rule 2: close only while closings trail openings
+            build(opened, closed + 1, current + CLOSE)
+
+    build(0, 0, "")
+    return out
+
+
+# --- 4. Backtracking into a mutable buffer, with an explicit undo ---------------
+
+def generate_parens_buffer(n: int) -> list[str]:
+    out: list[str] = []
+    path: list[str] = []  # holds the path from the root to the current node
+
+    def build(opened: int, closed: int) -> None:
+        if len(path) == 2 * n:
+            out.append("".join(path))  # snapshot: the buffer keeps mutating
+            return
+        if opened < n:
+            path.append(OPEN)
+            build(opened + 1, closed)
+            path.pop()  # the undo, restoring the invariant for the sibling branch
+        if closed < opened:
+            path.append(CLOSE)
+            build(opened, closed + 1)
+            path.pop()
+
+    build(0, 0)
+    return out
+
+
+# --- 5. Compose from the unique first-bracket split -----------------------------
+
+@lru_cache(maxsize=None)
+def _compose(n: int) -> tuple[str, ...]:
+    """Immutable so a caller cannot mutate a cached answer that later calls share."""
+    if n == 0:
+        return ("",)  # one row of zero pairs: the empty one
+    out: list[str] = []
+    for inside in range(n):  # the first "(" closes around `inside` pairs
+        for a in _compose(inside):
+            for b in _compose(n - 1 - inside):  # n-1: the wrapping pair is spent
+                out.append(OPEN + a + CLOSE + b)
+    return tuple(out)
+
+
+def generate_parens_compose(n: int) -> list[str]:
+    return list(_compose(n))
+
+
+# --- harness -------------------------------------------------------------------
+
+APPROACHES = [
+    ("enumerate_filter", generate_parens_enumerate_filter),
+    ("leaf_test", generate_parens_leaf_test),
+    ("backtrack", generate_parens_backtrack),
+    ("buffer_undo", generate_parens_buffer),
+    ("compose", generate_parens_compose),
+]
+
+PRUNED = APPROACHES[2:]  # the rungs that cost the output size, not 4^n candidates
+
+
+def catalan(n: int) -> int:
+    """Computed independently of every approach, as a second opinion on the count."""
+    c = 1
+    for i in range(n):
+        c = c * 2 * (2 * i + 1) // (i + 2)
+    return c
+
+
+def main() -> None:
+    all_agreed = True
+    width = max(len(name) for name, _ in APPROACHES)
+
+    for n in range(1, 9):  # 1..8 is the whole legal range
+        label = "statement example" if n in (1, 2) else "worked example" if n == 3 else "stress"
+        results = [sorted(fn(n)) for _, fn in APPROACHES]  # a SET of rows: canonicalise
+        agreed = all(r == results[0] for r in results)
+        sized = len(results[0]) == catalan(n)
+        print(f"\nn={n} ({label}): {len(results[0])} rows, Catalan(n)={catalan(n)}")
+        for (name, _), got in zip(APPROACHES, results):
+            shown = got if len(got) <= 5 else got[:5] + ["..."]
+            print(f"  {name:<{width}} -> {len(got):>4} {shown}")
+        if not agreed or not sized:
+            all_agreed = False
+            print(f"  DISAGREEMENT (agreed={agreed}, count matches Catalan={sized})")
+
+    # the two exponential rungs are excluded past n=8: 2^(2n) candidates is 4^n
+    # work, and their cost is stated analytically rather than measured
+    for n in range(9, 13):
+        results = [sorted(fn(n)) for _, fn in PRUNED]
+        agreed = all(r == results[0] for r in results)
+        sized = len(results[0]) == catalan(n)
+        print(f"\nn={n} (pruned rungs only): {len(results[0])} rows, Catalan(n)={catalan(n)}")
+        if not agreed or not sized:
+            all_agreed = False
+            print(f"  DISAGREEMENT (agreed={agreed}, count matches Catalan={sized})")
+
+    print(f"\n12 values of n, {len(APPROACHES)} approaches (5 up to n=8, 3 beyond).")
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()
+```

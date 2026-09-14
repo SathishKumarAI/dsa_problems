@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "trees",
   difficulty: "easy",
   leetcode: "diameter-of-binary-tree",
-  brief: "Find the longest path in a binary tree, counted in edges. It need not touch the root.",
+  brief:
+    "Find the longest path in a binary tree, counted in edges. It need not touch the root.",
   statement:
     "Given the root of a binary tree, return the length of the longest path between any two nodes, measured in edges. The path may bend at any node and does not have to pass through the root.",
   constraints: [
@@ -24,9 +25,9 @@ export const problem: Problem = {
     },
     { input: "root = [1, 2]", output: "1" },
     {
-      input: "root = [1, 2, null, 3, null, 4]",
-      output: "3",
-      note: "A chain hanging off the left. The whole path is inside the left subtree — a solution that only measures through the root gets this wrong.",
+      input: "root = [1, 2, null, 3, 4, 5, 6, 7]",
+      output: "4",
+      note: "The path is 5 → 3 → 2 → 4 → 7, four edges that bend at node 2 and never reach the root. Measuring only through the root gives 3, so this is the example that catches the most common wrong solution — the first two do not, because in both of them the longest path happens to end at the root.",
     },
   ],
   hints: [
@@ -36,8 +37,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "A map of precomputed depths is linear, but it stores a number for every node in the tree — 10^4 entries to answer with a single integer — and it needs two passes, so the code reads as two ideas instead of one. The depth a node returns is exactly what its parent needs and nothing else does: return it up the call and fold the bend into a running best on the way, and one pass with no table answers the question.",
-  arc:
-    "One trick, applied once: every path has exactly one highest node, so 'the best path' becomes 'the best bend', and a question about paths turns into a question about nodes. After that the ladder is only about not recomputing depth — measure it per node and you re-walk every subtree once per ancestor; cache it and you pay a table; return it from the walk that is already happening and you pay nothing. That last move — a recursion returning what the parent needs while folding a running best on the way up — is the shape of almost every 'best something in a tree' problem: maximum path sum, longest univalue path, the deepest matching subtree. Learn the shape rather than the answer, and notice that the walk returns a DEPTH while the answer is a BEND; conflating the two is the most common bug here.",
+  arc: "One trick, applied once: every path has exactly one highest node, so 'the best path' becomes 'the best bend', and a question about paths turns into a question about nodes. After that the ladder is only about not recomputing depth — measure it per node and you re-walk every subtree once per ancestor; cache it and you pay a table; return it from the walk that is already happening and you pay nothing. That last move — a recursion returning what the parent needs while folding a running best on the way up — is the shape of almost every 'best something in a tree' problem: maximum path sum, longest univalue path, the deepest matching subtree. Learn the shape rather than the answer, and notice that the walk returns a DEPTH while the answer is a BEND; conflating the two is the most common bug here.",
   approach:
     "One post-order walk. Each call returns the depth of its own subtree in edges, and before returning it updates a running best with left + right, which is the longest path bending at that node. Because every path bends at exactly one node, considering every node as the bend considers every path. Depth returns as 1 + max(left, right), and the best is read after the walk.",
   complexity: { time: "O(n)", space: "O(h)" },

@@ -26,6 +26,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Flattening and sorting orders all n² values to read one of them. Only n candidates can ever be the next smallest — the front of each row — so a heap of that size steps through the matrix in order and stops after k pops, touching a fraction of the cells when k is small.",
+  arc: "Flattening throws away the only thing that makes this matrix special. The rows and columns arrive already sorted, and sorting the flattened list spends n² log n rediscovering an order that was half given. Use it instead: at any moment only n values can be the next smallest — the front of each row — so a heap holding those n fronts has the global minimum at its top, and popping one while pushing its right neighbour keeps that true. Stop after k pops and most of the matrix was never touched. The habit to carry is the k-way merge underneath it, the same structure that merges sorted lists or sorted files and the reason external sorting works at all. Worth knowing alongside it is the rival shape: binary search on the VALUE, counting cells no larger than a midpoint by walking the staircase from a corner, which gets there in n log(range) and wins when k is close to n². The size of k is what picks between them.",
   approach:
     "Push the first entry of every row into a min-heap, each tagged with its position. Pop the smallest; if its row has another entry, push that. Repeat k times, and the last value popped is the answer. The invariant is that the heap always holds the smallest unvisited entry of every row, so its top is the smallest unvisited entry anywhere. Sortedness within a row is what makes the replacement correct — the next candidate from that row is exactly the one to its right.",
   complexity: { time: "O(k log n)", space: "O(n)" },
@@ -72,7 +73,7 @@ def kth_smallest(matrix: list[list[int]], k: int) -> int:
     {
       name: "Flatten and sort",
       summary:
-        "Collect every value into one list, sort it, and read the entry at position k − 1.",
+        "Collect all n-squared values into one list, sort it, and read position k - 1. It ignores both facts the problem hands you, that the rows are sorted AND that the columns are sorted, and copies the entire matrix to answer a question about a single position in it.",
       complexity: { time: "O(n^2 log n)", space: "O(n^2)" },
       python: `def kth_smallest(matrix: list[list[int]], k: int) -> int:
     values = []

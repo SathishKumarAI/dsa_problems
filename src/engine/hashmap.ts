@@ -25,11 +25,13 @@ export function hashLayout(
     hit = false,
     label = "seen — value @ index",
     fmt = "at",
+    mode = "lookup",
   }: {
     probe?: number | null
     hit?: boolean
     label?: string
     fmt?: "at" | "times"
+    mode?: "insert" | "lookup"
   } = {}
 ): HashModel {
   const buckets = hashBuckets(entries.length)
@@ -45,6 +47,7 @@ export function hashLayout(
     buckets,
     chains,
     probe,
+    mode,
     slot,
     present,
     hit,

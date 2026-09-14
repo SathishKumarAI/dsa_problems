@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "graphs",
   difficulty: "medium",
   leetcode: "pacific-atlantic-water-flow",
-  brief: "Find every cell whose rain can run off to both the top-left ocean and the bottom-right one.",
+  brief:
+    "Find every cell whose rain can run off to both the top-left ocean and the bottom-right one.",
   statement:
     "A grid gives the height of each cell. Rain flows from a cell to a four-directional neighbour whose height is less than or equal to it, and off the edge into an ocean: the top and left edges border one ocean, the bottom and right edges border the other. Return the coordinates of every cell whose water can reach both.",
   constraints: [
@@ -41,8 +42,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Even with an early exit, a search per cell repeats the same descents: 40 000 cells each walking a slope of up to 40 000 steps. The oceans never move, so the expensive direction is the wrong one — run the flow BACKWARDS from each ocean's border, uphill, and two linear sweeps mark every cell that drains to each ocean. The answer is the intersection of the two marks.",
-  arc:
-    "The move that matters is the reversal: asking 'can this cell reach the ocean' makes you run one search per cell, while asking 'which cells can reach THIS ocean' makes you run one search per ocean. Same edges, opposite direction, quadratic work becomes linear. Once flipped, the second idea does the rest: two independent marks and an intersection, which is how most 'reachable from both / all of these' problems are built. Two things to carry: a flow rule with <= in it means equal neighbours are two-way streets, so a visited set is load-bearing rather than an optimisation; and when a search starts from many sources, seed the frontier with all of them at once instead of looping — one multi-source traversal is not more complicated than one single-source traversal.",
+  arc: "The move that matters is the reversal: asking 'can this cell reach the ocean' makes you run one search per cell, while asking 'which cells can reach THIS ocean' makes you run one search per ocean. Same edges, opposite direction, quadratic work becomes linear. Once flipped, the second idea does the rest: two independent marks and an intersection, which is how most 'reachable from both / all of these' problems are built. Two things to carry: a flow rule with <= in it means equal neighbours are two-way streets, so a visited set is load-bearing rather than an optimisation; and when a search starts from many sources, seed the frontier with all of them at once instead of looping — one multi-source traversal is not more complicated than one single-source traversal.",
   approach:
     "Flip the question. Instead of asking 'can this cell reach the ocean', ask 'which cells can this ocean be reached FROM'. Push every cell on the top and left edges and climb: a neighbour is reachable when its height is greater than or equal to the current cell's, which is exactly the downhill rule read backwards. Do the same from the bottom and right edges into a second mark. Every cell carrying both marks is in the answer. Two traversals, each visiting a cell at most once.",
   complexity: { time: "O(rows · cols)", space: "O(rows · cols)" },
@@ -143,7 +143,13 @@ vector<vector<int>> pacificAtlantic(vector<vector<int>> heights) {
     {
       cells: {
         values: [1, 2, 2, 3, 2, 4, 3, 1, 5],
-        marks: { 0: "window", 1: "window", 2: "window", 3: "window", 6: "window" },
+        marks: {
+          0: "window",
+          1: "window",
+          2: "window",
+          3: "window",
+          6: "window",
+        },
         labels: { 0: "ocean A" },
       },
       caption:
@@ -161,7 +167,13 @@ vector<vector<int>> pacificAtlantic(vector<vector<int>> heights) {
     {
       cells: {
         values: [1, 2, 2, 3, 2, 4, 3, 1, 5],
-        marks: { 2: "compare", 5: "compare", 6: "compare", 7: "compare", 8: "window" },
+        marks: {
+          2: "compare",
+          5: "compare",
+          6: "compare",
+          7: "compare",
+          8: "window",
+        },
         labels: { 8: "ocean B" },
       },
       caption:
@@ -276,7 +288,7 @@ vector<vector<int>> pacificAtlantic(vector<vector<int>> heights) {
     {
       name: "The same search, stopped early",
       summary:
-        "Identical walk, but it abandons a cell's search the moment both oceans have been touched instead of exploring the rest of the reachable slope.",
+        "The same per-cell search, abandoned the moment both oceans have been reached instead of finishing the slope. A real saving on grids where both oceans are close to most cells, and the same quadratic work in the worst case, because a cell that reaches neither ocean still explores everything downhill from it before giving up.",
       complexity: { time: "O((rows · cols)²)", space: "O(rows · cols)" },
       whyNow:
         "The full search per cell keeps walking long after the answer for that cell is settled — on a grid that drains easily, most cells know their verdict within a few steps. Stopping on the first pair of touches costs one comparison per pop and cuts the common case hard, while leaving the worst case exactly where it was: a grid that drains to one ocean only still walks every slope in full.",

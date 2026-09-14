@@ -26,6 +26,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Copying the values into an array is the honest first answer, and it costs O(n) memory to hold data the list already stores. Reversing the second half in place gives a backwards reader for free, so the comparison happens against the list itself and the extra space drops to a handful of pointers.",
+  arc: "The whole difficulty is one sentence: a singly linked list has no way to be read backwards, so a palindrome check has to manufacture one. Copying the values into an array manufactures it by buying a second copy of the data — the honest first answer, and O(n) memory to hold what the list is already holding. The alternative is to make the list itself readable from the back: walk a fast and a slow pointer to the middle, reverse the second half in place, and the two halves can then be compared head to head with nothing but pointers. That is two techniques you already have, composed — the fast/slow split from middle-of-list and the prev/curr rewiring from reverse-list — which is why both are worth knowing cold rather than merely recognising. An odd length needs no branch: the lone middle node has no partner and the shorter half simply runs out first. Note what the in-place version costs, though. The list comes back modified, and restoring it is one more reversal.",
   approach:
     "Walk fast and slow pointers to find the middle, then reverse the list from the middle onward by relinking the nodes. Compare the front half against the reversed back half node by node; on an odd length the extra middle node has no partner and the shorter reversed half simply runs out first, so it needs no special case. A mismatch anywhere means false. The list is left modified, which is worth knowing — restoring it is another reversal if the caller cares.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -105,7 +106,7 @@ def is_palindrome(head: ListNode | None) -> bool:
     {
       name: "Copy into an array",
       summary:
-        "Walk the list collecting the values, then compare the array against its own reverse.",
+        "Walk the list once collecting the values into an array, then run two indices inward from both ends. Linear time and nearly impossible to get wrong, and it is genuinely the right answer whenever the memory is available. The O(n) array is the only thing between it and the optimal rung, which buys constant space by mutating the list.",
       complexity: { time: "O(n)", space: "O(n)" },
       python: `class ListNode:
     def __init__(self, val: int = 0, nxt: "ListNode | None" = None):

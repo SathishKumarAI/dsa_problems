@@ -1,0 +1,541 @@
+# Single Buy/Sell Profit — explained
+
+## Understanding the Problem
+
+You are given a stock's closing price for each of a run of days, in order. You may buy on one day and
+sell on **one later day** — exactly one round trip, or none at all. Return the profit that makes, and
+`0` if every possible trade would lose money.
+
+**The core question:** across every legal buy day and sell day, which pair has the largest gap in the
+right direction? The naive approach is slow because it treats that as a question about **pairs** — it
+walks every buy day and, for each, re-reads the whole rest of the series, so the work grows with the
+square of the number of days.
+
+### The constraints, and what each one unlocks
+
+| Constraint | What it unlocks |
+|---|---|
+| `1 <= prices.length <= 10^5` | A hundred thousand days. **This is the constraint that rules out brute force**: `10^10` pairs is hours, not milliseconds. It leaves room for exactly one linear pass, and it means the array always has at least one day, so no approach has to handle an empty series to be accepted. |
+| `0 <= prices[i] <= 10^4` | Prices are small non-negative whole numbers. No overflow anywhere, and a profit fits comfortably in a 32-bit `int` in Java or C++. It also means `0` is a legal price, so a sentinel of `0` for "no price seen yet" is indistinguishable from a real day — which is the bug in Approach 3. |
+| the sell day must come **after** the buy day | **This is the whole difficulty.** Without it the answer would be `max(prices) - min(prices)`, computable in one trivial pass. With it, the cheapest price is only usable as a buy if it happened *earlier* than the sell you are considering — and that word "earlier" is what every approach below is really managing. |
+| no profitable pair means `0`, not a negative number | **This is the corner case**, and it is a contract, not a rounding convention: declining to trade is a legal move. A solution that tracks the largest difference without a floor returns `-1` on `[5, 4, 3]`, and that is the single most common wrong answer on this problem. |
+
+Note what is *absent*: nothing says the prices rise, fall, or vary at all. `[2, 2, 2, 2]` is a legal
+series, and so is a strictly falling one — the case the floor exists for.
+
+The worked example used in every section below is the statement's own:
+
+```
+prices = [7, 1, 5, 3, 6, 4]        answer: 5   (buy on day 1 at 1, sell on day 4 at 6)
+```
+
+---
+
+## Approach 1 — Brute force: every buy/sell pair
+
+### The idea
+
+*How do I know which pair of days is best?* Look at all of them. For each day you might buy, try every
+later day you might sell, and keep the largest profit you see — starting from `0`, because you are
+allowed to walk away.
+
+### How to think about it
+
+> **Intuition.** Picture the price series printed on a strip of paper. You put your left thumb on a
+> day, then drag your right thumb across every day to its right, subtracting as you go and remembering
+> the best gap. Then you move the left thumb one day along and drag the right thumb across *the whole
+> tail again from scratch*. The method has no memory: the second sweep re-reads days the first sweep
+> just looked at, and learns nothing it did not already know. That forgetfulness is the entire
+> inefficiency, and every later approach is an attempt to remember one thing.
+
+### Worked example
+
+`prices = [7, 1, 5, 3, 6, 4]`. Grouped by buy day, showing the running best after each group:
+
+| buy day | price | sell days tried (profit each) | best profit in this group | running `best` |
+|---|---|---|---|---|
+| 0 | `7` | day 1: `-6`, day 2: `-2`, day 3: `-4`, day 4: `-1`, day 5: `-3` | all losses | `0` |
+| 1 | `1` | day 2: `4`, day 3: `2`, day 4: **`5`**, day 5: `3` | `5` | **`5`** |
+| 2 | `5` | day 3: `-2`, day 4: `1`, day 5: `-1` | `1` | `5` |
+| 3 | `3` | day 4: `3`, day 5: `1` | `3` | `5` |
+| 4 | `6` | day 5: `-2` | loss | `5` |
+| 5 | `4` | no later day exists | — | `5` |
+
+Fifteen subtractions for six days. That is `6 × 5 / 2` — the number of ordered pairs — and that
+formula is where the `O(n²)` comes from. Notice the waste: buy day 2, 3 and 4 all re-read the same
+tail that buy day 1 already read.
+
+### Code
+
+```python
+# The problem's floor, in one place: you are allowed to decline to trade, so no
+# answer is ever negative. Every approach starts here.
+NO_TRADE: int = 0
+
+
+def best_trade_brute_force(prices: list[int]) -> int:
+    best = NO_TRADE
+    for buy in range(len(prices)):
+        for sell in range(buy + 1, len(prices)):  # sell starts past buy, so selling never precedes buying
+            best = max(best, prices[sell] - prices[buy])
+    return best
+```
+
+### Common mistake
+
+> **Watch out.** Starting `best` at `float("-inf")` — or at `prices[1] - prices[0]` — instead of at
+> `NO_TRADE`. The half-formed idea behind it is reasonable: *"I am looking for the maximum, so I should
+> start below every candidate."* That is right for a maximum over a set of numbers, and wrong here,
+> because `0` is itself a candidate — "make no trade at all" is one of the options, and on a falling
+> series it is the winning one. On `[5, 4, 3]` the unfloored version returns `-1`; the answer is `0`.
+> On the single-day series `[3]` it returns `-inf`, because no pair exists at all. Reading the floor
+> as an initial value rather than as a **legal move** is what makes this bug feel like a formatting
+> detail instead of a misread contract.
+
+### Complexity and when to use this
+
+**Time `O(n²)`, space `O(1)`.** The time is the nested walk: for each of `n` buy days the inner loop
+crosses the remaining tail, giving about `n²/2` subtractions. The space is two loop counters and one
+running best — nothing is stored, which is exactly why nothing is remembered.
+
+Use it as the oracle and as the opening sentence of an interview answer. It is the reference
+implementation the fast versions are cross-checked against in the test suite below, and stating it —
+"`O(n²)`, try every pair, now let me do better" — costs ten seconds and shows you are reasoning
+rather than reciting.
+
+---
+
+## Approach 2 — Ask a local question: what if I sell TODAY?  *(an addition — not in the data file's ladder)*
+
+### The idea
+
+*Instead of asking "which pair?", can I ask a smaller question once per day?* Yes: for each day, ask
+what the best profit would be **if I sold on that day**. The answer to the global question is just the
+largest of those, because every trade has exactly one sell day.
+
+This fixes nothing about brute force's *speed* — it is still `O(n²)` — and everything about its
+**framing**. It is included because it is the step most people actually take, and because the
+reframing is the whole insight; the two rungs after it are only ways of making this one cheap.
+
+### How to think about it
+
+> **Intuition.** Stop thinking about pairs and stand on one day. You are holding a share that you
+> bought on some earlier day, and you have decided to sell today at today's price — the only thing
+> you still get to choose is *which* earlier day you bought on. You obviously want the cheapest one.
+> So the question "what is my best profit selling today?" has a one-word answer: today's price minus
+> **the cheapest price so far**. That is a question about a single number, not about a set of pairs,
+> and the rest of this document is about how cheaply you can keep that number up to date.
+
+### Worked example
+
+`prices = [7, 1, 5, 3, 6, 4]`. For each sell day, rescan the days strictly before it to find the
+cheapest:
+
+| sell day | price | days scanned before it | cheapest before | profit if sold today | running `best` |
+|---|---|---|---|---|---|
+| 0 | `7` | none | — | no trade possible | `0` |
+| 1 | `1` | `[7]` | `7` | `1 - 7 = -6` | `0` |
+| 2 | `5` | `[7, 1]` | `1` | `5 - 1 = 4` | `4` |
+| 3 | `3` | `[7, 1, 5]` | `1` | `3 - 1 = 2` | `4` |
+| 4 | `6` | `[7, 1, 5, 3]` | `1` | `6 - 1 = **5**` | **`5`** |
+| 5 | `4` | `[7, 1, 5, 3, 6]` | `1` | `4 - 1 = 3` | `5` |
+
+Same answer, and now look at the fourth column. `1, 1, 1, 1` — after day 1, the cheapest-before value
+**never changes again**, and the code recomputes it from scratch on every row anyway. That column is
+the redundancy the next two rungs delete.
+
+### Code
+
+```python
+def best_trade_sell_today_rescan(prices: list[int]) -> int:
+    best = NO_TRADE
+    for sell in range(len(prices)):
+        cheapest_before = None
+        for buy in range(sell):  # strictly earlier days only
+            if cheapest_before is None or prices[buy] < cheapest_before:
+                cheapest_before = prices[buy]
+        if cheapest_before is not None:
+            best = max(best, prices[sell] - cheapest_before)
+    return best
+```
+
+### Common mistake
+
+> **Watch out.** Writing the inner scan over the *whole* array — `cheapest_before = min(prices)` — on
+> the reasoning that *"the cheapest day is the best day to buy, so I should find it once."* That
+> sentence is true about the cheapest day and false about **this** sell day, and the difference is the
+> word "before". On the worked example it returns `6` instead of `5`: it buys at the `1` on day 1 and
+> sells at the `7` on day 0, which is a time machine, not a trade. The tell is that the bug produces a
+> *larger* answer than the truth, so it never looks like a crash — and on this very example it is off
+> by only one, which is exactly how it survives a hand-check.
+
+### Complexity and when to use this
+
+**Time `O(n²)`, space `O(1)`.** The time is `n` sell days each rescanning up to `n` earlier days; the
+space is one running minimum and one running best. Identical cost to brute force — it does the same
+number of comparisons, arranged differently.
+
+Use it as the thing you *say*, not the thing you submit. "For each sell day, the best buy day is the
+cheapest price so far" is the sentence that turns this problem from a search over pairs into a single
+sweep, and it is worth stating before you optimize, because the two remaining rungs are obvious once
+it has been said and invisible until it has.
+
+---
+
+## Approach 3 — Precompute the cheapest-so-far table  *(an addition — not in the data file's ladder)*
+
+### The idea
+
+*The cheapest-before value only ever gets smaller as the days go by — why am I recomputing it?*
+Build it once, left to right, into an array: `cheapest_upto[i]` is the lowest price on any day up to
+and including day `i`. Then a second pass reads off the profit for each sell day directly.
+
+This fixes the previous rung's weakness — **it recomputes a running minimum from scratch on every
+day, when each day's answer is just the previous day's answer compared against one new price.**
+
+### How to think about it
+
+> **Intuition.** Think of a watermark left on the wall by the lowest tide so far. Each new day you
+> compare today's level against the mark; if today is lower, the mark moves down, otherwise it stays.
+> The mark never rises. Writing that mark into a table gives you, for every day, the cheapest buy
+> available on or before it — and then "best profit if I sell on day `i`" is a single subtraction from
+> that table. This is the smallest useful dynamic program there is: one row, each entry built from its
+> neighbour.
+
+### Worked example
+
+`prices = [7, 1, 5, 3, 6, 4]`. First pass builds the table; second pass reads profits off it.
+
+| day `i` | `prices[i]` | `cheapest_upto[i-1]` | `cheapest_upto[i]` | profit if sold today |
+|---|---|---|---|---|
+| 0 | `7` | — (seeded from `prices[0]`) | `7` | `0` |
+| 1 | `1` | `7` | `1` | `0` |
+| 2 | `5` | `1` | `1` | `4` |
+| 3 | `3` | `1` | `1` | `2` |
+| 4 | `6` | `1` | `1` | **`5`** |
+| 5 | `4` | `1` | `1` | `3` |
+
+The finished table is `[7, 1, 1, 1, 1, 1]` and the profit row is `[0, 0, 4, 2, 5, 3]`; the largest
+entry is `5`. Note that `cheapest_upto[i]` includes day `i` itself, which is harmless: buying and
+selling on the same day yields `0`, and `0` is already the floor.
+
+### Code
+
+```python
+def best_trade_prefix_minimum(prices: list[int]) -> int:
+    if not prices:
+        return NO_TRADE
+    cheapest_upto = [prices[0]] * len(prices)  # cheapest_upto[i] = min(prices[0..i])
+    for i in range(1, len(prices)):
+        cheapest_upto[i] = min(cheapest_upto[i - 1], prices[i])
+    best = NO_TRADE
+    for i in range(len(prices)):
+        best = max(best, prices[i] - cheapest_upto[i])
+    return best
+```
+
+### Common mistake
+
+> **Watch out.** Allocating the table as `[0] * len(prices)` and filling it from index 1, leaving
+> `cheapest_upto[0]` at `0`. The misconception is treating `0` as *empty* — as "nothing here yet" —
+> when the constraints say `0 <= prices[i]`, so `0` is a perfectly real price. The zero then floods
+> the rest of the table, because `min(0, anything)` is `0`, and every day looks as though you could
+> have bought for free. On the worked example it returns `7` instead of `5`: the highest price in the
+> series, sold against a buy that never happened. Seed a running minimum with the **first real value**,
+> never with a number that a real value could equal.
+
+### Complexity and when to use this
+
+**Time `O(n)`, space `O(n)`.** The time is two independent left-to-right passes with no nesting — one
+to fill the table, one to read it. The space is the table itself, one entry per day, and that is the
+only thing separating this rung from the next.
+
+Use it when the table is **wanted for its own sake**: if a caller also needs "the best buy price
+before day `i`" for every `i` — a chart annotation, a per-day report, a follow-up query — the table is
+the deliverable and the memory is not overhead. The same shape scales to the harder variants of this
+problem, where a prefix table from the left and a suffix table from the right are combined to answer
+"at most two transactions".
+
+---
+
+## Approach 4 — One pass carrying two numbers (optimal)
+
+### The idea
+
+*The second pass reads each table entry exactly once, immediately after the first pass wrote it — so
+does the table need to exist?* No. Keep the watermark in a single variable, and fold the profit in on
+the same step that updates it. Two numbers replace the array.
+
+This fixes the previous rung's weakness — **it stores `n` values of which only the most recent is ever
+consulted.**
+
+### How to think about it
+
+> **Intuition.** Walk down the row of days with two things written on the back of your hand: the
+> cheapest price you have seen, and the best profit you have managed. On each new day you do two
+> updates in order — first, is today cheaper than my cheapest? Second, would selling today at today's
+> price beat my best? Then you step forward and never look back. Nothing is stored, nothing is
+> re-read, and the answer is on your hand when you run out of days.
+
+> **Why it works.** Every trade has exactly one sell day, so the maximum over all trades equals the
+> maximum, over each day `d`, of the best trade that sells on `d`. That inner quantity is
+> `prices[d] - min(prices[0..d])` and nothing else — the buy day is forced once you fix the sell day,
+> because a cheaper buy is strictly better and any earlier day is available. So a local question with
+> a one-number answer, maximised over days, *is* the global answer. The "sell after buy" rule is
+> honoured structurally rather than checked: `lowest` at the moment day `d` is considered contains only
+> days `0..d`, so it is impossible to sell into a purchase that has not happened yet.
+
+### Worked example
+
+`prices = [7, 1, 5, 3, 6, 4]`. The entire state is two numbers; here is every step of it.
+
+| day | price | `lowest` before | `lowest` after | `price - lowest` | `best` after |
+|---|---|---|---|---|---|
+| 0 | `7` | `inf` | `7` | `0` | `0` |
+| 1 | `1` | `7` | `1` | `0` | `0` |
+| 2 | `5` | `1` | `1` | `4` | `4` |
+| 3 | `3` | `1` | `1` | `2` | `4` |
+| 4 | `6` | `1` | `1` | **`5`** | **`5`** |
+| 5 | `4` | `1` | `1` | `3` | `5` |
+
+Six days, six iterations, two variables. Compare that with the fifteen subtractions of Approach 1 and
+the six-entry table of Approach 3 — same trace, same decisions, none of the storage.
+
+Row 1 is worth a second look: `price - lowest` is `0`, not negative, because `lowest` was updated
+*before* the subtraction. The day the watermark moves is always a zero-profit day, and zero is the
+floor anyway, so the ordering of the two updates costs nothing and saves a branch.
+
+### Code
+
+```python
+def best_trade_running_min(prices: list[int]) -> int:
+    lowest = float("inf")
+    best = NO_TRADE
+    for price in prices:
+        lowest = min(lowest, price)
+        best = max(best, price - lowest)  # 0 on the day the low is set, never negative
+    return int(best)
+```
+
+### Common mistake
+
+> **Watch out.** Resetting `best` when a new low appears — writing
+> `if price < lowest: lowest = price; best = 0`. The half-formed idea is that a new low starts a fresh
+> opportunity, so the old one is stale. It is not: profit you have already *banked* on an earlier,
+> higher stretch is still achievable, because you could simply have made that trade. On
+> `[1, 10, 0, 2]` the buggy version returns `2` — it finds the low of `0` on day 2, throws away the
+> `9` it had already earned from `1 → 10`, and can only manage `0 → 2` afterwards. The correct answer
+> is `9`. Note that the same bug returns `5` on the worked example, which is the right answer, so the
+> statement's own test case will not catch it: you need a series whose best trade happens *before* its
+> lowest price.
+
+### Complexity and when to use this
+
+**Time `O(n)`, space `O(1)`.** The time is one walk with two constant-cost updates per day and no
+nesting — and `O(n)` is a hard floor, because skipping any day lets an adversary hide the answer
+there. The space is two scalars, unaffected by how long the series is.
+
+**This is the one to memorise.** It is five lines, it needs no auxiliary structure, and it handles the
+declining-market corner case without a branch. It also streams: the prices can arrive one at a time
+from a socket and never be stored, which is the property that makes this shape useful far outside
+interviews.
+
+---
+
+## The Overall Arc
+
+Every rung here chases one principle: **turn a question about pairs into a question about the past.**
+Brute force asks the question literally — *which buy day and which sell day?* — and pays `O(n²)`
+because a pair has two free choices and it refuses to fix either one. The move that breaks it is not a
+faster search but a **reframing**: fix the sell day, and the other choice stops being free, because
+once you have decided to sell today the only rational buy is the cheapest day so far, so a question
+about a set of pairs collapses into a question about one number. The first version of that idea still
+recomputes the number from scratch on every day, which is the same quadratic cost wearing a better
+sentence — but the trace shows the redundancy plainly, because the cheapest-so-far column stops
+changing after day 1 and the code keeps re-deriving it anyway. Writing that column into a table fixes
+it and buys genuine linearity: one pass to build the watermark, one to read profits off it, and the
+whole thing is the smallest dynamic program anyone writes. Then the last redundancy shows itself — the
+second pass reads each table entry once, immediately after the first pass wrote it — so the table
+never needed to exist, and two variables walked forward together do the same work with no storage at
+all. What makes the final version *correct* rather than merely short is the same sentence that made
+the reframing work: the maximum over all trades equals the maximum over sell days of the best trade
+ending there, and "sell after buy" is then enforced by the shape of the walk rather than by a check,
+because the running minimum only ever contains days you have already passed. The one thing that
+survives all four rungs untouched is the floor: declining to trade is a legal move, so the answer on a
+strictly falling series is `0` and not a negative number — which is why `NO_TRADE` is a named constant
+in one place rather than a `0` retyped four times.
+
+---
+
+## Comparison
+
+| Approach | Time | Space | Core trade-off | Best used when |
+|---|---|---|---|---|
+| Brute force, every pair | `O(n²)` | `O(1)` | No memory at all, so every question is re-answered from scratch | `n` is tiny; as the oracle the fast versions are tested against |
+| Sell-today with a rescan | `O(n²)` | `O(1)` | Right question, wrong machinery — it fixes the framing, not the cost | Explaining the insight out loud before optimizing it |
+| Prefix-minimum table | `O(n)` | `O(n)` | Trades memory for time, and keeps the intermediate answers | The per-day table is itself wanted; extends to the two-transaction variants |
+| **One pass, two numbers** | **`O(n)`** | **`O(1)`** | **Nothing left to trade: it stores only what it will actually read** | **The default. Also the streaming answer — prices need never be stored** |
+
+---
+
+## Interview Priority
+
+**Memorise cold — the one-pass running minimum.** Five lines, and the expected answer. You should be
+able to write it without pausing over the order of the two updates, and be ready to explain why
+updating `lowest` first is safe (the day the low moves yields a profit of `0`, which the floor already
+permits).
+
+**Memorise cold — the sell-today reframing.** This is the sentence that earns the solution, and it is
+what an interviewer is listening for. The code is a consequence; the reframing is the insight.
+
+> **In an interview.** Say this, in this order. *"Brute force is every pair, `O(n²)`. But instead of
+> asking which pair, I will fix the sell day and ask: what is the best profit if I sell today? Then the
+> buy day is forced — it is the cheapest price so far — so I only need to carry one number, and the
+> answer is the largest of those daily values. That is one pass, `O(n)` time and `O(1)` space."* Then
+> name the corner case before you are asked: **a strictly falling series returns `0`, because declining
+> to trade is allowed.** The follow-up is almost always "what if you may trade as many times as you
+> like?" — answer: sum every positive day-to-day rise, which is a two-line change and a different
+> greedy. After that comes "at most two transactions", and *that* is where the prefix table from
+> Approach 3 earns its place: a best-profit-so-far array from the left and a best-profit-from-here
+> array from the right, combined at a split point.
+
+**Understand but do not memorise — the prefix-minimum table.** Worth being able to write, because it
+makes the one-pass version's saving visible by contrast and because the two-transaction follow-up is
+built on it. If you write it by default for *this* problem you will be asked to drop the array, so
+start without it.
+
+**Understand but do not memorise — brute force and the rescan.** Neither is a destination. Brute force
+is worth ten seconds of naming and rejecting, plus its real job as the cross-check in the test suite.
+The rescan is worth understanding as the proof that a better *question* and a better *algorithm* are
+two separate improvements — it has the first without the second, and seeing that gap is what stops you
+from assuming a good idea is automatically a fast one.
+
+---
+
+## Full Runnable Script
+
+Every approach above, assembled — the same functions, not a second implementation — plus a test suite
+covering the statement's example, the strictly-falling series that must return `0`, the smallest legal
+input, flat and all-equal series, the series whose low arrives after its high, the series that catches
+a reset `best`, the ends of the value range, thirty-nine randomised stress cases cross-checked against
+brute force, and a two-hundred-day falling series. Every result is also checked to be non-negative.
+
+```python
+"""Single Buy/Sell Profit - every approach in one file, plus a self-checking test suite.
+
+Run: python best_trade_all.py
+"""
+
+from __future__ import annotations
+
+import random
+
+# The problem's floor, in one place: you are allowed to decline to trade, so no
+# answer is ever negative. Every approach starts here.
+NO_TRADE: int = 0
+
+
+# --- 1. Brute force: every buy/sell pair ---------------------------------------
+
+def best_trade_brute_force(prices: list[int]) -> int:
+    best = NO_TRADE
+    for buy in range(len(prices)):
+        for sell in range(buy + 1, len(prices)):  # sell starts past buy, so selling never precedes buying
+            best = max(best, prices[sell] - prices[buy])
+    return best
+
+
+# --- 2. Ask a local question: what if I sell TODAY? ----------------------------
+
+def best_trade_sell_today_rescan(prices: list[int]) -> int:
+    best = NO_TRADE
+    for sell in range(len(prices)):
+        cheapest_before = None
+        for buy in range(sell):  # strictly earlier days only
+            if cheapest_before is None or prices[buy] < cheapest_before:
+                cheapest_before = prices[buy]
+        if cheapest_before is not None:
+            best = max(best, prices[sell] - cheapest_before)
+    return best
+
+
+# --- 3. Precompute the cheapest-so-far table -----------------------------------
+
+def best_trade_prefix_minimum(prices: list[int]) -> int:
+    if not prices:
+        return NO_TRADE
+    cheapest_upto = [prices[0]] * len(prices)  # cheapest_upto[i] = min(prices[0..i])
+    for i in range(1, len(prices)):
+        cheapest_upto[i] = min(cheapest_upto[i - 1], prices[i])
+    best = NO_TRADE
+    for i in range(len(prices)):
+        best = max(best, prices[i] - cheapest_upto[i])
+    return best
+
+
+# --- 4. One pass carrying two numbers (optimal) --------------------------------
+
+def best_trade_running_min(prices: list[int]) -> int:
+    lowest = float("inf")
+    best = NO_TRADE
+    for price in prices:
+        lowest = min(lowest, price)
+        best = max(best, price - lowest)  # 0 on the day the low is set, never negative
+    return int(best)
+
+
+APPROACHES = [
+    ("brute_force", best_trade_brute_force),
+    ("sell_today_rescan", best_trade_sell_today_rescan),
+    ("prefix_minimum", best_trade_prefix_minimum),
+    ("running_min", best_trade_running_min),
+]
+
+
+# --- test suite ----------------------------------------------------------------
+
+def main() -> None:
+    cases: list[tuple[str, list[int]]] = [
+        ("statement example", [7, 1, 5, 3, 6, 4]),
+        ("strictly falling - decline to trade", [5, 4, 3]),
+        ("smallest legal input", [3]),
+        ("two days, flat", [4, 4]),
+        ("all equal", [2, 2, 2, 2]),
+        ("the low arrives after the high", [2, 10, 1]),
+        ("a new low must not erase banked profit", [1, 10, 0, 2]),
+        ("the value-range ends", [0, 10000]),
+    ]
+
+    rng = random.Random(20260912)
+    for n in range(1, 40):
+        cases.append((f"stress n={n}", [rng.randint(0, 60) for _ in range(n)]))
+    falling = sorted((rng.randint(0, 10000) for _ in range(200)), reverse=True)
+    cases.append(("stress strictly falling n=200", falling))
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+
+    for label, prices in cases:
+        shown = prices if len(prices) <= 8 else prices[:8] + ["..."]
+        print(f"\n{label}: prices={shown}")
+        results = []
+        for name, fn in APPROACHES:
+            got = fn(list(prices))
+            results.append(got)
+            print(f"  {name:<{width}} -> {got}")
+        agreed = all(r == results[0] for r in results)
+        if not agreed or results[0] < NO_TRADE:
+            all_agreed = False
+            print(f"  DISAGREEMENT (agreed={agreed}, non-negative={results[0] >= NO_TRADE})")
+
+    print(f"\n{len(cases)} cases, {len(APPROACHES)} approaches.")
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()
+```

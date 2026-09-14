@@ -6,7 +6,8 @@ export const problem: Problem = {
   pattern: "stack",
   difficulty: "medium",
   leetcode: "simplify-path",
-  brief: "Resolve '.', '..' and repeated slashes into the one canonical absolute path.",
+  brief:
+    "Resolve '.', '..' and repeated slashes into the one canonical absolute path.",
   statement:
     "Given an absolute Unix-style path, return its canonical form: one leading slash, single slashes between names, no trailing slash, no '.' components, and every '..' consuming the directory before it.",
   constraints: [
@@ -17,7 +18,11 @@ export const problem: Problem = {
     "a name may contain dots without being special: '...' and '..a' are ordinary directory names",
   ],
   examples: [
-    { input: 'path = "/home/"', output: '"/home"', note: "The trailing slash goes." },
+    {
+      input: 'path = "/home/"',
+      output: '"/home"',
+      note: "The trailing slash goes.",
+    },
     {
       input: 'path = "/a/./b/../../c/"',
       output: '"/c"',
@@ -41,8 +46,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Scanning from the right with a counter of pending '..' is linear, but it builds the answer backwards and has to be reversed, and the counter has to be reasoned about at the root where a '..' expires with nothing to cancel. Left to right with a stack is the same linear cost while saying the rule literally — keep a name, pop on '..', ignore the rest — and 'pop from empty' is exactly the root case, handled by a single guard.",
-  arc:
-    "The first move is not an algorithm: split on the separator. Half the difficulty of path problems is that a character-by-character reading has to invent rules for '//' and for a name that merely contains dots, while a component-by-component reading gets those for free. What is left is three cases and a structure — and 'undo the previous thing I kept' is the definition of a stack, which is why this problem sits in the pattern at all. The corner case is the one worth rehearsing: a pop on an empty stack. Here it is legal and means 'the root is its own parent', so a guard turns it into a no-op; in other stack problems the same situation means the input is malformed. Decide which, out loud, before you write the pop.",
+  arc: "The first move is not an algorithm: split on the separator. Half the difficulty of path problems is that a character-by-character reading has to invent rules for '//' and for a name that merely contains dots, while a component-by-component reading gets those for free. What is left is three cases and a structure — and 'undo the previous thing I kept' is the definition of a stack, which is why this problem sits in the pattern at all. The corner case is the one worth rehearsing: a pop on an empty stack. Here it is legal and means 'the root is its own parent', so a guard turns it into a no-op; in other stack problems the same situation means the input is malformed. Decide which, out loud, before you write the pop.",
   approach:
     "Split the path on '/', which turns repeated slashes into empty components. Walk the components left to right against a stack: an empty component or '.' is skipped, '..' pops the stack when it has something to pop, and any other name is pushed. The answer is '/' plus the stack joined by slashes — which is the root itself when the stack ends up empty. One pass, one structure, and each rule is one line.",
   complexity: { time: "O(n)", space: "O(n)" },
@@ -146,7 +150,7 @@ export const problem: Problem = {
     {
       name: "Chop the answer string as you go",
       summary:
-        "Carry the answer as a string. An ordinary name is appended with a slash; a '..' searches backwards for the last slash and cuts everything after it.",
+        "Carry the answer as a string: append an ordinary name with a slash, and on a '..' search backwards for the last slash and cut there. It never builds a second structure, and every cut copies the string that remains, so a path that is mostly '..' rewrites the whole answer over and over.",
       complexity: { time: "O(n²)", space: "O(n)" },
       python: `def simplify_path(path: str) -> str:
     out = ""

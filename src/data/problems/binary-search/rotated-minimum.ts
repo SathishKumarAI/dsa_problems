@@ -30,8 +30,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "Naming the seam is not the same as finding it quickly. Comparing the middle against the right end says which half the seam is in, so the search halves at every step.",
-  arc:
-    "The array is not sorted, yet binary search still applies, and understanding why is the point: a probe can always tell which HALF is ordered by comparing the middle to an end, and the minimum must lie in the half that is not. Comparing the middle to the RIGHT end is the cleaner formulation because it never needs a special case for a non-rotated array. Rehearse duplicates as the follow-up, since equal values destroy the ability to tell the halves apart and force a linear worst case — knowing that limitation is what separates understanding from memorising. The same reasoning runs the rotated-search problem next door.",
+  arc: "The array is not sorted, yet binary search still applies, and understanding why is the point: a probe can always tell which HALF is ordered by comparing the middle to an end, and the minimum must lie in the half that is not. Comparing the middle to the RIGHT end is the cleaner formulation because it never needs a special case for a non-rotated array. Rehearse duplicates as the follow-up, since equal values destroy the ability to tell the halves apart and force a linear worst case — knowing that limitation is what separates understanding from memorising. The same reasoning runs the rotated-search problem next door.",
   approach:
     "Binary search on the break point. If nums[mid] > nums[hi], the middle sits in the first (larger) run, so the minimum lies strictly right: lo = mid + 1. Otherwise mid is in the second run — the minimum is mid or left of it: hi = mid. Loop until the range closes; comparing against nums[hi] rather than nums[lo] avoids ambiguity when the rotation is zero.",
   complexity: { time: "O(log n)", space: "O(1)" },
@@ -74,7 +73,7 @@ export const problem: Problem = {
     {
       name: "Linear scan",
       summary:
-        "min() of the array. Correct, O(n), and exactly what the problem forbids you to settle for.",
+        "Take the minimum of the array. Correct, one line, and exactly what the problem forbids you to settle for — it reads every element because it assumes nothing, which is the right instinct on unstructured data and the wrong one here. Naming it is how you find out what structure is left to exploit once the array has been rotated.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def rotated_min(nums: list[int]) -> int:
     return min(nums)`,
@@ -98,7 +97,7 @@ export const problem: Problem = {
       whyNow:
         "min() reads everything and learns nothing about the array. Looking for the one place where the order breaks names the structure - the seam - even though it still walks the whole thing.",
       summary:
-        "Scan for the single place where nums[i] > nums[i+1] — the rotation seam. Linear again, but names the structure the binary search exploits.",
+        "Scan for the single place where a value is larger than the one after it: the rotation seam, which is also the minimum. Still linear, and it earns its rung by naming the structure the binary search will use — a rotated sorted array has exactly ONE descent, so finding it is a search for a local property rather than a comparison of every element.",
       complexity: { time: "O(n)", space: "O(1)" },
       python: `def rotated_min(nums: list[int]) -> int:
     for i in range(len(nums) - 1):

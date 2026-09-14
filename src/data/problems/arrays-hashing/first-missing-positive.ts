@@ -38,8 +38,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The boolean table is linear in time but still allocates n+1 fresh cells, which is exactly what the O(1)-space follow-up forbids. The input array already has n slots, and nobody needs its original contents once the answer is out — so the marking table can BE the input: send each value v to slot v-1 and the array marks itself.",
-  arc:
-    "The constraint that looks like trivia is the whole solution: among n values, the smallest missing positive is always between 1 and n+1, so only n+1 candidates matter and everything else — negatives, huge values, duplicates — is noise. Each rung then narrows where the bookkeeping lives, from a rescan per candidate, to sorting, to a set, to a flag table, and finally into the array itself by swapping each value into the slot it belongs in. Cyclic placement is worth practising because the loop looks dangerous and is not: every swap puts one value home for good, so the total work is linear despite the inner while. Know the bound argument cold — it is the part an interviewer is actually testing.",
+  arc: "The constraint that looks like trivia is the whole solution: among n values, the smallest missing positive is always between 1 and n+1, so only n+1 candidates matter and everything else — negatives, huge values, duplicates — is noise. Each rung then narrows where the bookkeeping lives, from a rescan per candidate, to sorting, to a set, to a flag table, and finally into the array itself by swapping each value into the slot it belongs in. Cyclic placement is worth practising because the loop looks dangerous and is not: every swap puts one value home for good, so the total work is linear despite the inner while. Know the bound argument cold — it is the part an interviewer is actually testing.",
   approach:
     "Two passes over the array itself. First, place every value that could matter: while nums[i] sits in 1..n and is not already in slot nums[i]-1, swap it there. The swap is the trick — the value that lands in position i is examined next, so every swap puts one value permanently home and the total number of swaps is at most n, which keeps the nested while loop linear. The guard nums[nums[i]-1] != nums[i] is what stops a duplicate from swapping with its twin forever. Second, walk the slots: the first i whose value is not i+1 means i+1 was never placed, so return i+1. If every slot is home, 1..n are all present and the answer is n+1.",
   complexity: { time: "O(n)", space: "O(1)" },
@@ -160,7 +159,7 @@ export const problem: Problem = {
     {
       name: "Hash set",
       summary:
-        "Pour every value into a set, then probe 1, 2, 3, … until a probe misses. Each probe is O(1), so the whole thing is linear.",
+        "Pour every value into a set, then probe 1, 2, 3, … until a probe misses. Linear, and it finally uses the fact that the answer cannot exceed n + 1 — but it allocates a second structure the size of the input to record membership, which the array's own slots can encode.",
       complexity: { time: "O(n)", space: "O(n)" },
       whyNow:
         "The sort spends O(n log n) arranging values into an order the answer never asks about — it only ever asks whether one particular number is present. A set answers exactly that in constant time, so the ordering work was pure waste.",

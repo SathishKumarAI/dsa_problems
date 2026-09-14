@@ -26,6 +26,7 @@ export const problem: Problem = {
   ],
   whyNow:
     "The recursion asks the same cell's question once for every path that passes through it, which is exponential. Filling a table asks each cell once — and because a cell needs only the row above and the value to its left, a single row can be updated in place, so the memory drops from a full grid to one row.",
+  arc: "The recursion asks each cell's question once per path that reaches it, and since the number of paths is the very thing being counted, that is as exponential as it sounds. Writing each cell down once makes the work m × n, and the recurrence could hardly be smaller: paths to a cell are paths to the cell above plus paths to the cell on the left, with the top row and left column at one because there is only one way to travel in a straight line. Then the compression is unusually neat — a cell needs the row above and the value to its left, and a single row swept left to right holds both at the moment they are needed, since the slot still carries the row above while the slot behind it has already been updated for this row. Adding them in place IS the recurrence. Know that in-place row trick, because it shrinks the LCS and knapsack tables the same way. This problem also has a closed form, the paths being a choice of which moves go down — and unique-paths-II kills the formula and leaves the table.",
   approach:
     "Keep one row holding the number of paths to each column of the current row, initialised to all ones for the top row. Sweep down: for each new row, walk left to right adding the value to the left into the current value. That addition IS the recurrence — the value already in the slot is the count from the row above, and the value to the left is the count from the left neighbour, because it has already been updated for this row. The last entry after the final sweep is the answer.",
   complexity: { time: "O(m · n)", space: "O(n)" },
@@ -52,7 +53,7 @@ export const problem: Problem = {
     {
       name: "Branch at every cell",
       summary:
-        "Recurse from the start, trying a move right and a move down at each cell and summing the paths each returns.",
+        "Recurse from the start, trying a move right and a move down at each cell and summing what each returns. Exponential, and every cell is recomputed once per path that reaches it — the count for a cell depends only on the cell itself, not on the route taken to arrive.",
       complexity: { time: "O(2^(m+n))", space: "O(m + n)" },
       python: `def walk(m: int, n: int, r: int, c: int) -> int:
     if r == m - 1 or c == n - 1:
