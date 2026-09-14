@@ -187,6 +187,21 @@ file were found.
 
 ---
 
+## Repo setup (maintainers, once)
+
+The issue templates apply labels that must exist first. GitHub silently drops a label it does not
+have, so nothing breaks without them — the issues just arrive unsorted.
+
+| Label | Colour | What it means |
+|---|---|---|
+| `false-claim` | red | A measurement contradicts something this repo states. **Triage these first** — a wrong complexity label renders on a problem page, so it is teaching someone the wrong thing right now |
+| `content` | blue | A teaching document, journey, worked example or explanation. Most of the open work is here |
+| `bug` | orange | The app did something wrong: a crash, a broken route, a rendering fault |
+
+Two more worth creating even though no template applies them: **`good first issue`** (GitHub
+surfaces it on the contribute page) and **`measured`**, for an issue whose claim has been
+reproduced — that distinction is the one that matters here, and it is not the same as *confirmed*.
+
 ## Where to look
 
 | Question | File |
