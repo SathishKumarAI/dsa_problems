@@ -40,7 +40,7 @@ half to the prose half puts 127 documents into the first load, which is B95.
 | An approach's `rung` must name a rung in `solutions.ts` | `src/content/content.test.ts` fails both ways: a document may not teach an approach with no record, and a rung may not go untaught |
 | `docs/deep/<id>_explained.md` is **deleted** in the commit that converts it | Two sources for one document is the drift this directory exists to end. `scripts/content-roundtrip.mjs` proves nothing was lost before it goes |
 | The prose fields are **Markdown strings**, and stay that way | The drift was never inside a paragraph — it was over which sections exist. Typing the structure removes it; typing every sentence buys nothing |
-| A directory may have `doc.ts` and no `index.ts`, or the reverse | The two halves migrate independently. Thirteen documents moved here before their records did |
+| Every directory holds **both** halves, split into sections | It was not always so — thirteen documents arrived here as a single `doc.ts` before the shape was settled, and `scripts/split-doc.mjs` finished them. If you add one by hand, add both |
 
 ## Converting one
 
@@ -52,6 +52,12 @@ node scripts/md-to-content.mjs --id <id>           # the DOCUMENT -> this direct
 node scripts/content-roundtrip.mjs --id <id>       # prove no line was lost
 node scripts/verify-deep.mjs --id <id>             # the script runs and agrees
 ```
+
+`scripts/split-doc.mjs` is the third one, and it is for a document that is already
+typed but still one file — it splits an existing `doc.ts` into sections. All three
+share one scanner, `scripts/ts-literal.mjs`: reading a TypeScript object literal as
+TEXT, string- and depth-aware, because a `{` inside a C++ block is a brace in a
+program and not structure.
 
 Then rewire `src/data/problems/<pattern>/index.ts` and any journey that imports the
 record, delete `src/data/problems/<pattern>/<id>.ts` and `docs/deep/<id>_explained.md`,

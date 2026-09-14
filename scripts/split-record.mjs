@@ -15,13 +15,15 @@
 // full of template literals holding Python, Java and C++ whose indentation is
 // load-bearing, and `JSON.stringify` of an imported module would reformat every
 // one of them. So the values are sliced out of the source as text, comments
-// above them included.
+// above them included. The slicing itself is `ts-literal.mjs`, shared with
+// `split-doc.mjs`, which does the same thing to the teaching document.
 //
 // Run:  node scripts/split-record.mjs --id plus-one
 //       node scripts/split-record.mjs --id plus-one --dry
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { dedent, keyedEntries, literalBody, valueOf } from "./ts-literal.mjs"
 
 const arg = (k) => {
   const i = process.argv.indexOf(k)
@@ -70,144 +72,16 @@ const LAYOUT = {
   },
 }
 
-/**
- * Split an object literal's body into its top-level entries, as TEXT.
- *
- * Depth-aware and string-aware: a record is mostly template literals holding
- * code, and a `{` inside one is a brace in a C++ block, not structure. Comments
- * above a key travel with it — they are the reasoning, and reasoning that does
- * not move with the code it explains is how a comment starts lying.
- */
-function entries(body) {
-  const out = []
-  let depth = 0
-  let start = 0
-  let i = 0
-  const skipString = (quote) => {
-    i++
-    while (i < body.length) {
-      if (body[i] === "\\") i += 2
-      else if (body[i] === quote) return i++
-      else i++
-    }
-    throw new Error("unterminated string")
-  }
-  while (i < body.length) {
-    const c = body[i]
-    if (c === '"' || c === "'" || c === "`") {
-      skipString(c)
-      continue
-    }
-    if (c === "/" && body[i + 1] === "/") {
-      while (i < body.length && body[i] !== "\n") i++
-      continue
-    }
-    if (c === "/" && body[i + 1] === "*") {
-      i = body.indexOf("*/", i) + 2
-      continue
-    }
-    if ("{[(".includes(c)) depth++
-    else if ("}])".includes(c)) depth--
-    else if (c === "," && depth === 0) {
-      out.push(body.slice(start, i))
-      start = i + 1
-    }
-    i++
-  }
-  const tail = body.slice(start)
-  if (tail.trim()) out.push(tail)
-  return out.map((text) => {
-    const stripped = text.replace(/^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*/, "")
-    const key = /^\s*(["'`]?)([A-Za-z_]\w*)\1\s*:/.exec(stripped)
-    if (!key) throw new Error(`no key in entry: ${text.trim().slice(0, 60)}`)
-    return { key: key[2], text: text.replace(/^\n+/, "").replace(/\s+$/, "") }
-  })
-}
-
-/** the record's object literal, as the text between its outermost braces */
-function recordBody(src) {
-  const at = src.search(/export const problem\s*:\s*Problem\s*=\s*\{/)
-  if (at === -1) throw new Error("no `export const problem: Problem = {`")
-  const open = src.indexOf("{", at)
-  let depth = 0
-  let i = open
-  while (i < src.length) {
-    const c = src[i]
-    if (c === '"' || c === "'" || c === "`") {
-      const quote = c
-      i++
-      while (i < src.length) {
-        if (src[i] === "\\") i += 2
-        else if (src[i] === quote) {
-          i++
-          break
-        } else i++
-      }
-      continue
-    }
-    if (c === "/" && src[i + 1] === "/") {
-      while (i < src.length && src[i] !== "\n") i++
-      continue
-    }
-    if (c === "/" && src[i + 1] === "*") {
-      i = src.indexOf("*/", i) + 2
-      continue
-    }
-    if (c === "{") depth++
-    else if (c === "}") {
-      depth--
-      if (depth === 0) return src.slice(open + 1, i)
-    }
-    i++
-  }
-  throw new Error("unbalanced record literal")
-}
-
 const header = (id, owns, note) => `// ${id} — ${owns}.
 //
 ${note}
 `
 
-/**
- * Take the object literal's two-space indent off, WITHOUT touching the inside
- * of a template literal.
- *
- * This is the one thing in the script that could corrupt content rather than
- * lose it. A record is mostly `python: \`…\`` blocks whose body lines are
- * written at their REAL indentation, flush with the left margin — so a blanket
- * dedent would turn a four-space Python body into a two-space one. That is
- * valid Python which means something else, and nothing in the repo would fail.
- * So: track whether each line begins inside a template literal, and outdent
- * only the ones that do not.
- */
-function dedent(text) {
-  let inTemplate = false
-  return text
-    .split("\n")
-    .map((line) => {
-      const out = inTemplate ? line : line.replace(/^ {1,2}/, "")
-      // a backtick on this line flips the state for the NEXT one; an escaped
-      // backtick is a character, not a delimiter
-      for (let i = 0; i < line.length; i++) {
-        if (line[i] === "\\") i++
-        else if (line[i] === "`") inTemplate = !inTemplate
-      }
-      return out
-    })
-    .join("\n")
-}
-
 /** `key: value` -> `export const key: Type = value` */
 function exportOf(entry, types) {
-  const m = /^(\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\n)*)\s*(["'`]?)([A-Za-z_]\w*)\2\s*:\s*([\s\S]*)$/.exec(
-    entry.text
-  )
-  if (!m) throw new Error(`cannot split entry ${entry.key}`)
-  const [, comments, , key, value] = m
+  const { comments, key, value } = valueOf(entry)
   const type = types[key] ? `: ${types[key]}` : ""
-  return dedent(
-    `${comments.trim() ? comments.trim() + "\n" : ""}export const ${key}${type} = ${value.trim()}`
-  )
+  return dedent(`${comments ? comments + "\n" : ""}export const ${key}${type} = ${value}`)
 }
 
 export function split(id) {
@@ -218,7 +92,9 @@ export function split(id) {
   if (!file) throw new Error(`${id}: no record under ${SRC}`)
 
   const src = readFileSync(file, "utf8").replace(/\r\n/g, "\n")
-  const found = entries(recordBody(src))
+  const found = keyedEntries(
+    literalBody(src, /export const problem\s*:\s*Problem\s*=\s*\{/)
+  )
   const byKey = new Map(found.map((e) => [e.key, e]))
 
   // Every key is CLAIMED, and an unknown one is an error rather than a silent

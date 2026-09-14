@@ -8,7 +8,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/linked-list/cycle-detect.ts"
+import { problem } from "../../problems/cycle-detect/index.ts"
 
 type L = Data<number> & { cycle: number }
 
