@@ -358,6 +358,52 @@ describe(
       }
     })
 
+    // B79 / B87. The promotion and the comparator are both claims about what a
+    // page RENDERS, so neither is settled by a node test: `ladderOf` returning
+    // four rungs and the page drawing four rungs are different facts.
+    test("a promoted rung renders, and compares against the one below it", async () => {
+      await page.goto(`${server.base}/#/p/linked-list/cycle-detect`)
+      const out = await page.run(`
+        const text = document.body.innerText;
+        const ladder = document.querySelector('[aria-label="approach ladder"]');
+        return {
+          count: (text.match(/([0-9]+) ways in/) || [])[1],
+          brute: /Nested walk/i.test(text),
+          mark: /Value-marking/i.test(text),
+          asides: (ladder.innerText.match(/reading only/gi) || []).length,
+          compares: [...ladder.querySelectorAll('button')]
+            .filter(b => /^compare with/i.test(b.innerText)).length,
+        };
+      `)
+      assert.equal(out.count, "4", "the ladder does not show four rungs")
+      assert.ok(out.brute, "the promoted nested walk did not render")
+      assert.ok(out.mark, "the promoted value-marking rung did not render")
+      assert.equal(out.asides, 2, "the reading-only marks are wrong")
+      assert.equal(out.compares, 3, "a compare control is missing")
+      assert.deepEqual(page.errors(), [], "cycle-detect logged console errors")
+
+      // and the comparator itself: a route, so it survives a reload
+      await page.goto(
+        `${server.base}/#/p/linked-list/cycle-detect?compare=set,floyd`
+      )
+      const cmp = await page.run(`
+        const text = document.body.innerText;
+        const lit = document.querySelectorAll('pre span[class*="border-chart-1"]');
+        return {
+          heading: /lines in common/i.test(text),
+          both: /Floyd/i.test(text) && /set/i.test(text),
+          marked: lit.length,
+        };
+      `)
+      assert.ok(cmp.heading, "the comparator did not render its count")
+      assert.ok(cmp.both, "the comparator is missing a side")
+      assert.ok(
+        cmp.marked >= 6,
+        `only ${cmp.marked} lines marked as differing — expected most of both`
+      )
+      assert.deepEqual(page.errors(), [], "compare logged console errors")
+    })
+
     // Every new problem page must at least render with a clean console. Twenty
     // pages arrived in one batch and the cheapest way to be wrong about all of
     // them at once is to check none of them.

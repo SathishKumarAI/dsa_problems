@@ -180,3 +180,23 @@ export function ladderOf(
 
 export const leetcodeUrl = (slug: string) =>
   `https://leetcode.com/problems/${slug}/`
+
+// ── the comparator's two keys, which live in the URL ────────────────────────
+//
+// Here rather than in `approach-compare.tsx` because they are ladder logic, not
+// markup — and because a component file that also exports a plain function
+// breaks fast refresh for the whole module (eslint react-refresh, measured).
+
+/** the pair a `?compare=` value names, or undefined when it names neither */
+export function parseCompare(
+  raw: string | null,
+  rungs: Rung[]
+): [Rung, Rung] | undefined {
+  if (!raw) return undefined
+  const [a, b] = raw.split(",").map((s) => s.trim())
+  const left = rungs.find((r) => r.key === a)
+  const right = rungs.find((r) => r.key === b)
+  return left && right && left !== right ? [left, right] : undefined
+}
+
+export const compareHref = (a: Rung, b: Rung) => `${a.key},${b.key}`
