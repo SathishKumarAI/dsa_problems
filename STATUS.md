@@ -28,10 +28,23 @@ A second, concurrent session ran a polish brief over `src/components/**`, `src/f
 | New gates | 3, each **mutation-tested** — the fix was removed and the test confirmed to fail by name |
 | Numbers | off-token durations 5 → 0 document-wide · touch targets <44px on the problem page 17 → 7 · phone stage share 23% → **62%** · routes scrolling sideways 2 → 0 |
 
-**The next UI thing, if you want one:** `B68` — the prose is thin in the patterns read most. It is
-the only open P0 that is bounded by a measurement already taken (81 of 174 rungs have an `idea`
-under 160 characters, 56 have no `whyNow`), needs no new problems, no new journeys and no new
-gates. `B42` should **not** be done — the backlog row already re-measured and demoted it.
+**B68 is closed (2026-09-13, late).** Thin rungs repo-wide are **0**, down from the 81-of-174 that
+the item was filed against, and counted wider than the filing: all 127 problems, every rung
+including the optimal one. Seven passes — arrays-hashing, two-pointers, dp, binary-search, then
+linked-list + sliding-window + trees + heaps + stack + graphs (50 rungs, 42 files) in one. The bar
+every rewrite meets: **what the rung does, what it costs, and the promise it ignores** — the fact
+the problem handed you that this rung throws away. Keep it at zero with a `node -e` over `PROBLEMS`
+counting `summary.length < 160`; that is the whole check.
+
+`B42` should **not** be done — the backlog row already re-measured and demoted it.
+
+**Next, in `docs/LEARN-PLAN.md` order:** the 122 problems with no "Reading the Calculations" /
+"How to Get Fluent" / "Under the hood" section, and the 45 with no teaching document at all. Two
+data defects sit unfixed ahead of them and are cheaper: **G6** (`balanced-tree`'s naive rung is
+labelled `O(n^2)` and measures linear — it checks the imbalance BEFORE recursing, so on a spine it
+returns at the root; its real worst case is `O(n log n)`, and `whyNow` and `arc` both still claim
+quadratic) and **G7** (all three `tree-diameter` examples pass the through-the-root wrong solution;
+`[1,2,null,3,4,5,6,7]` is a real counterexample — answer 4, that solution says 3).
 
 ### Four stashes, and none of it has shipped
 
