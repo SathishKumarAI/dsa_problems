@@ -20,7 +20,10 @@
 // reason.
 import { BookOpenIcon, FileCodeIcon, GraduationCapIcon } from "lucide-react"
 import { Band, Fact, OrientBar } from "@/components/ui/band"
-import { PATTERNS, PROBLEMS } from "@/data"
+// `@/data` is the barrel that builds PROBLEMS from all ten pattern folders —
+// importing PATTERNS through it pulls every record in. Take it from its own module.
+import { PATTERNS } from "@/data/patterns"
+import { CATALOGUE as PROBLEMS } from "@/data/manifest"
 import type { Move, Pattern } from "@/data"
 import { usePatternMask } from "@/lib/disclosure"
 import { href, navigate, useRoute } from "@/lib/route"

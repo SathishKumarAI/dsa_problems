@@ -37,8 +37,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
-import { JOURNEYS } from "@/engine"
+// The MANIFEST for the problem list, the real `PATTERNS` for the pattern rows.
+// This surface needs a title, an id and a difficulty per problem; the records
+// carry statements, hints, constraints and code in three languages, and putting
+// them in the first chunk to render a sidebar is what B95 measured.
+// `@/data` is the barrel that builds PROBLEMS from all ten pattern folders —
+// importing PATTERNS through it pulls every record in. Take it from its own module.
+import { PATTERNS } from "@/data/patterns"
+import {
+  CATALOGUE as PROBLEMS,
+  cardsOfPattern as problemsByPattern,
+} from "@/data/manifest"
+// The MANIFEST, not the registry. This surface lists journeys — slug, title,
+// how many there are — and reading that off `JOURNEYS` pulled all 93 acts,
+// frame generators, presets and prose into the first chunk to render a list.
+// Measured before: `engine-*.js` was 568 KB gzipped of the 747 KB first load.
+import { JOURNEY_CARDS as JOURNEYS } from "@/engine/manifest"
 import { openDialog } from "@/lib/dialogs"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import type { Mask } from "@/lib/disclosure"
