@@ -2,45 +2,62 @@
 
 ## Where the code is
 
-**Branch `refactor/problems-dir-balanced-brackets`.** It moves one problem to the shape the rest
-will follow: **`src/problems/<id>/`, one directory per problem**, holding the record and the
-teaching document side by side, one file per section, every file under 200 lines.
+Two branches, in order. **PR #90** is `refactor/problems-dir-balanced-brackets` — one directory per
+problem. **`feat/one-page-per-problem`** sits on top of it: the explanation stopped being a second
+route and became a section of the problem page.
 
-`balanced-brackets` is the worked example — 110 lines of record plus a 620-line Markdown document
-became 14 files. Read **`src/problems/README.md`** before converting the next one; it is the
-change → file table and the rules.
+### One page per problem
 
-**The one thing to hold on to:** there are **two entry files** and that is load-bearing.
-`index.ts` is the `Problem` record and is imported statically by the pattern barrel, so it is in
-the first chunk. `doc.ts` is the `TeachingDoc` and is reached only by `lib/content.ts`'s
-`import.meta.glob`, so its ~30 KB of prose is a chunk of its own. **Nothing eager may reach a doc
-file**, or 127 documents join the first load and B95 is undone.
+`#/p/<pattern>/<id>` is the only route a problem has. Statement, hints, walkthrough, the ladder in
+three languages, then the long explanation in full at `#explanation`. `#/learn/<id>` redirects here
+and jumps (`?read=explanation`); `learn-page-view.tsx` is gone.
 
-Verified green on this branch, not asserted:
+**The dedupe is the point, and it is what makes the change worth the diff.** A page that stands
+alone has to restate the title, the statement, the constraints, the examples, the hints and every
+rung in three languages. Measured: `balanced-tree`'s generated file went **1,146 lines to 930**, and across all 127 files
+the corpus went **93,055 lines to 59,372** — 33,683 lines, 36% of it, were the screen above said
+twice. `gen-learn.mjs` emits only what the problem page does not carry — the authored
+document, one runnable script, and where the problem sits — and `gen-learn.test.mjs` fails the build
+if any of those six headings comes back.
+
+**Two things got sharper on the way there:**
+
+* **The cap removes the SECTION, not just the door.** While a journey is mid-flight the explanation
+  is not fetched and not rendered. On two routes it was enough to hide the link; on one page hiding
+  a link hides nothing. The UI test asserts both.
+* **A typed document renders as SECTIONS.** `lib/content.ts` used to re-serialise it to a Markdown
+  string for `lib/markdown.ts` to re-parse — object → text → blocks → UI, with every typed table
+  flattened to pipes on the way out and split on `|` on the way back in. `lib/teaching-parts.ts`
+  builds the section list as data and `components/teaching-doc.tsx` renders it. A cell may now hold
+  a bitwise `a | b`, and the script editor is PLACED rather than guessed at "the last Python fence".
+
+Verified green, not asserted:
 
 | Gate | Result |
 |---|---|
-| `npm run check` | **774 tests, 0 fail** (tsc + eslint + node) |
-| `npm run test:ui` | **171 / 0 fail**, real Chrome |
-| `npm run verify:code` | **758 blocks compiled, 0 failed** (up from 756 — the promoted counter rung) |
-| `npm run verify:run` | **2,186 oracle runs, 4,372 translations, 0 disagreed** (2,168 / 4,336 before — the two counter blocks that `cDefs` used to skip) |
-| `node scripts/verify-deep.mjs --id balanced-brackets` | ran clean and reported agreement |
-| `node scripts/content-roundtrip.mjs --id balanced-brackets` | **470 of 470** source lines carried through |
-| `node scripts/learn-gaps.mjs --strict` | clean; the ratchet dropped 105 → 104 |
-| The page, driven in Chrome at 1440 | the new **failure modes** section renders, 3 approaches, 3 rungs, 7 tables, 14 code blocks, no raw Markdown, no sideways scroll, no console errors |
+| `npm run check` | **776 tests, 0 fail** |
+| `npm run test:ui` | **172 / 0 fail**, real Chrome |
+| `npm run verify:code` | **758 blocks compiled, 0 failed** |
+| `npm run verify:run` | **2,186 oracle runs, 4,372 translations, 0 disagreed** |
+| `verify-deep.mjs` | **82/82** ran clean and reported agreement |
+| `learn-gaps.mjs --strict` | clean |
+| First load of `#/`, from the page's own resource timeline | **197.0 KB / 5 files → 195.3 KB / 3 files**. Not a goal of this change; measured because merging two routes could have dragged the explanation into the shell, and it did not |
+| Both halves driven in Chrome at 1440 | typed (`balanced-brackets`): 10 `h2` + 22 `h3` + 6 tables + 1 editor + a 31-entry rail. Markdown (`max-depth`): 11 `h2` + 25 `h3` + 7 tables. **Zero duplicated headings on either**, and the statement appears exactly once. No sideways scroll at 1440 or 390 |
 
-### Two brace counters were lying, and one of them was skipping work
+### Where the explanation lives now
 
-Both `problems.test.ts`'s well-formed check and `localsmith/run.mjs`'s `cDefs` counted `{` and `}`
-as structure without skipping character and string literals. A rung whose code tests `ch == '{'`
-was called malformed by the first, and by the second was never closed at all — so it reported
-**"no function to call"** and silently skipped both translations. That reads exactly like a rung
-that passed. Both strip literals before counting now. The repo's own rule said it already: to find
-code, parse it; do not count braces.
+| Question | File |
+|---|---|
+| Which sections, in what order | `src/lib/teaching-parts.ts` — pure data, no JSX |
+| What they look like | `src/components/teaching-doc.tsx` |
+| Which of the two forms a problem has, and fetching it | `src/lib/use-explanation.ts` |
+| The fork between them | `src/components/explanation.tsx` |
+| The slot, the door, the rail, the cap | `src/components/problem-detail.tsx` |
+| The Markdown half, for the 68 not yet converted | `scripts/gen-learn.mjs` → `docs/learn/**` → `src/lib/learn-pages.ts` |
 
-### What is left of the migration
+### What is left
 
-**68 documents to go** (B97). The converter emits the whole directory now, so the next one is:
+**68 documents to go** (B97). The converter emits the whole directory:
 
 ```
 node scripts/md-to-content.mjs --id <id>      # bind its rungs in scripts/rung-bindings.json first
@@ -48,12 +65,14 @@ node scripts/content-roundtrip.mjs --id <id>  # prove no line was lost, THEN del
 node scripts/verify-deep.mjs --id <id>
 ```
 
-The thirteen documents converted before this branch moved to `<id>/doc.ts` unchanged — they are not
-split into sections and their records have not moved. Split each when someone next touches it; there
-is no value in a mechanical pass over prose nobody is reading.
+Each conversion now also deletes that problem's `docs/learn/` page, because a typed document wins.
+`src/content/` holds only `types.ts` and `content.test.ts`; renaming it is churn, do it alone or
+leave it.
 
-`src/content/` now holds only `types.ts` and `content.test.ts`. Renaming it is churn on top of an
-already wide diff; do it in a commit of its own or leave it.
+Two brace counters were lying and one was skipping work — `problems.test.ts`'s well-formed check and
+`localsmith/run.mjs`'s `cDefs` both counted `{`/`}` without skipping character and string literals,
+so a rung testing `ch == '{'` was reported as **"no function to call"** and silently unverified.
+Both strip literals now. See `CLAUDE.md`'s trap list.
 
 ## Start here
 

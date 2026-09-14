@@ -4,7 +4,7 @@
 [![MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![problems](https://img.shields.io/badge/problems-127-brightgreen.svg)](docs/PROBLEMS.md)
 [![journeys](https://img.shields.io/badge/journeys-93-brightgreen.svg)](docs/AUTHORING.md)
-[![tests](https://img.shields.io/badge/tests-758%20passing-brightgreen.svg)](#the-seven-gates)
+[![tests](https://img.shields.io/badge/tests-776%20passing-brightgreen.svg)](#the-seven-gates)
 [![contributions](https://img.shields.io/badge/contributions-wanted-orange.svg)](CONTRIBUTING.md)
 
 One app: a pattern-organised interview practice set (**127 problems** across 10 patterns, SQL
@@ -20,8 +20,9 @@ Every problem also carries an **approach ladder** — each way in, worst to best
 C++ — where a rung says three things: what it does, what it costs, and **the promise it ignores**.
 Sorting both lists in `merge-two-sorted` is not slow because `n log n` beats `n`; it is slow because
 both inputs were *already sorted*. Plus an **arc**: one paragraph naming the single idea the whole
-ladder applies. It all lands on one page per problem — `docs/learn/<id>.md`, generated from the
-data and spliced with the authored teaching document, readable in the app at `#/learn/<id>`.
+ladder applies. It all lands on **one page per problem** — `#/p/<pattern>/<id>`, and there is no
+second route: the statement, the hints, the walkthrough, the ladder in three languages and the long
+explanation in full are one document, in that order.
 
 ## The thing that makes this different
 
@@ -90,10 +91,10 @@ None of them is sufficient on its own. That is the point of having seven.
 
 | Command | What it proves |
 |---|---|
-| `npm run check` | `tsc -b`, `eslint`, **758** Node tests |
+| `npm run check` | `tsc -b`, `eslint`, **776** Node tests |
 | `npm run test:ui` | Real Chrome — routes, the earn loop, rails, deep links, panel sizes |
-| `npm run verify:code` | Every Java and C++ block **compiles** (752 blocks) |
-| `npm run verify:run` | Those blocks **agree with the Python** (2,168 oracle runs, 4,336 translations compared) |
+| `npm run verify:code` | Every Java and C++ block **compiles** (758 blocks) |
+| `npm run verify:run` | Those blocks **agree with the Python** (2,186 oracle runs, 4,372 translations compared) |
 | `npm run verify:vectors` | The vectors are strong enough to catch a mutation |
 | `node scripts/verify-deep.mjs` | All **82** teaching scripts run and their approaches agree |
 | `node scripts/learn-gaps.mjs --strict` | No document adds approaches without disclosing it |
@@ -123,7 +124,9 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
 | Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`). **Problems being migrated live in `src/problems/<id>/` instead**, one file per section, and their pattern barrel imports from there — map: `src/problems/README.md` |
 | Add / edit a **teaching document** (understanding, traps, one file per approach, arc, interview, the runnable script) | `src/problems/<id>/` — entered through `doc.ts`, converted from `docs/deep/<id>_explained.md` by `scripts/md-to-content.mjs`. Gate: `src/content/content.test.ts` |
-| **The one page per problem** (`npm run docs:learn`) — problem, hints, the authored teaching document, every rung in three languages, a runnable script | `scripts/gen-learn.mjs` · output: `docs/learn/**` · drift gate: `scripts/gen-learn.test.mjs` |
+| **The one page per problem** — `#/p/<pattern>/<id>`, and there is no second route. Statement, hints, walkthrough, the ladder in three languages, then the long explanation in full at the foot | `src/components/problem-detail.tsx` |
+| The explanation's sections, and the order they come in | `src/lib/teaching-parts.ts` (data) → `src/components/teaching-doc.tsx` (markup). Which form a problem has, and fetching it: `src/lib/use-explanation.ts` |
+| The Markdown half of the explanation, for problems not yet converted (`npm run docs:learn`) | `scripts/gen-learn.mjs` · output: `docs/learn/**` · drift gate: `scripts/gen-learn.test.mjs` |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |
 | Which model is trusted with what, and the measured token cost | `docs/MODELS.md` |
 | Compile every Java/C++ block (`npm run verify:code`) | `scripts/localsmith/verify.mjs` |
@@ -133,7 +136,7 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 | **HTTP API** — every endpoint | `src/api/routes.ts` (contract: `docs/API.md`) |
 | API transport (HTTP vs in-process) | `src/api/client.ts` |
 | Standalone API server / Vite `/api` middleware | `server/index.ts` / `server/vite-api.ts` |
-| Read a learn page in the app (`#/learn/<id>`) | `src/components/learn-page-view.tsx` · markdown → blocks: `src/lib/markdown.ts` · blocks → UI: `src/components/markdown.tsx` · which ids exist: `src/lib/learn-pages.ts` |
+| Read the long explanation in the app | It is a section of the problem page — `#explanation` on `#/p/<pattern>/<id>`. `#/learn/<id>` redirects there. Markdown → blocks: `src/lib/markdown.ts` · blocks → UI: `src/components/markdown.tsx` · which ids have one: `src/lib/learn-pages.ts` + `src/lib/content.ts` |
 | Journey page layout | `src/features/journey/journey-page.tsx` |
 | Journey policy (unlock, quiz, predict, hints, XP, deep links, keys) | `src/features/journey/use-journey.ts` |
 | Generic play / pause / seek over frames | `src/features/journey/use-player.ts` |
