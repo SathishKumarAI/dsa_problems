@@ -87,6 +87,79 @@ def _run_length_from(start: int, present: list[int] | set[int]) -> int:
 
 ---
 
+## Reading the Calculations
+
+The optimal solution to this problem is six lines and contains exactly **one** idea. The trouble is
+that the idea is a `continue` statement, which does not look like an idea at all — it looks like
+tidying. This section is so that you can see which line is doing the work.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| `set(nums)` | the distinct values, answerable by membership | Two jobs at once: it **deduplicates** (the constraints demand it) and it makes `in` cost the same no matter how much it holds | On a `list`, every `in` is a full scan — measured below at ~18 000× the cost |
+| `x in values` | "is this value present?" | The **only** question this problem asks of its data. Not where it is, not how many — only whether | — |
+| `x - 1 in values` | "does something come **before** me?" | **This is the entire algorithm.** See below | — |
+| `continue` | "not my job" | The value hands the run off to whoever owns it | Without it the rung is quadratic — 320,400 probes where 1,600 suffice, measured below |
+| `start + length in present` | "does the run keep going?" | Walking upward one step at a time, asking presence, never position | — |
+| `length = 1` (not `0`) | the start counts as one value | A run containing only `x` has length `1` | Every answer comes out one too small, including the empty case, which must be `0` |
+| `max(best, …)` | the running answer | The longest run may be anywhere; there is no reason it is the last one found | — |
+| `for x in values` (not `for x in nums`) | iterate the **distinct** values | Iterating `nums` re-walks duplicates | `[1, 1, 1, …]` does the same work once per copy — correct, and needlessly slow |
+
+### The one rearrangement
+
+Every approach here walks a run upward from some starting value. They differ in one thing only:
+**which values they bother starting from.** Watch what changes between approach 3 and approach 4 —
+it is one line:
+
+```
+approach 3     for x in values:                       start from every value
+                   walk up from x
+
+approach 4     for x in values:
+                   if x - 1 in values: continue       start ONLY from a run's first value
+                   walk up from x
+```
+
+The reframing behind it: a run of length `L` has exactly **one** value with nothing before it. Call
+that value the run's **owner**. Approach 3 walks the run once from each of its `L` members — the run
+`1,2,3,4` gets walked from `1`, from `2`, from `3` and from `4`, four times for one answer. Approach 4
+asks each value a single question first — *is there anything below me?* — and every value except the
+owner answers yes and stops.
+
+So the guard is not an optimisation of the walk. It is a **claim of ownership**, and it is what
+converts "every value walks its whole run" into "every value is walked exactly once, by exactly one
+owner". That is the difference between `O(n²)` and `O(n)`, and it fits on one line.
+
+The direction matters and is the thing people get wrong: elect the value with no **predecessor** and
+walk **forwards**. Elect the value with no *successor* and walk forwards and every owner walks off the
+end immediately — see the Watch out under Approach 4.
+
+### How to hand-trace it
+
+`nums = [50, 3, 2, 100, 4, 1]`. Build the set, then ask every value the ownership question. Every row
+below is printed by the script at the foot of this document.
+
+| `x` | `x - 1 in values`? | Owner? | Walk | Length |
+|---|---|---|---|---|
+| `50` | `49` — no | **yes** | `51`? no | `1` |
+| `3` | `2` — yes | no | *skipped* | — |
+| `2` | `1` — yes | no | *skipped* | — |
+| `100` | `99` — no | **yes** | `101`? no | `1` |
+| `4` | `3` — yes | no | *skipped* | — |
+| `1` | `0` — no | **yes** | `2`? yes · `3`? yes · `4`? yes · `5`? no | **`4`** |
+
+Answer `4`. Count the membership questions: six ownership checks, plus four walk steps from the one
+owner that had somewhere to go, plus one dead-end check each from `50` and `100`. Twelve probes for
+six values — and note that three of the six values did **no** walking at all. That is what "each
+value is touched once" looks like in practice.
+
+**The recipe, for any input:** build the set; for each distinct value ask whether its predecessor is
+present; if it is, move on; if it is not, walk upward counting until the next value is absent. If your
+trace ever walks a run from its middle, you have written approach 3.
+
+---
+
 ## Approach 1 — Brute force: walk each run, searching the array for every step  *(an addition — not in the data file's ladder)*
 
 ### The idea
@@ -158,6 +231,29 @@ container.
 Use it as the thing you say out loud in the first thirty seconds, and as the **oracle** you
 cross-check a clever solution against on random inputs, which is exactly its job in the script below.
 Never ship it: at `n = 10^5` the worst case is around `10^15` comparisons.
+
+> **Under the hood.** The only thing separating this rung from the optimal one is the **container**,
+> so it is worth knowing what that swap actually buys rather than taking `O(1)` on faith. Time one
+> membership question against a value that is *not* present — a miss, so neither container can stop
+> early — as the container grows:
+>
+> | values held | `x in set` | `x in list` |
+> |---|---|---|
+> | `100` | 17.2 ns | 330 ns |
+> | `1,000` | 17.9 ns | 3,090 ns |
+> | `10,000` | 17.3 ns | 31,625 ns |
+> | `100,000` | 17.7 ns | 320,066 ns |
+>
+> The list column multiplies by ten every row, exactly as a scan must. The set column does not move:
+> **17.2 ns at a hundred values and 17.7 ns at a hundred thousand.** At the constraint's ceiling one
+> question costs about 18,000× more on a list than on a set, and this problem asks that question several
+> times per value.
+>
+> That flatness is what "hashing" means in practice: the value is turned into a number, the number
+> picks a slot, and the slot is inspected — none of which depends on how full the table is. It is
+> *amortised*, not guaranteed: the table is rebuilt as it fills, so an individual insert can be
+> expensive, and an adversary who could choose values that all hash to the same slot would drag it
+> back to a scan. Neither matters here. What matters is that `O(1)` is a measured plateau, not a hope.
 
 ---
 
@@ -407,6 +503,52 @@ This is the answer. Use it whenever the values are wide (as here) and the input 
 reasons to reach past it are the two named above — already-sorted input, or a memory budget that
 cannot hold a hash set.
 
+> **Under the hood.** "Every value belongs to at most one inner walk" is the sentence the `O(n)`
+> rests on, and it is countable rather than arguable. Wrap the set so it records every membership
+> question, then run both rungs on the worst shape there is — **one unbroken run** of `n` values:
+>
+> | `n` | probes, no guard | probes, with guard | ratio |
+> |---|---|---|---|
+> | `50` | 1,275 | 100 | 12.8× |
+> | `100` | 5,050 | 200 | 25.2× |
+> | `200` | 20,100 | 400 | 50.2× |
+> | `400` | 80,200 | 800 | 100.2× |
+> | `800` | 320,400 | 1,600 | 200.2× |
+>
+> The guarded column doubles when `n` doubles. The unguarded one **quadruples**, and the ratio itself
+> doubles every row — that is the shape of `n²` against `n`, read off the data rather than argued
+> from the code. Those unguarded numbers are exactly `n(n+1)/2`: the run walked from every one of its
+> members. At the constraint's `10^5` it would be about five billion probes.
+>
+> Now the uncomfortable half. Run both on an array where **no run is longer than 1** — every value
+> three apart, so nothing ever walks:
+>
+> | `n` | probes, no guard | probes, with guard |
+> |---|---|---|
+> | `100` | 100 | 200 |
+> | `400` | 400 | 800 |
+> | `1,600` | 1,600 | 3,200 |
+>
+> The guard **doubles** the work here and saves nothing, because it asks a question whose answer is
+> always no. It is an insurance premium of one probe per value, and on scattered data you pay it for
+> nothing. Both columns are linear, which means **a test suite of scattered values cannot tell these
+> two rungs apart** — the difference only appears on input with a long run in it, which is exactly the
+> input a hand-written test tends not to have.
+>
+> Whole solutions at the ceiling, `n = 10^5`, best of three, showing that the optimal rung is not the
+> fastest rung on every shape — only the one that never falls over:
+>
+> | shape | sort | set, no guard | set, guarded |
+> |---|---|---|---|
+> | one unbroken run | 10.2 ms | *(≈5 × 10⁹ probes — not run)* | **7.1 ms** |
+> | no run longer than 1 | 9.0 ms | **8.8 ms** | 10.4 ms |
+> | random, values across ±10⁹ | 21.4 ms | **12.7 ms** | 13.9 ms |
+>
+> Read that honestly: on the two shapes with no long run the guard makes things 9–18% slower, and on
+> the third it is the difference between 7.1 milliseconds and an afternoon. That asymmetry is the whole
+> argument for it. You do not add the guard because it is faster on your input; you add it because it
+> removes the input that destroys you, at a price you can state.
+
 ---
 
 ## Approach 5 — Direct indexing, the version this problem's constraints forbid  *(an addition — not in the data file's ladder)*
@@ -579,6 +721,48 @@ arriving at the final code with no wrong turns.
 framing plus a testing oracle. Direct indexing is worth one sentence — "if the values were bounded I
 would index them directly, but they run to `10^9`, so the table would dwarf the input" — which shows
 you read the constraint rather than pattern-matched the problem.
+
+---
+
+## How to Get Fluent
+
+Six drills, each with a **done-condition** you can check rather than feel. In order; each assumes the
+last.
+
+**1. Trace the ownership question by hand on `[50, 3, 2, 100, 4, 1]`.** Six values, six questions,
+before any walking.
+*Done when:* you can say which three values were skipped and why, without re-reading the table above.
+If you found yourself walking from `3`, you traced approach 3.
+
+**2. Write the optimal rung from nothing, in under ninety seconds.** Six lines.
+*Done when:* you wrote `if x - 1 in values: continue` before you wrote the walk. If the guard arrived
+last, as a tidy-up, the idea has not landed yet — the guard *is* the algorithm and the walk is the
+easy part.
+
+**3. Delete the guard and count.** Run both versions on `list(range(1, 801))` with a set that records
+probes. The script at the foot of this page does exactly this.
+*Done when:* you have seen 320,400 against 1,600 with your own eyes, and can say why the ratio itself
+doubles as `n` doubles.
+
+**4. Now find the input where the guard is a liability.** Build an array with no run longer than 1.
+*Done when:* you have measured the guarded version doing **twice** the probes of the unguarded one,
+and can state the trade in one sentence: one wasted probe per value, in exchange for the worst case
+never happening.
+
+**5. Break it the way most people break it.** Change `x - 1 in values` to `x + 1 in values`, keep the
+walk pointing upward, and run it on the statement's example.
+*Done when:* you have seen it return `1` and understood that it is not "no runs found" but every
+owner walking off the end immediately. Wrong answers that look like plausible answers are the ones to
+have met before.
+
+**6. Say the memory sentence out loud.** *"Why not just index the values directly?"*
+*Done when:* you reach for the constraint rather than for the algorithm: values run to `±10^9`, so a
+direct table is two billion slots for an input of a hundred thousand.
+
+**The one sentence worth keeping a month from now:** *a run has exactly one value with nothing before
+it, so let that value own the walk and every other value is free* — and its shadow, which most pages
+leave out: *the guard costs one probe per value, always, and saves you only on input that has a long
+run in it.*
 
 ---
 
@@ -765,6 +949,7 @@ Run:  python longest_consecutive.py
 from __future__ import annotations
 
 import random
+import time
 
 
 # --------------------------------------------------------- the shared walk
@@ -847,7 +1032,110 @@ APPROACHES = [
 SPAN_BUDGET = 2_000_000  # refuse to allocate more than this many bytes
 
 
+class CountingSet(set):
+    """Scaffolding: a set that records how many membership questions it was asked."""
+
+    probes = 0
+
+    def __contains__(self, x: object) -> bool:
+        CountingSet.probes += 1
+        return set.__contains__(self, x)
+
+
+def _probe_count(nums: list[int], guarded: bool) -> tuple[int, int]:
+    CountingSet.probes = 0
+    values = CountingSet(nums)
+    best = 0
+    for x in values:
+        if guarded and x - 1 in values:
+            continue
+        best = max(best, _run_length_from(x, values))
+    return best, CountingSet.probes
+
+
+def _best_of(fn, rounds: int = 3) -> float:
+    best = float("inf")
+    for _ in range(rounds):
+        start = time.perf_counter()
+        fn()
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
+def trace_the_ownership_question() -> None:
+    """Every row of the hand-trace table in 'Reading the Calculations'."""
+    nums = [50, 3, 2, 100, 4, 1]
+    print(f"=== {nums}, asking each value whether anything comes before it ===")
+    values = set(nums)
+    best = 0
+    for x in nums:  # the statement's order, so the table reads the same way
+        if x - 1 in values:
+            print(f"  x={x:<4} {x - 1} present -> not the owner, skip")
+            continue
+        length = _run_length_from(x, values)
+        steps = " · ".join(f"{x + i}? {'yes' if x + i in values else 'no'}" for i in range(1, length + 1))
+        print(f"  x={x:<4} {x - 1} absent  -> OWNER, walk: {steps}  length {length}")
+        best = max(best, length)
+    print(f"  answer {best}")
+
+
+def measure() -> None:
+    """The numbers quoted in the 'Under the hood' callouts. Timings are machine-dependent;
+    the SHAPE of each column is the claim, not the absolute nanoseconds. The PROBE COUNTS
+    are exact and will reproduce anywhere."""
+    print("\n=== probes on the worst shape: ONE unbroken run of n ===")
+    print(f"  {'n':>6} {'no guard':>12} {'with guard':>12} {'ratio':>8}")
+    for n in (50, 100, 200, 400, 800):
+        nums = list(range(1, n + 1))
+        loose, p_loose = _probe_count(nums, guarded=False)
+        tight, p_tight = _probe_count(nums, guarded=True)
+        assert loose == tight == n, (loose, tight, n)
+        print(f"  {n:>6} {p_loose:>12} {p_tight:>12} {p_loose / p_tight:>8.1f}")
+
+    print("\n=== probes on the shape that hides the difference: no run longer than 1 ===")
+    print(f"  {'n':>6} {'no guard':>12} {'with guard':>12}")
+    for n in (100, 400, 1600):
+        nums = [i * 3 for i in range(n)]
+        loose, p_loose = _probe_count(nums, guarded=False)
+        tight, p_tight = _probe_count(nums, guarded=True)
+        assert loose == tight == 1
+        print(f"  {n:>6} {p_loose:>12} {p_tight:>12}")
+
+    print("\n=== one membership question, against a value that is NOT present ===")
+    print(f"  {'held':>10} {'set ns':>10} {'list ns':>12}")
+    rng = random.Random(20260913)
+    for n in (100, 1000, 10000, 100000):
+        values = rng.sample(range(-10**9, 10**9), n)
+        as_set, as_list = set(values), list(values)
+        miss = 10**9 + 7
+        t_set = _best_of(lambda s=as_set: [miss in s for _ in range(1000)]) / 1000
+        t_list = _best_of(lambda l=as_list: [miss in l for _ in range(100)]) / 100
+        print(f"  {n:>10} {t_set * 1e9:>10.1f} {t_list * 1e9:>12.1f}")
+
+    print("\n=== whole solutions at the ceiling, n = 10^5 ===")
+    print(f"  {'shape':>22} {'sort ms':>9} {'no guard ms':>12} {'guarded ms':>11}")
+    for label, nums in [
+        ("one unbroken run", list(range(10**5))),
+        ("no run longer than 1", [i * 3 for i in range(10**5)]),
+        ("random, wide values", [rng.randrange(-10**9, 10**9) for _ in range(10**5)]),
+    ]:
+        t_sort = _best_of(lambda d=nums: longest_consecutive_sort(list(d)))
+        t_guard = _best_of(lambda d=nums: longest_consecutive(list(d)))
+        if label == "one unbroken run":
+            # ~5e9 probes. It is on the ladder to be rejected, not run.
+            print(f"  {label:>22} {t_sort * 1e3:>9.1f} {'(not run)':>12} {t_guard * 1e3:>11.1f}")
+            continue
+        t_loose = _best_of(lambda d=nums: longest_consecutive_set_naive(list(d)))
+        print(
+            f"  {label:>22} {t_sort * 1e3:>9.1f} {t_loose * 1e3:>12.1f} {t_guard * 1e3:>11.1f}"
+        )
+
+
 def main() -> None:
+    trace_the_ownership_question()
+    measure()
+    print()
+
     cases: list[tuple[str, list[int]]] = [
         ("statement example", [50, 3, 2, 100, 4, 1]),
         ("empty array", []),

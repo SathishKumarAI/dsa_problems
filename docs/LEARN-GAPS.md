@@ -12,9 +12,9 @@ document in `docs/deep/`, and the sections [its spec](deep/README.md) requires.
 
 | Section | Have it | Missing | What a reader loses without it |
 |---|---|---|---|
-| Reading the Calculations | 6 | **121** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
-| How to Get Fluent | 6 | **121** | no drills: the page can be read and still not be practised |
-| Under the hood | 6 | **121** | a cost is taken on faith — what the language actually does is never shown |
+| Reading the Calculations | 7 | **120** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
+| How to Get Fluent | 7 | **120** | no drills: the page can be read and still not be practised |
+| Under the hood | 7 | **120** | a cost is taken on faith — what the language actually does is never shown |
 | Interview Priority | 82 | **45** | no guidance on which approaches to know cold |
 | The Overall Arc | 82 | **45** | the rungs never join into one story |
 | Comparison | 82 | **45** | no side-by-side of the trade-offs |
@@ -44,7 +44,7 @@ None.
 |---|---|---|---|---|---|---|---|---|
 | [pair-sum](learn/pair-sum.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [top-k-frequent](learn/top-k-frequent.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [longest-consecutive-run](learn/longest-consecutive-run.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
+| [longest-consecutive-run](learn/longest-consecutive-run.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [single-number](learn/single-number.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [contains-duplicate](learn/contains-duplicate.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [valid-anagram](learn/valid-anagram.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
