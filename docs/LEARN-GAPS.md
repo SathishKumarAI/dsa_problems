@@ -12,9 +12,9 @@ document in `docs/deep/`, and the sections [its spec](deep/README.md) requires.
 
 | Section | Have it | Missing | What a reader loses without it |
 |---|---|---|---|
-| Reading the Calculations | 10 | **117** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
-| How to Get Fluent | 10 | **117** | no drills: the page can be read and still not be practised |
-| Under the hood | 10 | **117** | a cost is taken on faith — what the language actually does is never shown |
+| Reading the Calculations | 11 | **116** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
+| How to Get Fluent | 11 | **116** | no drills: the page can be read and still not be practised |
+| Under the hood | 11 | **116** | a cost is taken on faith — what the language actually does is never shown |
 | Interview Priority | 82 | **45** | no guidance on which approaches to know cold |
 | The Overall Arc | 82 | **45** | the rungs never join into one story |
 | Comparison | 82 | **45** | no side-by-side of the trade-offs |
@@ -113,7 +113,7 @@ None.
 | [k-closest-values](learn/k-closest-values.md) | binary-search | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [ship-in-d-days](learn/ship-in-d-days.md) | binary-search | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [reverse-list](learn/reverse-list.md) | linked-list | yes | **no** | **no** | **no** | · | · | · |
-| [cycle-detect](learn/cycle-detect.md) | linked-list | yes | **no** | **no** | **no** | · | · | · |
+| [cycle-detect](learn/cycle-detect.md) | linked-list | yes | · | · | · | · | · | · |
 | [merge-two-sorted](learn/merge-two-sorted.md) | linked-list | yes | **no** | **no** | **no** | · | · | · |
 | [middle-of-list](learn/middle-of-list.md) | linked-list | yes | **no** | **no** | **no** | · | · | · |
 | [palindrome-list](learn/palindrome-list.md) | linked-list | yes | **no** | **no** | **no** | · | · | · |

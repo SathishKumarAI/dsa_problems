@@ -1,7 +1,19 @@
-// The reader for one problem's learn page (`docs/learn/<id>.md`).
+// The reader for one problem's learn page.
 //
 // Route: `#/learn/<problem-id>`. The document is fetched on arrival, never with
-// the bundle — see `lib/deep-docs.ts` for why.
+// the bundle.
+//
+// TWO SOURCES while the migration runs, and the order is the point:
+//
+//   1. `src/content/<id>.ts` — the teaching document as a TYPED object beside
+//      the record it teaches, composed into the page at read time
+//      (`lib/content.ts`). One file per problem, no generator, no third
+//      artifact to keep in step.
+//   2. `docs/learn/<id>.md` — the generated page, for the 81 problems the
+//      conversion has not reached yet.
+//
+// The fallback goes when the last document is converted, and with it
+// `scripts/gen-learn.mjs`, `docs/learn/` and `lib/learn-pages.ts`.
 //
 // It does NOT re-gate the content. The one door is the link on the problem
 // page, which is hidden while a journey still has unearned rungs, exactly as
@@ -13,6 +25,9 @@ import { ArrowLeftIcon, ExternalLinkIcon, ListTreeIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { loadLearnPage } from "@/lib/learn-pages"
+import { composeLearnPage, hasContent, loadContent } from "@/lib/content"
+import { ladderOf } from "@/lib/ladder"
+import { journeyForProblem } from "@/engine"
 import { outlineOf, parseMarkdown, titleOf } from "@/lib/markdown"
 import type { Block } from "@/lib/markdown"
 import { href, navigate } from "@/lib/route"
@@ -34,15 +49,31 @@ export function LearnPageView({ id }: { id: string }) {
   // synchronous setState in an effect is also what react-hooks v7 forbids.
   useEffect(() => {
     let live = true
-    loadLearnPage(id).then((source) => {
+    const source = async () => {
+      if (problem && hasContent(id)) {
+        const doc = await loadContent(id)
+        if (doc) {
+          // the full ladder: this page is already gated by the door on the
+          // problem page, so it shows the whole climb rather than the capped one
+          const { rungs } = ladderOf(
+            problem,
+            journeyForProblem(problem.id),
+            Number.MAX_SAFE_INTEGER
+          )
+          return composeLearnPage(problem, doc, rungs)
+        }
+      }
+      return loadLearnPage(id)
+    }
+    source().then((text) => {
       if (!live) return
-      if (source === undefined) setMissing(true)
-      else setBlocks(parseMarkdown(source))
+      if (text === undefined) setMissing(true)
+      else setBlocks(parseMarkdown(text))
     })
     return () => {
       live = false
     }
-  }, [id])
+  }, [id, problem])
 
   const back = () =>
     problem && pattern
