@@ -10,7 +10,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
 | **Everything about one problem, on one page** | `#/p/<pattern>/<id>` — there is no second route. The long explanation is a section at the foot (`#explanation`), gated by the same `capped` flag as the ladder and the arc. `#/learn/<id>` redirects. Sections: `lib/teaching-parts.ts` (data) → `components/teaching-doc.tsx` (markup) |
-| **Everything about one problem, in one directory** | `src/problems/<id>/` — the record (`problem.ts`, `hints.ts`, `solutions.ts`) and the teaching document (`understanding.ts`, `traps.ts`, `approaches/<rung>.ts`, `arc.ts`, `interview.ts`, `script.ts`) side by side. Map: `src/problems/README.md`. **Two entry files on purpose**: `index.ts` is the record and is EAGER, `doc.ts` is the document and is LAZY — nothing eager may reach a doc file. 14 of 82 converted; the rest are still `docs/deep/<id>_explained.md` spliced into the generated `docs/learn/<id>.md` (`npm run docs:learn`). The page shows the ending, so the app links it only when the ladder is not capped |
+| **Everything about one problem, in one directory** | `src/problems/<id>/` — the record (`problem.ts`, `hints.ts`, `solutions.ts`) and the teaching document (`understanding.ts`, `traps.ts`, `approaches/<rung>.ts`, `arc.ts`, `interview.ts`, `script.ts`) side by side. Map: `src/problems/README.md`. **Two entry files on purpose**: `index.ts` is the record and is EAGER, `doc.ts` is the document and is LAZY — nothing eager may reach a doc file. 39 of 82 converted; the rest are still `docs/deep/<id>_explained.md` spliced into the generated `docs/learn/<id>.md` (`npm run docs:learn`). The page shows the ending, so the app links it only when the ladder is not capped |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
@@ -86,6 +86,20 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 - **A backslash in a template literal sent to the page is consumed twice** (`/^\d\d/` arrives as
   `/^dd/`). Use a character class.
 - `-x` on a zero is `-0` and fails `deepEqual`; write `0 - x` when a value can be zero (three-sum hash act).
+
+- **A table cell may hold an escaped pipe, and `\|` is a LITERAL pipe.** `lib/markdown.ts` split
+  cells on every `|`, so three-sum-closest's four worked examples — whose headers write `|s - 1|`
+  for absolute value — rendered one column too wide with a bare backtick painted in each header.
+  It had shipped that way for as long as the document existed, on the old learn page and the new
+  one alike; the conversion is only what made someone look at the page. Seventeen cells across
+  three documents. Gate: *"a table cell may hold an escaped pipe"* in `markdown.test.ts`.
+
+- **`## Understanding` is not one table, and its constraints part is not only a table.** The
+  converter's first cut took every `|` line in the section and parsed the lot as one table, which
+  is right only while there is exactly one; and lifting the whole constraints `###` part threw away
+  the paragraph four documents put under that heading arguing what the bound buys. Five documents
+  lost a table, then fifteen lost prose. `content-roundtrip.mjs` caught both and nothing else
+  would have — run it on every conversion, and only delete the Markdown after it says ok.
 
 - **A brace counter reads `'{'` as structure.** Two of them did: `problems.test.ts`'s well-formed
   check called a correct Java block malformed, and `localsmith/run.mjs`'s `cDefs` never closed a

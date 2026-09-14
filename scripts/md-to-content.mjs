@@ -118,6 +118,81 @@ function table(body) {
 }
 
 /**
+ * Lift one `### part` out of a section: its body, and the section without it.
+ *
+ * `## Understanding the Problem` is not one thing. It is prose plus any number
+ * of `###` parts, and TWO of them are data rather than words — the constraints
+ * table and the numbered failure list. Everything else is prose and stays.
+ */
+function liftPart(body, match) {
+  const lines = body.split("\n")
+  const start = lines.findIndex((l) => match.test(l))
+  if (start === -1) return { body, part: undefined }
+  let end = lines.length
+  for (let i = start + 1; i < lines.length; i++)
+    if (/^###\s/.test(lines[i])) {
+      end = i
+      break
+    }
+  return {
+    body: [...lines.slice(0, start), ...lines.slice(end)].join("\n"),
+    part: lines.slice(start + 1, end),
+  }
+}
+
+/**
+ * The constraints table, as rows.
+ *
+ * Scoped to its OWN `###` part, and that is the whole fix. The first version
+ * took every line in the section that started with a `|` and parsed the lot as
+ * one table — which is right only while `## Understanding` holds exactly one.
+ * Five of the twenty-five documents in the first batch hold two (a misconception
+ * table, a "what 3Sum does differently" table, a false-start trace), and every
+ * row of the second table was swallowed. `content-roundtrip.mjs` caught all
+ * five; nothing else would have.
+ */
+function splitUnlocks(body) {
+  const lines = body.split("\n")
+  const start = lines.findIndex((l) => /^###\s+.*constraints?\b/i.test(l))
+  if (start === -1) return { body, unlocks: undefined }
+  let end = lines.length
+  for (let i = start + 1; i < lines.length; i++)
+    if (/^###\s/.test(lines[i])) {
+      end = i
+      break
+    }
+  const part = lines.slice(start, end)
+
+  // The FIRST contiguous run of pipe lines, and only that. Two rules learned
+  // one failing round-trip at a time:
+  //
+  //   * the part is not only a table — four documents put a paragraph under
+  //     that heading arguing what the bound actually buys, and zero-matrix's
+  //     ("at most rows + cols bits describe a 40 000-cell answer") is the
+  //     reason its last rung exists. Lifting the whole part lost fifteen
+  //     documents' worth of that.
+  //   * the part is not only ONE table — mirror-tree declares the three trees
+  //     the document traces in a second one, under the same heading. Filtering
+  //     every pipe line took that with it.
+  const first = part.findIndex((l) => l.trim().startsWith("|"))
+  let last = first
+  while (last + 1 < part.length && part[last + 1].trim().startsWith("|")) last++
+  const parsed = table(part.slice(first, last + 1).join("\n"))
+  if (!parsed) return { body, unlocks: undefined }
+
+  const kept = [...part.slice(0, first), ...part.slice(last + 1)]
+  const prose = kept.slice(1).join("\n").trim()
+  return {
+    body: [
+      ...lines.slice(0, start),
+      ...(prose ? [kept[0], "", prose] : []),
+      ...lines.slice(end),
+    ].join("\n"),
+    unlocks: parsed.rows.map((r) => ({ constraint: r[0], what: r[1] })),
+  }
+}
+
+/**
  * Pull the document's own numbered failure list out of `## Understanding`.
  *
  * It has to come out BEFORE the unlocks table is stripped, because it is a
@@ -126,16 +201,8 @@ function table(body) {
  * on balanced-brackets, the first document with two tables in that section.
  */
 function splitTraps(body) {
-  const lines = body.split("\n")
-  const start = lines.findIndex((l) => /^###\s+.*failure modes?\b/i.test(l))
-  if (start === -1) return { body, traps: undefined }
-  let end = lines.length
-  for (let i = start + 1; i < lines.length; i++)
-    if (/^###\s/.test(lines[i])) {
-      end = i
-      break
-    }
-  const block = lines.slice(start + 1, end)
+  const { body: rest, part: block } = liftPart(body, /^###\s+.*failure modes?\b/i)
+  if (!block) return { body, traps: undefined }
   const first = block.findIndex((l) => l.trim().startsWith("|"))
   const last = block.findLastIndex((l) => l.trim().startsWith("|"))
   const parsed =
@@ -146,7 +213,7 @@ function splitTraps(body) {
   // that stores its own indices is a list that can disagree with itself.
   const rows = parsed.rows.map((r) => ({ name: r[1], example: r[2], check: r[3] }))
   return {
-    body: [...lines.slice(0, start), ...lines.slice(end)].join("\n"),
+    body: rest,
     traps: {
       intro: block.slice(0, first).join("\n").trim(),
       rows,
@@ -204,33 +271,12 @@ function convert(id, rungKeys) {
   let traps
   let understandingBody = ""
   if (understanding) {
-    const split = splitTraps(understanding.body)
-    traps = split.traps
-    const rows = []
-    const kept = []
-    let inTable = false
-    for (const line of split.body.split("\n")) {
-      const t = line.trim()
-      if (t.startsWith("|")) {
-        inTable = true
-        rows.push(t)
-        continue
-      }
-      // the heading that introduces the table goes with the table
-      if (inTable && !t) continue
-      inTable = false
-      kept.push(line)
-    }
-    const parsed = table(rows.join("\n"))
-    unlocks = parsed
-      ? parsed.rows.map((r) => ({ constraint: r[0], what: r[1] }))
-      : undefined
-    // drop the now-empty "### The constraints, and what each one unlocks"
-    understandingBody = kept
-      .join("\n")
-      .replace(/^###\s+The constraints[^\n]*$/im, "")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim()
+    // two `###` parts are DATA and come out; every other one is prose and stays
+    const withoutTraps = splitTraps(understanding.body)
+    traps = withoutTraps.traps
+    const withoutUnlocks = splitUnlocks(withoutTraps.body)
+    unlocks = withoutUnlocks.unlocks
+    understandingBody = withoutUnlocks.body.replace(/\n{3,}/g, "\n\n").trim()
   }
 
   // ── approaches ────────────────────────────────────────────────────────────

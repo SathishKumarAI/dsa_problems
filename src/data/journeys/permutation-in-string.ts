@@ -9,7 +9,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/sliding-window/permutation-in-string.ts"
+import { problem } from "../../problems/permutation-in-string/index.ts"
 
 type W = Data<string>
 

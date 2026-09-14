@@ -1,7 +1,7 @@
 import type { Problem } from "../../types.ts"
 import { problem as balancedBrackets } from "../../../problems/balanced-brackets/index.ts"
 import { problem as dailyWarmer } from "./daily-warmer.ts"
-import { problem as largestRectangle } from "./largest-rectangle.ts"
+import { problem as largestRectangle } from "../../../problems/largest-rectangle/index.ts"
 import { problem as rpnEval } from "./rpn-eval.ts"
 import { problem as generateParens } from "./generate-parens.ts"
 import { problem as asteroidCollision } from "./asteroid-collision.ts"

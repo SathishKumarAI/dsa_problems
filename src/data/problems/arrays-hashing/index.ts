@@ -14,12 +14,12 @@ import { problem as isomorphicStrings } from "./isomorphic-strings.ts"
 import { problem as findAllDuplicates } from "./find-all-duplicates.ts"
 import { problem as firstMissingPositive } from "./first-missing-positive.ts"
 import { problem as intersectionOfArrays } from "./intersection-of-arrays.ts"
-import { problem as missingNumber } from "./missing-number.ts"
-import { problem as plusOne } from "./plus-one.ts"
-import { problem as rotateArray } from "./rotate-array.ts"
-import { problem as summaryRanges } from "./summary-ranges.ts"
+import { problem as missingNumber } from "../../../problems/missing-number/index.ts"
+import { problem as plusOne } from "../../../problems/plus-one/index.ts"
+import { problem as rotateArray } from "../../../problems/rotate-array/index.ts"
+import { problem as summaryRanges } from "../../../problems/summary-ranges/index.ts"
 import { problem as spiralOrder } from "./spiral-order.ts"
-import { problem as zeroMatrix } from "./zero-matrix.ts"
+import { problem as zeroMatrix } from "../../../problems/zero-matrix/index.ts"
 
 export const arraysHashing: Problem[] = [
   pairSum,

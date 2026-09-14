@@ -44,11 +44,24 @@ half to the prose half puts 127 documents into the first load, which is B95.
 
 ## Converting one
 
+Two halves, two scripts, and each one proves itself before anything is deleted.
+
 ```
-node scripts/md-to-content.mjs --id <problem-id>   # md -> this directory
+node scripts/split-record.mjs --id <id>            # the RECORD -> this directory
+node scripts/md-to-content.mjs --id <id>           # the DOCUMENT -> this directory
 node scripts/content-roundtrip.mjs --id <id>       # prove no line was lost
 node scripts/verify-deep.mjs --id <id>             # the script runs and agrees
 ```
+
+Then rewire `src/data/problems/<pattern>/index.ts` and any journey that imports the
+record, delete `src/data/problems/<pattern>/<id>.ts` and `docs/deep/<id>_explained.md`,
+and run `npm run docs:learn`.
+
+`split-record.mjs` carries every value out as TEXT — no parse, no re-serialise — because a
+record is mostly template literals holding Python whose indentation is the program.
+It outdents by two, and skips the inside of a template literal while doing it;
+`scripts/split-record.test.mjs` asserts both that the assembled record deep-equals the
+catalogue's and that no code block's indentation stopped nesting.
 
 The one judgement a machine must not make is which rung each `## Approach` teaches. Record it in
 `scripts/rung-bindings.json`; anything absent is emitted blank and fails `content.test.ts` until a
