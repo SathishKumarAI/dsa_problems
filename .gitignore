@@ -26,3 +26,15 @@ dist-ssr
 # localsmith: generated drafts awaiting review, never committed
 scripts/localsmith/out/
 __pycache__/
+
+# docs/learn/** is GENERATED from src/data/problems/** + docs/deep/** by
+# scripts/gen-learn.mjs, which `predev` / `prebuild` / `pretest:ui` run for you.
+# Committing it stored 4.47 MB of derived Markdown, 3.07 MB of which was a
+# verbatim copy of docs/deep/. Regenerate; never edit, never commit.
+docs/learn/
+
+# public/pyodide/** is 10.6 MB copied out of node_modules by
+# scripts/copy-pyodide.mjs, which predev / prebuild / pretest:ui run for you.
+# The version is pinned in package.json; committing the bytes would be the same
+# mistake as committing docs/learn.
+public/pyodide/

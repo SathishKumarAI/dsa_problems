@@ -16,9 +16,10 @@
 //       node scripts/verify-deep.mjs --quiet    # one line per document
 
 import { execFileSync } from "node:child_process"
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { pathToFileURL } from "node:url"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { join, resolve } from "node:path"
 
 const arg = (k) => {
   const i = process.argv.indexOf(k)
@@ -30,12 +31,32 @@ const only = arg("--id")
 const DIR = "docs/deep"
 const AGREED = /all approaches agreed/i
 
+// Two sources while the conversion runs. A problem with a typed document
+// (`src/problems/<id>/doc.ts`) hands over a STRING FIELD; the rest still need the
+// last python fence of their Markdown parsed out of prose.
+//
+// The field is the better arrangement and this script is the reason to say so:
+// "the last ```python block" is a convention that a document can break by
+// adding a code sample after its script, and the CRLF note below is what
+// parsing prose for a program costs.
+const CONTENT = "src/problems"
+const typed = new Map()
+if (existsSync(CONTENT))
+  for (const id of readdirSync(CONTENT)) {
+    const entry = resolve(CONTENT, id, "doc.ts")
+    if (!existsSync(entry)) continue
+    if (only && id !== only) continue
+    const mod = await import(pathToFileURL(entry).href)
+    typed.set(id, mod.doc.script)
+  }
+
 const files = readdirSync(DIR)
   .filter((f) => f.endsWith("_explained.md"))
   .filter((f) => !only || f === `${only}_explained.md`)
+  .filter((f) => !typed.has(f.replace(/_explained\.md$/, "")))
   .sort()
 
-if (!files.length) {
+if (!files.length && !typed.size) {
   console.log(`no documents matched${only ? ` --id ${only}` : ""}`)
   process.exit(1)
 }
@@ -43,6 +64,31 @@ if (!files.length) {
 const tmp = mkdtempSync(join(tmpdir(), "deep-"))
 const bad = []
 let ok = 0
+
+/** run one script and record the verdict — the half both sources share */
+function runScript(id, script, source) {
+  const path = join(tmp, `${id.replace(/-/g, "_")}.py`)
+  writeFileSync(path, script)
+  let out = ""
+  try {
+    out = execFileSync("python", [path], { encoding: "utf8", timeout: 120_000 })
+  } catch (e) {
+    const why = String(e.stderr || e.message)
+      .trim()
+      .split(/\r?\n/)
+      .at(-1)
+    bad.push([id, why.slice(0, 160)])
+    return
+  }
+  if (!AGREED.test(out)) {
+    bad.push([id, "ran clean, but never says the approaches agreed"])
+    return
+  }
+  ok++
+  if (!quiet) console.log(`ok  ${id.padEnd(30)} ${source}`)
+}
+
+for (const [id, script] of typed) runScript(id, script, "src/problems")
 
 for (const file of files) {
   const id = file.replace(/_explained\.md$/, "")

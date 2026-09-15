@@ -17,13 +17,27 @@ import { test } from "node:test"
 import { PROBLEMS } from "../src/data/index.ts"
 import { audit } from "./learn-gaps.mjs"
 
-// Measured 2026-09-13. Lower these as documents are written; never raise them
-// without saying why in the commit.
+// Measured 2026-09-13, tightened 2026-09-14 when the first document was
+// converted to a typed document. Lower these as documents are written or
+// converted; never raise them without saying why in the commit.
+//
+// 116 -> 105 on 2026-09-14 as the first batch of twelve converted, 105 -> 104
+// when balanced-brackets moved to `src/problems/<id>/`. Every batch
+// moves these three by one per document that lacked those sections, so the
+// number belongs to whoever merges the batch — a parallel agent must NOT edit
+// it, or twelve agents collide on three integers.
+//
+// A CONVERTED document is counted as taught with no missing sections, and that
+// is not a loophole: the sections it used to be graded on by grepping headings
+// are fields of a type, and `src/content/content.test.ts` fails the build when
+// one is absent or a stub. The grep could only produce a number; the type
+// produces an error. Three of these moved by one on the day of the first
+// conversion, and this ratchet is what noticed.
 const BASELINE = {
   untaught: 45, // problems with no teaching document at all
-  calculations: 117, // missing "Reading the Calculations"
-  fluent: 117, // missing "How to Get Fluent"
-  hood: 117, // missing an "Under the hood" callout
+  calculations: 104, // missing "Reading the Calculations"
+  fluent: 104, // missing "How to Get Fluent"
+  hood: 104, // missing an "Under the hood" callout
   interview: 45,
   arc: 45,
   comparison: 45,

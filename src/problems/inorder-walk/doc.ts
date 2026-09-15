@@ -1,0 +1,738 @@
+// inorder-walk — the teaching document, as data.
+//
+// Converted from docs/deep/inorder-walk_explained.md by
+// scripts/md-to-content.mjs. Every byte of prose carried through unchanged;
+// what changed is that the STRUCTURE is now a type (src/content/types.ts)
+// rather than a heading convention a script had to grep for.
+//
+// Reached only through `lib/content.ts`'s glob — never import this file.
+
+import type { TeachingDoc } from "../../content/types.ts"
+
+export const doc: TeachingDoc = {
+  problemId: "inorder-walk",
+  understanding: `Visit every node of a binary tree in one specific order: **everything in my left subtree, then me,
+then everything in my right subtree.** Return the values in that order.
+
+\`\`\`
+    1                inorder: 1, 3, 2
+     \\
+      2              1 has no left subtree, so it goes first.
+     /               Then its right subtree — whose own left child, 3,
+    3                comes before 2.
+\`\`\`
+
+\`root = [1, null, 2, 3]\` answers \`[1, 3, 2]\`.
+
+Two things the statement is careful about, and both are load-bearing:
+
+- **This is a binary tree, not a search tree.** Inorder is defined by *shape* — left, node, right —
+  not by value. The answer comes out sorted only when the tree happens to be a BST, which is why
+  the third example is sorted and proves nothing.
+- **The tree may be a single chain.** With \`10^4\` nodes allowed, recursion depth is not a footnote;
+  it is the reason two of the four approaches below fail on a legal input.
+
+**The core question:** *where do you keep the work you have not finished yet?* Inorder means you
+must walk past a node, go all the way down its left side, and then come back to it. Something has
+to remember that node while you are away. Every approach here is a different answer to **where that
+memory lives** — and that is the ladder.
+
+---`,
+  unlocks: [
+      {
+          "constraint": "`0 <= number of nodes <= 10^4`",
+          "what": "An empty tree answers `[]`. And `10^4` with no balance promised means a spine that far exceeds CPython's `1 000` frames — measured at the foot of this page"
+      },
+      {
+          "constraint": "`-100 <= node.val <= 100`",
+          "what": "Values are carried, never compared. Duplicates are fine and change nothing"
+      },
+      {
+          "constraint": "**a binary tree, NOT a search tree**",
+          "what": "The answer is sorted only by coincidence. Never reach for a property of BSTs here"
+      },
+      {
+          "constraint": "every node appears exactly once",
+          "what": "The output length is the node count — a cheap self-check while tracing"
+      },
+      {
+          "constraint": "the tree may be a single chain",
+          "what": "Why the recursion is not automatically the right answer"
+      }
+  ],
+  calculations: `There is almost no arithmetic in this problem. What there is instead is **bookkeeping**, and the
+thing to be able to read is a stack changing shape.
+
+### The symbol table
+
+| You will see | It computes | Why it is written that way | If it were wrong |
+|---|---|---|---|
+| \`out\` | the answer, in order | Appended to exactly once per node | — |
+| \`stack\` | the nodes **walked past but not yet recorded** | These are the ancestors you owe a visit on the way back up | A queue instead of a stack gives level order, a different traversal |
+| \`node\` | the cursor — where the walk is *now* | It is \`None\` whenever the last descent ran out of tree | — |
+| \`while stack or node\` | "there is something owed, **or** somewhere still to go" | Both halves are needed: at the start the stack is empty and \`node\` is the root | \`while stack:\` alone never enters the loop, and every tree returns \`[]\` |
+| \`node = node.right\` after a pop | "that subtree is done; start the same descent one subtree over" | Popping records a node, and its right subtree is the only part of it still unvisited | Assigning \`node = None\` skips every right subtree |
+| \`pred.right is not node\` | "this thread is mine, not a real edge" (Morris only) | The one test that tells a temporary link from a real one | Without it the walk loops forever on its own thread |
+
+### The one rule, and what it forces
+
+\`\`\`
+inorder(node) = inorder(node.left) ++ [node.val] ++ inorder(node.right)
+\`\`\`
+
+Read what that demands: before \`node\` may be recorded, **all of its left subtree must already be
+done** — and \`node\` itself must survive that whole excursion. So a node is met, set aside, and
+collected later. The set-aside pile is the entire subject of this document:
+
+| Approach | Where the unfinished work is kept |
+|---|---|
+| Rebuild at every node | in the **return values** — every call hands back a whole list |
+| One list, handed down | in the **call stack** — which is what recursion is for |
+| Explicit stack | in a **list you own** — the same thing with the lid off |
+| Morris | in the **tree's own empty pointers** — borrowed, then returned |
+
+### How to trace it by hand
+
+Two columns and a cursor:
+
+\`\`\`
+  step   action                     stack        out
+\`\`\`
+
+1. While the cursor points at a node: **push it and go left.** You are walking past nodes you owe.
+2. When the cursor is empty: **pop, record that value, and move the cursor to the popped node's
+   right child.** That restarts the same descent one subtree over.
+3. Stop when the stack is empty **and** the cursor is empty.
+
+On \`[1, null, 2, 3]\` — every line printed by the script:
+
+| Step | Action | \`stack\` after | \`out\` |
+|---|---|---|---|
+| 1 | push \`1\`, go left | \`[1]\` | \`[]\` |
+| 2 | pop \`1\`, record it | \`[]\` | \`[1]\` |
+| 3 | push \`2\`, go left | \`[2]\` | \`[1]\` |
+| 4 | push \`3\`, go left | \`[2, 3]\` | \`[1]\` |
+| 5 | pop \`3\`, record it | \`[2]\` | \`[1, 3]\` |
+| 6 | pop \`2\`, record it | \`[]\` | \`[1, 3, 2]\` |
+
+Step 2 is the one worth staring at: \`1\` is recorded **before** the walk has seen \`2\` or \`3\` at all,
+because \`1\` has no left subtree. Inorder is not "smallest first"; it is "left subtree first".
+
+### Reading a complexity out loud
+
+Every approach is \`O(n)\` time — each node is met a constant number of times. **The whole ladder is
+about space**, and here the four answers genuinely differ:
+
+| Approach | Space | Which means |
+|---|---|---|
+| Rebuild | \`O(n²)\` | a new list at every node, and each \`+\` copies both sides |
+| Handed down | \`O(h)\` | one call frame per level of the current path |
+| Explicit stack | \`O(h)\` | the same, in a list you can bound and inspect |
+| Morris | \`O(1)\` | no extra structure at all — it borrows the tree's own null pointers |
+
+\`O(h)\` is the one to read carefully: **the height, not the node count and not the widest level.**
+Measured peak stack depth — a balanced tree of \`1 023\` nodes never holds more than \`10\`, while a
+spine of \`500\` holds all \`500\`. The stack holds one root-to-cursor **path**.
+
+---`,
+  approaches: [
+  {
+    rung: "rebuild-the-answer-at-every-node",
+    title: "Rebuild the answer at every node",
+    idea: `*Write the rule down as it is stated and let the return values carry everything.* \`inorder(left) +
+[me] + inorder(right)\` is the definition, verbatim, and it needs no helper, no accumulator and no
+cursor. It is also the most expensive thing on this page.`,
+    intuition: `> **Intuition.** Every node builds a complete answer for its own subtree and hands it upward, where
+> it is copied into a bigger one. The root's answer is built by copying the whole left half, then
+> the whole right half — and the same copying happened one level down, and the level below that.
+
+> **Under the hood.** \`a + b\` on two Python lists is not a link, it is a **copy**: CPython allocates
+> a new list of \`len(a) + len(b)\` and memcpys both sides into it. So this rung does not build one
+> list per node — it builds one and then copies it again at every ancestor, which is why a shape
+> that visits \`n\` nodes does \`O(n²)\` work on a spine. Counted, a spine of \`200\` builds **401** lists;
+> timed on spines of \`200 / 400 / 800\` it takes **95, 284 and 795 microseconds** against the explicit
+> stack's **10, 19 and 37**. The stack doubles when \`n\` doubles. This does not.
+>
+> The general shape is worth more than this problem: in any language, an operation that *returns a
+> new container* inside a recursion is paying for the whole container at every level. \`out.append\`
+> is \`O(1)\` amortised because CPython over-allocates the list and only occasionally moves it;
+> \`list_a + list_b\` has no such escape. The next rung changes one to the other and nothing else.`,
+    worked: `On \`[1, null, 2, 3]\`:
+
+| Call | Left returns | Its value | Right returns | Builds |
+|---|---|---|---|---|
+| \`inorder(3)\` | \`[]\` | \`3\` | \`[]\` | \`[3]\` |
+| \`inorder(2)\` | \`[3]\` | \`2\` | \`[]\` | \`[3, 2]\` |
+| \`inorder(1)\` | \`[]\` | \`1\` | \`[3, 2]\` | \`[1, 3, 2]\` |
+
+Three real nodes, and six lists built — one per node plus one per empty child.`,
+    code: `def inorder_rebuild(root: Optional[TreeNode]) -> list[int]:
+    """The rule, verbatim. Every call returns a NEW list."""
+    if root is None:
+        return []
+    return inorder_rebuild(root.left) + [root.val] + inorder_rebuild(root.right)`,
+    mistake: `> **Watch out.** Reading this as \`O(n)\` because it visits each node once. It visits each node once
+> and **copies** each value once per ancestor. Counted: a spine of \`200\` builds **401** lists, and
+> the concatenations copy. Timed against the explicit stack on the same spines — \`95µs / 284µs /
+> 795µs\` at \`n\` of \`200 / 400 / 800\`, against \`10µs / 19µs / 37µs\`. The stack doubles as \`n\`
+> doubles; this does not.`,
+    cost: `- **Time — \`O(n²)\` on a skewed tree**, from the copying, not the visiting.
+- **Space — \`O(n²)\`** in lists allocated and discarded.
+
+**When it is right:** when you are writing the definition down to check you believe it, or in a
+language where \`++\` on lists is cheap and persistent. In Python it is a teaching rung.
+
+---`,
+  },
+  {
+    rung: "one-list-handed-down",
+    title: "One list, handed down",
+    idea: `*The copying exists only because each call builds its own container.* Make one list and pass it
+down; every node appends to it once. The traversal is identical — only the bookkeeping changes.`,
+    intuition: `> **Intuition.** One sheet of paper carried through the whole walk instead of a fresh sheet at each
+> desk that gets transcribed into the next one. The order still comes from the order of the three
+> statements: go left, write, go right.`,
+    worked: `| Visit order | Node | \`out\` after |
+|---|---|---|
+| 1 | \`1\` (no left subtree) | \`[1]\` |
+| 2 | \`3\` (left child of \`2\`) | \`[1, 3]\` |
+| 3 | \`2\` | \`[1, 3, 2]\` |`,
+    code: `def inorder_handed_down(root: Optional[TreeNode]) -> list[int]:
+    """One list, appended to once per node. The call stack holds the rest."""
+    out: list[int] = []
+
+    def walk(node: Optional[TreeNode]) -> None:
+        if node is None:
+            return
+        walk(node.left)
+        out.append(node.val)      # the ONLY line that must sit between the two walks
+        walk(node.right)
+
+    walk(root)
+    return out`,
+    codeNote: `Move that middle line above the first \`walk\` and you have **pre**order; below the second, **post**
+order. Three traversals, one line's difference — which is the thing to remember from this rung.`,
+    mistake: `> **Watch out.** Returning \`out\` from the inner \`walk\` and expecting the outer call to collect it.
+> \`walk\` returns \`None\`; the list is shared state, not a return value. The version that mixes the
+> two — appending *and* returning — usually still works and teaches the wrong model of what is
+> happening.`,
+    cost: `- **Time — \`O(n)\`.** One append per node.
+- **Space — \`O(h)\`** of call frames, plus the output.
+
+**When it is right:** by default, and in an interview, right up until someone says "without
+recursion" or the tree gets deep.
+
+---`,
+  },
+  {
+    rung: "optimal",
+    title: "An explicit stack",
+    idea: `*The call stack is holding exactly one thing: the ancestors you walked past and still owe a visit.*
+Hold them yourself. The walk becomes a loop, the memory becomes a list you can bound, and the
+\`1 000\`-frame ceiling disappears.`,
+    intuition: `> **Intuition.** Go down the left-hand wall, dropping a marker at every node you pass. When the
+> wall runs out, pick up the last marker — that node is next in order — and step once to its right,
+> then start walking down the left-hand wall again from there.
+
+> **Why it works.** The invariant is: *the stack holds exactly the nodes on the path from the root
+> to the cursor whose left subtrees are done and which have not yet been recorded.* Pushing while
+> descending left establishes it; popping records the deepest such node, which is by definition the
+> next one in order; stepping right re-enters the same rule one subtree over.`,
+    worked: `The six steps in "How to trace it by hand" above are this approach, and they were printed by the
+script rather than written out by hand.`,
+    code: `def inorder_stack(root: Optional[TreeNode]) -> list[int]:
+    """Recursion with the lid off: the stack IS what the frames were holding."""
+    out: list[int] = []
+    stack: list[TreeNode] = []
+    node = root
+    while stack or node:              # something owed, OR somewhere to go
+        while node:                   # inorder owes the leftmost node first
+            stack.append(node)
+            node = node.left
+        node = stack.pop()
+        out.append(node.val)
+        node = node.right             # one step right, then descend left again
+    return out`,
+    mistake: `> **Watch out.** Writing the loop as \`while stack:\`. At the start the stack is empty and the cursor
+> is the root, so the body never runs and **every tree returns \`[]\`**. Both halves of
+> \`while stack or node\` are load-bearing: the stack holds what is owed, the cursor holds where there
+> is still somewhere to go, and neither alone describes "unfinished".
+
+> **Watch out.** Forgetting \`node = node.right\` after the pop — setting the cursor to \`None\`
+> instead. The walk then never enters any right subtree, and on \`[1, null, 2, 3]\` it returns \`[1]\`.`,
+    cost: `- **Time — \`O(n)\`,** each node pushed once and popped once.
+- **Space — \`O(h)\`.** Measured peak depth: **\`10\`** on a balanced tree of \`1 023\` nodes, **\`500\`**
+  on a spine of \`500\`. The stack holds a path, not a level.
+
+**When it is right:** whenever the tree may be deep, and whenever the question says "iteratively".
+On a \`10 000\`-node spine — legal here — the two recursive rungs raise \`RecursionError\` and this one
+returns all \`10 000\` values. It is also the rung that can **stop early**, which matters for "the
+k-th smallest" and for any caller that wants the first few values.
+
+---`,
+  },
+  {
+    rung: "morris-threading",
+    title: "Morris threading",
+    idea: `*Even the explicit stack is \`O(h)\`.* The tree is full of null pointers going nowhere — every leaf's
+two, every half-empty node's one. Borrow them: before descending left, point the rightmost node of
+that left subtree back at the current node, so that when the walk falls off the bottom it lands
+where it needs to be. Then put the pointer back.`,
+    intuition: `> **Intuition.** Tie a string from the last room you will visit on the left back to the doorway you
+> came through. Walk down. When you run out of rooms, the string carries you back to the doorway,
+> and you untie it on your way past so the house is as you found it.
+
+> **Why it works.** The predecessor of a node in inorder is the **rightmost node of its left
+> subtree** — and that node's right pointer is, by definition, empty. So the thread never destroys a
+> real edge, and finding a thread already in place is exactly the signal that the left subtree is
+> finished.`,
+    worked: `On \`[1, null, 2, 3]\` the first node has no left child, so it is recorded immediately and the walk
+steps right — the threading only engages at \`2\`, whose left subtree is \`3\`. The script prints the
+tree before and after and they are identical:
+
+\`\`\`
+before: (1 . (2 (3 . .) .))
+after:  (1 . (2 (3 . .) .))   (restored)
+result: [1, 3, 2]
+\`\`\``,
+    code: `def inorder_morris(root: Optional[TreeNode]) -> list[int]:
+    """O(1) space, by borrowing the tree's own empty right pointers."""
+    out: list[int] = []
+    node = root
+    while node:
+        if node.left is None:
+            out.append(node.val)
+            node = node.right
+        else:
+            pred = node.left                       # the inorder predecessor:
+            while pred.right and pred.right is not node:
+                pred = pred.right                  # rightmost node of the left subtree
+            if pred.right is None:
+                pred.right = node                  # thread, then go left
+                node = node.left
+            else:
+                pred.right = None                  # the thread is back: untie it
+                out.append(node.val)
+                node = node.right
+    return out`,
+    mistake: `> **Watch out.** \`while pred.right:\` without \`and pred.right is not node\`. Once the thread exists,
+> that inner walk follows it back to \`node\` and then round again — an infinite loop, not a wrong
+> answer. The test for "is this pointer mine?" is the whole difference between a thread and an edge.
+
+> **Watch out, and this is the real cost.** Morris **mutates the tree while it runs**. It restores
+> it, but only if it finishes. Break out early — an exception, a \`return\` on the k-th value, a
+> caller that wanted the first three — and you hand back a tree with threads still tied in it, which
+> is a cycle. Any reader also has to trust the repair. That is why the explicit stack, not this, is
+> the one to reach for.`,
+    cost: `- **Time — \`O(n)\`,** and each edge is walked at most twice, which is why the inner \`while\` does not
+  make it quadratic.
+- **Space — \`O(1)\`.** Genuinely constant: no stack, no frames.
+
+**When it is right:** when memory is the binding constraint and the walk is guaranteed to run to
+completion — embedded work, a huge tree, an interview follow-up asking for \`O(1)\`. Not when anything
+can interrupt it.
+
+---`,
+  },
+  ],
+  arc: `Every rung here performs the identical walk — left, node, right — and what changes is **where the
+unfinished work is kept**, which turns out to be the only interesting question in traversal. The
+literal transcription keeps it in the return values, so each node builds a whole list and every
+concatenation copies both halves; that is \`O(n²)\` hiding inside something that looks linear, and it
+is measurable — \`795µs\` against \`37µs\` on an \`800\`-node spine. Handing one list down removes the
+copying and moves the memory into the call stack, which is what recursion is for and costs the
+height of the tree. Writing that stack out by hand changes nothing about the algorithm and three
+things about what you can do with it: the memory becomes bounded and inspectable, the walk can stop
+early, and the \`1 000\`-frame ceiling stops being a limit — which matters because this problem
+permits a \`10 000\`-node chain, on which both recursive rungs simply fail. The last rung asks whether
+any extra memory is needed at all, and the answer is no: a node's inorder predecessor is the
+rightmost node of its left subtree, whose right pointer is empty by definition, so the walk can
+borrow that pointer as a way back and untie it on the return. It pays for \`O(1)\` by mutating the
+tree mid-walk and restoring it — safe only if it finishes, which is the honest reason the explicit
+stack remains the answer and Morris remains the party trick worth understanding.`,
+  comparison: {
+      "head": [
+          "Approach",
+          "Time",
+          "Space",
+          "Core trade-off",
+          "Best used when"
+      ],
+      "rows": [
+          [
+              "Rebuild at every node",
+              "`O(n²)`",
+              "`O(n²)`",
+              "The definition, verbatim; copies at every level",
+              "Checking you believe the rule"
+          ],
+          [
+              "One list, handed down",
+              "`O(n)`",
+              "`O(h)` frames",
+              "Shortest correct version",
+              "Default, until the tree is deep"
+          ],
+          [
+              "Explicit stack",
+              "`O(n)`",
+              "`O(h)`",
+              "Same walk, memory you own and can stop",
+              "\"Without recursion\", deep trees, early exit"
+          ],
+          [
+              "Morris threading",
+              "`O(n)`",
+              "`O(1)`",
+              "Borrows the tree's own pointers",
+              "Memory-bound, and nothing can interrupt it"
+          ]
+      ]
+  },
+  interview: `**Know cold:** the explicit stack. It is what "do it iteratively" means, it is the one that survives
+a deep tree, and its two-line shape — *descend left pushing, then pop-record-step-right* — is the
+same skeleton as the k-th smallest in a BST and the BST iterator.
+
+**Know, and be able to derive:** the recursive version, and the fact that **moving one line** turns
+it into preorder or postorder. That is a better answer to "what is a traversal" than three memorised
+functions.
+
+**Understand, do not memorise:** Morris. Be able to say what it borrows and why that pointer is free,
+and name its real cost — it mutates the tree and only restores it if it completes.
+
+> **In an interview.** Say where the memory is going before you write: *"inorder means I have to walk
+> past a node and come back to it, so something has to hold it — the call stack, or a stack I keep."*
+> Expect the follow-ups: **without recursion** (approach 3), **\`O(1)\` space** (approach 4, with its
+> caveat volunteered), and **the k-th smallest in a BST** — which is approach 3 with a counter, and
+> which is exactly why the ability to stop early is worth more than the constant factor.`,
+  fluent: `1. **Write the three-line recursion and move the middle line twice.** Above both walks, between
+   them, below both. **Done when** you can say which traversal each produces without running it.
+
+2. **Hand-trace the explicit stack on \`[1, null, 2, 3]\`,** six steps, until your table matches the
+   one above. **Done when** you can explain step 2 — why \`1\` is recorded before \`2\` and \`3\` are even
+   seen.
+
+3. **Break the loop condition on purpose.** Change \`while stack or node\` to \`while stack\` and run it.
+   **Done when** you can say why every tree returns \`[]\`, and what each half of that condition is
+   protecting.
+
+4. **Count, do not time, then time.** Instrument the rebuild rung to count lists allocated (a spine
+   of \`200\` builds \`401\`), then time it against the stack on spines of \`200 / 400 / 800\`. **Done
+   when** you have produced the \`795µs\` against \`37µs\` yourself and can say where the extra work is —
+   copying, not visiting.
+
+5. **Do the siblings.** *Kth Smallest in a BST* is approach 3 with a counter and an early return —
+   and the early return is what rules Morris out. *BST Iterator* is approach 3 turned inside out,
+   with the descent loop in \`next()\`. *Validate a BST* is this walk keeping only the previous value.
+   **Done when** you can say which of the three needs to stop early and why that decides the rung.
+
+6. **A month later, the one sentence that should come back:** *every traversal is the same walk; what
+   differs is where you keep the nodes you have walked past and still owe.*`,
+  scriptNote: `\`TreeNode\`, \`build\`, \`chain\`, \`random_tree\` and \`shape\` are **scaffolding, not part of the answer.**
+\`ALLOCS\` counts lists built by the first rung, which is how its cost was measured rather than
+asserted, and \`peak_stack\` is an instrumented copy of approach 3 — not a fifth approach.
+
+Every approach is handed its own \`deepcopy\` in the random pass, because Morris **mutates the tree**
+while it runs; without that, each rung would be walking the previous rung's leftovers and a real
+disagreement would be indistinguishable from a harness bug.`,
+  script: `"""Read a Tree Left, Node, Right — every approach in one file, cross-checked.
+
+Run:  python inorder_walk.py
+"""
+
+from __future__ import annotations
+
+import copy
+import random
+import sys
+import time
+from collections import deque
+from typing import Callable, Optional
+
+
+# ---------------------------------------------------------------- scaffolding
+class TreeNode:
+    """The node an interviewer hands you. Scaffolding, not part of any answer."""
+
+    __slots__ = ("val", "left", "right")
+
+    def __init__(self, val: int = 0, left: "TreeNode | None" = None,
+                 right: "TreeNode | None" = None) -> None:
+        self.val = val
+        self.left = left
+        self.right = right
+
+
+def build(values: list[Optional[int]]) -> Optional[TreeNode]:
+    """Level-order list with \`None\` holes -> tree, so tests can be written as lists."""
+    if not values or values[0] is None:
+        return None
+    root = TreeNode(values[0])
+    queue = deque([root])
+    i = 1
+    while queue and i < len(values):
+        node = queue.popleft()
+        for side in ("left", "right"):
+            if i >= len(values):
+                break
+            v = values[i]
+            i += 1
+            if v is not None:
+                child = TreeNode(v)
+                setattr(node, side, child)
+                queue.append(child)
+    return root
+
+
+def chain(n: int) -> Optional[TreeNode]:
+    """A tree degenerated into a linked list: n nodes, each the left child of the last."""
+    root = None
+    for v in range(n, 0, -1):
+        root = TreeNode(v, left=root)
+    return root
+
+
+def random_tree(n: int, rng: random.Random) -> Optional[TreeNode]:
+    """A tree of exactly n nodes with an arbitrary shape — the stress-test input."""
+    if n == 0:
+        return None
+    root = TreeNode(rng.randint(-100, 100))
+    slots = [root]
+    for _ in range(n - 1):
+        parent = rng.choice(slots)
+        node = TreeNode(rng.randint(-100, 100))
+        if parent.left is None and (parent.right is not None or rng.random() < 0.5):
+            parent.left = node
+        else:
+            parent.right = node
+        if parent.left is not None and parent.right is not None:
+            slots.remove(parent)
+        slots.append(node)
+    return root
+
+
+def shape(node: Optional[TreeNode], depth: int = 0) -> str:
+    """A printable tree, so Morris's promise to restore it can be SEEN."""
+    if node is None or depth > 6:
+        return "."
+    return f"({node.val} {shape(node.left, depth + 1)} {shape(node.right, depth + 1)})"
+
+
+ALLOCS = {"lists": 0}
+
+
+# -------------------------- approach 1: the rule, verbatim, in return values
+def inorder_rebuild(root: Optional[TreeNode]) -> list[int]:
+    """The rule, verbatim. Every call returns a NEW list."""
+    ALLOCS["lists"] += 1
+    if root is None:
+        return []
+    return inorder_rebuild(root.left) + [root.val] + inorder_rebuild(root.right)
+
+
+# ------------------------------------ approach 2: one list, the call stack
+def inorder_handed_down(root: Optional[TreeNode]) -> list[int]:
+    """One list, appended to once per node. The call stack holds the rest."""
+    out: list[int] = []
+
+    def walk(node: Optional[TreeNode]) -> None:
+        if node is None:
+            return
+        walk(node.left)
+        out.append(node.val)      # the ONLY line that must sit between the two walks
+        walk(node.right)
+
+    walk(root)
+    return out
+
+
+# ----------------------------------------- approach 3: the stack, written out
+def inorder_stack(root: Optional[TreeNode]) -> list[int]:
+    """Recursion with the lid off: the stack IS what the frames were holding."""
+    out: list[int] = []
+    stack: list[TreeNode] = []
+    node = root
+    while stack or node:              # something owed, OR somewhere to go
+        while node:                   # inorder owes the leftmost node first
+            stack.append(node)
+            node = node.left
+        node = stack.pop()
+        out.append(node.val)
+        node = node.right             # one step right, then descend left again
+    return out
+
+
+# ------------------------------- approach 4: borrow the tree's null pointers
+def inorder_morris(root: Optional[TreeNode]) -> list[int]:
+    """O(1) space, by borrowing the tree's own empty right pointers."""
+    out: list[int] = []
+    node = root
+    while node:
+        if node.left is None:
+            out.append(node.val)
+            node = node.right
+        else:
+            pred = node.left                       # the inorder predecessor:
+            while pred.right and pred.right is not node:
+                pred = pred.right                  # rightmost node of the left subtree
+            if pred.right is None:
+                pred.right = node                  # thread, then go left
+                node = node.left
+            else:
+                pred.right = None                  # the thread is back: untie it
+                out.append(node.val)
+                node = node.right
+    return out
+
+
+# ------------------------------------------- instrumented, not an approach
+def peak_stack(root: Optional[TreeNode]) -> int:
+    """The most nodes approach 3 ever holds — the height, not the width."""
+    peak, stack, node = 0, [], root
+    while stack or node:
+        while node:
+            stack.append(node)
+            node = node.left
+            peak = max(peak, len(stack))
+        node = stack.pop()
+        node = node.right
+    return peak
+
+
+def count_lists(tree: Optional[TreeNode]) -> int:
+    ALLOCS["lists"] = 0
+    inorder_rebuild(tree)
+    return ALLOCS["lists"]
+
+
+def timed(fn: Callable[[Optional[TreeNode]], list[int]], tree: Optional[TreeNode]) -> float:
+    best = float("inf")
+    for _ in range(3):
+        start = time.perf_counter()
+        fn(tree)
+        best = min(best, time.perf_counter() - start)
+    return best
+
+
+APPROACHES: list[tuple[str, Callable[[Optional[TreeNode]], list[int]]]] = [
+    ("rebuild", inorder_rebuild),
+    ("handed-down", inorder_handed_down),
+    ("stack", inorder_stack),
+    ("morris", inorder_morris),
+]
+
+
+def main() -> None:
+    cases: list[tuple[str, list[Optional[int]], list[int]]] = [
+        ("statement example 1", [1, None, 2, 3], [1, 3, 2]),
+        ("statement example 2, empty", [], []),
+        ("statement example 3, happens to be a BST", [3, 1, 5, None, 2], [1, 2, 3, 5]),
+        ("single node", [1], [1]),
+        ("left spine of three", [1, 2, None, 3], [3, 2, 1]),
+        ("right spine of three", [1, None, 2, None, 3], [1, 2, 3]),
+        ("perfect tree of seven", [4, 2, 6, 1, 3, 5, 7], [1, 2, 3, 4, 5, 6, 7]),
+        ("duplicate values", [2, 2, 2], [2, 2, 2]),
+        ("negative values", [-1, -2, -3], [-2, -1, -3]),
+    ]
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+    sys.setrecursionlimit(20_000)
+
+    for label, values, expected in cases:
+        # a fresh tree per approach: Morris rewires as it walks
+        results = {name: fn(build(values)) for name, fn in APPROACHES}
+        print(f"\\n{label}: {values} -> expected {expected}")
+        for name, got in results.items():
+            print(f"  {name:<{width}} -> {got}")
+        if len({tuple(v) for v in results.values()}) != 1:
+            all_agreed = False
+            print(f"  DISAGREEMENT: {results}")
+        elif list(next(iter(results.values()))) != expected:
+            all_agreed = False
+            print("  WRONG: unanimous, but not the expected order")
+
+    rng = random.Random(20260913)
+    for _ in range(400):
+        tree = random_tree(rng.randint(0, 40), rng)
+        results = {name: fn(copy.deepcopy(tree)) for name, fn in APPROACHES}
+        if len({tuple(v) for v in results.values()}) != 1:
+            all_agreed = False
+            print(f"  DISAGREEMENT on a random tree: {results}")
+
+    print("\\n=== the stack walk, step by step, on [1, null, 2, 3] ===")
+    out: list[int] = []
+    stack: list[TreeNode] = []
+    node = build([1, None, 2, 3])
+    step = 0
+    while stack or node:
+        step += 1
+        if node:
+            print(f"  {step:>2}. push {node.val}, go left    "
+                  f"stack={[n.val for n in stack] + [node.val]}")
+            stack.append(node)
+            node = node.left
+        else:
+            popped = stack.pop()
+            out.append(popped.val)
+            print(f"  {step:>2}. pop {popped.val}, record it  "
+                  f"stack={[n.val for n in stack]}  out={out}")
+            node = popped.right
+    print(f"  result {out}")
+
+    print("\\n=== what 'rebuild at every node' allocates ===")
+    print(f"  {'shape':<26} {'n':>6} {'lists built':>12}")
+    for label, tree, n in [
+        ("balanced-ish, 15 nodes", build(list(range(1, 16))), 15),
+        ("left spine, 50", chain(50), 50),
+        ("left spine, 100", chain(100), 100),
+        ("left spine, 200", chain(200), 200),
+    ]:
+        print(f"  {label:<26} {n:>6} {count_lists(tree):>12,}")
+    print("  one list per node visited — and every \`+\` COPIES both sides")
+
+    print("\\n=== so the count understates it: time the copying ===")
+    print(f"  {'n':>6} {'rebuild':>12} {'stack':>12}")
+    for n in (200, 400, 800):
+        tree = chain(n)
+        print(f"  {n:>6} {timed(inorder_rebuild, tree) * 1e6:>9.0f} us "
+              f"{timed(inorder_stack, tree) * 1e6:>9.0f} us")
+
+    print("\\n=== the stack holds a PATH, not a level ===")
+    for label, tree in [
+        ("left spine, 500 nodes", chain(500)),
+        ("balanced, 1023 nodes", build(list(range(1, 1024)))),
+    ]:
+        print(f"  {label:<24} peak stack {peak_stack(tree)}")
+
+    print("\\n=== Morris rewires the tree, then puts it back ===")
+    tree = build([1, None, 2, 3])
+    print(f"  before: {shape(tree)}")
+    result = inorder_morris(tree)
+    print(f"  after:  {shape(tree)}   (restored)")
+    print(f"  result: {result}")
+
+    print("\\n=== recursion at the constraint's limit: a 10^4 spine ===")
+    sys.setrecursionlimit(1000)
+    print(f"  sys.getrecursionlimit() = {sys.getrecursionlimit()}")
+    spine = chain(10_000)
+    for name, fn in APPROACHES:
+        try:
+            print(f"  {name:<12} -> {len(fn(spine))} values")
+        except RecursionError as exc:
+            print(f"  {name:<12} -> RecursionError: {exc}")
+    sys.setrecursionlimit(20_000)
+
+    print(f"\\n{len(cases)} listed cases + 400 random trees, {len(APPROACHES)} approaches.")
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()`,
+}
+
+export default doc

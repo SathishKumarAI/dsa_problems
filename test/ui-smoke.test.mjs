@@ -358,6 +358,219 @@ describe(
       }
     })
 
+    // B85. The resources route, and the disclosure rule on it — which is the
+    // half worth testing. The page is a pattern name written a dozen different
+    // ways ("Two pointers converging", "Hash map as an index"), so a pattern
+    // whose journey is mid-flight must not appear here AT ALL, not merely with
+    // its name swapped for the mask.
+    test("the resources route renders a playbook, and masks a live pattern (B85)", async () => {
+      // This page is DRIVEN BY the ledger, so it is the one test in this file
+      // that cannot inherit one. Passed alone and failed in the suite: an
+      // earlier test left a journey armed, arrays-hashing was masked, the page
+      // fell back to a pattern with no playbook, and the failure read as
+      // "only 1 playbook moves rendered" — which is the empty-state copy, not
+      // a bug in the page.
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/resources`)
+      const out = await page.run(`
+        const text = document.body.innerText;
+        const main = document.querySelector('main').innerText;
+        return {
+          tabs: [...document.querySelectorAll('nav[aria-label="pattern"] button')]
+            .map(b => b.innerText.trim().split(String.fromCharCode(10))[0]),
+          moves: (main.match(/the tell/gi) || []).length,
+          mistakes: (main.match(/the classic mistake/gi) || []).length,
+          practise: [...document.querySelectorAll('a')]
+            .filter(a => (a.getAttribute('href') || '').indexOf('#/p/') === 0).length,
+          hasNote: /what it answers|why THIS|pointer-machine|answers the question/i.test(text),
+        };
+      `)
+      assert.ok(out.tabs.length >= 2, `only ${out.tabs.length} patterns offered`)
+      assert.ok(out.moves >= 5, `only ${out.moves} playbook moves rendered`)
+      assert.equal(out.moves, out.mistakes, "a move rendered without its mistake")
+      assert.ok(out.practise >= 5, "no links into the problems")
+      assert.deepEqual(page.errors(), [], "resources logged console errors")
+
+      // pick another pattern: it is a ROUTE, so it survives a reload
+      await page.goto(`${server.base}/#/resources?p=linked-list`)
+      const ll = await page.eval(`document.querySelector('main').innerText`)
+      assert.match(ll, /Dummy head/, "the linked-list playbook did not render")
+      assert.match(ll, /Reverse in place/, "a move is missing")
+
+      // now start a journey that REVEALS linked-list and leave it unfinished:
+      // the pattern must vanish from the picker entirely.
+      //
+      // `add-two-numbers`, not `cycle-detect`: the mask is driven by a
+      // journey's `reveals`, and cycle-detect declares none, so the first
+      // version of this test set a ledger key that masked nothing and asserted
+      // against a mask that was never armed. It passed the leak check for the
+      // wrong reason — the page simply had a different pattern selected.
+      //
+      // Written on another route and then navigated for real, because the
+      // store caches per key and a write while the page is mounted is undone.
+      await page.goto(`${server.base}/#/`)
+      // the ledger key is the journey's SLUG, which is not its filename:
+      // add-two-numbers.ts declares slug "add-them-the-way-you-were-taught".
+      // Keyed by the filename first, the mask never armed and the page was
+      // marked as leaking when it was behaving correctly.
+      const slug = JOURNEYS.find((j) => j.problemId === "add-two-numbers").slug
+      assert.ok(
+        (JOURNEYS.find((j) => j.problemId === "add-two-numbers").reveals ?? [])
+          .includes("linked-list"),
+        "this test needs a journey that reveals linked-list"
+      )
+      await page.eval(
+        `localStorage.setItem('dsa:unlocked:' + ${JSON.stringify(slug)}, '2'); true`
+      )
+      await page.goto(`${server.base}/#/resources`)
+      const masked = await page.run(`
+        return {
+          tabs: [...document.querySelectorAll('nav[aria-label="pattern"] button')]
+            .map(b => b.innerText.trim()),
+          // asked for by name, so the mask cannot hide the leak by simply
+          // selecting a different pattern
+          leaks: (await (async () => {
+            location.hash = '#/resources?p=linked-list';
+            await new Promise(r => setTimeout(r, 400));
+            return /Dummy head|Reverse in place|Split and weave/.test(
+              document.querySelector('main').innerText
+            );
+          })()),
+        };
+      `)
+      assert.equal(
+        masked.leaks,
+        false,
+        "a masked pattern's playbook leaked onto the resources page"
+      )
+      assert.ok(
+        !masked.tabs.some(t => /Linked List/i.test(t)),
+        `the masked pattern is still offered: ${masked.tabs.join(", ")}`
+      )
+      await page.eval(`localStorage.clear(); true`)
+    })
+
+    // B82 / B83. The one check that matters for the Python runtime: a real
+    // browser, a real fetch of 10.6 MB of CPython, real output. Everything
+    // else about this feature is a claim.
+    //
+    // The script it runs is the SAME one `scripts/verify-deep.mjs` executes in
+    // CI — every approach in the document plus a differential test over random
+    // inputs — so agreement here and agreement there are the same fact, and
+    // this test fails if the two ever stop being the same code.
+    test("the learn page runs its own Python, and the script agrees (B82)", async () => {
+      await page.goto(`${server.base}/#/learn/cycle-detect`)
+
+      const before = await page.run(`
+        const runs = [...document.querySelectorAll('button')]
+          .filter(b => b.innerText.trim() === 'Run');
+        return {
+          buttons: runs.length,
+          editors: document.querySelectorAll(
+            'textarea[aria-label="the script, yours to change"]'
+          ).length,
+          // nothing may be RUNNING before a press: the whole case for
+          // self-hosting 10.6 MB is that a reader who never runs never pays.
+          // Measured on the page, not on performance.getEntriesByType:
+          // because the runtime is fetched INSIDE the worker and a worker's
+          // resource timeline is its own — the main thread never sees it, so
+          // that check read zero whether or not CPython had loaded.
+          started: /fetching CPython|loading Python/.test(document.body.innerText),
+          output: !!document.querySelector('pre + div, [class*="output"]') ||
+            [...document.querySelectorAll('span')].some(s => s.innerText.trim() === 'output'),
+        };
+      `)
+      assert.ok(before.buttons >= 2, `only ${before.buttons} Run buttons`)
+      assert.equal(before.editors, 1, "the full script is not editable")
+      assert.equal(before.started, false, "CPython started before Run was pressed")
+      assert.equal(before.output, false, "an output panel rendered before any run")
+
+      // press the LAST Run — the full runnable script
+      await page.run(`
+        const runs = [...document.querySelectorAll('button')]
+          .filter(b => b.innerText.trim() === 'Run');
+        runs[runs.length - 1].click();
+        return true;
+      `)
+
+      // booting CPython is seconds, not milliseconds
+      await page.waitFor(
+        `!!document.body.innerText.match(/exit 0|error \u00b7/)`,
+        { tries: 90, gap: 1000 }
+      )
+
+      const out = await page.run(`
+        const text = document.body.innerText;
+        return {
+          ok: /exit 0/.test(text),
+          agreed: /ALL APPROACHES AGREED/i.test(text),
+          // the four rung names the document's script exercises, so this
+          // fails if the page ever runs a DIFFERENT script than the one CI does
+          rungs: ['nested_walk', 'visited_set', 'floyd', 'value_marking']
+            .filter(n => text.includes(n)).length,
+          tail: text.slice(-400),
+        };
+      `)
+      assert.ok(out.ok, `the script did not exit 0 — page ended: ${out.tail}`)
+      assert.equal(
+        out.rungs,
+        4,
+        `the script ran only ${out.rungs} of the document's four approaches`
+      )
+      assert.ok(
+        out.agreed,
+        `it ran but did not report agreement — page ended: ${out.tail}`
+      )
+      assert.deepEqual(page.errors(), [], "the learn page logged console errors")
+    })
+
+    // B79 / B87. The promotion and the comparator are both claims about what a
+    // page RENDERS, so neither is settled by a node test: `ladderOf` returning
+    // four rungs and the page drawing four rungs are different facts.
+    test("a promoted rung renders, and compares against the one below it", async () => {
+      await page.goto(`${server.base}/#/p/linked-list/cycle-detect`)
+      const out = await page.run(`
+        const text = document.body.innerText;
+        const ladder = document.querySelector('[aria-label="approach ladder"]');
+        return {
+          count: (text.match(/([0-9]+) ways in/) || [])[1],
+          brute: /Nested walk/i.test(text),
+          mark: /Value-marking/i.test(text),
+          asides: (ladder.innerText.match(/reading only/gi) || []).length,
+          compares: [...ladder.querySelectorAll('button')]
+            .filter(b => /^compare with/i.test(b.innerText)).length,
+        };
+      `)
+      assert.equal(out.count, "4", "the ladder does not show four rungs")
+      assert.ok(out.brute, "the promoted nested walk did not render")
+      assert.ok(out.mark, "the promoted value-marking rung did not render")
+      assert.equal(out.asides, 2, "the reading-only marks are wrong")
+      assert.equal(out.compares, 3, "a compare control is missing")
+      assert.deepEqual(page.errors(), [], "cycle-detect logged console errors")
+
+      // and the comparator itself: a route, so it survives a reload
+      await page.goto(
+        `${server.base}/#/p/linked-list/cycle-detect?compare=set,floyd`
+      )
+      const cmp = await page.run(`
+        const text = document.body.innerText;
+        const lit = document.querySelectorAll('pre span[class*="border-chart-1"]');
+        return {
+          heading: /lines in common/i.test(text),
+          both: /Floyd/i.test(text) && /set/i.test(text),
+          marked: lit.length,
+        };
+      `)
+      assert.ok(cmp.heading, "the comparator did not render its count")
+      assert.ok(cmp.both, "the comparator is missing a side")
+      assert.ok(
+        cmp.marked >= 6,
+        `only ${cmp.marked} lines marked as differing — expected most of both`
+      )
+      assert.deepEqual(page.errors(), [], "compare logged console errors")
+    })
+
     // Every new problem page must at least render with a clean console. Twenty
     // pages arrived in one batch and the cheapest way to be wrong about all of
     // them at once is to check none of them.
@@ -1965,6 +2178,103 @@ describe(
         "the page scrolls sideways at 390 px"
       )
       assert.deepEqual(page.errors(), [])
+    })
+
+    // ---------- 10. a broken page beats a broken site (B96) ----------
+
+    test("a route that names nothing renders not-found, not home", async () => {
+      // Both shapes: a real pattern with a dead problem under it, and a root
+      // that names nothing at all. Before B96 both rendered HOME — a working
+      // page with no signal that the link had missed.
+      for (const [hash, back] of [
+        ["#/p/linked-list/no-such-problem", "#/p/linked-list"],
+        ["#/nonsense", null],
+        ["#/journey/no-such-journey", null],
+      ]) {
+        await page.goto(`${server.base}/${hash}`)
+        const out = await page.run(`
+          const main = document.querySelector('main');
+          return {
+            text: main.innerText,
+            hrefs: [...main.querySelectorAll('a')].map(a => a.getAttribute('href')),
+            // home's own furniture, to prove we are NOT looking at it
+            home: /day streak|learning journeys/i.test(main.innerText),
+          };
+        `)
+        assert.match(
+          out.text,
+          /nothing at that address/i,
+          `${hash} did not render the not-found view`
+        )
+        // it names what was not found, verbatim, so the reader can see which
+        // part of the path is wrong
+        assert.ok(
+          out.text.includes(hash),
+          `${hash}: the not-found view did not name the route (${out.text.slice(0, 80)})`
+        )
+        assert.equal(out.home, false, `${hash} still rendered home`)
+        assert.ok(out.hrefs.includes("#/"), `${hash}: no link home`)
+        if (back)
+          assert.ok(
+            out.hrefs.includes(back),
+            `${hash}: no link back to ${back}`
+          )
+        assert.deepEqual(page.errors(), [], `${hash} logged console errors`)
+      }
+    })
+
+    test("a render error costs one page, not the site", async () => {
+      // The honest trigger, with no test-only code in the app: a CORRUPT
+      // stored record, which is the fault B96 was filed for. `prefs` is read
+      // by problem-list as a string it lowercases, so a number there throws
+      // during render — and only in that view (the rail and the palette read
+      // other keys). Written on home and then navigated to for real, because
+      // the store caches per key (CLAUDE.md).
+      await page.goto(`${server.base}/#/`)
+      await page.run(
+        `localStorage.setItem('dsa:prefs', JSON.stringify({ filterQuery: 42 })); return 1`
+      )
+      await page.goto(`${server.base}/#/p/arrays-hashing`)
+      const out = await page.run(`
+        const main = document.querySelector('main');
+        return {
+          text: main.innerText,
+          message: (main.querySelector('pre') || {}).innerText || '',
+          hrefs: [...main.querySelectorAll('a')].map(a => a.getAttribute('href')),
+          alerts: document.querySelectorAll('[role=alert]').length,
+          // the shell has to survive: this is the whole point
+          sidebar: document.querySelectorAll('[data-slot=sidebar]').length,
+          rail: [...document.querySelectorAll('[data-slot=sidebar] a')].length,
+        };
+      `)
+      // clean up before asserting, so a failure does not poison the run
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:prefs'); return 1`)
+
+      assert.match(
+        out.text,
+        /this page hit an error/i,
+        "the boundary did not catch — the page is blank or the throw stopped happening"
+      )
+      assert.ok(out.alerts >= 1, "the fallback is not announced as an alert")
+      assert.match(
+        out.message,
+        /toLowerCase/,
+        `the error message was not shown (got "${out.message}")`
+      )
+      assert.ok(out.hrefs.includes("#/"), "the fallback offers no way out")
+      assert.equal(out.sidebar > 0, true, "the shell went down with the page")
+      assert.ok(out.rail > 5, `the rail lost its links (${out.rail} left)`)
+
+      // and the very next route is fine again: the boundary resets on the
+      // route change rather than latching
+      await page.goto(`${server.base}/#/p/arrays-hashing`)
+      const after = await page.run(`return document.querySelector('main').innerText`)
+      assert.ok(
+        !/this page hit an error/i.test(after),
+        "the boundary latched — a good route still shows the fallback"
+      )
+      assert.deepEqual(page.errors(), [], "the recovered page logged errors")
     })
   }
 )

@@ -17,7 +17,7 @@
 //       node scripts/learn-gaps.mjs --quiet     # just the summary line
 //       node scripts/learn-gaps.mjs --strict    # exit 1 on undisclosed drift
 
-import { readFileSync, readdirSync, writeFileSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { pathToFileURL } from "node:url"
 import { PATTERNS, PROBLEMS } from "../src/data/index.ts"
@@ -25,6 +25,7 @@ import { PATTERNS, PROBLEMS } from "../src/data/index.ts"
 const strict = process.argv.includes("--strict")
 const quiet = process.argv.includes("--quiet")
 const DEEP = "docs/deep"
+const CONTENT = "src/problems"
 const REPORT = "docs/LEARN-GAPS.md"
 
 // "an addition", "not in the data file", "(an addition — …)" all count: the
@@ -79,7 +80,22 @@ export function audit() {
       .map((f) => f.replace(/_explained\.md$/, ""))
   )
 
+  // A problem whose document has been converted to `src/problems/<id>/doc.ts` is
+  // TAUGHT, and none of the section columns below apply to it: the sections it
+  // used to be graded on by grepping headings are fields of a type now, and
+  // `src/content/content.test.ts` fails the build when one is missing or a
+  // stub. That is the whole trade this migration makes — a report becomes a
+  // gate — and counting a converted problem as untaught would have read as a
+  // regression on the day it improved.
+  const typed = new Set(
+    (existsSync(CONTENT) ? readdirSync(CONTENT) : []).filter((id) =>
+      existsSync(join(CONTENT, id, "doc.ts"))
+    )
+  )
+
   return PROBLEMS.map((problem) => {
+    if (typed.has(problem.id))
+      return { problem, taught: true, typed: true, missing: [], extra: 0 }
     if (!have.has(problem.id)) {
       return { problem, taught: false, missing: SECTIONS.map((s) => s.key), extra: 0 }
     }

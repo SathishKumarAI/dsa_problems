@@ -3,6 +3,7 @@
 // beside Python for the optimal approach and every alternative (the
 // three-language rule in docs/PROBLEMS.md). Run: npm test
 
+import { readFileSync } from "node:fs"
 import assert from "node:assert/strict"
 import { test } from "node:test"
 import { JOURNEYS } from "../engine/index.ts"
@@ -138,9 +139,16 @@ test("problems: a journeyed problem has no hand-written walkthrough (one source 
 // main() and no explanatory prose. This is what makes a generated translation
 // safe to accept: nothing about it is taken on trust.
 test("problems: any Java or C++ block present is well-formed", () => {
+  // Braces inside a CHARACTER or STRING literal are data, not structure, and
+  // counting them is how a correct block gets reported as malformed: the
+  // single-counter rung tests `ch == '{'` and was rejected for it, while the
+  // stack rung's `partner.put('}', '{')` passed only because its two literals
+  // happened to cancel. Strip the literals first (escapes included), then count.
+  // `verify:code` compiles these blocks for real; this is the cheap pre-check.
   const balanced = (src: string) => {
+    const bare = src.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, "''")
     let d = 0
-    for (const c of src) {
+    for (const c of bare) {
       if (c === "{") d++
       if (c === "}") d--
       if (d < 0) return false
@@ -300,4 +308,94 @@ test("patterns: every reference is a usable, attributed reading", () => {
       seen.set(r.href + "|" + r.note, where)
     }
   }
+})
+
+// B77. A rung's key is an id, so two rungs on one problem may not share one —
+// and since `lib/ladder.ts` matches a keyed alternative against a journey ACT
+// by that key, a collision would silently merge two different approaches into
+// one row.
+test("problems: rung keys are unique within a problem, and look like keys", () => {
+  for (const p of PROBLEMS) {
+    const keys = (p.alternatives ?? []).flatMap((a) => (a.key ? [a.key] : []))
+    assert.equal(
+      new Set(keys).size,
+      keys.length,
+      `${p.id}: two alternatives share a key`
+    )
+    for (const k of keys)
+      assert.ok(
+        /^[a-z][a-z0-9-]*$/.test(k),
+        `${p.id}: "${k}" is not a key — lowercase, digits and hyphens`
+      )
+  }
+})
+
+// B79, and the bug that wrote this test. `DerivedSpec.from` was a positional
+// INDEX into `problem.alternatives`. Promoting an approach inserts a rung into
+// that array, so every index after the insertion point moves: the first
+// promotion repointed cycle-detect's `set` act at the freshly inserted brute
+// force, and the act rendered the nested walk's code under the visited set's
+// name, claiming O(n²). Nothing threw. Nothing failed. It just taught the
+// wrong algorithm.
+//
+// A problem that has been promoted is exactly a problem whose alternatives
+// carry explicit keys, so that is the trigger: once keys exist, the journey
+// must name its rung by key. The remaining numeric uses sit on problems nobody
+// has reordered, and this test starts failing the moment someone does.
+test("problems: a promoted problem's journey names its rung by key, not index", () => {
+  const dir = new URL("./journeys/", import.meta.url)
+  for (const p of PROBLEMS) {
+    const keyed = (p.alternatives ?? []).filter((a) => a.key)
+    if (!keyed.length) continue
+    const journey = JOURNEYS.find((j) => j.problemId === p.id)
+    if (!journey) continue
+    let src: string
+    try {
+      src = readFileSync(new URL(`${p.id}.ts`, dir), "utf8")
+    } catch {
+      continue // a hand-written journey under engine/journeys, not a spec
+    }
+    const numeric = src.match(/\bfrom:\s*\d+/g) ?? []
+    assert.deepEqual(
+      numeric,
+      [],
+      `${p.id}: alternatives carry keys, so ${numeric.join(", ")} is a stale ` +
+        `positional index — wire the act with from: "<key>"`
+    )
+  }
+})
+
+// B85. A playbook row's `learnOn` is a set of ROUTES, not a citation: the
+// resources page renders each id as a link into this app. `docs/RESOURCES.md`
+// carried the same lists as prose and said so itself — "if a link 404s, that
+// is why" — which is exactly the state data should make impossible.
+test("patterns: every playbook row is usable, and points at real problems", () => {
+  const ids = new Set(PROBLEMS.map((p) => p.id))
+  let rows = 0
+  for (const pattern of PATTERNS) {
+    const seen = new Set<string>()
+    for (const m of pattern.playbook ?? []) {
+      rows++
+      const where = `${pattern.id}/${m.name}`
+      assert.ok(m.name.trim(), `${pattern.id}: a move with no name`)
+      assert.ok(!seen.has(m.name), `${where}: two moves share a name`)
+      seen.add(m.name)
+      assert.ok(
+        m.idea.trim().length > 40,
+        `${where}: the idea needs a sentence — what the move IS, mechanically`
+      )
+      assert.ok(
+        m.tell.trim().length > 30,
+        `${where}: the tell is what makes this page worth reading; write it`
+      )
+      assert.ok(
+        m.mistake.trim().length > 60,
+        `${where}: name the mistake AND the input that exposes it`
+      )
+      assert.ok(m.learnOn.length > 0, `${where}: nowhere to practise it`)
+      for (const id of m.learnOn)
+        assert.ok(ids.has(id), `${where}: "${id}" is not a problem in this app`)
+    }
+  }
+  assert.ok(rows >= 10, `only ${rows} playbook rows — the page has nothing to show`)
 })

@@ -121,7 +121,8 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
-| Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`) |
+| Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`). **Problems being migrated live in `src/problems/<id>/` instead**, one file per section, and their pattern barrel imports from there — map: `src/problems/README.md` |
+| Add / edit a **teaching document** (understanding, traps, one file per approach, arc, interview, the runnable script) | `src/problems/<id>/` — entered through `doc.ts`, converted from `docs/deep/<id>_explained.md` by `scripts/md-to-content.mjs`. Gate: `src/content/content.test.ts` |
 | **The one page per problem** (`npm run docs:learn`) — problem, hints, the authored teaching document, every rung in three languages, a runnable script | `scripts/gen-learn.mjs` · output: `docs/learn/**` · drift gate: `scripts/gen-learn.test.mjs` |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |
 | Which model is trusted with what, and the measured token cost | `docs/MODELS.md` |

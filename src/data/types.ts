@@ -38,6 +38,18 @@ export interface Code {
 }
 
 export interface Solution extends Code {
+  // A stable id for this rung, in the same vocabulary a journey uses for
+  // `Act.key` — `brute`, `set`, `floyd`, `mark`. Three things need a rung to be
+  // ADDRESSABLE rather than merely present: the comparator's `?compare=a,b`
+  // route, the `{#key}` anchor that binds a heading in `docs/deep/` to this
+  // record (B78), and the merge in `lib/ladder.ts` that decides whether an
+  // alternative is the same rung as a journey act or a different one.
+  //
+  // Optional, and it falls back to a slug of `name`, because 249 alternatives
+  // did not need renaming to make three problems addressable. Write it
+  // explicitly when the key is load-bearing: a compare link, a doc anchor, or
+  // a rung that must line up with an act.
+  key?: string
   name: string // short tab label: "Brute force", "Sorting", "Hash map"
   summary: string
   complexity: { time: string; space: string }
@@ -98,6 +110,34 @@ export interface Reference {
   note: string
 }
 
+// One move of a pattern's playbook: the technique, how to recognise it from the
+// statement alone, and the mistake people actually make writing it.
+//
+// Why this is a RECORD and not the Markdown it came from. `docs/RESOURCES.md`
+// held the best writing in the repository — the six array ideas and the five
+// list moves — in tables that nothing in `src/` could read, so it reached no
+// screen at all. As data it is a query: `#/resources` renders it, a pattern's
+// problems inherit it, and extending it to the other eight patterns is filling
+// a table rather than writing a document.
+//
+// `learnOn` is problem IDs, checked by `data/problems.test.ts`, so a row cannot
+// point at a problem that was renamed or never existed.
+export interface Move {
+  /** the technique, named — "Dummy head", "Prefix sums" */
+  name: string
+  /** what it IS, in one sentence: the mechanism, not the motivation */
+  idea: string
+  /** the tell: what in the STATEMENT says to reach for this */
+  tell: string
+  /** what must stay true while the loop runs. Absent where a move has no
+   *  single invariant worth naming — the array ideas mostly do not */
+  invariant?: string
+  /** problem ids in this repo, so a row is a set of routes and not a citation */
+  learnOn: string[]
+  /** the mistake people actually make, with the input that exposes it */
+  mistake: string
+}
+
 export interface Pattern {
   id: string
   name: string
@@ -107,6 +147,8 @@ export interface Pattern {
   // candidates were dropped for 404 and one — the Wikipedia "sliding window
   // protocol" — for being the NETWORKING thing of the same name.
   references?: Reference[]
+  /** how to recognise and write this pattern — rendered on `#/resources` */
+  playbook?: Move[]
 }
 
 export interface SqlProblem {

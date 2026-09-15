@@ -94,11 +94,21 @@ export function caseLines(run, n) {
 /** top-level definitions in a C-family block, as {name, text} */
 function cDefs(src) {
   const out = []
+  // A brace inside a CHARACTER or STRING literal is data, not structure.
+  // `if (ch == '{')` in the single-counter rung left the depth one deep for the
+  // rest of the block, so no function ever closed and both translations were
+  // reported as "no function to call" — a whole rung unverified, and reported
+  // as a shrug rather than a failure. Blank the literals with same-length
+  // filler so every index still points where it did, then scan that; the
+  // slices below still come from the original text.
+  const scan = src.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, (m) =>
+    "_".repeat(m.length)
+  )
   let depth = 0
   let start = 0
   for (let i = 0; i < src.length; i++) {
-    if (src[i] === "{") depth++
-    else if (src[i] === "}") {
+    if (scan[i] === "{") depth++
+    else if (scan[i] === "}") {
       depth--
       if (depth === 0) {
         const text = src.slice(start, i + 1)

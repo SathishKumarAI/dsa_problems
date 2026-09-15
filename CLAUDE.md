@@ -9,7 +9,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
-| **Everything about one problem, on one page** | `docs/learn/<id>.md` — generated, `npm run docs:learn`. Merges the data (statement, hints, every rung in three languages) with the authored teaching document from `docs/deep/<id>_explained.md`. Shows the ending, so the app links it only when the ladder is not capped |
+| **Everything about one problem, in one directory** | `src/problems/<id>/` — the record (`problem.ts`, `hints.ts`, `solutions.ts`) and the teaching document (`understanding.ts`, `traps.ts`, `approaches/<rung>.ts`, `arc.ts`, `interview.ts`, `script.ts`) side by side. Map: `src/problems/README.md`. **Two entry files on purpose**: `index.ts` is the record and is EAGER, `doc.ts` is the document and is LAZY — nothing eager may reach a doc file. 14 of 82 converted; the rest are still `docs/deep/<id>_explained.md` spliced into the generated `docs/learn/<id>.md` (`npm run docs:learn`). The page shows the ending, so the app links it only when the ladder is not capped |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
@@ -85,6 +85,12 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 - **A backslash in a template literal sent to the page is consumed twice** (`/^\d\d/` arrives as
   `/^dd/`). Use a character class.
 - `-x` on a zero is `-0` and fails `deepEqual`; write `0 - x` when a value can be zero (three-sum hash act).
+
+- **A brace counter reads `'{'` as structure.** Two of them did: `problems.test.ts`'s well-formed
+  check called a correct Java block malformed, and `localsmith/run.mjs`'s `cDefs` never closed a
+  function that tests `ch == '{'`, so it reported **"no function to call"** and skipped both
+  translations of a whole rung — a shrug, not a failure. Both strip character and string literals
+  before counting now. The repo's own rule says it: to find code, parse it, do not count braces.
 
 - **React Compiler lint rules** (`react-hooks` v7): no sync `setState` in effects, no ref reads in
   render, no mutating frames. Use render-time adjusts (`if (x !== prev) { setPrev(x); … }`) or

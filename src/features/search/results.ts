@@ -9,9 +9,15 @@
 // like "a monotone yes/no over a range is a binary search" names the pattern
 // the journey is still withholding (koko-bananas).
 
-import { PATTERNS, PROBLEMS } from "@/data"
+// The MANIFEST for the problems, the real records for nothing. The palette
+// indexes a title, a pattern, a difficulty and a slug — six fields — and
+// reading them off `PROBLEMS` put all 127 statements, constraint lists, hint
+// ladders and code blocks in three languages into the first chunk so that
+// pressing Ctrl-K could match a title.
+import { PATTERNS } from "@/data/patterns"
+import { CATALOGUE as PROBLEMS } from "@/data/manifest"
 import type { Difficulty } from "@/data"
-import { JOURNEYS } from "@/engine"
+import { JOURNEY_CARDS as JOURNEYS } from "@/engine/manifest"
 import type { Mask } from "@/lib/disclosure"
 import { MASKED_NAME } from "@/lib/disclosure"
 

@@ -11,7 +11,14 @@
 // click ("show me anyway", stored in `spoilers`) turns the whole thing off
 // forever, because a senior drilling problems should not have to play along.
 
-import { JOURNEYS } from "@/engine"
+// The MANIFEST, not the registry, and this one import was worth 568 KB.
+//
+// The mask needs three things per journey — its slug, how many acts it has, and
+// which patterns it reveals — and it needs them for ALL 93 before the app knows
+// which route it is on. Reading them off `JOURNEYS` pulled every act, every
+// frame generator, every preset and every line of journey prose into the first
+// chunk to learn a number. `JOURNEY_CARDS` carries the number.
+import { JOURNEY_CARDS } from "@/engine/manifest"
 import { K, getStored, setStored, useStoreVersion } from "@/lib/store"
 
 export interface Mask {
@@ -30,12 +37,12 @@ function compute(off: boolean, unlocked: (slug: string) => number): Mask {
   const hidden = new Set<string>()
   const by = new Map<string, string>()
   if (off) return { hidden, by, off }
-  for (const j of JOURNEYS) {
+  for (const j of JOURNEY_CARDS) {
     const seen = unlocked(j.slug)
     const started = seen > 1
     const finished = seen >= j.acts.length
     if (!started || finished) continue
-    for (const p of j.reveals ?? []) {
+    for (const p of j.reveals) {
       hidden.add(p)
       if (!by.has(p)) by.set(p, j.title)
     }

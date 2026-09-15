@@ -1,0 +1,79 @@
+{
+  "_": [
+    "Which rung each ## Approach section teaches, in document order.",
+    "",
+    "This is the ONE judgement call in converting a teaching document, and it is",
+    "the only thing in the conversion a machine should not guess: the heading says",
+    "'Floyd's tortoise and hare' and the record says 'floyd', and on a journeyed",
+    "problem the ladder's keys come from the journey's ACT keys, not from",
+    "alternatives[].key at all.",
+    "",
+    "It lives in a file because the converter is re-runnable: a converter bug means",
+    "re-emitting every module, and hand-binding 82 documents twice is how the",
+    "second pass gets a different answer from the first. `md-to-content.mjs` reads",
+    "this and fills `rung` from it; anything absent is emitted blank and fails",
+    "src/content/content.test.ts until a human decides.",
+    "",
+    "The first twelve below were decided by an agent on 2026-09-14 and are",
+    "reproduced from its report. inorder-walk is deliberately out of ladder order:",
+    "the document's third approach IS the problem's top-level approach, and Morris",
+    "threading sits below optimal rather than above it."
+  ],
+  "anagram-positions": [
+    "sort-every-window",
+    "count-every-window-from-scratch",
+    "slide-the-tally-compare-all-26",
+    "optimal"
+  ],
+  "balanced-brackets": ["delete", "stack", "counter"],
+  "backspace-compare": [
+    "recursion-one-cancel-at-a-time",
+    "rebuild-the-text-by-slicing",
+    "cancel-with-a-stack",
+    "backward-pass-with-a-skip-counter",
+    "optimal"
+  ],
+  "boats-to-save": [
+    "exact-search-over-every-group",
+    "rescan-for-the-heaviest-and-the-lightest",
+    "sort-then-empty-the-queue-from-both-ends",
+    "count-the-weights-into-buckets",
+    "optimal"
+  ],
+  "container-water": ["brute", "squeeze"],
+  "daily-warmer": ["brute", "backward", "stack"],
+  "find-all-duplicates": [
+    "compare-every-pair",
+    "sort-then-read-neighbours",
+    "count-in-a-hash-map",
+    "a-flag-per-value",
+    "optimal"
+  ],
+  "first-missing-positive": [
+    "try-1-then-2-then-3",
+    "sort-then-walk",
+    "hash-set",
+    "boolean-table-of-size-n-1",
+    "optimal"
+  ],
+  "fruit-baskets": [
+    "try-every-starting-tree",
+    "a-window-that-shrinks-until-it-is-legal",
+    "optimal"
+  ],
+  "group-anagrams": ["pairs", "sorted", "tally"],
+  "inorder-walk": [
+    "rebuild-the-answer-at-every-node",
+    "one-list-handed-down",
+    "optimal",
+    "morris-threading"
+  ],
+  "intersection-of-arrays": [
+    "cross-off-with-used-flags",
+    "sort-both-then-two-cursors",
+    "count-both-sides-take-the-minimum",
+    "one-count-table-spend-as-you-go",
+    "optimal"
+  ],
+  "is-subsequence": ["search", "walk"]
+}

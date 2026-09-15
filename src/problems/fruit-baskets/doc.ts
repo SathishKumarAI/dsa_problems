@@ -1,0 +1,513 @@
+// fruit-baskets — the teaching document, as data.
+//
+// Converted from docs/deep/fruit-baskets_explained.md by
+// scripts/md-to-content.mjs. Every byte of prose carried through unchanged;
+// what changed is that the STRUCTURE is now a type (src/content/types.ts)
+// rather than a heading convention a script had to grep for.
+//
+// Reached only through `lib/content.ts`'s glob — never import this file.
+
+import type { TeachingDoc } from "../../content/types.ts"
+
+export const doc: TeachingDoc = {
+  problemId: "fruit-baskets",
+  understanding: `You are walking along a row of fruit trees, carrying two baskets. Each tree gives you exactly one
+fruit, and each basket holds exactly one **kind** of fruit — as many as you like, but all the same
+kind. You start at a tree of your choosing, take the fruit from every tree you pass, and you must
+stop the moment a tree offers a third kind, because there is no basket free for it. How many fruits
+can you carry away at best?
+
+The baskets are a costume. Strip them off and the question is:
+
+> **What is the longest run of neighbouring trees holding at most two distinct values?**
+
+That is the whole problem, and recognising it is most of the work. The general form is
+**at-most-\`K\`-distinct**, and this is the \`K = 2\` version with a nice picture attached. If you can
+solve it for two you can solve it for any \`K\` by changing one number.
+
+**The core question:** for each position, how far back can a run start and still contain no more
+than two distinct kinds? The naive approach is slow because it answers that question from scratch at
+every starting tree, re-walking a run its predecessor has just walked — and those runs overlap almost
+completely.
+
+> **Watch out.** The misconception that sinks people here is thinking a kind **leaves** the window
+> when one of its fruits slides out the back. It does not. A kind leaves the window when its **count**
+> reaches zero. The window \`[1, 2, 1]\` still holds kind \`1\` after the leftmost \`1\` is dropped — there
+> is another one further in — and code that removes the kind on the first departure will happily
+> certify a three-kind window as legal.
+
+The worked example used in every section below is the statement's third one, chosen because it is
+the only one that exercises the corner case:
+
+\`\`\`
+fruits = [1, 2, 3, 2, 2]        answer: 4   (the run 2, 3, 2, 2)
+\`\`\`
+
+The trap it sets: when the \`3\` arrives at index 2, the window must let go of the \`1\` — and the
+answer that survives starts at index 1, *not* at index 3. A solution that restarts just after the
+offending tree returns \`3\` and looks plausible.
+
+---`,
+  unlocks: [
+      {
+          "constraint": "`1 <= fruits.length <= 10^5`",
+          "what": "A hundred thousand trees, so an `O(n²)` restart-per-start scan is up to 10¹⁰ steps. **This is the constraint that rules out brute force.** The row is never empty, so the answer is always at least `1` and there is no empty-input branch."
+      },
+      {
+          "constraint": "`0 <= kind < fruits.length`",
+          "what": "The kinds are **unbounded in value** but bounded in count: there could be 10⁵ different kinds, and a kind can be any number in that range. This is the constraint that forbids a fixed-size array of counters — you need a **hash map**, unlike the fixed 26-slot tally that a lowercase-letters problem would allow."
+      },
+      {
+          "constraint": "the run must be **contiguous**",
+          "what": "You cannot skip a tree and continue. This is what makes it a *window* problem rather than a selection problem — the answer is an interval, so it has a left edge and a right edge and nothing else."
+      },
+      {
+          "constraint": "at most **two** distinct kinds",
+          "what": "The rule is **local**: whether a window is legal depends only on what is inside it, never on what came before. That locality is what lets a single window slide along and carry its own verdict."
+      },
+      {
+          "constraint": "repeats do not count against the limit",
+          "what": "`[1,1,1,2,2]` is five fruits and only two kinds. **This is the constraint that forces counts rather than a set of present kinds** — you must know *how many* of each kind are inside, not merely which kinds are inside."
+      }
+  ],
+  approaches: [
+  {
+    rung: "try-every-starting-tree",
+    title: "Try every starting tree",
+    idea: `*Which starting tree gives the longest haul?* Try all of them. Stand at each tree in turn, walk
+forward collecting kinds into a set, and stop the moment the set holds three. The longest walk any
+starting tree produced is the answer.`,
+    intuition: `> **Intuition.** You literally do what the story says, once per starting tree. Stand at tree 0, walk
+> and collect until a third kind stops you, note how many fruits you got, then trudge back to the
+> start, step forward one tree, and do the whole walk again. What makes it wasteful is that the walk
+> from tree 1 covers almost exactly the ground the walk from tree 0 just covered, and you learned
+> nothing from the first walk that you carry into the second — the set is thrown away and rebuilt
+> every time. On a row like \`[1,1,1,1]\` you walk four trees, then three, then two, then one, to
+> discover a fact a single pass already had.`,
+    worked: `\`fruits = [1, 2, 3, 2, 2]\`. One row per starting tree; \`end\` stops on the first tree that would make
+a third kind, or past the end of the row.
+
+| \`start\` | kinds collected as \`end\` advances | \`end\` stops at | reason | width \`end − start\` | best |
+|---|---|---|---|---|---|
+| 0 | \`{1}\` → \`{1,2}\` → \`{1,2,3}\` | 2 | the \`3\` is a third kind | 2 | 2 |
+| **1** | \`{2}\` → \`{2,3}\` → \`{2,3}\` → \`{2,3}\` | 5 | ran off the end of the row | **4** | **4** |
+| 2 | \`{3}\` → \`{3,2}\` → \`{3,2}\` | 5 | ran off the end | 3 | 4 |
+| 3 | \`{2}\` → \`{2}\` | 5 | ran off the end | 2 | 4 |
+| 4 | \`{2}\` | 5 | ran off the end | 1 | 4 |
+
+The answer is 4, from \`start = 1\`. Count the tree-visits down that table: 3 + 4 + 3 + 2 + 1 = 13
+visits over a row of 5 trees. The trees at indices 3 and 4 are visited by four different starts.`,
+    code: `def fruit_baskets_every_start(fruits: list[int]) -> int:
+    best = 0
+    for start in range(len(fruits)):
+        kinds: set[int] = set()
+        end = start
+        while end < len(fruits):
+            kinds.add(fruits[end])
+            if len(kinds) > 2:
+                break
+            end += 1
+        best = max(best, end - start)
+    return best`,
+    codeNote: `A set is enough here, and only here: this rung never removes anything, so it never has to ask
+whether a kind is *still* present. Every later rung removes, and every later rung therefore needs
+counts.`,
+    mistake: `> **Watch out.** The misconception is that the loop leaves \`end\` on the last **legal** tree, so the
+> width needs the usual \`+ 1\`. It does not: \`end\` is left on the first *illegal* tree — the one that
+> made three kinds — or one past the end of the row. Either way \`end\` is already an exclusive bound
+> and the width is \`end - start\` exactly.
+
+Writing \`best = max(best, end - start + 1)\` returns **5** on the worked example instead of 4 — it
+claims the whole row, three kinds and all, is pickable. The bug is seductive because \`+ 1\` is right
+in almost every other loop you write, where the index ends on the last thing you accepted. Here the
+\`break\` fires *before* \`end += 1\`, so the loop's exit leaves \`end\` pointing at something it refused.
+
+The general habit that prevents it: after writing a loop with a \`break\`, say out loud what the exit
+variable points at. "\`end\` is the first tree I could not take" answers the \`+ 1\` question
+immediately.`,
+    cost: `**Time** \`O(n²)\`, **space** \`O(1)\`. The time comes from the nested walk — \`n\` starting trees, each
+walking up to \`n\` trees forward — and it is genuinely quadratic on the worst input, a row of a single
+kind, where every start walks to the end. The space is one set holding at most three kinds, which is
+constant regardless of the row's length.
+
+At \`n = 10^5\` this is roughly 10¹⁰ steps and will not finish; that worst case is stated analytically,
+not measured, and the stress tests below run it only at small \`n\`. Use it as the oracle in a test
+harness — it is the version whose correctness you can confirm by reading, which is exactly what you
+need from the thing checking the clever ones. In an interview, state it in one sentence, name the
+\`O(n²)\`, and improve on it.
+
+---`,
+  },
+  {
+    rung: "a-window-that-shrinks-until-it-is-legal",
+    title: "A window that shrinks until it is legal",
+    idea: `*Every start re-walks the run its predecessor already walked — can one walk serve them all?* Yes.
+Keep a single window with a count for each kind inside it. Push the right edge forward one tree at a
+time; whenever the window holds three kinds, pull the left edge forward until one of them is gone
+entirely. Record the widest legal width you ever hold.
+
+This fixes Approach 1's weakness — **it restarts the walk at every tree, so overlapping runs are
+re-walked from scratch.**`,
+    intuition: `> **Intuition.** One elastic band stretched over a stretch of the row, instead of a fresh walk per
+> tree. The right hand always moves right, adding a tree. When a third kind appears the window is
+> illegal, so the left hand pulls in — one tree at a time, decrementing that kind's count — until some
+> kind's count hits zero and that kind genuinely disappears from the window. Then you measure and
+> carry on. Both hands only ever travel rightwards, so although the code has a loop inside a loop,
+> each tree is entered once and left at most once and the total work is linear.`,
+    worked: `\`fruits = [1, 2, 3, 2, 2]\`. The \`counts\` column is the live map of what is inside the window.
+
+| \`right\` | kind added | \`counts\` after adding | illegal? shrink… | \`left\` after | window | width | best |
+|---|---|---|---|---|---|---|---|
+| 0 | \`1\` | \`{1:1}\` | no | 0 | \`[0..0]\` | 1 | 1 |
+| 1 | \`2\` | \`{1:1, 2:1}\` | no | 0 | \`[0..1]\` | 2 | 2 |
+| 2 | \`3\` | \`{1:1, 2:1, 3:1}\` | **yes** — drop \`fruits[0]=1\`, its count hits 0, kind \`1\` is deleted | 1 | \`[1..2]\` | 2 | 2 |
+| 3 | \`2\` | \`{2:2, 3:1}\` | no | 1 | \`[1..3]\` | 3 | 3 |
+| 4 | \`2\` | \`{2:3, 3:1}\` | no | 1 | \`[1..4]\` | **4** | **4** |
+
+The answer is 4. Five right-edge steps and exactly one left-edge step, against the brute force's
+thirteen tree-visits. Row 2 is the corner case the example exists for: the window lands on
+\`[1..2]\`, keeping the \`2\` at index 1, so when the trailing \`2\`s arrive the run stretches to four. A
+solution that had jumped to index 3 — just past the offending \`3\` — would top out at 2.`,
+    code: `def fruit_baskets_shrinking_window(fruits: list[int]) -> int:
+    counts: dict[int, int] = {}
+    best = 0
+    left = 0
+    for right, kind in enumerate(fruits):
+        counts[kind] = counts.get(kind, 0) + 1
+        while len(counts) > 2:
+            going = fruits[left]
+            counts[going] -= 1
+            if counts[going] == 0:
+                del counts[going]  # a kind leaves only when its COUNT hits zero
+            left += 1
+        best = max(best, right - left + 1)
+    return best`,
+    codeNote: `\`len(counts)\` is the number of distinct kinds in the window, and it is trustworthy only because the
+\`del\` is guarded by the zero check. That single guarded line is the invariant of the whole approach.`,
+    mistake: `> **Watch out.** The misconception is that a kind **leaves** the window when one of its fruits slides
+> out the back. It leaves when its **count** reaches zero. \`del counts[going]\` without the
+> \`== 0\` guard — or a \`set\` of present kinds instead of a map of counts — removes a kind the window is
+> still full of.
+
+On the worked example this bug is completely **invisible**: it still returns **4**, because no kind
+in \`[1, 2, 3, 2, 2]\` has a second copy left behind when its first copy is evicted. That invisibility
+is the danger — it passes the example you were given. Run it on \`fruits = [1, 2, 1, 3, 3, 3]\` and it
+returns **5** where the answer is **4**: at the moment the \`3\` arrives it drops the \`1\` at index 0
+and deletes kind \`1\` from the map, even though the \`1\` at index 2 is still inside the window. From
+there the map claims two kinds while the window really holds three, and the final five-wide window
+\`[2, 1, 3, 3, 3]\` is certified legal.
+
+The general form is worth carrying: whenever a window's membership is tracked by a container, the
+container is a **multiset**, not a set. Anything that can enter twice must leave twice.`,
+    cost: `**Time** \`O(n)\`, **space** \`O(1)\`. The time is linear by an amortised argument, not by inspection:
+each tree is added by the right edge exactly once and removed by the left edge at most once, so the
+inner \`while\` is the left edge's share of a single forward journey and both edges together take at
+most \`2n\` steps. The space is the \`counts\` map, which never holds more than three entries at once —
+constant, even though the kinds themselves are unbounded in value.
+
+**This is the rung to write in an interview.** It is the general, honest form of the technique: grow
+on the right, restore legality on the left, measure while legal. Change \`2\` to \`K\` and it is
+at-most-\`K\`-distinct with no other edit. Change \`max\` to \`min\`, or ask *which* trees the answer
+covers, and this version still works while the next one quietly does not.
+
+---`,
+  },
+  {
+    rung: "optimal",
+    title: "A window that never shrinks, only slides",
+    idea: `*The window gains at most one new kind per step — so how many times can that inner loop actually
+need to run?* Once. And more importantly: the answer is a **maximum**, so a window that has gone
+illegal never needs to become legal again — it only needs to never grow wider than the widest legal
+window already seen. Replace the \`while\` with a single \`if\`, drop \`best\` entirely, and read the
+answer off the window's final width.
+
+This fixes Approach 2's weakness — **an inner loop whose linearity must be argued for rather than
+seen, plus a running maximum that duplicates information the window's own geometry already carries.**`,
+    intuition: `> **Intuition.** Think of a frame of fixed width sliding along the row, rather than an elastic band
+> stretching and snapping back. Each step the right edge advances one tree. If the window is still
+> legal the frame **widens** by one; if it is not, the left edge advances too and the frame merely
+> **slides** at its current width. So the frame never narrows, and its width at any moment is the
+> widest legal window found so far. At the end the frame may well be holding an illegal window — that
+> is allowed, and it is the part that feels wrong at first — but the *width* it is carrying was legal
+> at some point, and no wider one ever existed.
+
+> **Why it works.** Two claims, and the second is the one people distrust. **First**, one step adds at
+> most one kind, so at most one corrective step is ever needed and the loop was never a loop. Let
+> \`w = right - left + 1\` be the frame's width. \`right\` advances every step; \`left\` advances only when
+> the window is illegal, so \`w\` never decreases, and it increases only on a step that ended legal.
+> **Second**, the answer is a **maximum**. Every legal window the algorithm passes through is at most
+> \`w\` wide at the moment it is passed, and \`w\` only ever takes values that were legal when they were
+> reached — so \`w\` at the end equals the widest legal window in the whole row. There is no need to
+> restore legality, because nothing is ever measured again: the frame is not a candidate answer, it is
+> a **high-water mark** that happens to be shaped like a window. Ask instead for the *shortest*
+> qualifying window, or for the indices the answer covers, and the frame becomes a lie — which is
+> precisely why Approach 2 is the general one.`,
+    worked: `\`fruits = [1, 2, 3, 2, 2]\`. There is no \`best\` column: the window's width **is** the running answer.
+
+| \`right\` | kind added | \`counts\` after adding | over two kinds? | dropped from the left | \`left\` after | window | width |
+|---|---|---|---|---|---|---|---|
+| 0 | \`1\` | \`{1:1}\` | no | — | 0 | \`[0..0]\` | 1 |
+| 1 | \`2\` | \`{1:1, 2:1}\` | no | — | 0 | \`[0..1]\` | 2 |
+| 2 | \`3\` | \`{1:1, 2:1, 3:1}\` | **yes** | \`fruits[0]=1\` → count 0 → kind \`1\` deleted | 1 | \`[1..2]\` | 2 |
+| 3 | \`2\` | \`{2:2, 3:1}\` | no | — | 1 | \`[1..3]\` | 3 |
+| 4 | \`2\` | \`{2:3, 3:1}\` | no | — | 1 | \`[1..4]\` | **4** |
+
+The answer is \`len(fruits) - left = 5 - 1 = 4\`. Read down the width column: \`1, 2, 2, 3, 4\` — it
+never falls. Row 2 is the slide: the frame stayed two wide while both edges moved, which is exactly
+what "never shrinks" looks like in practice.
+
+Here is the same shape on a row where the frame ends up holding an illegal window, which is the case
+worth seeing at least once. On \`fruits = [1, 1, 1, 2, 3]\` the frame reaches width 4 at \`right = 3\`
+(the legal \`[1,1,1,2]\`), then the \`3\` arrives, the left edge steps once dropping a \`1\`, and the frame
+ends as \`[1..4] = [1, 1, 2, 3]\` — three kinds, illegal, four wide. \`5 - 1 = 4\` is still the right
+answer, because 4 was legal back when it was reached.`,
+    code: `def fruit_baskets_non_shrinking(fruits: list[int]) -> int:
+    counts: dict[int, int] = {}
+    left = 0
+    for right, kind in enumerate(fruits):
+        counts[kind] = counts.get(kind, 0) + 1
+        if len(counts) > 2:
+            # one step only: the window slides rather than shrinking
+            going = fruits[left]
+            counts[going] -= 1
+            if counts[going] == 0:
+                del counts[going]
+            left += 1
+    return len(fruits) - left`,
+    mistake: `> **Watch out.** The misconception is that \`while\` is the cautious choice and \`if\` is merely the
+> optimization, so \`while\` must be safe in either version. It is not. \`while\` belongs with a tracked
+> \`best\`; \`if\` belongs with \`len(fruits) - left\`. Each half is correct only with its own partner, and
+> mixing them silently changes what the return value means.
+
+Keeping the \`while\` from Approach 2 but returning \`len(fruits) - left\` makes the window genuinely
+shrink back to legal at every violation, so the final width is the width of the **last** legal
+window rather than the widest. On the worked example the bug is invisible — it still returns **4**,
+because the last window happens to be the answer. Run it on \`fruits = [1, 1, 1, 2, 3]\` and it
+returns **2** where the answer is **4**: the arrival of the \`3\` drives the left edge through all
+three \`1\`s to index 3, leaving a two-wide window, and the four-wide \`[1,1,1,2]\` was discarded along
+with the \`best\` variable that used to remember it.`,
+    cost: `**Time** \`O(n)\`, **space** \`O(1)\`. The time is linear by inspection now rather than by amortised
+argument — one loop, a fixed amount of work per iteration, no inner loop to reason about. The space
+is a map of at most three entries plus one integer; even \`best\` is gone.
+
+Use it when you want the tightest loop and the question is purely "how wide is the widest". **State
+the assumption it needs**: the answer must be a *maximum*, and only its *width* may be wanted. Break
+either half — ask for the shortest qualifying window, ask which trees the answer covers, ask how many
+maximal windows there are — and the frame is reporting a number about a window that is not legal. In
+an interview, write Approach 2 and offer this as the tightening; that ordering shows you know which
+one is general.
+
+---`,
+  },
+  ],
+  arc: `Everything here turns on one act of recognition — **the baskets are a story and the question is
+"longest run with at most two distinct values"** — and once that substitution is made, the general
+version, at-most-\`K\`-distinct, is the same code with a different number, so \`K = 2\` is only the
+variant with a picture attached. From there every rung is an argument about the **left edge**.
+Restart it at each tree and you are quadratic, because the run from tree 1 covers nearly all the
+ground the run from tree 0 just covered and you carry nothing across; the runs overlap almost
+completely, which is the standard signal that one window can be slid rather than many walks
+repeated. Carry the left edge instead, with a count per kind inside the window, and you are linear
+with an inner loop: extend on the right, and when a third kind appears pull the left edge forward
+until some kind's count reaches zero and it genuinely departs — and it is *that* detail, counts
+rather than presence, that people get wrong, because a kind whose first copy slides out the back may
+still have copies sitting in the middle of the window. Then comes the observation that the inner
+loop can never run more than once, since a single step adds at most one kind, and behind it the
+deeper one: the answer is a **maximum**, so the window never needs to become legal again, only never
+wider than the widest legal window already seen. The loop becomes a single \`if\`, the frame slides
+instead of shrinking, the running maximum dissolves into the window's own width, and the answer is
+read off the geometry at the end — even though the frame may be sitting on an illegal window when
+the row runs out. That last rung is worth understanding rather than memorising, because it is
+exactly as general as its assumption: it is a high-water mark wearing the shape of a window, and the
+moment the question asks for a minimum, or for the answer's location rather than its size, the
+shrinking version is the one that survives.
+
+---`,
+  comparison: {
+      "head": [
+          "Approach",
+          "Time",
+          "Space",
+          "Core trade-off",
+          "Best used when"
+      ],
+      "rows": [
+          [
+              "Try every starting tree",
+              "`O(n²)`",
+              "`O(1)`",
+              "No memory across starts, so overlapping runs are re-walked in full",
+              "`n` is tiny; you need a readable oracle to cross-check the fast versions"
+          ],
+          [
+              "**A window that shrinks until legal**",
+              "**`O(n)`**",
+              "**`O(1)`**",
+              "**Carries the left edge; linearity is amortised rather than visible**",
+              "**The default answer — generalises to at-most-`K`, to minimum-variants, and to \"which indices\"**"
+          ],
+          [
+              "A window that never shrinks",
+              "`O(n)`",
+              "`O(1)`",
+              "Drops the running maximum by letting the frame's width *be* it — valid only for a maximum-width answer",
+              "You want the tightest loop and the question is purely \"how wide\""
+          ]
+      ]
+  },
+  interview: `> **In an interview.** Lead with the translation, not the code: *"the baskets are a story — this is
+> the longest run containing at most two distinct values, and the general version is
+> at-most-\`K\`-distinct."* Then write Approach 2. Two follow-ups are near-certain. **"That's a loop
+> inside a loop, so isn't it \`O(n²)\`?"** — no: \`left\` only ever moves forward, so it takes at most \`n\`
+> steps across the whole run, making both edges \`2n\` together. And **"why do you delete the kind only
+> when the count hits zero?"** — because the window is a *multiset*: a kind whose first copy leaves
+> may still have copies inside.
+
+**Memorize cold — the shrinking window (Approach 2).** This is the expected answer and it should
+take under a minute: a \`dict\` of counts, grow on the right, \`while len(counts) > 2\` shrink on the
+left deleting a kind only at zero, track \`best\`. The single line that carries the most weight is the
+guarded \`del\`; write it deliberately, because it is where the interviewer is looking.
+
+**Memorize cold — the at-most-\`K\` generalisation.** Not separate code, one sentence: *"change the \`2\`
+to a \`K\` and this is at-most-\`K\`-distinct unchanged."* It costs nothing to say and it is the
+difference between having solved a puzzle and having recognised a family. If you are asked the
+longest-substring-with-at-most-two-distinct-characters problem, this is verbatim the same algorithm
+with \`str\` in place of \`list[int]\`.
+
+**Worth understanding, not memorizing — the non-shrinking window (Approach 3).** Know it exists,
+know it is the tightest form, and above all know **why** it is allowed: the answer is a maximum, so
+a window that has become illegal never has to be repaired, and the frame's width is a high-water
+mark. Offer it as a tightening *after* Approach 2. Writing it first invites "what if I asked for the
+shortest such run?" and the honest answer is "I'd rewrite it", which is a worse place to stand than
+having led with the general version.
+
+**Not worth memorizing — the every-start scan.** Say it, name its \`O(n²)\`, reject it on the \`10^5\`
+constraint, and move on; that takes ten seconds and it is the ten seconds that shows you are
+reasoning rather than reciting. Its real job is as the oracle the fast versions are checked against,
+which is exactly what it does below.
+
+---`,
+  scriptNote: `Every approach above, plus a test suite covering all three statement examples, the smallest legal
+input, a row of a single kind, a row where every tree differs, the deep-shrink case
+\`[1, 1, 1, 2, 3]\` that separates \`if\` from \`while\`, the \`[1, 2, 1, 3, 3, 3]\` case that separates
+counts from presence, and 80 randomised stress cases over three- and five-kind alphabets — all
+cross-checked against the every-start oracle and against each other. There is no "no valid answer"
+case: every row has at least one tree, so the answer is never below \`1\`.`,
+  script: `"""The Longest Run of Two Kinds - every approach in one file, plus a self-checking test suite.
+
+Run: python fruit_baskets_all.py
+"""
+
+from __future__ import annotations
+
+import random
+
+
+# --- 1. Try every starting tree ------------------------------------------------
+
+def fruit_baskets_every_start(fruits: list[int]) -> int:
+    best = 0
+    for start in range(len(fruits)):
+        kinds: set[int] = set()
+        end = start
+        while end < len(fruits):
+            kinds.add(fruits[end])
+            if len(kinds) > 2:
+                break
+            end += 1
+        best = max(best, end - start)
+    return best
+
+
+# --- 2. A window that shrinks until it is legal --------------------------------
+
+def fruit_baskets_shrinking_window(fruits: list[int]) -> int:
+    counts: dict[int, int] = {}
+    best = 0
+    left = 0
+    for right, kind in enumerate(fruits):
+        counts[kind] = counts.get(kind, 0) + 1
+        while len(counts) > 2:
+            going = fruits[left]
+            counts[going] -= 1
+            if counts[going] == 0:
+                del counts[going]  # a kind leaves only when its COUNT hits zero
+            left += 1
+        best = max(best, right - left + 1)
+    return best
+
+
+# --- 3. A window that never shrinks, only slides (optimal) --------------------
+
+def fruit_baskets_non_shrinking(fruits: list[int]) -> int:
+    counts: dict[int, int] = {}
+    left = 0
+    for right, kind in enumerate(fruits):
+        counts[kind] = counts.get(kind, 0) + 1
+        if len(counts) > 2:
+            # one step only: the window slides rather than shrinking
+            going = fruits[left]
+            counts[going] -= 1
+            if counts[going] == 0:
+                del counts[going]
+            left += 1
+    return len(fruits) - left
+
+
+APPROACHES = [
+    ("every_start", fruit_baskets_every_start),
+    ("shrinking_window", fruit_baskets_shrinking_window),
+    ("non_shrinking", fruit_baskets_non_shrinking),
+]
+
+
+# --- test suite ----------------------------------------------------------------
+
+def main() -> None:
+    # every row of trees has at least one pickable fruit, so there is no
+    # "no valid answer" case for this problem — the smallest answer is 1
+    cases: list[tuple[str, list[int]]] = [
+        ("statement example, the deep-shrink corner", [1, 2, 3, 2, 2]),
+        ("two kinds, the whole row", [1, 2, 1]),
+        ("the start matters", [0, 1, 2, 2]),
+        ("smallest legal input", [7]),
+        ("one kind only", [3, 3, 3, 3]),
+        ("every tree a different kind", [1, 2, 3, 4, 5]),
+        ("a long first kind then a third", [1, 1, 1, 2, 3]),
+        ("the third kind never returns", [1, 2, 1, 3, 3, 3]),
+        ("answer is the whole row", [5, 5, 9, 9, 5, 9]),
+    ]
+
+    rng = random.Random(20260912)
+    for n in range(1, 41):
+        cases.append((f"stress n={n} 3 kinds", [rng.randint(0, 2) for _ in range(n)]))
+        cases.append((f"stress n={n} 5 kinds", [rng.randint(0, 4) for _ in range(n)]))
+
+    width = max(len(name) for name, _ in APPROACHES)
+    all_agreed = True
+
+    for label, fruits in cases:
+        shown = fruits if len(fruits) <= 12 else fruits[:12] + ["..."]
+        print(f"\\n{label}: fruits={shown}")
+        results = []
+        for name, fn in APPROACHES:
+            got = fn(list(fruits))  # its own copy, so no approach can corrupt the next
+            results.append(got)
+            print(f"  {name:<{width}} -> {got}")
+        if any(r != results[0] for r in results):
+            all_agreed = False
+            print("  DISAGREEMENT")
+
+    print(f"\\n{len(cases)} cases, {len(APPROACHES)} approaches.")
+    print(
+        "ALL APPROACHES AGREED ON EVERY CASE."
+        if all_agreed
+        else "MISMATCH: the approaches did NOT all agree."
+    )
+
+
+if __name__ == "__main__":
+    main()`,
+}
+
+export default doc

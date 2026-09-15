@@ -29,24 +29,28 @@ import { RowNudge } from "@/components/ui/row"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
+import { PROBLEMS } from "@/data"
 import type { Code, Pattern, Problem } from "@/data"
 import { toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import type { AnyJourney } from "@/engine"
 import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
-import { ladderOf, leetcodeUrl } from "@/lib/ladder"
+import { compareHref, ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
 import type { Ladder, Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
-import { href } from "@/lib/route"
+import { href, navigate, useRoute } from "@/lib/route"
 import { hasDeepDoc, hasLearnPage } from "@/lib/learn-pages"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { CodeBlock } from "./code-block"
+import { ApproachCompare } from "./approach-compare"
 import { difficultyClass } from "@/lib/difficulty"
 import { setPref, usePrefs } from "@/lib/store"
 import { StepPlayer } from "./step-player"
 
 interface Props {
-  problem: Problem
+  /** the id, not the record: this component is lazy, so it resolves the record
+   *  from its own chunk rather than having the shell import all 127 to pass one */
+  problemId: string
   pattern: Pattern
   onBack: () => void
 }
@@ -100,9 +104,12 @@ function ApproachLadder({
   problem,
   journey,
   ladder,
+  onCompare,
 }: {
   problem: Problem
   journey?: AnyJourney
+  /** open `?compare=a,b` — offered only between rungs the ledger has earned */
+  onCompare: (value: string) => void
   /** computed by the PAGE, not here: the header needs `capped` too, to decide
    *  whether the full-explanation door may be opened, and computing the same
    *  ladder twice is how two controls drift into disagreeing about the ledger */
@@ -175,6 +182,16 @@ function ApproachLadder({
                 {String(i + 1).padStart(2, "0")}
               </span>
               <b className="text-body">{r.name}</b>
+              {/* B79. A rung the teaching document teaches and the journey
+                  skips — a baseline the animation has no reason to walk, or a
+                  variant it argues against. Marked rather than hidden: a
+                  learner should be able to tell which rungs they were walked
+                  through and which are being handed over as reading. */}
+              {r.aside && (
+                <span className="rounded-sm border border-chart-4/45 bg-chart-4/10 px-1.5 font-mono text-meta text-chart-4">
+                  reading only
+                </span>
+              )}
               {/* the second channel on the whole ladder: read DOWN the rungs
                   and the bars visibly shrink. That climb is what the prose
                   between the rungs is describing, and this is it drawn. */}
@@ -187,6 +204,18 @@ function ApproachLadder({
               {r.idea}
             </p>
             <RungCode code={r.code} />
+            {/* The pair worth comparing is this rung and the one it answers:
+                `whyNow` right above makes a claim about exactly that step, and
+                this is the button that shows it. Never on the first rung,
+                which has nothing below it. */}
+            {i > 0 && (
+              <button
+                onClick={() => onCompare(compareHref(rungs[i - 1], r))}
+                className="inline-flex min-h-11 w-fit items-center font-mono text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-7"
+              >
+                compare with {rungs[i - 1].name.toLowerCase()} &rarr;
+              </button>
+            )}
           </div>
         ))}
         {/* The idea the whole ladder shares, after the rungs that earned it.
@@ -218,7 +247,29 @@ function ApproachLadder({
   )
 }
 
-export function ProblemDetail({ problem, pattern, onBack }: Props) {
+/**
+ * Resolves the record, then renders it.
+ *
+ * Split in two so the lookup can return early without sitting between hooks —
+ * the id is checked against the manifest before this route renders, so the miss
+ * is unreachable, but a manifest that has drifted should show a page rather
+ * than break the rules of hooks.
+ */
+export function ProblemDetail({ problemId, pattern, onBack }: Props) {
+  const problem = PROBLEMS.find((p) => p.id === problemId)
+  if (!problem) return null
+  return <ProblemPage problem={problem} pattern={pattern} onBack={onBack} />
+}
+
+function ProblemPage({
+  problem,
+  pattern,
+  onBack,
+}: {
+  problem: Problem
+  pattern: Pattern
+  onBack: () => void
+}) {
   const solved = useSolved()
   const journey = journeyForProblem(problem.id)
   const steps = journey ? undefined : problem.walkthrough?.length
@@ -239,6 +290,59 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
   )
   const ladder = ladderOf(problem, journey, unlocked)
   const deep = hasDeepDoc(problem.id)
+  // `?compare=a,b` is state that belongs in the URL: the comparison is a claim
+  // worth sending to someone, and the back button should undo it. Resolved
+  // against the rungs the LADDER returned, never against the problem, so a
+  // hand-typed key cannot walk past the ledger's cap.
+  const { path, query } = useRoute()
+  const pair = parseCompare(query.get("compare"), ladder.rungs)
+  // `navigate`, not `replaceQuery`: the comparison has to be a history entry or
+  // Back cannot undo it, and Back is the only way out a reader will guess.
+  // Measured in a real browser first — `replaceQuery` uses `history.replaceState`
+  // and left the reader with no way back to the ladder but the button.
+  const compare = (value: string) => {
+    navigate(path, value ? { compare: value } : {})
+    window.scrollTo({ top: 0 })
+  }
+
+  // `?compare=` is a FOCUSED view, not a section appended to the page.
+  //
+  // The first cut rendered the comparator at the foot, below the statement,
+  // the hints and the walkthrough — so pressing "compare with the visited set"
+  // scrolled you to the top of a problem statement you had already read, with
+  // the thing you asked for four screens down. Looked at in a real browser
+  // before this was noticed; nothing about the code said it was wrong.
+  //
+  // A reader who asks to compare two rungs is asking one question. Answer it,
+  // keep the orient bar so they know where they are, and let Back return the
+  // page. Everything else on this page is the context they just came from.
+  if (pair)
+    return (
+      <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
+        <OrientBar>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => compare("")}
+            className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
+          >
+            <ArrowLeftIcon data-icon="inline-start" />
+            {problem.title}
+          </Button>
+          <Fact label="comparing">
+            <span className="font-mono">
+              {pair[0].key} · {pair[1].key}
+            </span>
+          </Fact>
+        </OrientBar>
+        <ApproachCompare
+          pair={pair}
+          rungs={ladder.rungs}
+          onPick={compare}
+          onBack={() => compare("")}
+        />
+      </div>
+    )
 
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-8">
@@ -440,7 +544,12 @@ export function ProblemDetail({ problem, pattern, onBack }: Props) {
         </Band>
       )}
 
-      <ApproachLadder problem={problem} journey={journey} ladder={ladder} />
+      <ApproachLadder
+        problem={problem}
+        journey={journey}
+        ladder={ladder}
+        onCompare={compare}
+      />
     </div>
   )
 }

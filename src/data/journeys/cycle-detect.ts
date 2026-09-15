@@ -408,7 +408,7 @@ export const cycleDetect = deriveJourney<number>(problem, {
       key: "set",
       name: "Write down where you have been",
       short: "the honest one",
-      from: 0,
+      from: "set",
       insight: "",
       idea: "Keep a set of the nodes already visited. Walk the list; the first time a node is already in the set, that is the cycle. Reaching ∅ means there was none.",
       takeaways: [

@@ -16,6 +16,7 @@ import {
   RouteIcon,
   SettingsIcon,
   SigmaIcon,
+  LibraryIcon,
   SlidersHorizontalIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -36,8 +37,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { PATTERNS, PROBLEMS, problemsByPattern } from "@/data"
-import { JOURNEYS } from "@/engine"
+// The MANIFEST for the problem list, the real `PATTERNS` for the pattern rows.
+// This surface needs a title, an id and a difficulty per problem; the records
+// carry statements, hints, constraints and code in three languages, and putting
+// them in the first chunk to render a sidebar is what B95 measured.
+// `@/data` is the barrel that builds PROBLEMS from all ten pattern folders —
+// importing PATTERNS through it pulls every record in. Take it from its own module.
+import { PATTERNS } from "@/data/patterns"
+import {
+  CATALOGUE as PROBLEMS,
+  cardsOfPattern as problemsByPattern,
+} from "@/data/manifest"
+// The MANIFEST, not the registry. This surface lists journeys — slug, title,
+// how many there are — and reading that off `JOURNEYS` pulled all 93 acts,
+// frame generators, presets and prose into the first chunk to render a list.
+// Measured before: `engine-*.js` was 568 KB gzipped of the 747 KB first load.
+import { JOURNEY_CARDS as JOURNEYS } from "@/engine/manifest"
 import { openDialog } from "@/lib/dialogs"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import type { Mask } from "@/lib/disclosure"
@@ -109,6 +124,7 @@ function whereAmI(parts: string[], mask: Mask): string {
     if (problem) return `DSA · ${name} · ${problem.title}`
     return `DSA · pattern · ${name}`
   }
+  if (root === "resources") return "DSA · resources"
   if (root === "sql") return "SQL · drills"
   if (root === "flashcards") return "Data science · stats flashcards"
   return "home"
@@ -262,6 +278,20 @@ export function AppSidebar({ view }: { view: string }) {
                 >
                   <SlidersHorizontalIcon className="size-3.5 shrink-0 text-chart-2" />
                   <span className="truncate">Algorithm visualizer</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* B85. Not under "DSA · patterns" below: that group is a list of
+                  patterns to PRACTISE, and this is one page about all of them.
+                  It sits beside the visualizer, which is the other reference
+                  surface that is not a problem list. */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<a href={href("/resources")} />}
+                  isActive={view === "resources"}
+                  tooltip="Resources"
+                >
+                  <LibraryIcon className="size-3.5 shrink-0 text-chart-2" />
+                  <span className="truncate">Resources</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -8,7 +8,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/stack/balanced-brackets.ts"
+import { problem } from "../../problems/balanced-brackets/index.ts"
 
 type C = Data<string>
 
@@ -369,7 +369,7 @@ export const balancedBrackets = deriveJourney<string>(problem, {
       key: "delete",
       name: "Rub out the pairs",
       short: "the honest one",
-      from: 0,
+      from: "delete",
       insight: "",
       idea: 'Repeatedly delete every adjacent matching pair — "()", "[]", "{}" — until the string stops changing. If nothing is left, it was balanced.',
       takeaways: [

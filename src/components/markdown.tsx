@@ -14,6 +14,7 @@ import type { Block, Span } from "@/lib/markdown"
 import { inlineSpans, slugify } from "@/lib/markdown"
 import { cn } from "@/lib/utils"
 import { CodeBlock } from "./code-block"
+import { RunnableCode } from "./runnable-code"
 
 function Inline({ text }: { text: string }) {
   return (
@@ -73,7 +74,34 @@ const ACCENT: Record<string, string> = {
 }
 const DEFAULT_ACCENT = "border-chart-1/60"
 
-export function Markdown({ blocks }: { blocks: Block[] }) {
+export function Markdown({
+  blocks,
+  runnable = false,
+}: {
+  blocks: Block[]
+  /**
+   * B82/B83. Give every ```python fence a Run button, and the LAST one an
+   * editor as well.
+   *
+   * Why the last one: by the house format (`docs/deep/README.md`) a teaching
+   * document ends in its "Full Runnable Script" — every approach in the
+   * document plus a differential test over random inputs — and that is the
+   * block `scripts/verify-deep.mjs` extracts and executes on every pull
+   * request. It is the one block a reader wants to change, because it already
+   * contains everything. The fences above it are excerpts of it.
+   *
+   * Off by default: this is a property of the LEARN PAGE corpus, not of
+   * markdown. A fence in a dialog is illustration.
+   */
+  runnable?: boolean
+}) {
+  // which fence is the full script — the last python one, and only when the
+  // document actually has more than one (a generated page with a single fence
+  // has no "script at the foot", it has a code sample)
+  const pythonAt = blocks.flatMap((b, i) =>
+    b.kind === "code" && /^py(thon)?$/i.test(b.lang) ? [i] : []
+  )
+  const scriptAt = pythonAt.length > 1 ? pythonAt[pythonAt.length - 1] : -1
   // min-w-0: a flex child sizes to `min-width: auto` by default, so the widest
   // comparison table would push this column open and take the whole page
   // sideways with it. Measured at 1440: scrollWidth 1440 against clientWidth
@@ -139,6 +167,16 @@ export function Markdown({ blocks }: { blocks: Block[] }) {
           // scrolls sideways. Width zero with a percentage minimum renders
           // full width while contributing nothing to the parent's min-content.
           case "code":
+            if (runnable && /^py(thon)?$/i.test(block.lang))
+              return (
+                <RunnableCode
+                  key={i}
+                  id={`block-${i}`}
+                  code={block.code}
+                  editable={i === scriptAt}
+                  className="w-0 min-w-full"
+                />
+              )
             return <CodeBlock key={i} code={block.code} className="w-0 min-w-full" />
 
           case "table":

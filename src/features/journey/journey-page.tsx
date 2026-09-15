@@ -20,6 +20,7 @@ import {
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { journeyBySlug } from "@/engine"
 import type { AnyJourney } from "@/engine"
 import { PATTERNS, PROBLEMS } from "@/data"
 import { href } from "@/lib/route"
@@ -77,7 +78,27 @@ function ReadingToggle({ open }: { open: boolean }) {
   )
 }
 
-export function JourneyPage({ journey }: { journey: AnyJourney }) {
+/**
+ * Takes a SLUG, not a journey.
+ *
+ * `App.tsx` decides whether the route exists by asking the manifest, and hands
+ * over the slug; this component — which is lazy — resolves the real journey
+ * from the registry. That one indirection is what keeps `@/engine` out of the
+ * first chunk: before it, App imported `journeyBySlug` to answer "is this a
+ * route", and answering it dragged all 93 journeys, their frame generators and
+ * their prose into the shell. Measured at 567.7 KB over the wire.
+ *
+ * The slug is checked against the manifest before this renders, so the lookup
+ * cannot miss — but it is guarded anyway rather than asserted, because a
+ * manifest that has drifted should show a page, not throw.
+ */
+export function JourneyPage({ slug }: { slug: string }) {
+  const journey = journeyBySlug(slug)
+  if (!journey) return null
+  return <JourneyView journey={journey} />
+}
+
+function JourneyView({ journey }: { journey: AnyJourney }) {
   const j = useJourney(journey)
   const problem = PROBLEMS.find((p) => p.id === journey.problemId)
   const pattern = problem && PATTERNS.find((p) => p.id === problem.pattern)

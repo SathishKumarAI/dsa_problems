@@ -34,8 +34,10 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { Difficulty, Pattern } from "@/data"
-import { problemsByPattern } from "@/data"
-import { journeyForProblem } from "@/engine"
+import { cardsOfPattern as problemsByPattern } from "@/data/manifest"
+// the manifest answers "does this problem have a journey"; the journey itself
+// belongs to `#/journey/<slug>` and is fetched there
+import { cardForProblem as journeyForProblem } from "@/engine/manifest"
 import { difficultyClass } from "@/lib/difficulty"
 import {
   MASKED_GLYPH,
