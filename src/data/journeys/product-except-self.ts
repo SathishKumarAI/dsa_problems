@@ -166,7 +166,7 @@ function* twoSweeps({ nums }: N): Generator<DFrame> {
 export const productExceptSelf = deriveJourney(problem, {
   slug: "product-of-the-others",
   subtitle: "what the ban on division is really teaching you",
-  reveals: ["arrays-hashing"],
+  reveals: ["arrays-hashing", "prefix-sums"],
   defaultPreset: "example",
   harder: { preset: "long", label: "a longer row" },
   presets: {

@@ -33,9 +33,14 @@ the build when one is absent or a stub. The rest are still Markdown in
 - **Binary Search** (4): koko-bananas, find-peak-element, k-closest-values, ship-in-d-days
 - **Linked List** (4): add-two-numbers, odd-even-list, reorder-list, rotate-list
 - **Trees** (1): bst-ancestor
-- **Heaps** (9): kth-largest-stream, k-closest-points, task-cooldown, last-stone-weight, kth-largest-element, sort-by-frequency, kth-smallest-matrix, top-k-frequent-words, ugly-number
-- **Graphs** (11): island-count, course-order, rotting-fruit, max-island-area, word-search, count-provinces, network-delay, surrounded-regions, flood-fill, pacific-atlantic, shortest-path-grid
-- **Dynamic Programming** (14): stair-ways, house-robber, coin-change-min, longest-increasing-run, max-subarray, longest-common-subsequence, counting-bits, partition-equal-subset, unique-paths, word-break, min-cost-stairs, decode-ways, jump-game, max-product-subarray
+- **Heaps** (8): k-closest-points, task-cooldown, last-stone-weight, kth-largest-element, sort-by-frequency, kth-smallest-matrix, top-k-frequent-words, ugly-number
+- **Graphs** (9): island-count, course-order, rotting-fruit, max-island-area, network-delay, surrounded-regions, flood-fill, pacific-atlantic, shortest-path-grid
+- **Dynamic Programming** (12): stair-ways, house-robber, coin-change-min, longest-increasing-run, max-subarray, longest-common-subsequence, partition-equal-subset, unique-paths, word-break, min-cost-stairs, decode-ways, max-product-subarray
+- **Greedy** (1): jump-game
+- **Bit Manipulation** (1): counting-bits
+- **Backtracking** (1): word-search
+- **Union-Find** (1): count-provinces
+- **Design** (1): kth-largest-stream
 
 ## Documents that add approaches without saying so — 0
 
@@ -53,24 +58,24 @@ None.
 | [pair-sum](learn/pair-sum.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [top-k-frequent](learn/top-k-frequent.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [longest-consecutive-run](learn/longest-consecutive-run.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [single-number](learn/single-number.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [single-number](learn/single-number.md) | bit-manipulation | yes | · | · | · | · | · | · |
 | [contains-duplicate](learn/contains-duplicate.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [valid-anagram](learn/valid-anagram.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [product-except-self](learn/product-except-self.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [product-except-self](learn/product-except-self.md) | prefix-sums | yes | · | · | · | · | · | · |
 | [group-anagrams](learn/group-anagrams.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [subarray-sum-k](learn/subarray-sum-k.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [subarray-sum-k](learn/subarray-sum-k.md) | prefix-sums | yes | · | · | · | · | · | · |
 | [majority-element](learn/majority-element.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [longest-common-prefix](learn/longest-common-prefix.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [isomorphic-strings](learn/isomorphic-strings.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [find-all-duplicates](learn/find-all-duplicates.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [first-missing-positive](learn/first-missing-positive.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [intersection-of-arrays](learn/intersection-of-arrays.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [missing-number](learn/missing-number.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [missing-number](learn/missing-number.md) | bit-manipulation | yes | · | · | · | · | · | · |
 | [plus-one](learn/plus-one.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [rotate-array](learn/rotate-array.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [summary-ranges](learn/summary-ranges.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [spiral-order](learn/spiral-order.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
-| [zero-matrix](learn/zero-matrix.md) | arrays-hashing | yes | · | · | · | · | · | · |
+| [summary-ranges](learn/summary-ranges.md) | intervals | yes | · | · | · | · | · | · |
+| [spiral-order](learn/spiral-order.md) | matrix | yes | **no** | **no** | **no** | · | · | · |
+| [zero-matrix](learn/zero-matrix.md) | matrix | yes | · | · | · | · | · | · |
 | [sorted-pair-sum](learn/sorted-pair-sum.md) | two-pointers | yes | · | · | · | · | · | · |
 | [container-water](learn/container-water.md) | two-pointers | yes | · | · | · | · | · | · |
 | [three-sum-zero](learn/three-sum-zero.md) | two-pointers | yes | · | · | · | · | · | · |
@@ -88,7 +93,7 @@ None.
 | [backspace-compare](learn/backspace-compare.md) | two-pointers | yes | · | · | · | · | · | · |
 | [boats-to-save](learn/boats-to-save.md) | two-pointers | yes | · | · | · | · | · | · |
 | [next-permutation](learn/next-permutation.md) | two-pointers | yes | · | · | · | · | · | · |
-| [best-trade](learn/best-trade.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
+| [best-trade](learn/best-trade.md) | greedy | yes | **no** | **no** | **no** | · | · | · |
 | [longest-unique-substring](learn/longest-unique-substring.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [min-cover-substring](learn/min-cover-substring.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [char-replacement](learn/char-replacement.md) | sliding-window | yes | · | · | · | · | · | · |
@@ -102,7 +107,7 @@ None.
 | [daily-warmer](learn/daily-warmer.md) | stack | yes | · | · | · | · | · | · |
 | [largest-rectangle](learn/largest-rectangle.md) | stack | yes | · | · | · | · | · | · |
 | [rpn-eval](learn/rpn-eval.md) | stack | yes | · | · | · | · | · | · |
-| [generate-parens](learn/generate-parens.md) | stack | yes | **no** | **no** | **no** | · | · | · |
+| [generate-parens](learn/generate-parens.md) | backtracking | yes | **no** | **no** | **no** | · | · | · |
 | [asteroid-collision](learn/asteroid-collision.md) | stack | yes | **no** | **no** | **no** | · | · | · |
 | [valid-parenthesis-string](learn/valid-parenthesis-string.md) | stack | yes | **no** | **no** | **no** | · | · | · |
 | [decode-string](learn/decode-string.md) | stack | yes | **no** | **no** | **no** | · | · | · |
@@ -143,7 +148,7 @@ None.
 | [mirror-tree](learn/mirror-tree.md) | trees | yes | · | · | · | · | · | · |
 | [right-side-view](learn/right-side-view.md) | trees | yes | · | · | · | · | · | · |
 | [tree-diameter](learn/tree-diameter.md) | trees | yes | · | · | · | · | · | · |
-| [kth-largest-stream](learn/kth-largest-stream.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [kth-largest-stream](learn/kth-largest-stream.md) | design | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [k-closest-points](learn/k-closest-points.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [task-cooldown](learn/task-cooldown.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [last-stone-weight](learn/last-stone-weight.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
@@ -156,8 +161,8 @@ None.
 | [course-order](learn/course-order.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [rotting-fruit](learn/rotting-fruit.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [max-island-area](learn/max-island-area.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [word-search](learn/word-search.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [count-provinces](learn/count-provinces.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [word-search](learn/word-search.md) | backtracking | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [count-provinces](learn/count-provinces.md) | union-find | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [network-delay](learn/network-delay.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [surrounded-regions](learn/surrounded-regions.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [flood-fill](learn/flood-fill.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
@@ -169,11 +174,11 @@ None.
 | [longest-increasing-run](learn/longest-increasing-run.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [max-subarray](learn/max-subarray.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [longest-common-subsequence](learn/longest-common-subsequence.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [counting-bits](learn/counting-bits.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [counting-bits](learn/counting-bits.md) | bit-manipulation | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [partition-equal-subset](learn/partition-equal-subset.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [unique-paths](learn/unique-paths.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [word-break](learn/word-break.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [min-cost-stairs](learn/min-cost-stairs.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [decode-ways](learn/decode-ways.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [jump-game](learn/jump-game.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [jump-game](learn/jump-game.md) | greedy | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [max-product-subarray](learn/max-product-subarray.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |

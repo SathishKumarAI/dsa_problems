@@ -9,7 +9,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/graphs/count-provinces.ts"
+import { problem } from "../../problems/count-provinces/index.ts"
 
 type M = Data<number> & { cols: number }
 
@@ -285,7 +285,7 @@ export const countProvinces = deriveJourney<number>(problem, {
   slug: "who-belongs-with-whom",
   subtitle:
     "merge the ends of every edge, then count who is left standing alone",
-  reveals: ["graphs"],
+  reveals: ["graphs", "union-find"],
   defaultPreset: "example",
   harder: { preset: "long", label: "more cities" },
   params: [{ key: "cols", label: "cities (n)" }],

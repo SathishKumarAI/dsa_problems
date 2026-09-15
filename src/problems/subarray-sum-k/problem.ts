@@ -9,7 +9,7 @@ export const id = "subarray-sum-k"
 
 export const title = "How Many Subarrays Sum to k?"
 
-export const pattern = "arrays-hashing"
+export const pattern = "prefix-sums"
 
 export const difficulty: Difficulty = "medium"
 

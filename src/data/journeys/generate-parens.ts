@@ -9,7 +9,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/stack/generate-parens.ts"
+import { problem } from "../../problems/generate-parens/index.ts"
 
 type N = Data<number>
 
@@ -192,7 +192,7 @@ function* prune({ nums }: N): Generator<DFrame> {
 export const generateParens = deriveJourney<number>(problem, {
   slug: "never-build-what-cannot-work",
   subtitle: "check the rule when you choose, not when you finish",
-  reveals: ["stack"],
+  reveals: ["stack", "backtracking"],
   defaultPreset: "example",
   harder: { preset: "four", label: "n = 4" },
   classify: (d) => {

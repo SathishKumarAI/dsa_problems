@@ -177,7 +177,7 @@ function* counts({ nums, k }: N): Generator<DFrame> {
 export const subarraySumK = deriveJourney(problem, {
   slug: "stretches-that-sum-to-k",
   subtitle: "why a window fails, and what a tally of totals replaces it with",
-  reveals: ["arrays-hashing"],
+  reveals: ["arrays-hashing", "prefix-sums"],
   defaultPreset: "example",
   harder: { preset: "long", label: "a longer row" },
   params: [{ key: "k", label: "k" }],

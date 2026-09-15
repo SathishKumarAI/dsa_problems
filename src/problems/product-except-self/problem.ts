@@ -9,7 +9,7 @@ export const id = "product-except-self"
 
 export const title = "Product of Everything Else"
 
-export const pattern = "arrays-hashing"
+export const pattern = "prefix-sums"
 
 export const difficulty: Difficulty = "medium"
 

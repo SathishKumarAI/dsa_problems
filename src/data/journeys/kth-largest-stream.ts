@@ -9,7 +9,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/heaps/kth-largest-stream.ts"
+import { problem } from "../../problems/kth-largest-stream/index.ts"
 
 type S = Data<number> & { k: number }
 
@@ -316,7 +316,7 @@ function* minHeap({ nums, k }: S): Generator<DFrame> {
 export const kthLargestStream = deriveJourney<number>(problem, {
   slug: "the-smallest-of-the-big-ones",
   subtitle: "hold k values, throw the rest away as they arrive",
-  reveals: ["heaps"],
+  reveals: ["heaps", "design"],
   defaultPreset: "example",
   harder: { preset: "long", label: "a longer stream" },
   params: [{ key: "k", label: "k" }],

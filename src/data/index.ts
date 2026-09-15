@@ -1,4 +1,11 @@
 // Aggregates all content. Components import from here only.
+//
+// The ten arrays below are LOAD LISTS, not the grouping. A problem belongs to
+// the pattern its own `pattern` field names — `problemsByPattern` filters on
+// that field and nothing reads the array a record arrived in. So a record
+// filed under `problems/arrays-hashing/` may well be a prefix-sums problem,
+// and re-filing one is a one-word edit rather than a file move. There are 18
+// patterns and ten lists, and that is not a bug.
 import type { Problem } from "./types.ts"
 import { PATTERNS } from "./patterns.ts"
 import { arraysHashing } from "./problems/arrays-hashing/index.ts"

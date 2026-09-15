@@ -29,6 +29,11 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## The pedagogy (do not regress this)
 
+- **127 problems, 93 journeys, 18 patterns.** Every pattern owns at least one problem and a
+  playbook of at least four moves — `problems.test.ts` fails on either being empty, because a
+  pattern costs one line to add and the page renders a heading over white space without them.
+  A problem's pattern is its own `pattern` FIELD; `src/data/problems/<pattern>/` is a load
+  list, not the grouping, so re-filing one is a one-word edit.
 - **127 problems, 93 journeys.** The other **34** ship a static walkthrough instead, and
   `problems.test.ts` forbids carrying both — so a journey written for one of them DELETES that
   problem's `walkthrough` in the same commit (B63).

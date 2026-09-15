@@ -7,7 +7,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/dp/counting-bits.ts"
+import { problem } from "../../problems/counting-bits/index.ts"
 
 type N = Data<number>
 
@@ -211,7 +211,7 @@ function* oneShift({ nums }: N): Generator<DFrame> {
 export const countingBits = deriveJourney<number>(problem, {
   slug: "drop-a-bit-land-on-an-answer",
   subtitle: "shifting right lands on a smaller number you already solved",
-  reveals: ["dp"],
+  reveals: ["dp", "bit-manipulation"],
   defaultPreset: "example",
   harder: { preset: "long", label: "up to 16" },
   classify: (d) => {
