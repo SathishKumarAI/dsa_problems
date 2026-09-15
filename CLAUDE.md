@@ -9,6 +9,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 |---|---|
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
+| **Everything about one problem, on one page** | `#/p/<pattern>/<id>` — there is no second route. The long explanation is a section at the foot (`#explanation`), gated by the same `capped` flag as the ladder and the arc. `#/learn/<id>` redirects. Sections: `lib/teaching-parts.ts` (data) → `components/teaching-doc.tsx` (markup) |
 | **Everything about one problem, in one directory** | `src/problems/<id>/` — the record (`problem.ts`, `hints.ts`, `solutions.ts`) and the teaching document (`understanding.ts`, `traps.ts`, `approaches/<rung>.ts`, `arc.ts`, `interview.ts`, `script.ts`) side by side. Map: `src/problems/README.md`. **Two entry files on purpose**: `index.ts` is the record and is EAGER, `doc.ts` is the document and is LAZY — nothing eager may reach a doc file. 14 of 82 converted; the rest are still `docs/deep/<id>_explained.md` spliced into the generated `docs/learn/<id>.md` (`npm run docs:learn`). The page shows the ending, so the app links it only when the ladder is not capped |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
@@ -91,6 +92,12 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   function that tests `ch == '{'`, so it reported **"no function to call"** and skipped both
   translations of a whole rung — a shrug, not a failure. Both strip character and string literals
   before counting now. The repo's own rule says it: to find code, parse it, do not count braces.
+
+- **The explanation is on the problem page, so nothing may be said twice.** `gen-learn.mjs`
+  used to emit the title, the statement, the constraints, the examples, the hints and every
+  rung in three languages, because `#/learn/<id>` was a page that had to stand alone. All six
+  are on the screen above it now. `scripts/gen-learn.test.mjs` fails the build if any of them
+  comes back — strip fences before that check, or a Python comment reads as a heading.
 
 - **React Compiler lint rules** (`react-hooks` v7): no sync `setState` in effects, no ref reads in
   render, no mutating frames. Use render-time adjusts (`if (x !== prev) { setPrev(x); … }`) or

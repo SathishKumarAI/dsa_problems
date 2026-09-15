@@ -15,7 +15,7 @@ import { cardOf } from "@/data/manifest"
 // the MANIFEST answers "is this a route"; the journey itself arrives with the
 // route's own chunk. Asking `@/engine` this question cost 567.7 KB in the shell.
 import { cardBySlug } from "@/engine/manifest"
-import { Suspense, lazy } from "react"
+import { Suspense, lazy, useEffect } from "react"
 import { navigate, useRoute } from "@/lib/route"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
@@ -38,12 +38,26 @@ const AlgorithmsPage = lazy(() =>
     default: m.AlgorithmsPage,
   }))
 )
-// the learn pages are fetched per problem, so the reader itself is lazy too
-const LearnPageView = lazy(() =>
-  import("@/components/learn-page-view").then((m) => ({
-    default: m.LearnPageView,
-  }))
-)
+/**
+ * `#/learn/<id>` -> the problem page, scrolled to the explanation.
+ *
+ * A component rather than a call at the match site: navigating during render
+ * is a side effect, and React may render a route more than once. The effect
+ * runs after commit, and `location.hash` is the app's router — assigning it is
+ * the navigation.
+ *
+ * The scroll is separate from the route change because the section is at the
+ * foot of a page that has not rendered yet, and its content is FETCHED. So the
+ * anchor rides along in the hash and `problem-detail` honours it once the
+ * explanation is on screen.
+ */
+function LearnRedirect({ id, pattern }: { id: string; pattern: string }) {
+  useEffect(() => {
+    navigate(`/p/${pattern}/${id}`, { read: "explanation" })
+  }, [id, pattern])
+  return <Loading />
+}
+
 const Loading = () => (
   <div className="flex items-center justify-center gap-2 py-16 text-ui text-muted-foreground">
     <LoaderCircleIcon className="size-4 animate-spin" aria-hidden />
@@ -93,7 +107,15 @@ function View() {
     if (card) return <JourneyPage key={card.slug} slug={card.slug} />
   }
   if (root === "algorithms") return <AlgorithmsPage />
-  if (root === "learn" && a) return <LearnPageView key={a} id={a} />
+  // `#/learn/<id>` was the explanation's own route until it became a section
+  // of the problem page. Kept as a REDIRECT rather than dropped: the id is in
+  // every link written before the merge, in the repo's own documents, and in
+  // whatever anyone bookmarked. It lands on the problem page and jumps to the
+  // explanation; a `learn/` id that names no problem falls through to 404.
+  if (root === "learn" && a) {
+    const card = cardOf(a)
+    if (card) return <LearnRedirect id={card.id} pattern={card.pattern} />
+  }
   if (root === "resources") return <ResourcesView />
   if (root === "sql") return <SqlView />
   if (root === "flashcards") return <FlashcardsView />
