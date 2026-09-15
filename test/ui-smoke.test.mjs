@@ -107,7 +107,7 @@ describe(
     // ---------- 1. every route renders, console stays clean ----------
 
     const routes = [
-      ["home", "#/", "dsa.patterns"],
+      ["home", "#/", "Patternsmith"],
       ["pattern list", "#/p/arrays-hashing", "Arrays & Hashing"],
       ["problem page", "#/p/arrays-hashing/pair-sum", "Pair With Target Sum"],
       ["visualizer", "#/algorithms?algo=quick", "Algorithm visualizer"],
@@ -345,7 +345,7 @@ describe(
     test("an unknown route falls back to home instead of a blank page", async () => {
       await page.goto(`${server.base}/#/no/such/place`)
       const text = await page.eval("document.body.innerText")
-      assert.ok(text.includes("dsa.patterns"))
+      assert.ok(text.includes("Patternsmith"))
       assert.deepEqual(page.errors(), [])
     })
 

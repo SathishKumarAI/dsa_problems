@@ -66,7 +66,7 @@ export function HelpDialog() {
   return (
     <Frame
       name="help"
-      title="How to use dsa.patterns"
+      title="How to use Patternsmith"
       description="Earn the insight, then the name. Two minutes to read; everything else is on the page."
     >
       <div className="flex max-w-[35em] flex-col gap-3 text-body">

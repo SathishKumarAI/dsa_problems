@@ -266,7 +266,7 @@ export function HomeView() {
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
           <h1 className="font-mono text-display font-semibold tracking-tight">
-            dsa<span className="text-primary">.patterns</span>
+            Pattern<span className="text-primary">smith</span>
           </h1>
           {/* the readout: three numbers, hairline-separated, set in the data
               face with tabular figures so they do not jitter as they climb */}

@@ -132,7 +132,11 @@ rmSync(tmp, { recursive: true, force: true })
 
 for (const [id, why] of bad) console.log(`FAIL ${id.padEnd(28)} ${why}`)
 console.log(
-  `\n${ok}/${files.length} deep documents ran clean and reported agreement` +
+  // BOTH sources are counted in `ok` — the typed documents under
+  // src/problems/<id>/ and the markdown left in docs/deep/ — so the total has
+  // to be both as well. It read `files.length`, the markdown half alone, and
+  // the gate had been printing 82/33 since the first document was converted.
+  `\n${ok}/${typed.size + files.length} deep documents ran clean and reported agreement` +
     (bad.length ? `, ${bad.length} did not` : "")
 )
 process.exitCode = bad.length ? 1 : 0

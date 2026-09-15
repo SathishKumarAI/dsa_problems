@@ -219,7 +219,7 @@ export function AppSidebar({ view }: { view: string }) {
         <div className="flex items-start gap-2">
           <a href={href("/")} className="min-w-0 flex-1">
             <div className="font-mono text-ui font-semibold text-sidebar-primary">
-              <span className={WIDE}>dsa.patterns</span>
+              <span className={WIDE}>Patternsmith</span>
               <span className="hidden text-center group-data-[collapsible=icon]:block">
                 d.
               </span>
