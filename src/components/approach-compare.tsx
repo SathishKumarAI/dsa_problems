@@ -155,7 +155,7 @@ export function ApproachCompare({
             this page exists to show, so it is repeated here rather than left
             behind on the page the reader just came from. */}
         {right.whyNow && (
-          <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
+          <p className="max-w-measure border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
             {right.whyNow}
           </p>
         )}

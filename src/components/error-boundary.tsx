@@ -51,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
           This page hit an error
         </h1>
 
-        <p className="max-w-[35em] text-body text-muted-foreground">
+        <p className="max-w-measure text-body text-muted-foreground">
           Only this page stopped — the rail, the search and every other route
           still work. If it happens again on the same page, the message below is
           the thing to report.

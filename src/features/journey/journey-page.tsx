@@ -379,7 +379,7 @@ function JourneyView({ journey }: { journey: AnyJourney }) {
             middle, so no panel can push it out of view (UX audit U1). */}
             <div className="border-t bg-background/40">
               <p
-                className="mx-auto min-h-16 max-w-[35em] px-6 py-4 text-center text-body lg:text-narration"
+                className="mx-auto min-h-16 max-w-measure px-6 py-4 text-center text-body lg:text-narration"
                 aria-live="polite"
               >
                 <span className="mr-1 text-primary">›</span>

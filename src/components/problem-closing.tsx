@@ -88,7 +88,7 @@ export function ReadFurther({
                       aria-hidden
                     />
                   </span>
-                  <span className="max-w-[35em] text-ui text-muted-foreground">
+                  <span className="max-w-measure text-ui text-muted-foreground">
                     {r.note}
                   </span>
                 </span>

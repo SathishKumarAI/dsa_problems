@@ -145,7 +145,7 @@ export function Markdown({
             return (
               <p
                 key={i}
-                className="max-w-[35em] text-body text-muted-foreground"
+                className="max-w-measure text-body text-muted-foreground"
               >
                 <Inline text={block.text} />
               </p>
@@ -156,7 +156,7 @@ export function Markdown({
               <blockquote
                 key={i}
                 className={cn(
-                  "flex max-w-[35em] flex-col gap-2 border-l-2 bg-card/40 py-2 pr-3 pl-4",
+                  "flex max-w-measure flex-col gap-2 border-l-2 bg-card/40 py-2 pr-3 pl-4",
                   ACCENT[block.label ?? ""] ?? DEFAULT_ACCENT
                 )}
               >
@@ -234,7 +234,7 @@ export function Markdown({
 
           case "list":
             return (
-              <ul key={i} className="flex max-w-[35em] flex-col gap-2 pl-5">
+              <ul key={i} className="flex max-w-measure flex-col gap-2 pl-5">
                 {block.items.map((item, j) => (
                   <li
                     key={j}
@@ -253,7 +253,7 @@ export function Markdown({
             return (
               <details
                 key={i}
-                className="max-w-[35em] rounded-lg border bg-card/40 px-4 py-3 [&[open]]:max-w-full"
+                className="max-w-measure rounded-lg border bg-card/40 px-4 py-3 [&[open]]:max-w-full"
               >
                 <summary className="cursor-pointer text-body font-medium text-foreground transition-colors marker:text-muted-foreground hover:text-chart-1">
                   <Inline text={block.summary} />

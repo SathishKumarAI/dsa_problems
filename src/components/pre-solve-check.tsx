@@ -31,7 +31,7 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border p-4">
-      <p className="flex max-w-[35em] gap-2 text-body">
+      <p className="flex max-w-measure gap-2 text-body">
         <span className="shrink-0 font-mono text-meta text-dim">
           {n}/{of}
         </span>
@@ -85,7 +85,7 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
       </div>
       {answered && (
         <p
-          className="max-w-[35em] animate-edge-in-y border-l-2 border-chart-1/50 pl-4 text-ui text-muted-foreground"
+          className="max-w-measure animate-edge-in-y border-l-2 border-chart-1/50 pl-4 text-body text-muted-foreground"
           aria-live="polite"
         >
           <span
@@ -110,7 +110,7 @@ export function PreSolveCheck({ checks }: { checks: Check[] }) {
       label="before you solve it"
       count="answerable from the statement alone"
     >
-      <p className="max-w-[35em] text-ui text-muted-foreground">
+      <p className="max-w-measure text-body text-muted-foreground">
         Nothing here is scored or remembered, and none of it needs an approach.
         It is the reading check you would give yourself out loud before writing
         a line.

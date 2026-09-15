@@ -44,10 +44,10 @@ function Part({
       <p
         className={
           accent === "tell"
-            ? "max-w-[35em] border-l-2 border-chart-2/60 pl-3 text-body text-chart-2"
+            ? "max-w-measure border-l-2 border-chart-2/60 pl-3 text-body text-chart-2"
             : accent === "mistake"
-              ? "max-w-[35em] border-l-2 border-chart-5/60 pl-3 text-body text-muted-foreground"
-              : "max-w-[35em] text-body text-muted-foreground"
+              ? "max-w-measure border-l-2 border-chart-5/60 pl-3 text-body text-muted-foreground"
+              : "max-w-measure text-body text-muted-foreground"
         }
       >
         {children}
@@ -66,7 +66,7 @@ function MoveRow({ move, n }: { move: Move; n: number }) {
         <b className="text-body">{move.name}</b>
       </div>
 
-      <p className="max-w-[35em] text-body text-muted-foreground">{move.idea}</p>
+      <p className="max-w-measure text-body text-muted-foreground">{move.idea}</p>
 
       {/* The tell is the reason to read this rather than a textbook: it is the
           only part that works BEFORE you know which technique applies. */}
@@ -120,7 +120,7 @@ export function PatternPlaybook({
             not written yet
           </span>
         </div>
-        <p className="max-w-[35em] border-t px-4 py-4 text-body text-muted-foreground">
+        <p className="max-w-measure border-t px-4 py-4 text-body text-muted-foreground">
           {name} has its reading below, but nobody has written its moves down
           yet. The shape is{" "}
           <code className="rounded bg-muted px-1 py-0.5 font-mono text-meta">

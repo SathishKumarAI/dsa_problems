@@ -82,12 +82,12 @@ export function DrawerTabs({
           {act.insight && (
             <p className="font-semibold text-chart-1">{act.insight}</p>
           )}
-          <p className="max-w-[35em] text-muted-foreground">{act.idea}</p>
+          <p className="max-w-measure text-muted-foreground">{act.idea}</p>
         </Card>
 
         <Card>
           <Label>the problem</Label>
-          <p className="max-w-[35em] text-muted-foreground">
+          <p className="max-w-measure text-muted-foreground">
             {problem?.statement ?? journey.subtitle}
           </p>
           {problem?.examples.map((e, i) => (
@@ -130,7 +130,7 @@ export function DrawerTabs({
           <Label>what to understand</Label>
           <ul className="flex flex-col gap-1.5 text-muted-foreground">
             {act.takeaways.map((t, i) => (
-              <li key={i} className="flex max-w-[35em] gap-2">
+              <li key={i} className="flex max-w-measure gap-2">
                 <span className="text-chart-1">›</span>
                 {t}
               </li>
@@ -149,7 +149,7 @@ export function DrawerTabs({
           <Legend />
         </Card>
 
-        <p className="max-w-[35em] text-ui text-muted-foreground">
+        <p className="max-w-measure text-ui text-muted-foreground">
           same problem elsewhere:{" "}
           {journey.resources.map((r, i) => (
             <span key={r.url}>
@@ -172,7 +172,7 @@ export function DrawerTabs({
           <Label>how to read this problem</Label>
           {hints.length ? (
             hints.map((h, i) => (
-              <p key={i} className="max-w-[35em] text-muted-foreground">
+              <p key={i} className="max-w-measure text-muted-foreground">
                 <span className="mr-2 font-mono text-meta text-primary">
                   {HINT_LABELS[i] ?? `hint ${i + 1}`}
                 </span>

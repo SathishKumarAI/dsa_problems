@@ -319,7 +319,7 @@ function ProblemPage({
           <h1 className="font-heading text-title font-semibold">
             {problem.title}
           </h1>
-          <p className="max-w-[35em] text-body text-muted-foreground">
+          <p className="max-w-measure text-body text-muted-foreground">
             {problem.brief}
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1">
@@ -383,7 +383,7 @@ function ProblemPage({
             only while it is unstarted. Once earning has begun the button's
             "3/5" says everything a returning reader needs. */}
           {journey && earned.earned === 0 && (
-            <p className="max-w-[35em] text-ui text-muted-foreground">
+            <p className="max-w-measure text-ui text-muted-foreground">
               {journey.acts.length} acts: the need, every approach earned by the
               last one's weakness, your own code animated, then the reveal.
             </p>
@@ -427,7 +427,7 @@ function ProblemPage({
                 <AccordionTrigger className="font-mono text-ui">
                   hint {i + 1} of {problem.hints.length}
                 </AccordionTrigger>
-                <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
+                <AccordionContent className="max-w-measure text-body text-muted-foreground">
                   {hint}
                 </AccordionContent>
               </AccordionItem>
@@ -499,7 +499,7 @@ function ProblemPage({
               <h2 className="font-heading text-title font-semibold">
                 {folded ? "The rest of the story" : "The long explanation"}
               </h2>
-              <p className="max-w-[35em] text-body text-muted-foreground">
+              <p className="max-w-measure text-body text-muted-foreground">
                 {folded
                   ? "What is not about any single approach: how to read the problem, where the cost actually goes, the comparison, what to say in an interview, and a script you can run."
                   : "Every approach in full: the idea, the mental model, a worked trace, the bug you are about to write, and a script you can run."}

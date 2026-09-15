@@ -150,7 +150,7 @@ export function ApproachLadder({
             className="flex scroll-mt-4 flex-col gap-3"
           >
             {r.whyNow && (
-              <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-4 text-body text-chart-1">
+              <p className="max-w-measure border-l-2 border-chart-1/60 pl-4 text-body text-chart-1">
                 {r.whyNow}
               </p>
             )}
@@ -177,7 +177,7 @@ export function ApproachLadder({
                 {r.cost}
               </span>
             </div>
-            <p className="max-w-[35em] text-body text-muted-foreground">
+            <p className="max-w-measure text-body text-muted-foreground">
               {r.idea}
             </p>
             {/* Where the bound comes from. The ladder has always shown the
@@ -186,14 +186,14 @@ export function ApproachLadder({
                 deriving it is the transferable half. A `details`, because it
                 is the second reading of a rung and not the first. */}
             {r.costWhy && (
-              <details className="max-w-[35em] rounded-lg border px-4 py-3">
+              <details className="rounded-lg border px-4 py-3">
                 <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
                   <span className="font-mono text-meta text-chart-2">
                     {r.cost}
                   </span>{" "}
                   — how that was counted
                 </summary>
-                <p className="pt-2 text-body text-muted-foreground">
+                <p className="max-w-measure pt-2 text-body text-muted-foreground">
                   {r.costWhy}
                 </p>
               </details>
@@ -211,7 +211,7 @@ export function ApproachLadder({
                 the rung, so it is here, collapsed. See lib/doc-sections.ts. */}
             {onWantDoc && (
               <details
-                className="max-w-[35em] rounded-lg border px-4 py-3"
+                className="max-w-measure rounded-lg border px-4 py-3"
                 onToggle={(e) => {
                   if ((e.currentTarget as HTMLDetailsElement).open) onWantDoc()
                 }}
@@ -249,13 +249,13 @@ export function ApproachLadder({
         {problem.arc && !capped && (
           // a <b> here would join the rung names the UI test reads out of this
           // container — the label is a span for that reason
-          <p className="max-w-[35em] border-t border-border/60 pt-4 text-body text-muted-foreground">
+          <p className="max-w-measure border-t border-border/60 pt-4 text-body text-muted-foreground">
             <span className="font-semibold text-foreground">The arc.</span>{" "}
             {problem.arc}
           </p>
         )}
         {capped && journey && (
-          <p className="max-w-[35em] text-ui text-muted-foreground">
+          <p className="max-w-measure text-ui text-muted-foreground">
             {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
             still ahead of you.{" "}
             <a

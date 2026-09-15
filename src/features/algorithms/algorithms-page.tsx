@@ -162,7 +162,7 @@ export function AlgorithmsPage() {
         <h1 className="font-heading text-title font-semibold tracking-tight">
           Algorithm visualizer
         </h1>
-        <p className="max-w-[35em] text-body text-muted-foreground">
+        <p className="max-w-measure text-body text-muted-foreground">
           Every algorithm is a generator of steps; the stage knows nothing about
           the algorithm. Bars morph, they don't teleport.
         </p>

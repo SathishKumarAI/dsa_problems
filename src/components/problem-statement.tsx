@@ -55,57 +55,60 @@ function Constraints({ problem }: { problem: Problem }) {
   return (
     // `aria-label="constraints"` is load-bearing: a UI check reads this list
     // by that name to prove the bounds reach the page at all (R2).
-    <ul aria-label="constraints" className="flex flex-col gap-1">
+    //
+    // A DEFINITION LIST, not a bulleted one. The first cut set a `·` before
+    // every bound and a `→` before every explanation, which is punctuation
+    // standing in for structure — and each glyph plus its gap ate 16px off the
+    // measure, so the bound wrapped at 550 and its explanation at 539 while
+    // every paragraph around them ended at 576. Eight right edges in one
+    // column is what reads as text nobody set.
+    //
+    // The term and its definition are distinguished by POSITION and VOICE now
+    // — the bound on its own line, the sentence beneath it in the muted role —
+    // so every line in the section starts and ends on the column's own edges.
+    <ul aria-label="constraints" className="flex flex-col gap-3">
       {problem.constraints.map((c, i) => {
         const what = buys.get(c)
         return (
           <li
             key={c}
             // staggered so the list reads as a sequence rather than appearing
-            // as a block — one reveal token, delayed, not a second duration
-            // `-mx-2 px-2`: the hover highlight needs padding, and padding
-            // would push this text 8px right of the paragraph above it. The
+            // as a block — one reveal token, delayed, not a second duration.
+            // `-mx-3 px-3`: the hover highlight needs padding, and padding
+            // would push this text right of the paragraph above it. The
             // negative margin spends it outward instead, so the text keeps the
-            // page's left edge (the contents rail does the same, `-ml-4 pl-4`).
-            // `text-ui` on the ROW. Without a role here the bullet and the
-            // arrow inherited the root's 16px — off the six-step scale, and
-            // the loudest thing in the section was the punctuation.
-            className="-mx-2 animate-edge-in-y rounded-md border border-transparent px-2 py-1.5 text-ui transition-colors hover:border-chart-1/40 hover:bg-accent/40"
+            // column's left edge (the contents rail does the same).
+            className="-mx-3 flex animate-edge-in-y flex-col gap-1 rounded-lg border border-transparent px-3 py-2 transition-colors hover:border-chart-1/40 hover:bg-accent/40"
             style={{ animationDelay: `${i * 45}ms` }}
           >
-            <div className="flex max-w-[35em] items-baseline gap-2">
-              <span aria-hidden className="text-dim">
-                ·
-              </span>
-              {/* Mono for the NOTATION and the reading face for the words.
-                  Three quarters of the corpus's 668 constraint lines are
-                  English sentences, and setting those in the data face reads
-                  as something the reader is meant to type — DESIGN.md gives
-                  mono to values, indices and notation glyphs, not to prose.
-                  The hybrids are why this splits per run: "1 <= nums[i] <= n —
-                  every value is a legal index" is both, in one line. */}
-              <span className="text-ui">
-                {runsOf(c).map((run, j) =>
-                  run.mono ? (
-                    <span key={j} className="font-mono">
-                      {run.text}
-                    </span>
-                  ) : (
-                    <span key={j}>{run.text}</span>
-                  )
-                )}
-              </span>
-            </div>
+            {/* Mono for the NOTATION and the reading face for the words.
+                Three quarters of the corpus's 668 constraint lines are English
+                sentences, and setting those in the data face reads as
+                something the reader is meant to type — DESIGN.md gives mono to
+                values, indices and notation glyphs, not to prose. The hybrids
+                are why this splits per run: "1 <= nums[i] <= n — every value is
+                a legal index" is both, in one line. */}
+            {/* `font-medium` on the TERM. A bound set in mono already reads
+                as the thing being defined, but the constraints that are
+                English sentences do not — at the same weight and a smaller
+                step than the explanation beneath them, the term looked like a
+                weaker version of its own definition. Weight and colour carry
+                the distinction; the size never has to. */}
+            <p className="max-w-measure text-ui font-medium">
+              {runsOf(c).map((run, j) =>
+                run.mono ? (
+                  <span key={j} className="font-mono">
+                    {run.text}
+                  </span>
+                ) : (
+                  <span key={j}>{run.text}</span>
+                )
+              )}
+            </p>
             {what && (
-              <div className="flex max-w-[35em] items-baseline gap-2 pl-4">
-                {/* the glyph is punctuation, so it is drawn quiet. In the
-                    accent it was the brightest mark in the row and the eye
-                    went to the arrow instead of the sentence it points at. */}
-                <span aria-hidden className="text-dim">
-                  →
-                </span>
-                <span className="text-ui text-muted-foreground">{what}</span>
-              </div>
+              <p className="max-w-measure text-body text-muted-foreground">
+                {what}
+              </p>
             )}
           </li>
         )
@@ -119,7 +122,7 @@ export function ProblemStatement({ problem }: { problem: Problem }) {
   return (
     <div className="flex flex-col gap-6">
       <Part id="what-it-asks" title="What it asks">
-        <p className="max-w-[35em] text-body">{problem.statement}</p>
+        <p className="max-w-measure text-body">{problem.statement}</p>
       </Part>
 
       <Part

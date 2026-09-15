@@ -120,7 +120,7 @@ export function HashMapView({ map }: { map: HashModel }) {
           35em measure like any other prose (U6, U7). They were invisible to
           the UI suite until the walkthrough stopped living behind a closed
           tab — a reminder that a rule only holds where something looks. */}
-      <div className="flex max-w-[35em] flex-col gap-1.5 text-ui text-muted-foreground">
+      <div className="flex max-w-measure flex-col gap-1.5 text-ui text-muted-foreground">
         {/* An INSERT gets the same arithmetic a lookup gets. Without this,
             pass 1 of a two-pass hash showed values dropping into buckets with
             no sum anywhere on screen, and "why did 39 land in bucket 7?" had

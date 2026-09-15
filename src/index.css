@@ -77,6 +77,19 @@
        appears, resizes or slides. The default above covers everything else. */
   --duration-reveal: 320ms;
 
+  /* THE MEASURE. One absolute width for every sentence on the site, so a
+     column of prose has ONE right edge.
+
+     It was `max-w-measure` written out 50 times, and `em` is relative to the
+     element's own size — so the same "cap" rendered 595px on a 17px paragraph
+     and 525px on a 15px one. Measured on the problem page: EIGHT different
+     sentence widths inside one 768px column (595, 527, 525, 509, 488, 480,
+     707, 349), which is what reads as text that was never set.
+
+     36rem = 576px ≈ 68 characters at the body step, which is the middle of the
+     45–75 band and inside the 80ch the U7 gate allows at every step. */
+  --container-measure: 36rem; /* 576 — the prose measure, one right edge */
+
   /* three container widths, so a new page has an obvious one to pick */
   --container-reading: 48rem; /* 768 — a single document              */
   --container-page: 70rem; /* 1120 — an index or an overview       */

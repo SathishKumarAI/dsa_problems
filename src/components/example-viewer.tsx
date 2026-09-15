@@ -203,7 +203,7 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
         </span>
       </div>
       {example.note && (
-        <p className="max-w-[35em] text-meta text-muted-foreground">
+        <p className="max-w-measure text-meta text-muted-foreground">
           {example.note}
         </p>
       )}
