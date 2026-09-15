@@ -274,7 +274,10 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon-sm"
-      className={cn(className)}
+      // On a phone the sidebar is a sheet and this is the only way to open it,
+      // so it is the one control that must not be 28px. Grows to 44 and
+      // returns to the icon-sm size from lg, where there is a mouse.
+      className={cn("size-11 lg:size-7", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()

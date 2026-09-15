@@ -2655,5 +2655,49 @@ describe(
       )
       assert.deepEqual(page.errors(), [], "the recovered page logged errors")
     })
+
+    // ---------- a thumb can hit every control ----------
+
+    test("on a phone, no visible control is under the touch floor", async () => {
+      // DESIGN.md asks for 44px on touch and nothing was checking it, so four
+      // controls had drifted to 28: the catalogue row link (the most-tapped
+      // thing in the app, whose <a> filled only the text and not the row's own
+      // padding), the difficulty filters, the sidebar trigger — the ONLY way to
+      // reach navigation when the sidebar is a sheet — and the palette's
+      // trigger, the only search a phone has. Measured at 360, the narrowest
+      // width this app claims to support.
+      const small = await launch({ width: 360, height: 900 })
+      try {
+        for (const path of ["#/", "#/p/arrays-hashing", "#/p/prefix-sums/subarray-sum-k"]) {
+          await small.page.goto(`${server.base}/${path}`)
+          await small.page.run(`return new Promise(r => setTimeout(() => r(1), 400))`)
+          const under = await small.page.run(`
+            const out = []
+            for (const el of document.querySelectorAll('main a, main button')) {
+              const r = el.getBoundingClientRect()
+              if (r.width === 0 || r.height === 0 || r.height >= 40) continue
+              const cs = getComputedStyle(el)
+              // an inline link inside a run of prose is exempt (WCAG 2.5.8):
+              // padding one to 44px would wreck the paragraph's leading
+              const par = el.parentElement
+              if (cs.display.startsWith('inline') && par &&
+                  par.textContent.trim() !== el.textContent.trim()) continue
+              const label = el.getAttribute('aria-label') || el.textContent.trim().slice(0, 30)
+              out.push(Math.round(r.height) + 'px ' + el.tagName + ' "' + label + '"')
+            }
+            return [...new Set(out)]
+          `)
+          // The copy button is the one exemption, on purpose: it floats over a
+          // code block the reader can now EDIT, so growing its hit box to 44
+          // would swallow taps meant to place a cursor on the first line. At
+          // 28x28 it still clears the WCAG 2.5.8 AA floor of 24x24, which the
+          // 44 here exceeds for primary controls.
+          const real = under.filter((d) => !/Copy code|Copied|Copying is blocked/.test(d))
+          assert.deepEqual(real, [], `${path}: ${real.join(" · ")}`)
+        }
+      } finally {
+        await small.stop()
+      }
+    })
   }
 )

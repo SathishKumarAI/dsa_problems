@@ -42,7 +42,7 @@ export function SearchTrigger({ className }: { className?: string }) {
     <Button
       variant="outline"
       size="sm"
-      className={cn("text-muted-foreground", className)}
+      className={cn("min-h-11 text-muted-foreground lg:min-h-8", className)}
       onClick={openPalette}
     >
       <SearchIcon />
