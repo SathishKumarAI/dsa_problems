@@ -89,19 +89,7 @@ function View() {
   // home is the empty path and nothing else now: every other fallthrough is a
   // route that named something which does not exist
   if (parts.length === 0)
-    return (
-      <HomeView
-        onNavigate={(v) =>
-          navigate(
-            v === "home"
-              ? "/"
-              : v === "sql" || v === "flashcards"
-                ? `/${v}`
-                : `/p/${v}`
-          )
-        }
-      />
-    )
+    return <HomeView />
   if (root === "journey") {
     const card = a ? cardBySlug(a) : undefined
     if (card) return <JourneyPage key={card.slug} slug={card.slug} />
@@ -133,10 +121,7 @@ function View() {
       )
     if (pattern && !b)
       return (
-        <ProblemList
-          pattern={pattern}
-          onOpen={(id) => navigate(`/p/${pattern.id}/${id}`)}
-        />
+        <ProblemList pattern={pattern} />
       )
     // the pattern is real and the problem is not: the list it came from is a
     // better second option than home

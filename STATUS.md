@@ -9,6 +9,24 @@ each branch onto master with `--onto` first, or retarget every PR to master befo
 
 Then **#97** (`feat/one-entry-point-per-problem`), which is the IA fix — see below.
 
+### One noun, on every surface
+
+Four surfaces offered a way into a problem and three of them disagreed about what a problem IS.
+Fixed in two branches — #97 (the sidebar and the problem page) and #98 (home and the catalogue
+rows).
+
+| Surface | Was | Is |
+|---|---|---|
+| Sidebar | a catalogue of journeys above a catalogue of patterns | Continue (in play only) + one catalogue |
+| Problem page | a primary button, a bordered panel and a 34-screen wall | a mode bar, explanation collapsed |
+| Home | 6 journey links, **0** pattern links | 1 journey link (the dock), **10** patterns |
+| Pattern list | **0** problem links — every row a `<button>` | **21** problem links |
+
+That last one is a plain bug and it had been there all along: a `<button onClick>` cannot be
+middle-clicked into a new tab, offers nothing on right-click, and shows the browser no destination.
+The sidebar's own header states the rule — *"every entry a hash link so back/forward and
+middle-click work"* — and the catalogue was the one place that broke it.
+
 ### One entry point per problem
 
 The sidebar opened with a catalogue of JOURNEYS and carried a catalogue of patterns below it, so

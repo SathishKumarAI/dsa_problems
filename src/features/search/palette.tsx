@@ -1,5 +1,9 @@
-// The command palette: one input over every problem and every journey,
-// opened with Ctrl/⌘ K or the visible trigger. Owns the dialog, the keyboard
+// The command palette: one input over every problem — one row each, marked
+// when the problem has a journey — opened with Ctrl/⌘ K or the visible trigger.
+//
+// It used to index journeys as rows of their own: 220 rows for 127 problems,
+// and since 92 of the 93 journeys carry exactly their problem's title, typing a
+// title handed back two rows with the same words pointing at two routes. Owns the dialog, the keyboard
 // loop and the recent list; ranking lives in ./results.ts, open state in
 // ./palette-state.ts.
 //
@@ -111,7 +115,7 @@ export function CommandPalette() {
         className="top-[12vh] max-h-[76vh] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-xl"
       >
         <DialogTitle className="sr-only">
-          Search problems and journeys
+          Search problems
         </DialogTitle>
         <DialogDescription className="sr-only">
           Type to filter. Arrow keys move, Enter opens, Escape closes.
@@ -124,8 +128,8 @@ export function CommandPalette() {
             aria-expanded
             aria-controls="palette-list"
             aria-activedescendant={shown[cur] ? `palette-${cur}` : undefined}
-            aria-label="Search problems and journeys"
-            placeholder={`Search ${COUNTS.problems} problems and ${COUNTS.journeys} journeys…`}
+            aria-label="Search problems"
+            placeholder={`Search ${COUNTS.problems} problems, ${COUNTS.journeys} with a journey…`}
             className="h-9 border-0 text-body focus-visible:ring-0"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

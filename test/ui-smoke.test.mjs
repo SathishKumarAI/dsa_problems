@@ -136,29 +136,94 @@ describe(
     // The journeys disclosure used to call setAllJourneys(true) and then hide
     // itself, so expanding was a one-way door and the only way back was a
     // reload. Round-trip it, in both places that carry one.
-    test("home's journeys disclosure goes both ways", async () => {
-      // The SIDEBAR half of this check is gone with the feature: it used to
-      // carry a catalogue of journeys behind a "show all 93" chevron, which is
-      // the duplication the check below now forbids. Home still discloses.
+    // Home is a front door, not a second catalogue. It used to carry a list
+    // of all 93 journeys behind a "show all" chevron, sitting directly above a
+    // practice set of the same problems grouped by pattern — two lists of one
+    // thing on the landing page, and the journey you were resuming appearing
+    // in both the dock and the list beneath it.
+    test("home offers one catalogue, and does not repeat the dock", async () => {
+      const read = `
+        const main = document.querySelector('main');
+        const links = [...main.querySelectorAll('a[href]')].map(a => a.getAttribute('href') || '');
+        const dock = main.querySelector('[data-testid=dock]');
+        const dockHref = dock ? dock.getAttribute('href') || '' : '';
+        const slugOf = h => (h.split('/journey/')[1] || '').split('?')[0];
+        const journeys = links.filter(h => h.includes('/journey/'));
+        return {
+          patterns: links.filter(h => new RegExp('p/[a-z-]+$').test(h)).length,
+          journeys: journeys.length,
+          dockSlug: slugOf(dockHref),
+          // the dock's own journey must not appear a second time in a list
+          repeatsDock: journeys.filter(h => slugOf(h) === slugOf(dockHref)).length - 1,
+        };
+      `
+
       await page.goto(`${server.base}/#/`)
-      const out = await page.run(`
-        const wait = ms => new Promise(r => setTimeout(r, ms));
-        const main = () => document.querySelector('main');
-        const btn = root => [...root.querySelectorAll('button')]
-          .find(b => /more journeys|show all|show only|fewer/i.test(b.textContent));
-        const count = root => root.querySelectorAll('a[href*="/journey/"]').length;
-        const start = count(main());
-        btn(main()).click();
-        await wait(500);
-        const opened = count(main());
-        const backBtn = btn(main());
-        const hasWayBack = !!backBtn;
-        if (hasWayBack) { backBtn.click(); await wait(500); }
-        return { start, opened, hasWayBack, closed: count(main()) };
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/`)
+      const fresh = await page.run(read)
+      assert.ok(fresh.patterns >= 8, `home lists only ${fresh.patterns} patterns`)
+      assert.equal(
+        fresh.journeys,
+        1,
+        `a fresh learner is offered ${fresh.journeys} journey links; only the dock belongs`
+      )
+
+      // two in play: the dock takes one, "also in play" takes the other, and
+      // neither shows the same journey twice
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.setItem('dsa:unlocked:two-sum', '3');
+        localStorage.setItem('dsa:unlocked:single-number', '2');
+        return 1
       `)
-      assert.ok(out.opened > out.start, "home: expanding should show more")
-      assert.ok(out.hasWayBack, "home: no control left to collapse again")
-      assert.equal(out.closed, out.start, `home: collapsing should return to ${out.start}`)
+      await page.goto(`${server.base}/#/`)
+      const busy = await page.run(read)
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      assert.equal(busy.journeys, 2, `two in play should offer two rows, got ${busy.journeys}`)
+      assert.equal(
+        busy.repeatsDock,
+        0,
+        "the journey in the dock is listed again underneath it"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
+    // The catalogue is the way into every problem, and a catalogue you cannot
+    // middle-click is a catalogue you cannot open two of side by side. Both
+    // rows were `<button onClick>`: no new-tab on middle-click, none offered on
+    // right-click, and no destination in the status bar. The sidebar's own
+    // header has stated the rule all along — "every entry a hash link so
+    // back/forward and middle-click work" — and the catalogue was the one place
+    // that broke it.
+    test("every catalogue row is a real link", async () => {
+      await page.goto(`${server.base}/#/p/arrays-hashing`)
+      const list = await page.run(`
+        const main = document.querySelector('main');
+        return {
+          links: main.querySelectorAll('a[href*="/p/arrays-hashing/"]').length,
+          buttons: [...main.querySelectorAll('button')]
+            .filter(b => (b.innerText || '').length > 12).length,
+        };
+      `)
+      assert.ok(
+        list.links >= 15,
+        `the problem list offers ${list.links} links — the rows are not anchors`
+      )
+
+      await page.goto(`${server.base}/#/`)
+      const home = await page.run(`
+        const main = document.querySelector('main');
+        return { patterns: main.querySelectorAll('a[href]').length &&
+          [...main.querySelectorAll('a[href]')]
+            .filter(a => new RegExp('p/[a-z-]+$').test(a.getAttribute('href') || '')).length };
+      `)
+      assert.ok(
+        home.patterns >= 8,
+        `home offers ${home.patterns} pattern links — the rows are not anchors`
+      )
+      assert.deepEqual(page.errors(), [])
     })
 
     // The IA rule, asserted because nothing was watching it and it drifted for
@@ -1534,20 +1599,20 @@ describe(
         const row = [...document.querySelectorAll('[data-slot=sidebar-menu-item]')]
           .find(li => has(li, 'two sum'));
         const badgeEl = row?.querySelector('[data-slot=sidebar-menu-badge]');
-        const card = [...document.querySelectorAll('main a')]
-          .find(a => has(a, 'two sum') && a.innerText.includes('earned') && !has(a, 'pick up'));
-        // the COUNT field, not the first line containing the word: Two Sum's
+        // The DOCK, not a card in a list. Home used to carry a catalogue of
+        // journeys directly under the dock, so the journey you were halfway
+        // through appeared twice on one screen — which is what this check was
+        // unknowingly comparing. The dock is now the one home surface for a
+        // journey in play.
+        const card = document.querySelector('[data-testid=dock]');
+        // The COUNT field, not the first line containing the word: Two Sum's
         // own subtitle ends "…each earned by the last one's weakness", so a
-        // substring match reads the subtitle whenever the row happens to put
-        // it above the count. Match the field's shape, then assert its value.
-        // (no regex literal: a backslash in this template literal is consumed
-        // twice on the way to the page — see CLAUDE.md)
-        const isCount = t => {
-          const s = t.trim();
-          if (!s.endsWith(' earned')) return false;
-          const n = s.slice(0, -7).split('/');
-          return n.length === 2 && n.every(x => x !== '' && Number.isInteger(Number(x)));
-        };
+        // substring match reads the subtitle whenever the row happens to put it
+        // above the count. The dock speaks the LONG form ("2 of 6 acts earned")
+        // and the sidebar badge the short one ("2/6") with the long form in its
+        // title — so the check is that the two agree on the same count, not
+        // that they print the same string.
+        const isCount = t => t.trim().endsWith(' acts earned') || t.trim() === 'all acts earned';
         const line = (card?.innerText ?? '').split(String.fromCharCode(10)).find(isCount) ?? '';
         return { badge: badgeEl?.innerText.trim(), cardText: line.trim(), title: badgeEl?.getAttribute('title') };
       `)
@@ -1558,10 +1623,15 @@ describe(
       )
       assert.equal(
         out.cardText,
-        "2/6 earned",
-        "the home card should agree with the sidebar"
+        "2 of 6 acts earned",
+        "the home dock should agree with the sidebar"
       )
       assert.match(out.title ?? "", /2 of 6 acts earned/)
+      assert.equal(
+        out.cardText,
+        out.title,
+        "the dock and the sidebar's own tooltip disagree about the same journey"
+      )
     })
 
     // Checked on several routes, not one. The single-route version passed for

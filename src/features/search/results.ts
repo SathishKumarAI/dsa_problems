@@ -75,27 +75,22 @@ export function buildIndex(mask: Mask): Hit[] {
     })
   }
 
-  for (const p of PROBLEMS)
+  // One row per problem, marked when it has a journey. The journey's title and
+  // slug ride along in the MATCH TEXT rather than becoming a row of their own:
+  // two-sum is the one journey whose title differs from its problem's ("Two
+  // Sum" against "Pair With Target Sum"), so without this a reader who knows
+  // the journey by name would find nothing at all.
+  const journeyOf = new Map(JOURNEYS.map((j) => [j.problemId, j]))
+  for (const p of PROBLEMS) {
+    const j = journeyOf.get(p.id)
     hit(
       `p:${p.id}`,
-      "problem",
+      j ? "journey" : "problem",
       p.title,
       p.pattern,
       `/p/${p.pattern}/${p.id}`,
-      p.leetcode,
+      j ? `${p.leetcode} ${j.title} ${j.slug}` : p.leetcode,
       p.difficulty
-    )
-
-  for (const j of JOURNEYS) {
-    const p = PROBLEMS.find((x) => x.id === j.problemId)
-    hit(
-      `j:${j.slug}`,
-      "journey",
-      j.title,
-      p?.pattern ?? "",
-      `/journey/${j.slug}`,
-      j.slug,
-      p?.difficulty
     )
   }
   return hits
