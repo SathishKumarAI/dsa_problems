@@ -13,6 +13,7 @@ import { after, before, describe, test } from "node:test"
 import { JOURNEYS } from "../src/engine/index.ts"
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { PROBLEMS } from "../src/data/index.ts"
+import { PATTERNS } from "../src/data/patterns.ts"
 
 // Which problems have a long explanation, read from disk rather than listed
 // here, so this file cannot go stale as documents are written. Two sources,
@@ -501,62 +502,82 @@ describe(
       }
     })
 
-    // B85. The resources route, and the disclosure rule on it — which is the
-    // half worth testing. The page is a pattern name written a dozen different
-    // ways ("Two pointers converging", "Hash map as an index"), so a pattern
-    // whose journey is mid-flight must not appear here AT ALL, not merely with
-    // its name swapped for the mask.
-    test("the resources route renders a playbook, and masks a live pattern (B85)", async () => {
-      // This page is DRIVEN BY the ledger, so it is the one test in this file
-      // that cannot inherit one. Passed alone and failed in the suite: an
-      // earlier test left a journey armed, arrays-hashing was masked, the page
-      // fell back to a pattern with no playbook, and the failure read as
-      // "only 1 playbook moves rendered" — which is the empty-state copy, not
-      // a bug in the page.
+    // B85, moved. The playbook lived on `#/resources`, a SECOND page about a
+    // pattern — its moves, its references and a list of its problems, beside a
+    // pattern page carrying the name, the same references and a filterable list
+    // of the same problems. One noun, one page: the moves are on
+    // `#/p/<pattern>` now and the route redirects.
+    //
+    // The half worth testing is unchanged and it is the disclosure rule. A
+    // playbook is a pattern's name written a dozen different ways ("Two
+    // pointers converging", "Hash map as an index"), so a pattern whose journey
+    // is mid-flight must show NO playbook at all — not one with the name
+    // swapped for the mask.
+    test("the pattern page renders a playbook, and masks a live pattern (B85)", async () => {
+      // DRIVEN BY the ledger, so this is one of the few checks here that cannot
+      // inherit one: an earlier test leaving a journey armed used to mask the
+      // pattern and make the failure read as "only 1 move rendered", which is
+      // the empty-state copy rather than a bug.
       await page.goto(`${server.base}/#/`)
       await page.run(`${FRESH} return 1`)
-      await page.goto(`${server.base}/#/resources`)
+      await page.goto(`${server.base}/#/p/linked-list`)
       const out = await page.run(`
-        const text = document.body.innerText;
         const main = document.querySelector('main').innerText;
         return {
-          tabs: [...document.querySelectorAll('nav[aria-label="pattern"] button')]
-            .map(b => b.innerText.trim().split(String.fromCharCode(10))[0]),
           moves: (main.match(/the tell/gi) || []).length,
           mistakes: (main.match(/the classic mistake/gi) || []).length,
           practise: [...document.querySelectorAll('a')]
             .filter(a => (a.getAttribute('href') || '').indexOf('#/p/') === 0).length,
-          hasNote: /what it answers|why THIS|pointer-machine|answers the question/i.test(text),
+          hasReferences: /read further/i.test(main),
+          hasFacts: /with a journey/i.test(main),
         };
       `)
-      assert.ok(out.tabs.length >= 2, `only ${out.tabs.length} patterns offered`)
-      assert.ok(out.moves >= 5, `only ${out.moves} playbook moves rendered`)
+      assert.ok(out.moves >= 4, `only ${out.moves} playbook moves rendered`)
       assert.equal(out.moves, out.mistakes, "a move rendered without its mistake")
       assert.ok(out.practise >= 5, "no links into the problems")
-      assert.deepEqual(page.errors(), [], "resources logged console errors")
+      assert.ok(out.hasReferences, "the reading list is not on the pattern page")
+      assert.ok(out.hasFacts, "the orient bar did not render")
+      assert.deepEqual(page.errors(), [])
 
-      // pick another pattern: it is a ROUTE, so it survives a reload
-      await page.goto(`${server.base}/#/resources?p=linked-list`)
       const ll = await page.eval(`document.querySelector('main').innerText`)
       assert.match(ll, /Dummy head/, "the linked-list playbook did not render")
       assert.match(ll, /Reverse in place/, "a move is missing")
 
+      // EVERY pattern has one now — the empty frame is the mechanism for a
+      // pattern added later, not the state eight of ten are in.
+      const thin = []
+      for (const id of PATTERNS.map((x) => x.id)) {
+        await page.goto(`${server.base}/#/p/${id}`)
+        const n = await page.run(`
+          return (document.querySelector('main').innerText.match(/the tell/gi) || []).length
+        `)
+        if (n < 4) thin.push(`${id}:${n}`)
+      }
+      assert.deepEqual(thin, [], `patterns with fewer than four moves: ${thin.join(", ")}`)
+
+      // the retired route still lands, with its pattern honoured
+      await page.goto(`${server.base}/#/resources?pattern=linked-list`)
+      await page.run(`return new Promise(r => setTimeout(() => r(1), 600))`)
+      const redirected = await page.eval(`location.hash`)
+      assert.match(
+        redirected,
+        /p\/linked-list/,
+        `#/resources did not redirect — landed on ${redirected}`
+      )
+
       // now start a journey that REVEALS linked-list and leave it unfinished:
-      // the pattern must vanish from the picker entirely.
+      // the playbook must vanish, not merely lose its name.
       //
       // `add-two-numbers`, not `cycle-detect`: the mask is driven by a
-      // journey's `reveals`, and cycle-detect declares none, so the first
-      // version of this test set a ledger key that masked nothing and asserted
-      // against a mask that was never armed. It passed the leak check for the
-      // wrong reason — the page simply had a different pattern selected.
+      // journey's `reveals`, and cycle-detect declares none, so an earlier
+      // version of this set a ledger key that masked nothing and asserted
+      // against a mask that was never armed.
       //
-      // Written on another route and then navigated for real, because the
-      // store caches per key and a write while the page is mounted is undone.
+      // Written on another route and then navigated for real, because the store
+      // caches per key and a write while the page is mounted is undone.
       await page.goto(`${server.base}/#/`)
-      // the ledger key is the journey's SLUG, which is not its filename:
+      // the ledger key is the journey's SLUG, not its filename:
       // add-two-numbers.ts declares slug "add-them-the-way-you-were-taught".
-      // Keyed by the filename first, the mask never armed and the page was
-      // marked as leaking when it was behaving correctly.
       const slug = JOURNEYS.find((j) => j.problemId === "add-two-numbers").slug
       assert.ok(
         (JOURNEYS.find((j) => j.problemId === "add-two-numbers").reveals ?? [])
@@ -566,32 +587,19 @@ describe(
       await page.eval(
         `localStorage.setItem('dsa:unlocked:' + ${JSON.stringify(slug)}, '2'); true`
       )
-      await page.goto(`${server.base}/#/resources`)
-      const masked = await page.run(`
-        return {
-          tabs: [...document.querySelectorAll('nav[aria-label="pattern"] button')]
-            .map(b => b.innerText.trim()),
-          // asked for by name, so the mask cannot hide the leak by simply
-          // selecting a different pattern
-          leaks: (await (async () => {
-            location.hash = '#/resources?p=linked-list';
-            await new Promise(r => setTimeout(r, 400));
-            return /Dummy head|Reverse in place|Split and weave/.test(
-              document.querySelector('main').innerText
-            );
-          })()),
-        };
-      `)
-      assert.equal(
-        masked.leaks,
-        false,
-        "a masked pattern's playbook leaked onto the resources page"
-      )
-      assert.ok(
-        !masked.tabs.some(t => /Linked List/i.test(t)),
-        `the masked pattern is still offered: ${masked.tabs.join(", ")}`
-      )
+      await page.goto(`${server.base}/#/p/linked-list`)
+      const masked = await page.eval(`document.querySelector('main').innerText`)
       await page.eval(`localStorage.clear(); true`)
+      assert.equal(
+        /Dummy head|Reverse in place|Split and weave/.test(masked),
+        false,
+        "a masked pattern's playbook leaked onto its own page"
+      )
+      assert.equal(
+        /the tell/i.test(masked),
+        false,
+        "the playbook section rendered for a masked pattern"
+      )
     })
 
     // B82 / B83. The one check that matters for the Python runtime: a real

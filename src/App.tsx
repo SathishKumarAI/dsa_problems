@@ -58,6 +58,15 @@ function LearnRedirect({ id, pattern }: { id: string; pattern: string }) {
   return <Loading />
 }
 
+/** a retired destination, kept working. Same reason as `LearnRedirect`: the id
+ *  is in every link written before the merge, and in the repo's own documents. */
+function Redirect({ to }: { to: string }) {
+  useEffect(() => {
+    navigate(to)
+  }, [to])
+  return <Loading />
+}
+
 const Loading = () => (
   <div className="flex items-center justify-center gap-2 py-16 text-ui text-muted-foreground">
     <LoaderCircleIcon className="size-4 animate-spin" aria-hidden />
@@ -78,13 +87,10 @@ const ProblemDetail = lazy(() =>
 )
 import { ProblemList } from "./components/problem-list"
 // lazy too: it carries every pattern's playbook prose
-const ResourcesView = lazy(() =>
-  import("./components/resources-view").then((m) => ({ default: m.ResourcesView }))
-)
 import { SqlView } from "./components/sql-view"
 
 function View() {
-  const { parts, path } = useRoute()
+  const { parts, path, query } = useRoute()
   const [root, a, b] = parts
   // home is the empty path and nothing else now: every other fallthrough is a
   // route that named something which does not exist
@@ -104,7 +110,16 @@ function View() {
     const card = cardOf(a)
     if (card) return <LearnRedirect id={card.id} pattern={card.pattern} />
   }
-  if (root === "resources") return <ResourcesView />
+  // `#/resources` was a SECOND page about a pattern — its playbook, its
+  // references and a list of its problems, beside a pattern page carrying the
+  // name, the references and a filterable list of the same problems. One noun,
+  // one page: the playbook moved onto `#/p/<pattern>` and this redirects, with
+  // `?pattern=` honoured so every link written against it still lands.
+  if (root === "resources") {
+    const named = query.get("pattern")
+    const target = PATTERNS.find((p) => p.id === named)
+    return <Redirect to={target ? `/p/${target.id}` : "/"} />
+  }
   if (root === "sql") return <SqlView />
   if (root === "flashcards") return <FlashcardsView />
   if (root === "p") {
