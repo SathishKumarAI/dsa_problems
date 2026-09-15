@@ -1288,4 +1288,71 @@ export const PATTERNS: Pattern[] = [
       },
     ],
   },
+  {
+    id: "trie",
+    name: "Tries",
+    glyph: "a-b-c",
+    blurb:
+      "Store the decisions that spell a word, not the word — and every shared prefix is stored once.",
+    references: [
+      {
+        title: "Trie",
+        href: "https://en.wikipedia.org/wiki/Trie",
+        kind: "reference",
+        note: "The structure, its cost model, and the compressed variants (radix and PATRICIA) that matter the moment memory does — worth reading past the first section for those.",
+      },
+      {
+        title: "Sedgewick & Wayne, Tries",
+        href: "https://algs4.cs.princeton.edu/52trie/",
+        kind: "course",
+        note: "The chapter that treats a trie as a symbol table rather than a puzzle, with the ternary search trie as the answer to the 26-pointers-per-node objection.",
+      },
+      {
+        title: "Aho-Corasick algorithm",
+        href: "https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm",
+        kind: "reference",
+        note: "Where tries go next: a trie plus failure links matches thousands of patterns against a text in one pass. Read it once you have written a plain trie, not before.",
+      },
+    ],
+    playbook: [
+      {
+        name: "One character per edge",
+        idea: "A word is a path from the root, one character per step, and words sharing a prefix share the nodes that spell it. Nothing is copied and nothing is compared — the walk itself is the lookup, so a query costs its own length however large the dictionary is.",
+        tell: '"starts with", "common prefix", "a dictionary of words and many prefix questions" — the query is about the FRONT of a string rather than the whole of it.',
+        invariant:
+          "The path from the root to any node spells exactly one prefix, and the node reached by following a string is unique. That is why a walk can stop the moment a child is missing.",
+        learnOn: ["implement-trie", "replace-words"],
+        mistake:
+          "Reaching for one when the queries are about whole strings. A hash set answers exact membership in constant time; a trie only pays for itself when prefixes are the question.",
+      },
+      {
+        name: "Flag the end of a word",
+        idea: "Arriving at a node is not the same as arriving at a word. A boolean on the node separates 'a word ends here' from 'this is merely on the way', which is the entire difference between search and startsWith.",
+        tell: 'inserting "apple" must not make "app" a member, while it must make "app" a valid prefix.',
+        invariant:
+          "Every inserted word flags exactly one node, and that flag is the only thing a membership query may trust.",
+        learnOn: ["implement-trie", "wildcard-dictionary"],
+        mistake:
+          "Testing 'the node has no children' as a stand-in for the flag. It agrees with the flag only until a longer word is inserted through the same node, and then it silently stops being true.",
+      },
+      {
+        name: "Prefixes arrive shortest first",
+        idea: "Walking down from the root meets a string's prefixes in increasing order of length, so the FIRST flagged node you reach is the shortest match. A problem asking for the shortest root needs no sort and no comparison — the traversal order already is the tie-break.",
+        tell: '"replace the word by the shortest root", "the smallest prefix that", "stop at the first match".',
+        learnOn: ["replace-words"],
+        mistake:
+          "Collecting every matching prefix and then taking the shortest. Correct, and it walks the whole word when it could have stopped at the first flag.",
+      },
+      {
+        name: "A wildcard turns the walk into a search",
+        idea: "With a concrete character each step has one candidate child and the lookup is a walk. Introduce a wildcard and the step has every child as a candidate, so the same structure now hosts a depth-first search whose depth is the pattern's length.",
+        tell: '"the pattern may contain a dot", "match with at most k edits", "any single character" — the next character is not always known.',
+        invariant:
+          "Every branch still consumes exactly one character of the pattern, which is what guarantees the recursion terminates.",
+        learnOn: ["wildcard-dictionary"],
+        mistake:
+          "Ignoring how the cost changes. Each wildcard multiplies the work by the branching factor, so the constraint capping the number of dots is load-bearing rather than incidental.",
+      },
+    ],
+  },
 ]

@@ -7,7 +7,7 @@
 [![tests](https://img.shields.io/badge/tests-780%20passing-brightgreen.svg)](#the-seven-gates)
 [![contributions](https://img.shields.io/badge/contributions-wanted-orange.svg)](CONTRIBUTING.md)
 
-One app: a pattern-organised interview practice set (**127 problems** across 18 patterns, SQL
+One app: a pattern-organised interview practice set (**153 problems** across 19 patterns, SQL
 drills, stats flashcards) plus **learning journeys** — problems built all the way down,
 Brilliant/Khan style: the need first, approaches unlocked one at a time by the previous one's
 weakness, predictions mid-playback, quiz gates, your own code driving the animation, and the

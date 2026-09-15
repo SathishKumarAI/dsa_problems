@@ -35,14 +35,26 @@ import { audit } from "./learn-gaps.mjs"
 // one is absent or a stub. The grep could only produce a number; the type
 // produces an error. Three of these moved by one on the day of the first
 // conversion, and this ratchet is what noticed.
+// RAISED on 2026-09-15, and this is the one event that legitimately raises
+// them: twenty-six PROBLEMS arrived, each without a teaching document. The
+// numbers count problems missing a section, so adding an untaught problem moves
+// every one of them by one without a single document getting worse — which is
+// this ratchet's known weakness. Raising them is honest and the gate is
+// undamaged: deleting a section from any of the 33 written documents still
+// pushes a count past its new floor and still fails here.
+//
+// 127 problems -> 153 on that day, so untaught went 45 -> 71 and the six
+// section counts by the same 26. If a future batch raises these again, say the
+// problem count in the same breath — a number with no denominator is the thing
+// that makes a ratchet quietly meaningless.
 const BASELINE = {
-  untaught: 45, // problems with no teaching document at all
-  calculations: 72, // missing "Reading the Calculations"
-  fluent: 72, // missing "How to Get Fluent"
-  hood: 72, // missing an "Under the hood" callout
-  interview: 45,
-  arc: 45,
-  comparison: 45,
+  untaught: 71, // problems with no teaching document at all (of 153)
+  calculations: 98, // missing "Reading the Calculations"
+  fluent: 98, // missing "How to Get Fluent"
+  hood: 98, // missing an "Under the hood" callout
+  interview: 71,
+  arc: 71,
+  comparison: 71,
   undisclosed: 0, // documents adding rungs without saying so — cleared 2026-09-13
 }
 

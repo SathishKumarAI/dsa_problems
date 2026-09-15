@@ -2081,6 +2081,326 @@ export const VECTORS = {
       [[1, 2, 3, 4, 5], 1, 10],
     ],
   },
+  "merge-intervals": {
+    params: ["int[][]"],
+    ret: "int[][]",
+    exercises:
+      "the two bugs the sort does not fix — touching endpoints must fuse, and a swallowed interval must not shorten the stretch",
+    cases: [
+      [[[1, 3], [2, 6], [8, 10], [15, 18]]],
+      [[[1, 4], [4, 5]]],
+      [[[1, 4], [2, 3]]],
+      [[[5, 6], [1, 2]]],
+      [[[1, 1]]],
+    ],
+  },
+  "insert-interval": {
+    params: ["int[][]", "int[]"],
+    ret: "int[][]",
+    exercises:
+      "each phase consuming zero intervals — before everything, after everything, bridging three, and into an empty list",
+    cases: [
+      [[[1, 3], [6, 9]], [2, 5]],
+      [[[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], [4, 8]],
+      [[], [5, 7]],
+      [[[3, 5]], [1, 2]],
+      [[[1, 2]], [3, 5]],
+      [[[1, 5]], [2, 3]],
+    ],
+  },
+  "non-overlapping-intervals": {
+    params: ["int[][]"],
+    ret: "int",
+    exercises:
+      "the convention that touching is allowed, and identical intervals where only one can survive",
+    cases: [
+      [[[1, 2], [2, 3], [3, 4], [1, 3]]],
+      [[[1, 2], [1, 2], [1, 2]]],
+      [[[1, 2], [2, 3]]],
+      [[[1, 100], [11, 22], [1, 11], [2, 12]]],
+      [[[1, 2]]],
+    ],
+  },
+  "burst-balloons-arrows": {
+    params: ["int[][]"],
+    ret: "int",
+    exercises:
+      "the inclusive endpoint, fully disjoint balloons where the answer is the count, and nesting",
+    cases: [
+      [[[10, 16], [2, 8], [1, 6], [7, 12]]],
+      [[[1, 2], [3, 4], [5, 6], [7, 8]]],
+      [[[1, 2], [2, 3], [3, 4], [4, 5]]],
+      [[[1, 10], [2, 3], [4, 5]]],
+      [[[1, 2]]],
+    ],
+  },
+  "redundant-connection": {
+    params: ["int[][]"],
+    ret: "int[]",
+    exercises:
+      "the tie-break — a cycle followed by a leaf edge, where the literal last edge is the wrong answer",
+    cases: [
+      [[[1, 2], [1, 3], [2, 3]]],
+      [[[1, 2], [2, 3], [3, 4], [1, 4], [1, 5]]],
+      [[[1, 2], [1, 3], [1, 4], [3, 4]]],
+      [[[1, 2], [2, 3], [1, 3]]],
+    ],
+  },
+  "equations-possible": {
+    params: ["string[]"],
+    ret: "bool",
+    exercises:
+      "transitivity, which pairwise checking misses, and the self-referring a!=a",
+    cases: [
+      [["a==b", "b!=a"]],
+      [["b==a", "a==b"]],
+      [["a==b", "b==c", "a!=c"]],
+      [["a!=a"]],
+      [["c==c", "b==d", "x!=z"]],
+    ],
+  },
+  "connect-the-network": {
+    params: ["int", "int[][]"],
+    ret: "int",
+    exercises:
+      "the cable-count rejection before any structure is looked at, and a spare cable inside one component",
+    cases: [
+      [4, [[0, 1], [0, 2], [1, 2]]],
+      [6, [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3]]],
+      [6, [[0, 1], [0, 2], [0, 3], [1, 2]]],
+      [5, [[0, 1], [0, 2], [3, 4], [2, 3]]],
+      [1, [[0, 0]]],
+    ],
+  },
+  "min-stack": {
+    params: ["string[]", "int[][]"],
+    ret: "int[]",
+    exercises:
+      "duplicate minima, where one pop must not lose a minimum still on the stack",
+    cases: [
+      [["push", "push", "push", "getMin", "pop", "top", "getMin"], [[-2], [0], [-3], [], [], [], []]],
+      [["push", "push", "getMin", "pop", "getMin"], [[1], [1], [], [], []]],
+      [["push", "getMin", "push", "getMin"], [[5], [], [7], []]],
+      [["push", "push", "pop", "getMin"], [[2], [1], [], []]],
+    ],
+  },
+  "lru-cache": {
+    params: ["int", "string[]", "int[][]"],
+    ret: "int[]",
+    exercises:
+      "a get counting as a use, an update refreshing recency, and capacity one",
+    cases: [
+      [2, ["put", "put", "get", "put", "get", "get"], [[1, 1], [2, 2], [1], [3, 3], [2], [3]]],
+      [1, ["put", "put", "get"], [[1, 1], [2, 2], [1]]],
+      [2, ["put", "put", "put", "put", "get"], [[1, 1], [2, 2], [1, 9], [3, 3], [1]]],
+    ],
+  },
+  "queue-from-stacks": {
+    params: ["string[]", "int[][]"],
+    ret: "int[]",
+    exercises:
+      "a push arriving while the outbox still holds elements — the case that breaks an unconditional refill",
+    cases: [
+      [["push", "push", "peek", "pop", "empty"], [[1], [2], [], [], []]],
+      [["push", "pop", "push", "pop", "empty"], [[1], [], [2], [], []]],
+      [["push", "push", "pop", "push", "pop", "pop"], [[1], [2], [], [3], [], []]],
+    ],
+  },
+  "implement-trie": {
+    params: ["string[]", "string[]"],
+    ret: "int[]",
+    exercises:
+      "the gap between search and startsWith on one dictionary, and a prefix longer than anything inserted",
+    cases: [
+      [["insert", "search", "search", "startsWith", "insert", "search"], ["apple", "apple", "app", "app", "app", "app"]],
+      [["insert", "startsWith"], ["a", "ab"]],
+      [["insert", "insert", "search", "startsWith"], ["cat", "cat", "cat", "ca"]],
+    ],
+  },
+  "wildcard-dictionary": {
+    params: ["string[]", "string[]"],
+    ret: "int[]",
+    exercises:
+      "a leading dot that must try both branches, and arriving at a node that is not a word",
+    cases: [
+      [["addWord", "addWord", "addWord", "search", "search", "search", "search"], ["bad", "dad", "mad", "pad", "bad", ".ad", "b.."]],
+      [["addWord", "search"], ["a", "."]],
+      [["addWord", "search", "search"], ["ab", "a", "a."]],
+    ],
+  },
+  "replace-words": {
+    params: ["string[]", "string"],
+    ret: "string",
+    exercises:
+      "several applicable roots where the shortest must win, and a word that matches nothing",
+    cases: [
+      [["cat", "bat", "rat"], "the cattle was rattled by the battery"],
+      [["a", "aa", "aaa"], "a aa aaa aaaa"],
+      [["cat"], "dog cow"],
+      [["catt", "cat", "bat"], "the cattle was rattled by the battery"],
+    ],
+  },
+  "find-pivot-index": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "the empty left side at index 0, and an array with no answer at all",
+    cases: [
+      [[1, 7, 3, 6, 5, 6]],
+      [[2, 1, -1]],
+      [[1, 2, 3]],
+      [[-1, -1, -1, -1, -1, 0]],
+      [[0]],
+    ],
+  },
+  "contiguous-array": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "a balanced stretch starting partway in, and an array with no balanced stretch",
+    cases: [
+      [[0, 1]],
+      [[0, 1, 0]],
+      [[0, 0, 1, 0, 0, 0, 1, 1]],
+      [[1, 1, 1]],
+      [[0]],
+    ],
+  },
+  "range-sum-immutable": {
+    params: ["int[]", "int[][]"],
+    ret: "int[]",
+    exercises:
+      "a range starting at zero, one starting partway in, and the whole array",
+    cases: [
+      [[-2, 0, 3, -5, 2, -1], [[0, 2], [2, 5], [0, 5]]],
+      [[1], [[0, 0]]],
+      [[5, -5, 5, -5], [[1, 2], [0, 3]]],
+    ],
+  },
+  "gas-station": {
+    params: ["int[]", "int[]"],
+    ret: "int",
+    exercises:
+      "an answer that wraps around the end, and an input where the totals alone rule it out",
+    cases: [
+      [[1, 2, 3, 4, 5], [3, 4, 5, 1, 2]],
+      [[2, 3, 4], [3, 4, 3]],
+      [[5, 1, 2, 3, 4], [4, 4, 1, 5, 1]],
+      [[2], [2]],
+      [[3, 1, 1], [1, 2, 2]],
+    ],
+  },
+  "partition-labels": {
+    params: ["string"],
+    ret: "int[]",
+    exercises:
+      "a letter spanning the whole string, and letters that each appear once",
+    cases: [
+      ["ababcbacadefegdehijhklij"],
+      ["eccbbbbdec"],
+      ["abc"],
+      ["a"],
+    ],
+  },
+  "jump-game-ii": {
+    params: ["int[]"],
+    ret: "int",
+    exercises:
+      "the single-element array needing zero jumps, and a zero that must be leapt over",
+    cases: [
+      [[2, 3, 1, 1, 4]],
+      [[2, 3, 0, 1, 4]],
+      [[0]],
+      [[1, 2]],
+      [[1, 1, 1, 1]],
+    ],
+  },
+  "hamming-weight": {
+    params: ["int"],
+    ret: "int",
+    exercises:
+      "zero, a single high bit, and a dense value",
+    cases: [
+      [11],
+      [128],
+      [0],
+      [4294967293],
+      [1],
+    ],
+  },
+  "reverse-bits": {
+    params: ["int"],
+    ret: "int",
+    exercises:
+      "the leading zeroes, which a loop driven by the value silently drops",
+    cases: [
+      [43261596],
+      [1],
+      [0],
+      [4294967293],
+    ],
+  },
+  "subsets": {
+    params: ["int[]"],
+    ret: "int[][]",
+    unordered: true,
+    exercises:
+      "the empty subset and the full array, both of which a leaves-only recursion loses",
+    cases: [
+      [[1, 2, 3]],
+      [[0]],
+      [[1, 2]],
+    ],
+  },
+  "permutations": {
+    params: ["int[]"],
+    ret: "int[][]",
+    unordered: true,
+    exercises:
+      "a single element, which must yield one permutation rather than none",
+    cases: [
+      [[1, 2, 3]],
+      [[0, 1]],
+      [[1]],
+    ],
+  },
+  "combination-sum": {
+    params: ["int[]", "int"],
+    ret: "int[][]",
+    unordered: true,
+    exercises:
+      "reuse of one candidate, an unreachable target, and answers of differing lengths",
+    cases: [
+      [[2, 3, 6, 7], 7],
+      [[2], 1],
+      [[2, 3, 5], 8],
+      [[8, 7, 4, 3], 11],
+    ],
+  },
+  "rotate-image": {
+    params: ["int[][]"],
+    ret: "int[][]",
+    exercises:
+      "an odd size with a fixed centre, and the one-by-one grid where neither loop runs",
+    cases: [
+      [[[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+      [[[1, 2], [3, 4]]],
+      [[[1]]],
+      [[[5, 1, 9, 11], [2, 4, 8, 10], [13, 3, 6, 7], [15, 14, 12, 16]]],
+    ],
+  },
+  "spiral-matrix-ii": {
+    params: ["int"],
+    ret: "int[][]",
+    exercises:
+      "n = 1 where no ring is walked, and an even n with no centre cell",
+    cases: [
+      [3],
+      [1],
+      [2],
+      [4],
+    ],
+  },
 }
 
 /* Nothing is excused any more (B30, B62). Every problem in VECTORS is RUN in

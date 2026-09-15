@@ -1,5 +1,4 @@
 import type { Problem } from "../../types.ts"
-import { problem as bestTrade } from "../../../problems/best-trade/index.ts"
 import { problem as longestUniqueSubstring } from "./longest-unique-substring.ts"
 import { problem as minCoverSubstring } from "./min-cover-substring.ts"
 import { problem as charReplacement } from "../../../problems/char-replacement/index.ts"
@@ -11,7 +10,6 @@ import { problem as anagramPositions } from "../../../problems/anagram-positions
 import { problem as fruitBaskets } from "../../../problems/fruit-baskets/index.ts"
 
 export const slidingWindow: Problem[] = [
-  bestTrade,
   longestUniqueSubstring,
   minCoverSubstring,
   charReplacement,
