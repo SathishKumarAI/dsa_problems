@@ -4,7 +4,7 @@
 [![MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![problems](https://img.shields.io/badge/problems-127-brightgreen.svg)](docs/PROBLEMS.md)
 [![journeys](https://img.shields.io/badge/journeys-93-brightgreen.svg)](docs/AUTHORING.md)
-[![tests](https://img.shields.io/badge/tests-776%20passing-brightgreen.svg)](#the-seven-gates)
+[![tests](https://img.shields.io/badge/tests-778%20passing-brightgreen.svg)](#the-seven-gates)
 [![contributions](https://img.shields.io/badge/contributions-wanted-orange.svg)](CONTRIBUTING.md)
 
 One app: a pattern-organised interview practice set (**127 problems** across 10 patterns, SQL
@@ -91,7 +91,7 @@ None of them is sufficient on its own. That is the point of having seven.
 
 | Command | What it proves |
 |---|---|
-| `npm run check` | `tsc -b`, `eslint`, **776** Node tests |
+| `npm run check` | `tsc -b`, `eslint`, **778** Node tests |
 | `npm run test:ui` | Real Chrome — routes, the earn loop, rails, deep links, panel sizes |
 | `npm run verify:code` | Every Java and C++ block **compiles** (758 blocks) |
 | `npm run verify:run` | Those blocks **agree with the Python** (2,186 oracle runs, 4,372 translations compared) |

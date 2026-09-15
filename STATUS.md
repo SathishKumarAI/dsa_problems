@@ -2,77 +2,79 @@
 
 ## Where the code is
 
-Two branches, in order. **PR #90** is `refactor/problems-dir-balanced-brackets` — one directory per
-problem. **`feat/one-page-per-problem`** sits on top of it: the explanation stopped being a second
-route and became a section of the problem page.
+Three branches, stacked in this order. Merge them in it.
 
-### One page per problem
+| | Branch | What |
+|---|---|---|
+| **#90** | `refactor/problems-dir-balanced-brackets` | one directory per problem, proved on one |
+| **#91** | `feat/one-page-per-problem` | the explanation stops being a second route |
+| **#92** | `refactor/problems-dir-batch-1` | 25 more problems moved |
 
-`#/p/<pattern>/<id>` is the only route a problem has. Statement, hints, walkthrough, the ladder in
-three languages, then the long explanation in full at `#explanation`. `#/learn/<id>` redirects here
-and jumps (`?read=explanation`); `learn-page-view.tsx` is gone.
+### Where a problem lives now
 
-**The dedupe is the point, and it is what makes the change worth the diff.** A page that stands
-alone has to restate the title, the statement, the constraints, the examples, the hints and every
-rung in three languages. Measured: `balanced-tree`'s generated file went **1,146 lines to 930**, and across all 127 files
-the corpus went **93,055 lines to 59,372** — 33,683 lines, 36% of it, were the screen above said
-twice. `gen-learn.mjs` emits only what the problem page does not carry — the authored
-document, one runnable script, and where the problem sits — and `gen-learn.test.mjs` fails the build
-if any of those six headings comes back.
+`src/problems/<id>/` holds both halves. **39 of 82** documents converted; 43 still Markdown.
+Read `src/problems/README.md` before converting the next one — it is the change → file table, the
+rules, and the two-script recipe.
 
-**Two things got sharper on the way there:**
+**Two entry files, and it is load-bearing.** `index.ts` is the `Problem` record and is imported
+statically by the pattern barrel, so it is in the first chunk. `doc.ts` is the `TeachingDoc` and is
+reached only by `lib/content.ts`'s glob. **Nothing eager may reach a doc file**, or 127 documents
+join the first load and B95 is undone.
 
-* **The cap removes the SECTION, not just the door.** While a journey is mid-flight the explanation
-  is not fetched and not rendered. On two routes it was enough to hide the link; on one page hiding
-  a link hides nothing. The UI test asserts both.
-* **A typed document renders as SECTIONS.** `lib/content.ts` used to re-serialise it to a Markdown
-  string for `lib/markdown.ts` to re-parse — object → text → blocks → UI, with every typed table
-  flattened to pipes on the way out and split on `|` on the way back in. `lib/teaching-parts.ts`
-  builds the section list as data and `components/teaching-doc.tsx` renders it. A cell may now hold
-  a bitwise `a | b`, and the script editor is PLACED rather than guessed at "the last Python fence".
+`#/p/<pattern>/<id>` is the only route a problem has; the explanation is a section at
+`#explanation`, gated by the same `capped` flag as the ladder — the SECTION, not just the door.
+
+### The batch, and what its round-trip caught
+
+25 problems, chosen as every document whose approaches already matched its ladder, so the batch is
+one kind of work and owes no B79 promotion. `content-roundtrip.mjs` refused the batch **twice**, and
+both causes hit every remaining document:
+
+* **`## Understanding` can hold a SECOND table.** The old strip took every `|` line in the section
+  and parsed the lot as one table, which is right only while there is one. A misconception table, a
+  "what 3Sum does differently" table, a false-start trace — **5 documents**, every row gone.
+* **The constraints `###` part is not only a table.** Four documents argue under that heading what
+  the bound actually buys, and zero-matrix's — *at most `rows + cols` bits describe a 40 000-cell
+  answer* — is the reason its last rung exists. Lifting the whole part lost **15 documents**' worth.
+* Then mirror-tree alone: **two tables under one heading**. Only the first contiguous run comes out.
+
+`mirror-tree` was also the batch's one real judgement call: its document teaches the recursion
+before the iterative version and the ladder has them the other way round, so its binding is not
+ladder order. That is what `scripts/rung-bindings.json` is for.
+
+### The record half has its own script and its own proof
+
+`scripts/split-record.mjs` slices each top-level key out as TEXT — no parse, no re-serialise,
+because a record is mostly template literals holding Python whose indentation is the program. It
+outdents by two and skips the inside of a template literal while doing it. Every move is
+**deep-equalled against the record the catalogue carries before the original is deleted**, and
+`scripts/split-record.test.mjs` re-proves it on every change, plus that no code block's indentation
+stopped nesting.
 
 Verified green, not asserted:
 
 | Gate | Result |
 |---|---|
-| `npm run check` | **776 tests, 0 fail** |
+| `npm run check` | **778 tests, 0 fail** |
 | `npm run test:ui` | **172 / 0 fail**, real Chrome |
 | `npm run verify:code` | **758 blocks compiled, 0 failed** |
-| `npm run verify:run` | **2,186 oracle runs, 4,372 translations, 0 disagreed** |
-| `verify-deep.mjs` | **82/82** ran clean and reported agreement |
-| `learn-gaps.mjs --strict` | clean |
-| First load of `#/`, from the page's own resource timeline | **197.0 KB / 5 files → 195.3 KB / 3 files**. Not a goal of this change; measured because merging two routes could have dragged the explanation into the shell, and it did not |
-| Both halves driven in Chrome at 1440 | typed (`balanced-brackets`): 10 `h2` + 22 `h3` + 6 tables + 1 editor + a 31-entry rail. Markdown (`max-depth`): 11 `h2` + 25 `h3` + 7 tables. **Zero duplicated headings on either**, and the statement appears exactly once. No sideways scroll at 1440 or 390 |
+| `npm run verify:run` | see the branch's commit — run in full on the batch |
+| `verify-deep.mjs` | **82/82** ran clean and reported agreement (43 from Markdown, 39 from a field) |
+| `content-roundtrip.mjs --all` | **every line of all 25** carried through |
+| `learn-gaps.mjs --strict` | clean; the ratchet dropped 104 → 81 |
+| `gen-manifest.mjs --check` | clean |
 
-### Where the explanation lives now
+### The next action, concretely
 
-| Question | File |
-|---|---|
-| Which sections, in what order | `src/lib/teaching-parts.ts` — pure data, no JSX |
-| What they look like | `src/components/teaching-doc.tsx` |
-| Which of the two forms a problem has, and fetching it | `src/lib/use-explanation.ts` |
-| The fork between them | `src/components/explanation.tsx` |
-| The slot, the door, the rail, the cap | `src/components/problem-detail.tsx` |
-| The Markdown half, for the 68 not yet converted | `scripts/gen-learn.mjs` → `docs/learn/**` → `src/lib/learn-pages.ts` |
+**Split the 11 `doc.ts` monoliths.** They are the only files in `src/problems/` over the 500-line
+ceiling — 928 lines at the worst (`backspace-compare`) — because branch #90 moved the thirteen
+earlier documents here *unchanged* rather than re-converting them. Their Markdown is gone, so
+`md-to-content.mjs` cannot be re-run: this needs the same textual treatment `split-record.mjs` gives
+a record. Their records have not moved either.
 
-### What is left
-
-**68 documents to go** (B97). The converter emits the whole directory:
-
-```
-node scripts/md-to-content.mjs --id <id>      # bind its rungs in scripts/rung-bindings.json first
-node scripts/content-roundtrip.mjs --id <id>  # prove no line was lost, THEN delete the md
-node scripts/verify-deep.mjs --id <id>
-```
-
-Each conversion now also deletes that problem's `docs/learn/` page, because a typed document wins.
-`src/content/` holds only `types.ts` and `content.test.ts`; renaming it is churn, do it alone or
-leave it.
-
-Two brace counters were lying and one was skipping work — `problems.test.ts`'s well-formed check and
-`localsmith/run.mjs`'s `cDefs` both counted `{`/`}` without skipping character and string literals,
-so a rung testing `ch == '{'` was reported as **"no function to call"** and silently unverified.
-Both strip literals now. See `CLAUDE.md`'s trap list.
+After that: **43 documents to go**, and every one of them teaches approaches the record has no entry
+for, so each owes B79 promotion — a keyed alternative with Python, Java and C++ — before it can
+convert. That is the expensive half, and it is all that is left.
 
 ## Start here
 

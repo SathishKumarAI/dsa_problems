@@ -5,7 +5,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/two-pointers/valid-palindrome.ts"
+import { problem } from "../../problems/valid-palindrome/index.ts"
 
 type S = Data<string>
 

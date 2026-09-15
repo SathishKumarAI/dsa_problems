@@ -5,7 +5,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/two-pointers/trap-rain-water.ts"
+import { problem } from "../../problems/trap-rain-water/index.ts"
 
 type N = Data<number>
 

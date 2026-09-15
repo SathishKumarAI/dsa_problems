@@ -158,3 +158,23 @@ test("an unlabelled fold still opens", () => {
   const [block] = parseMarkdown("<details>\n\nnaked\n\n</details>")
   assert.equal(block.kind === "details" && block.summary, "Show more")
 })
+
+
+// three-sum-closest writes `|s − 1|` — absolute value — in the header of four
+// worked examples, escaped as `\|` because that is how a table carries a pipe.
+// The splitter used to cut on it, so those tables rendered one column too wide
+// with a bare backtick in the header. It had rendered that way for as long as
+// the document existed.
+test("a table cell may hold an escaped pipe", () => {
+  const blocks = parseMarkdown(
+    [
+      "| a | `\\|s − 1\\|` | b |",
+      "|---|---|---|",
+      "| 1 | `\\|2 − 1\\|` | 3 |",
+    ].join("\n")
+  )
+  const table = blocks.find((b) => b.kind === "table")
+  assert.ok(table && table.kind === "table", "no table parsed")
+  assert.deepEqual(table.head, ["a", "`|s − 1|`", "b"])
+  assert.deepEqual(table.rows, [["1", "`|2 − 1|`", "3"]])
+})

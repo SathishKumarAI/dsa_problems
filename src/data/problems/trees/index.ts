@@ -7,8 +7,8 @@ import { problem as invertTree } from "./invert-tree.ts"
 import { problem as balancedTree } from "./balanced-tree.ts"
 import { problem as bstAncestor } from "./bst-ancestor.ts"
 import { problem as inorderWalk } from "./inorder-walk.ts"
-import { problem as mirrorTree } from "./mirror-tree.ts"
-import { problem as rightSideView } from "./right-side-view.ts"
+import { problem as mirrorTree } from "../../../problems/mirror-tree/index.ts"
+import { problem as rightSideView } from "../../../problems/right-side-view/index.ts"
 import { problem as treeDiameter } from "./tree-diameter.ts"
 
 export const trees: Problem[] = [

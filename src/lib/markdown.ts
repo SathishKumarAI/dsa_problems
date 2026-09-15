@@ -67,12 +67,22 @@ export function inlineSpans(text: string): Span[] {
   return out
 }
 
+// `\|` is a LITERAL pipe, not a cell boundary — the standard way to put one
+// inside a table, and the only way to write `|s − 1|` for absolute value in a
+// column header. Splitting on it anyway turned three-sum-closest's four worked
+// examples into tables one column too wide, with a bare backtick painted in the
+// header of each: `` `\ ``, `s − 1`, `` \` ``. Shipped that way for as long as
+// the document has existed, on the old learn page and the new one alike; the
+// conversion is only what made someone look.
+//
+// Split on a pipe not preceded by a backslash, then unescape. Seventeen cells
+// across the corpus, in three documents.
 const cells = (row: string) =>
   row
     .replace(/^\s*\|/, "")
-    .replace(/\|\s*$/, "")
-    .split("|")
-    .map((c) => c.trim())
+    .replace(/(?<!\\)\|\s*$/, "")
+    .split(/(?<!\\)\|/)
+    .map((c) => c.trim().replace(/\\\|/g, "|"))
 
 const isSeparator = (line: string) => /^\s*\|?[\s:-]*-[\s:|-]*$/.test(line) && line.includes("-")
 
