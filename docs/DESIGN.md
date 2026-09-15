@@ -40,6 +40,33 @@ and `text-[13.5px]` in the code panel; the two code surfaces went UP to
 type left below the scale is the 7px ▲ / ✓ in the chip legend, which sits on a
 swatch beside its own label and is a mark rather than a word (B58).
 
+### Inline code is a role, not a fraction
+
+`text-[0.9em]` on inline `<code>` was a **seventh type step that moved with
+wherever it landed**: 15.3 px inside `text-body`, 13.5 px inside a table cell,
+so one span of inline code was three sizes on one page — 103 nodes of it
+measured on the problem page alone. It takes `text-ui` now, with `text-meta`
+inside table cells, which is the same rule as everything else: mono one step
+below its sans sibling, by ROLE.
+
+### Mono is for notation, and a constraint line is often both
+
+`Problem.constraints` holds bounds and sentences in one field. Counted across
+the corpus: **668 constraint lines, 170 notation and 498 English** — so three
+quarters of the bounds on this site were prose wearing the data face, which
+reads as something the reader is supposed to type.
+
+A per-line choice cannot fix it, because the most useful lines are hybrids —
+`1 <= nums[i] <= n — every value is a legal index of the array`. So the split is
+per RUN (`lib/notation.ts`): the notation is set in mono, the words in the
+reading face, and `notation.test.ts` asserts over every line in the corpus that
+the runs rebuild the original character for character.
+
+### Weights: 400, 500, 600
+
+And nothing above. A bare `<b>` renders 700, which is off this scale — write
+`font-semibold` and keep the element where a test selects on it.
+
 ## The quiet layer — `text-dim`
 
 `text-muted-foreground` at 7.4:1 is the secondary voice. Below it there was an

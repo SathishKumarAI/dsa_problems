@@ -65,7 +65,7 @@ export function MiniPlayer({ journey }: { journey: AnyJourney }) {
   return (
     <div className="flex flex-col gap-3 pt-2">
       <div className="flex flex-wrap items-baseline gap-x-3 text-ui">
-        <b>{act.name}</b>
+        <b className="font-semibold">{act.name}</b>
         <span className="font-mono text-meta text-muted-foreground">
           {act.complexity}
         </span>

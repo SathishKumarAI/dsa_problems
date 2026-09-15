@@ -149,7 +149,12 @@ export function ContentsRail({
             entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
           )}
         >
-          {entry.text.replace(/`/g, "")}
+          {/* A heading's text is MARKDOWN, so it carries the author's
+              emphasis markers. Backticks were already stripped; asterisks and
+              underscores were not, so the rail printed
+              `*(an addition — not in the data file's ladder)*` with the stars
+              showing, three lines deep. Strip the marks, keep the words. */}
+          {entry.text.replace(/[`*_]/g, "")}
         </a>
       ))}
     </nav>

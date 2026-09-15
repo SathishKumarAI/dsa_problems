@@ -158,7 +158,7 @@ export function ApproachLadder({
               <span className="font-mono text-meta text-muted-foreground">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <b className="text-body">{r.name}</b>
+              <b className="text-body font-semibold">{r.name}</b>
               {/* B79. A rung the teaching document teaches and the journey
                   skips — a baseline the animation has no reason to walk, or a
                   variant it argues against. Marked rather than hidden: a

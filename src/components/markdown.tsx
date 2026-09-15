@@ -24,7 +24,15 @@ function Inline({ text }: { text: string }) {
           return (
             <code
               key={i}
-              className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground"
+              // `text-ui`, not `text-[0.9em]`. A relative size is a SEVENTH
+              // type step that changes with wherever it lands: 0.9em rendered
+              // 15.3px inside body prose and 13.5px inside a table cell, so
+              // the same inline code was three different sizes on one page
+              // (103 nodes measured on contains-duplicate). DESIGN.md's rule
+              // is the role, never the size — and mono one step below its sans
+              // sibling, which beside `text-body` is exactly `text-ui`. The
+              // table cells drop theirs to `text-meta` for the same reason.
+              className="rounded bg-muted px-1 py-0.5 font-mono text-ui text-foreground"
             >
               {span.text}
             </code>
@@ -135,7 +143,10 @@ export function Markdown({
 
           case "paragraph":
             return (
-              <p key={i} className="max-w-[35em] text-body text-muted-foreground">
+              <p
+                key={i}
+                className="max-w-[35em] text-body text-muted-foreground"
+              >
                 <Inline text={block.text} />
               </p>
             )
@@ -180,7 +191,9 @@ export function Markdown({
                   className="w-0 min-w-full"
                 />
               )
-            return <CodeBlock key={i} code={block.code} className="w-0 min-w-full" />
+            return (
+              <CodeBlock key={i} code={block.code} className="w-0 min-w-full" />
+            )
 
           case "table":
             return (
@@ -191,7 +204,7 @@ export function Markdown({
                       {block.head.map((cell, j) => (
                         <th
                           key={j}
-                          className="px-3 py-2 text-left font-semibold text-foreground"
+                          className="px-3 py-2 text-left font-semibold text-foreground [&_code]:text-meta"
                         >
                           <Inline text={cell} />
                         </th>
@@ -207,7 +220,7 @@ export function Markdown({
                         {row.map((cell, k) => (
                           <td
                             key={k}
-                            className="px-3 py-2 align-top text-muted-foreground"
+                            className="px-3 py-2 align-top text-muted-foreground [&_code]:text-meta"
                           >
                             <Inline text={cell} />
                           </td>

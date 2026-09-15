@@ -17,6 +17,7 @@
 // This file owns the three sections. It does not own the examples' motion —
 // that is `example-viewer.tsx` — and it decides nothing about the ladder.
 import { ExampleViewer } from "./example-viewer"
+import { runsOf } from "@/lib/notation"
 import { cn } from "@/lib/utils"
 import type { Problem } from "@/data"
 
@@ -66,18 +67,41 @@ function Constraints({ problem }: { problem: Problem }) {
             // would push this text 8px right of the paragraph above it. The
             // negative margin spends it outward instead, so the text keeps the
             // page's left edge (the contents rail does the same, `-ml-4 pl-4`).
-            className="-mx-2 animate-edge-in-y rounded-md border border-transparent px-2 py-1.5 transition-colors hover:border-chart-1/40 hover:bg-accent/40"
+            // `text-ui` on the ROW. Without a role here the bullet and the
+            // arrow inherited the root's 16px — off the six-step scale, and
+            // the loudest thing in the section was the punctuation.
+            className="-mx-2 animate-edge-in-y rounded-md border border-transparent px-2 py-1.5 text-ui transition-colors hover:border-chart-1/40 hover:bg-accent/40"
             style={{ animationDelay: `${i * 45}ms` }}
           >
             <div className="flex max-w-[35em] items-baseline gap-2">
               <span aria-hidden className="text-dim">
                 ·
               </span>
-              <span className="font-mono text-ui">{c}</span>
+              {/* Mono for the NOTATION and the reading face for the words.
+                  Three quarters of the corpus's 668 constraint lines are
+                  English sentences, and setting those in the data face reads
+                  as something the reader is meant to type — DESIGN.md gives
+                  mono to values, indices and notation glyphs, not to prose.
+                  The hybrids are why this splits per run: "1 <= nums[i] <= n —
+                  every value is a legal index" is both, in one line. */}
+              <span className="text-ui">
+                {runsOf(c).map((run, j) =>
+                  run.mono ? (
+                    <span key={j} className="font-mono">
+                      {run.text}
+                    </span>
+                  ) : (
+                    <span key={j}>{run.text}</span>
+                  )
+                )}
+              </span>
             </div>
             {what && (
               <div className="flex max-w-[35em] items-baseline gap-2 pl-4">
-                <span aria-hidden className="text-chart-1">
+                {/* the glyph is punctuation, so it is drawn quiet. In the
+                    accent it was the brightest mark in the row and the eye
+                    went to the arrow instead of the sentence it points at. */}
+                <span aria-hidden className="text-dim">
                   →
                 </span>
                 <span className="text-ui text-muted-foreground">{what}</span>
