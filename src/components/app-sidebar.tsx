@@ -40,6 +40,9 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
 // The MANIFEST for the problem list, the real `PATTERNS` for the pattern rows.
@@ -198,6 +201,14 @@ export function AppSidebar({ view }: { view: string }) {
   const { state, toggleSidebar } = useSidebar()
   const collapsed = state === "collapsed"
   const route = useRoute()
+  // Which pattern is open, so its problems are listed. The sidebar stopped at
+  // PATTERNS when the journey catalogue went: ten rows, and no way to reach a
+  // problem from it at all. A catalogue whose leaves are unreachable is a table
+  // of contents with no page numbers.
+  const openPattern =
+    route.parts[0] === "p" ? route.parts[1] : undefined
+  const openProblem =
+    route.parts[0] === "p" ? route.parts[2] : undefined
   const resume = continuing(
     route.parts[0] === "journey" ? route.parts[1] : undefined
   )
@@ -330,6 +341,34 @@ export function AppSidebar({ view }: { view: string }) {
                     <SidebarMenuBadge>
                       <ProgressRing done={done} total={problems.length} />
                     </SidebarMenuBadge>
+                    {/* The pattern you are IN lists its problems. Not a
+                        disclosure the reader has to find and not all ten at
+                        once — 127 rows is the catalogue again — just the branch
+                        they are standing on, which is the one they need to move
+                        sideways in. A masked pattern lists nothing: the titles
+                        are the idea it is still withholding. */}
+                    {openPattern === p.id && !hidden && (
+                      <SidebarMenuSub>
+                        {problems.map((pr) => (
+                          <SidebarMenuSubItem key={pr.id}>
+                            <SidebarMenuSubButton
+                              render={<a href={href(`/p/${p.id}/${pr.id}`)} />}
+                              isActive={openProblem === pr.id}
+                            >
+                              <span
+                                className={cn(
+                                  "truncate",
+                                  solved.has(pr.id) &&
+                                    "text-muted-foreground line-through"
+                                )}
+                              >
+                                {pr.title}
+                              </span>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    )}
                   </SidebarMenuItem>
                 )
               })}

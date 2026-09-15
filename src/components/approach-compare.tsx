@@ -170,7 +170,7 @@ export function ApproachCompare({
                   <button
                     key={r.key}
                     onClick={() => onPick(compareHref(left, r))}
-                    className="inline-flex min-h-11 items-center font-mono text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-0"
+                    className="inline-flex min-h-11 items-center font-mono text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-7"
                   >
                     {left.key} · {r.key}
                   </button>

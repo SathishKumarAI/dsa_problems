@@ -227,6 +227,78 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // The sidebar stopped at PATTERNS when the journey catalogue went: ten rows,
+    // and no way to reach a problem from it at all. A catalogue whose leaves are
+    // unreachable is a table of contents with no page numbers.
+    test("the sidebar reaches a problem, not just a pattern", async () => {
+      const read = `
+        const root = document.querySelector('[data-slot="sidebar"]');
+        const links = [...root.querySelectorAll('a[href]')].map(a => a.getAttribute('href') || '');
+        return {
+          patterns: links.filter(h => new RegExp('p/[a-z-]+$').test(h)).length,
+          problems: links.filter(h => new RegExp('p/[a-z-]+/[a-z0-9-]+').test(h)).length,
+        };
+      `
+      await page.goto(`${server.base}/#/`)
+      const home = await page.run(read)
+      assert.ok(home.patterns >= 8, `home lists ${home.patterns} patterns`)
+      assert.equal(
+        home.problems,
+        0,
+        "every pattern's problems are listed at once — that is the catalogue again"
+      )
+
+      // inside a pattern, its own problems are there; the other nine stay shut
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const open = await page.run(read)
+      assert.ok(
+        open.problems >= 10,
+        `the open pattern lists only ${open.problems} of its problems`
+      )
+      assert.equal(open.patterns, home.patterns, "the pattern rows moved")
+
+      // and they stay while you work one of them, so you can move sideways
+      await page.goto(`${server.base}/#/p/two-pointers/move-zeroes`)
+      const onProblem = await page.run(read)
+      assert.equal(
+        onProblem.problems,
+        open.problems,
+        "the siblings vanish once you open one of them"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
+    // A reference is attached to a PATTERN and not to a problem on purpose —
+    // there is an authoritative page on hash tables and none on "Pair With
+    // Target Sum". But the moment a reader wants it is the moment they are
+    // stuck on a problem, not the moment they are choosing one.
+    test("the reading list is on the problem, the playbook on the pattern", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers`)
+      const pattern = await page.run(`
+        const m = document.querySelector('main').innerText;
+        return { readFurther: /read further/i.test(m), playbook: /the playbook/i.test(m) };
+      `)
+      assert.ok(pattern.playbook, "the pattern page lost its playbook")
+      assert.equal(
+        pattern.readFurther,
+        false,
+        "the reading list is still on the pattern page"
+      )
+
+      await page.goto(`${server.base}/#/p/two-pointers/move-zeroes`)
+      const problem = await page.run(`
+        const m = document.querySelector('main').innerText;
+        return { readFurther: /read further/i.test(m), playbook: /the playbook/i.test(m) };
+      `)
+      assert.ok(problem.readFurther, "the problem page has no reading list")
+      assert.equal(
+        problem.playbook,
+        false,
+        "the playbook followed it onto the problem page"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     // The IA rule, asserted because nothing was watching it and it drifted for
     // months: a problem is ONE noun. The sidebar used to open with a list of
     // journeys and carry a list of patterns below it, so 93 of the 127 problems
@@ -535,7 +607,11 @@ describe(
       assert.ok(out.moves >= 4, `only ${out.moves} playbook moves rendered`)
       assert.equal(out.moves, out.mistakes, "a move rendered without its mistake")
       assert.ok(out.practise >= 5, "no links into the problems")
-      assert.ok(out.hasReferences, "the reading list is not on the pattern page")
+      assert.equal(
+        out.hasReferences,
+        false,
+        "the reading list is still on the pattern page — it moved to the problem"
+      )
       assert.ok(out.hasFacts, "the orient bar did not render")
       assert.deepEqual(page.errors(), [])
 
@@ -1452,9 +1528,9 @@ describe(
 
     test("the reading list is masked with the pattern it would name", async () => {
       // A references panel is a pattern name written five different ways —
-      // "Hash table", "Dijkstra's algorithm", "Binary search tree". It is a
-      // NEW surface on the catalogue page and nothing was checking it, so it
-      // could have leaked the exact word B45 exists to withhold.
+      // "Hash table", "Dijkstra's algorithm", "Binary search tree" — so it can
+      // leak the exact word B45 exists to withhold. The panel MOVED to the
+      // problem page, where a reader reaches for it; the rule moved with it.
       const read = `
         const panel = [...document.querySelectorAll('section')]
           .find(s => /read further/i.test(s.innerText || ''));
@@ -1466,16 +1542,16 @@ describe(
       `
       await page.goto(`${server.base}/#/`)
       await page.run(`${FRESH} return 1`)
-      await page.goto(`${server.base}/#/p/two-pointers`)
+      await page.goto(`${server.base}/#/p/two-pointers/move-zeroes`)
       const shown = await page.run(read)
-      assert.ok(shown.panel, "no reading list on an unmasked pattern")
+      assert.ok(shown.panel, "no reading list on an unmasked pattern's problem")
       assert.ok(shown.rows >= 3, `only ${shown.rows} readings`)
 
       // mid-journey: the panel goes entirely, not merely its heading
       await page.run(
         `localStorage.setItem('dsa:unlocked:two-sum', '3'); return 1`
       )
-      await page.goto(`${server.base}/#/p/two-pointers`)
+      await page.goto(`${server.base}/#/p/two-pointers/move-zeroes`)
       const masked = await page.run(read)
       assert.equal(
         masked.panel,

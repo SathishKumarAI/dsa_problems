@@ -18,6 +18,9 @@
 // belongs to the learner, not to the page.
 import {
   ArrowLeftIcon,
+  BookOpenIcon,
+  FileCodeIcon,
+  GraduationCapIcon,
   ArrowRightIcon,
   ExternalLinkIcon,
   ListTreeIcon,
@@ -167,7 +170,7 @@ function ApproachLadder({
                     .getElementById(id(r))
                     ?.scrollIntoView({ behavior: "smooth", block: "start" })
                 }}
-                className="inline-flex min-h-11 items-center text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-0"
+                className="inline-flex min-h-11 items-center text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-7"
               >
                 <span className="font-mono">
                   {String(i + 1).padStart(2, "0")}
@@ -265,6 +268,74 @@ function ApproachLadder({
  * is unreachable, but a manifest that has drifted should show a page rather
  * than break the rules of hooks.
  */
+/** which mark a source gets — a text, an official manual, or a course */
+const KIND_ICON = {
+  reference: BookOpenIcon,
+  docs: FileCodeIcon,
+  course: GraduationCapIcon,
+} as const
+
+/**
+ * The pattern's reading, on the PROBLEM page.
+ *
+ * It used to sit on the pattern page. A reference is attached to a pattern and
+ * not to a problem on purpose — there is an authoritative page on hash tables
+ * and none on "Pair With Target Sum" — but the moment a reader wants it is the
+ * moment they are stuck on a problem, not the moment they are choosing one.
+ * Same rows, same notes, moved to where they are reached for.
+ *
+ * Masked with everything else: a source titled "Two pointers" names the idea a
+ * journey mid-flight is still withholding.
+ */
+function ReadFurther({ pattern }: { pattern: Pattern }) {
+  const refs = pattern.references ?? []
+  if (refs.length === 0) return null
+  return (
+    <section className="overflow-hidden rounded-xl border bg-card">
+      <div className="flex items-baseline gap-3 px-4 py-3">
+        <span className="text-meta tracking-wide text-muted-foreground uppercase">
+          read further
+        </span>
+        <span className="ml-auto font-mono text-meta text-dim tabular-nums">
+          {refs.length} sources
+        </span>
+      </div>
+      <ul className="divide-y border-t">
+        {refs.map((r) => {
+          const Icon = KIND_ICON[r.kind]
+          return (
+            <li key={r.href + r.title}>
+              <a
+                href={r.href}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
+              >
+                <Icon
+                  className="mt-0.5 size-4 shrink-0 text-chart-2"
+                  aria-hidden
+                />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex items-center gap-1.5 text-ui font-medium">
+                    {r.title}
+                    <ExternalLinkIcon
+                      className="size-3 shrink-0 text-dim"
+                      aria-hidden
+                    />
+                  </span>
+                  <span className="max-w-[35em] text-ui text-muted-foreground">
+                    {r.note}
+                  </span>
+                </span>
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
 export function ProblemDetail({ problemId, pattern, onBack }: Props) {
   const problem = PROBLEMS.find((p) => p.id === problemId)
   if (!problem) return null
@@ -630,6 +701,11 @@ function ProblemPage({
         ladder={ladder}
         onCompare={compare}
       />
+
+      {/* The pattern's reading, above the explanation because it is short and
+          the explanation is thirty screens folded shut. Hidden with the rest
+          while a journey is still withholding this pattern's name. */}
+      {!hidden && <ReadFurther pattern={pattern} />}
 
       {/* ── THE EXPLANATION ─────────────────────────────────────────────
           The long-form document, in full, at the foot of the page it belongs
