@@ -156,7 +156,8 @@ Two rules keep a column to one edge:
 
 | Rule | Why |
 |---|---|
-| **The measure goes on the TEXT, never on a padded box around it** | `max-w-measure` on a `<details>` with `px-4` leaves 544px of text; on a row with a glyph and a gap, 560. Every nesting depth subtracts its own amount — that is where 539, 543 and 550 came from |
+| **One cap per FLOW, not one per block** | A per-block cap is applied after the nesting, so a callout inside a fold got its own 576 on top of two levels of left inset and ended 35px PAST the column — 611 against 576. On the flow container it is a ceiling that nesting can only move inwards from |
+| **Padding-RIGHT comes out of the measure; padding-left does not** | A `<p class="max-w-measure pl-4">` still ends at 576 — the inset eats the left. `px-4` on the same element ends at 560, and a `<details px-4>` holding a callout with `pr-3` ended at 547. Only the right side moves the edge |
 | **A decorative glyph is not structure** | A `·` before a bound and a `→` before its explanation cost 16px of measure each and bought nothing that position and voice could not say. The constraint list is a definition list now: term, then definition beneath it, both on the column's own edges |
 
 And sentences take `text-body`. `text-ui` is for buttons and labels; a sentence set at the control
@@ -166,6 +167,23 @@ direction.
 > `ch` is **not** a character. It is the width of the "0" glyph, roughly 1.3× the average character
 > in a proportional face, so a `68ch` cap renders about 90 characters. Use `em` at 0.5 em per
 > character. This cost one round trip during U7 and is the kind of thing a system file exists for.
+
+### A document's headings may not outrank the page's own
+
+The teaching document renders `##` and `###` inside a section of the problem
+page. They were `text-title` (28) and `text-narration` (20) — sized when the
+explanation was its own ROUTE and 28 was its top level. As a section they made a
+SUBSECTION of the last band render at the size of the page title, and more than
+twice every actual section heading on the page, which are 13px labels.
+
+They are `text-body` semibold with a rule, and `text-ui` semibold — one step
+under, and level with the page's own sub-headings. Both renderers carry the same
+classes, because a typed document and a Markdown one must never read at two
+different sizes.
+
+The page's heading ladder, top to bottom: **28** the problem title · **13
+uppercase** every section · **17** a document subsection · **15** a
+sub-heading.
 
 ## Shape — how a surface is built
 

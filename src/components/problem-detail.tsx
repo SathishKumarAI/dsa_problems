@@ -495,9 +495,23 @@ function ProblemPage({
             id="explanation"
             className="flex min-w-0 scroll-mt-6 flex-col gap-6 border-t pt-8"
           >
+            {/* The SAME heading treatment as the other eight sections. This
+                one was a 28px title while every other section on the page is a
+                13px label with a rule — so the last section read as a second
+                page rather than as part of this one. `Band` owns that look;
+                writing it out here again is how the two drift apart. */}
             <div className="flex flex-col gap-1">
-              <h2 className="font-heading text-title font-semibold">
-                {folded ? "The rest of the story" : "The long explanation"}
+              <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
+                {folded ? "the rest of the story" : "the long explanation"}
+                <span
+                  aria-hidden
+                  className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
+                />
+                <span className="font-mono text-meta text-dim normal-case">
+                  {folded
+                    ? "what belongs to no single rung"
+                    : "every approach in full"}
+                </span>
               </h2>
               <p className="max-w-measure text-body text-muted-foreground">
                 {folded

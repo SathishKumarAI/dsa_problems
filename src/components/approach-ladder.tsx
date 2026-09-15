@@ -211,7 +211,12 @@ export function ApproachLadder({
                 the rung, so it is here, collapsed. See lib/doc-sections.ts. */}
             {onWantDoc && (
               <details
-                className="max-w-measure rounded-lg border px-4 py-3"
+                // No measure on this BOX: its `px-4` would come out of the
+                // 576 twice over, once here and again on the callouts nested
+                // inside it — measured 547 on a page where every other
+                // sentence ends at 576. The document's own paragraphs carry
+                // the measure, which is where it belongs.
+                className="rounded-lg border px-4 py-3"
                 onToggle={(e) => {
                   if ((e.currentTarget as HTMLDetailsElement).open) onWantDoc()
                 }}
