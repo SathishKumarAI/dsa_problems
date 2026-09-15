@@ -18,6 +18,7 @@ import {
   SearchIcon,
   SearchXIcon,
 } from "lucide-react"
+import { href } from "@/lib/route"
 import { Badge } from "@/components/ui/badge"
 import { DifficultyMeter } from "@/components/ui/tick-meter"
 import { RowNudge } from "@/components/ui/row"
@@ -117,12 +118,11 @@ function ReadFurther({ pattern }: { pattern: Pattern }) {
 
 interface Props {
   pattern: Pattern
-  onOpen: (problemId: string) => void
 }
 
 const LEVELS: Difficulty[] = ["easy", "medium", "hard"]
 
-export function ProblemList({ pattern, onOpen }: Props) {
+export function ProblemList({ pattern }: Props) {
   const {
     filterQuery: query,
     filterLevel: level,
@@ -316,9 +316,17 @@ export function ProblemList({ pattern, onOpen }: Props) {
                     onCheckedChange={() => toggleSolved(p.id)}
                     aria-label={`Mark ${p.title} solved`}
                   />
-                  <button
+                  {/* An ANCHOR, not a button. This is the app's catalogue —
+                      the way into every problem — and a button cannot be
+                      middle-clicked into a new tab, offers no "open in new
+                      tab" on right-click, and shows the browser no
+                      destination on hover. The sidebar's own header states
+                      the rule ("every entry a hash link so back/forward and
+                      middle-click work"); this row was the one place that
+                      broke it, and it is the row that matters most. */}
+                  <a
+                    href={href(`/p/${pattern.id}/${p.id}`)}
                     className="flex min-w-0 flex-1 items-baseline gap-2 text-left"
-                    onClick={() => onOpen(p.id)}
                   >
                     {/* NOT shrink-0: at 390 the title and the difficulty badge
                         were both unshrinkable, so twelve of the twenty-one
@@ -343,7 +351,7 @@ export function ProblemList({ pattern, onOpen }: Props) {
                     <span className="hidden truncate text-ui text-muted-foreground sm:block">
                       {p.brief}
                     </span>
-                  </button>
+                  </a>
                   <Badge
                     variant="outline"
                     className={cn(

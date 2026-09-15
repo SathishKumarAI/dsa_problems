@@ -9,9 +9,7 @@
 // the journeys, then denser rows for the catalogue. A row is a row: nothing on
 // this page is a card inside a card, and the only thing that lifts off the
 // page is the thing you came back to do.
-import { useState } from "react"
 import {
-  ChevronDownIcon,
   CircleCheckIcon,
   FlameIcon,
   PlayIcon,
@@ -19,7 +17,6 @@ import {
   SlidersHorizontalIcon,
   StarIcon,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { RowNudge, RowProgress } from "@/components/ui/row"
 // The MANIFEST for the problem list, the real `PATTERNS` for the pattern rows.
 // This surface needs a title, an id and a difficulty per problem; the records
@@ -183,7 +180,6 @@ function PatternRow({
   done,
   total,
   masked,
-  onOpen,
 }: {
   id: string
   glyph: string
@@ -192,7 +188,6 @@ function PatternRow({
   done: number
   total: number
   masked: boolean
-  onOpen: (id: string) => void
 }) {
   const pct = total ? (done / total) * 100 : 0
   return (
@@ -202,9 +197,12 @@ function PatternRow({
     // the whole page 10px sideways at 1440 (scrollWidth 1440 vs clientWidth
     // 1430, measured). Same trap, same fix, as the markdown column.
     <li className="min-w-0 border-t sm:even:border-l">
-      <button
+      {/* An ANCHOR, for the same reason as the problem row: this is a
+          catalogue entry, and a catalogue you cannot open in a new tab is a
+          catalogue you cannot compare two of. */}
+      <a
+        href={href(`/p/${id}`)}
         className="group relative flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/40"
-        onClick={() => onOpen(id)}
       >
         <span className="w-20 shrink-0 pt-0.5 font-mono text-meta text-primary">
           {glyph}
@@ -230,29 +228,31 @@ function PatternRow({
         </span>
         <RowNudge className="mt-0.5" />
         <RowProgress pct={pct} tone="done" />
-      </button>
+      </a>
     </li>
   )
 }
 
 // ---------------------------------------------------------------------------
 
-export function HomeView({
-  onNavigate,
-}: {
-  onNavigate: (view: string) => void
-}) {
-  const [allJourneys, setAllJourneys] = useState(false)
+// Every row here is an ANCHOR now, so the page needs no navigate callback:
+// `onNavigate` is gone and with it the string-keyed indirection that turned a
+// pattern id into a route at the call site.
+export function HomeView() {
   useStoreVersion()
   const ledger = ledgerOf()
-  // 87 rows is a catalogue, not a menu. Lead with what is in play — started
-  // and unfinished first, then the next few — and put the rest behind a click.
-  const started = ledger.filter((r) => r.earned.earned > 0 && !r.earned.done)
-  const shownJourneys = allJourneys
-    ? JOURNEYS
-    : [...started, ...ledger.filter((r) => r.earned.earned === 0)]
-        .slice(0, Math.max(5, started.length))
-        .map((r) => r.journey)
+  // CONTINUE, not a catalogue — and not the one the dock is already offering.
+  //
+  // This section used to be a second list of all 93 journeys behind a "show
+  // all" chevron, sitting directly above a "practice set" of the same problems
+  // grouped by pattern. Two lists of one thing on the app's front door, which
+  // is the same duplication the sidebar had: a problem is one noun and its
+  // journey is a mode of it. The dock above takes the single most recent one;
+  // this takes the REST, and is absent when there is no rest.
+  const started = ledger
+    .filter((r) => r.earned.earned > 0 && !r.earned.done)
+    .sort((a, b) => b.earned.earned - a.earned.earned)
+  const alsoInPlay = started.slice(1)
   const solved = useSolved()
   const days = useStored<string[]>(K.days, [])
   const xp = useStored<number>(K.xp, 0)
@@ -296,48 +296,29 @@ export function HomeView({
 
       <Dock />
 
+      {alsoInPlay.length > 0 && (
       <section className="overflow-hidden rounded-xl border bg-card">
         <div className="flex items-baseline gap-3 px-4 py-3">
           <span className="text-meta tracking-wide text-muted-foreground uppercase">
-            learning journeys
+            also in play
           </span>
           <span className="ml-auto font-mono text-meta text-dim tabular-nums">
-            {shownJourneys.length}/{JOURNEYS.length}
+            {alsoInPlay.length}
           </span>
         </div>
         <ul className="divide-y border-t">
-          {shownJourneys.map((j) => (
+          {alsoInPlay.map((r) => (
             <JourneyRow
-              key={j.slug}
-              slug={j.slug}
-              title={j.title}
-              subtitle={j.subtitle}
-              acts={j.acts.length}
+              key={r.journey.slug}
+              slug={r.journey.slug}
+              title={r.journey.title}
+              subtitle={r.journey.subtitle}
+              acts={r.journey.acts.length}
             />
           ))}
         </ul>
-        {/* Both ways, for the same reason as the sidebar: this used to hide
-            itself once expanded, stranding the reader in an 87-row list. */}
-        {(allJourneys || JOURNEYS.length > shownJourneys.length) && (
-          <Button
-            variant="ghost"
-            className="w-full justify-start rounded-none border-t px-4 text-muted-foreground"
-            onClick={() => setAllJourneys((v) => !v)}
-            aria-expanded={allJourneys}
-          >
-            <ChevronDownIcon
-              data-icon="inline-start"
-              className={cn(
-                "transition-transform",
-                allJourneys && "rotate-180"
-              )}
-            />
-            {allJourneys
-              ? "Show only the journeys in play"
-              : `Show all ${JOURNEYS.length} journeys`}
-          </Button>
-        )}
       </section>
+      )}
 
       <a
         href={href("/algorithms")}
@@ -384,7 +365,6 @@ export function HomeView({
                 done={patternDone}
                 total={problems.length}
                 masked={hidden}
-                onOpen={onNavigate}
               />
             )
           })}
