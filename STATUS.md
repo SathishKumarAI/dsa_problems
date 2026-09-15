@@ -11,6 +11,26 @@ Then **#97** (`feat/one-entry-point-per-problem`), which is the IA fix — see b
 
 ### One noun, on every surface
 
+Five surfaces offered a way into a problem or a pattern, and four of them
+disagreed about what the noun IS. Fixed across #97, #98 and #99.
+
+| Surface | Was | Is |
+|---|---|---|
+| Sidebar | a catalogue of journeys above a catalogue of patterns | Continue (in play) + one catalogue |
+| Problem page | a button, a panel and a 34-screen wall | a mode bar, explanation collapsed |
+| Home | 6 journey links, **0** patterns | 1 (the dock), **10** |
+| Pattern list | **0** problem links — every row a `<button>` | **21** |
+| Search palette | **220** rows for 127 problems | **127**, marked |
+| Pattern page | name + an 80-char blurb + a list | orient / act / review, playbook and reading |
+
+`#/resources` was the last one: a second page about a pattern, carrying its
+playbook and references beside a pattern page carrying the name, the same
+references and the same problems. It redirects now.
+
+**Eight of the ten patterns had no playbook.** 47 moves now, up from 11.
+
+
+
 Four surfaces offered a way into a problem and three of them disagreed about what a problem IS.
 Fixed in two branches — #97 (the sidebar and the problem page) and #98 (home and the catalogue
 rows).

@@ -1,5 +1,5 @@
 // Navigation in four sections — Continue (journeys actually in play),
-// Reference (the visualizer and the resources page), Problems by pattern, then
+// Reference (the algorithm visualizer), Problems by pattern, then
 // SQL and Data science — every entry a hash link so back/forward and
 // middle-click work.
 //
@@ -22,7 +22,6 @@ import {
   RouteIcon,
   SettingsIcon,
   SigmaIcon,
-  LibraryIcon,
   SlidersHorizontalIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -130,7 +129,6 @@ function whereAmI(parts: string[], mask: Mask): string {
     if (problem) return `DSA · ${name} · ${problem.title}`
     return `DSA · pattern · ${name}`
   }
-  if (root === "resources") return "DSA · resources"
   if (root === "sql") return "SQL · drills"
   if (root === "flashcards") return "Data science · stats flashcards"
   return "home"
@@ -276,20 +274,11 @@ export function AppSidebar({ view }: { view: string }) {
                   <span className="truncate">Algorithm visualizer</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {/* B85. Not under "DSA · patterns" below: that group is a list of
-                  patterns to PRACTISE, and this is one page about all of them.
-                  It sits beside the visualizer, which is the other reference
-                  surface that is not a problem list. */}
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<a href={href("/resources")} />}
-                  isActive={view === "resources"}
-                  tooltip="Resources"
-                >
-                  <LibraryIcon className="size-3.5 shrink-0 text-chart-2" />
-                  <span className="truncate">Resources</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {/* B85's Resources entry is gone with the page. It was one
+                  surface about all ten patterns, sitting beside a group that
+                  lists the same ten — so a pattern's playbook and its problems
+                  were two clicks apart under two headings. Both are on the
+                  pattern's own page now, and the group below is the way in. */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -19,6 +19,8 @@ import {
   SearchXIcon,
 } from "lucide-react"
 import { href } from "@/lib/route"
+import { Fact, OrientBar } from "@/components/ui/band"
+import { PatternPlaybook } from "./pattern-playbook"
 import { Badge } from "@/components/ui/badge"
 import { DifficultyMeter } from "@/components/ui/tick-meter"
 import { RowNudge } from "@/components/ui/row"
@@ -140,6 +142,9 @@ export function ProblemList({ pattern }: Props) {
   const mask = usePatternMask()
   const hidden = mask.hidden.has(pattern.id)
   const all = problemsByPattern(pattern.id)
+  // the two orient facts that are not just a length
+  const withJourney = all.filter((p) => journeyForProblem(p.id)).length
+  const doneHere = all.filter((p) => solved.has(p.id)).length
   const problems = all.filter((p) => {
     const done = solved.has(p.id)
     return (
@@ -187,11 +192,30 @@ export function ProblemList({ pattern }: Props) {
             </Button>
           </div>
         ) : (
-          <p className="max-w-[35em] text-ui text-muted-foreground">
+          <p className="max-w-[35em] text-body text-muted-foreground">
             {pattern.blurb}
           </p>
         )}
       </header>
+
+      {/* ── ORIENT ──────────────────────────────────────────────────────
+          Three facts, and each one changes what you do next: how much there is,
+          how much of it can be built up from nothing rather than read, and how
+          much is behind you. Not "problems all-time" — that is review. */}
+      <OrientBar>
+        <Fact label="problems">
+          <span className="font-mono">{all.length}</span>
+        </Fact>
+        <Fact label="with a journey">
+          <RouteIcon className="size-3.5 shrink-0 text-chart-1" aria-hidden />
+          <span className="font-mono">{withJourney}</span>
+        </Fact>
+        <Fact label="solved">
+          <span className="font-mono">
+            {doneHere}/{all.length}
+          </span>
+        </Fact>
+      </OrientBar>
 
       {/* One panel: the filter bar is the head of the list it filters, not a
           separate floating control strip with the list somewhere below it.
@@ -372,6 +396,19 @@ export function ProblemList({ pattern }: Props) {
         )}
       </div>
 
+      {/* ── REVIEW ───────────────────────────────────────────────────────
+          How to recognise this pattern and how to write it, then where to read
+          about it properly. Both were on `#/resources`, a second page about the
+          same pattern; this page had the references and not the moves, that one
+          had the moves and the same references. One noun, one page.
+
+          A masked pattern shows NEITHER. A playbook is the pattern's name
+          written a dozen different ways — "two pointers converging", "hash map
+          as an index" — so rendering one during a journey that has not reached
+          its reveal hands over the exact word the rule exists to withhold. */}
+      {!hidden && (
+        <PatternPlaybook name={pattern.name} playbook={pattern.playbook ?? []} />
+      )}
       {!hidden && <ReadFurther pattern={pattern} />}
     </div>
   )
