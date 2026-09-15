@@ -45,6 +45,10 @@ import { href, navigate, useRoute } from "@/lib/route"
 import { useEffect, useState } from "react"
 import { ExplanationBody } from "./explanation"
 import { useExplanation } from "@/lib/use-explanation"
+import { foldDoc } from "@/lib/doc-sections"
+import { outlineOf } from "@/lib/markdown"
+import { Markdown } from "./markdown"
+import BINDINGS from "@/data/rung-bindings.json"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { ApproachCompare } from "./approach-compare"
 import { difficultyClass } from "@/lib/difficulty"
@@ -192,8 +196,35 @@ function ProblemPage({
       </div>
     )
 
-  const outline =
-    explanation.present && explanation.ready ? explanation.outline : []
+  // ── THE FOLD ──────────────────────────────────────────────────────────
+  // The document's per-approach half belongs to the rungs, not to a second
+  // pass over the same ladder at the foot of the page. `foldDoc` splits it;
+  // the ladder renders `byRung`, and the section below renders what is left.
+  //
+  // Only the Markdown documents for now. The typed half already stores one
+  // file per rung (`src/problems/<id>/approaches/<rung>.ts`), so folding that
+  // is a field read rather than a parse — a different branch.
+  const binding = (BINDINGS as Record<string, (string | null)[]>)[problem.id]
+  const folded =
+    explanation.present &&
+    explanation.ready &&
+    explanation.kind === "markdown" &&
+    binding
+      ? foldDoc(
+          explanation.blocks,
+          binding,
+          // a rung whose costWhy is authored already says where its bound comes
+          // from; one without it must keep the document's own account
+          new Set(ladder.rungs.filter((r) => r.costWhy).map((r) => r.key))
+        )
+      : null
+
+  // the rail lists what the SECTION renders, which is now the shared half
+  const outline = folded
+    ? outlineOf(folded.shared)
+    : explanation.present && explanation.ready
+      ? explanation.outline
+      : []
 
   return (
     <div className="mx-auto flex w-full max-w-(--container-page) gap-10">
@@ -428,6 +459,12 @@ function ProblemPage({
           journey={journey}
           ladder={ladder}
           onCompare={compare}
+          folded={folded?.byRung ?? null}
+          // opening a rung's account is a reason to fetch the document, the
+          // same as opening the section below — one fetch serves every rung
+          onWantDoc={
+            explanation.present && binding ? () => setOpened(true) : undefined
+          }
         />
 
         {/* The pattern's reading, above the explanation because it is short and
@@ -460,11 +497,12 @@ function ProblemPage({
           >
             <div className="flex flex-col gap-1">
               <h2 className="font-heading text-title font-semibold">
-                The long explanation
+                {folded ? "The rest of the story" : "The long explanation"}
               </h2>
               <p className="max-w-[35em] text-body text-muted-foreground">
-                Every approach in full: the idea, the mental model, a worked
-                trace, the bug you are about to write, and a script you can run.
+                {folded
+                  ? "What is not about any single approach: how to read the problem, where the cost actually goes, the comparison, what to say in an interview, and a script you can run."
+                  : "Every approach in full: the idea, the mental model, a worked trace, the bug you are about to write, and a script you can run."}
               </p>
               {!reading && (
                 <button
@@ -478,7 +516,17 @@ function ProblemPage({
                 </button>
               )}
             </div>
-            <ExplanationBody state={explanation} problemId={problem.id} />
+            {folded ? (
+              // the shared half only — each rung's own account is on the rung
+              <Markdown
+                blocks={folded.shared}
+                runnable
+                problemId={problem.id}
+                scaffold={explanation.ready ? explanation.scaffold : undefined}
+              />
+            ) : (
+              <ExplanationBody state={explanation} problemId={problem.id} />
+            )}
           </section>
         )}
       </div>

@@ -21,7 +21,7 @@
 | 5 | Constraints have no animation and no highlight | **shipped** | `problem-statement.tsx` |
 | 6 | Hints / inputs / outputs need a real UI and motion | **half shipped** — inputs and outputs are watchable; hints are still an accordion | `example-viewer.tsx` |
 | 7 | Cannot see the inputs changing at runtime | **half shipped** — the example walks; the CODE still does not trace | `example-viewer.tsx` |
-| 8 | The long explanation is a second read and feels duplicated | **staged, slice 2** — the fix is structural, see §4 | — |
+| 8 | The long explanation is a second read and feels duplicated | **shipped** for the Markdown documents — 0 repeated headings across the ladder's rungs, measured | `lib/doc-sections.ts` |
 | 9 | At least three references, plus similar-pattern links at the end | **shipped** — 5 sources, 2 of them about this problem, plus 13 sibling problems | `similar-problems.tsx` |
 | 10 | Explain WHY and HOW the complexities are calculated | **shipped** | `Solution.costWhy`, `Problem.costWhy` |
 | 11 | Make the reader think before solving | **shipped** | `pre-solve-check.tsx` |
@@ -176,43 +176,60 @@ documents.
 
 ---
 
-## 4. Slice 2 — the structural one (asks 6, 7, 8)
+## 4. The fold — ask 8, shipped
 
-This is the item worth the most and the only one that cannot be done page-side.
+**The duplication was real and it was measured, not felt.** `contains-duplicate`'s document
+is **7,807 words**:
 
-**The duplication is real and it is not a rendering problem.** The page shows the ladder
-(each rung: name, cost, summary, code). The teaching document then repeats each of those
-rungs with `The idea`, `How to think about it`, `Worked example`, `Code`, `Common
-mistake`, `Complexity and when to use this`. Two accounts of the same three approaches,
-one under the other, and the reader is asked to read both. The count on the pilot page:
-the closed page is **6.6 screens**; open, the explanation adds most of a further twenty.
+| | Words | Share |
+|---|---|---|
+| Per-approach (5 × idea, how to think, worked example, code, common mistake, complexity) | **4,222** | 54% |
+| About no single approach (understanding, reading the calculations, arc, comparison, interview, fluency, script) | **3,585** | 46% |
 
-**The fix: a rung carries its own document sections.** The per-approach content moves
-INTO each rung of the ladder, collapsed — idea, worked example, common mistake, the cost
-argument — and the "long explanation" at the foot keeps only what is NOT per-approach:
-Understanding, the failure-mode table, Reading the calculations, the arc, the comparison
-table, interview priority, the runnable script. Nothing is said twice, and the reader
-never leaves the rung they are on.
+Three of every approach's six subsections were the same content as the rung above it:
+`The idea` is the rung's summary, `Code` is the rung's code block, and `Complexity and when
+to use this` is the `costWhy` this branch added. You were reading those twice.
 
-The data for this already exists. 49 of 82 documents are typed as
-`src/problems/<id>/approaches/<rung>.ts` — one file per rung, with exactly those fields.
-`contains-duplicate` is not one of them yet: it is still
-`docs/deep/contains-duplicate_explained.md`, and converting it needs **B79 first** (its
-document teaches five approaches, its record has three; the two extras need Java and C++
-before the record can carry them — 4 blocks, gated by `verify:code` and `verify:run`).
+**What shipped.** Each rung carries the half that is NOT a duplicate — *How to think about
+it*, *Worked example*, *Common mistake* — collapsed behind one line, fetched once for the
+whole page. The section below keeps the 46% that belongs to no rung and is called **The
+rest of the story**, because at that point it is not the explanation any more.
 
-**Also in slice 2, the honest half of asks 6 and 7:**
+Measured on the built page after: **0 repeated headings** across the three rungs on the
+ladder. The two surviving `The idea` / `Code` / `Complexity` pairs belong to the two
+approaches the ladder does not carry, which are kept whole — they have no rung to be a
+duplicate of, so dropping their idea or their code would delete the only copy. Page is
+**6.8 screens closed**; opening every rung's account takes it to 25.9, which is opt-in and
+was previously the default reading.
 
-- **Hints** are still a plain accordion. They should be a ladder with the same
-  disclosure vocabulary as everything else — you take one, and the page shows what it
-  cost you.
-- **The code does not trace.** The Run button runs Python in the browser (Pyodide) and
-  prints output. It does not show `seen` filling up, or the loop variable moving. That is
-  the real answer to "I cannot see the inputs changing at runtime" — the example viewer
-  is the input moving, not the algorithm. The journey already traces; the problem page's
-  code block does not.
+**Why it is not "one read".** 46% of the document is about no single approach, so it can
+never live inside a rung. A single flowing read is not reachable; *no sentence twice* is,
+and that is what this does.
 
----
+**The one judgement a machine must not make** is which rung a `## Approach` heading means —
+the heading says "A set with an early exit (optimal)" and the rung is `set`. That lives in
+`src/data/rung-bindings.json`, which the converter already used for the same decision; it
+moved under `src/data/` so the app and the script read one file. A `null` entry means the
+ladder does not carry that approach, and its section stays whole.
+
+### What this did NOT do
+
+- **The 49 typed documents.** They store per-approach content as one file per rung already
+  (`src/problems/<id>/approaches/<rung>.ts`), so folding them is a field read rather than a
+  parse — the same shape, a different branch. B100 is half closed.
+- **Promote the two extra approaches into the ladder.** The document teaches five, the
+  record has three. `problems.test.ts` requires Java **and** C++ for every alternative on a
+  journeyed problem, so promoting them Python-only would fail the build, and weakening that
+  gate to ship a feature is exactly the trade this repo does not make. They render as
+  approaches the ladder does not carry, marked as the document already marks them.
+
+### Still open from this slice
+
+- **Hints** are a plain accordion. They should be a ladder with the same disclosure
+  vocabulary as everything else.
+- **The code does not trace.** Run executes Python in the browser and prints output; it
+  never shows `seen` filling or the loop variable moving. The example viewer is the input
+  moving, not the algorithm (B101).
 
 ## 5. Other issues on this page, found while measuring
 
@@ -225,11 +242,11 @@ before the record can carry them — 4 blocks, gated by `verify:code` and `verif
 | **P5** | `FEATURES.md` listed the **Command palette** as `backlog #B12`. B12 shipped. | `docs/FEATURES.md:32` | **fixed** — the row now describes the palette and where its trigger lives |
 | **P6** | The hint accordion allowed one hint open at a time, so reading hint 3 closed hint 2 — a ladder meant to be read in order could only ever show one rung of itself. | `problem-detail.tsx` | **fixed** — `<Accordion multiple>` |
 | **P7** | `reading`, `unlocks`, `checks` and `costWhy` exist on **1 of 153** problems. The gates check coherence, not presence, on purpose. | `problems.test.ts` | informational |
-| **P8** | **The page had five different left edges** — 459 (the column), 460 and 472 (three different box paddings), 484 (the H1, inside the raised card, starting 25px right of every heading below it) and 581 (a centred caption). Three paragraphs were centred in a document of 56 left-aligned ones. That is what reads as "not justified". | content-box lefts of all 59 text blocks, 1440 × 1000 | **fixed** — see §7 |
+| **P8** | **The page had five different left edges** — 459 (the column), 460 and 472 (three different box paddings), 484 (the H1, inside the raised card, starting 25px right of every heading below it) and 581 (a centred caption). Three paragraphs were centred in a document of 56 left-aligned ones. That is what reads as "not justified". | content-box lefts of all 59 text blocks, 1440 × 1000 | **fixed** — see §6 |
 
 ---
 
-## 7. One layout, measured
+## 6. One layout, measured
 
 A page reads as "not aligned" when its left edges disagree, and this one had five. Every
 bordered box chose its own padding, the one raised surface chose a third, and two captions
@@ -268,7 +285,7 @@ would line them up and break the U7 measure gate — 595px of 15px text is 79 ch
 against a 68-character ceiling. The cap is em-relative because readability is em-relative.
 The ragged right edge is the type scale doing its job, not a defect.
 
-## 6. What a second problem costs, once this shape is approved
+## 7. What a second problem costs, once this shape is approved
 
 Per problem, all of it authoring and none of it code:
 

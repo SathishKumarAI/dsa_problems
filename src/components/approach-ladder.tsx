@@ -16,6 +16,8 @@ import type { Ladder, Rung } from "@/lib/ladder"
 import { ArrowRightIcon } from "lucide-react"
 import { href } from "@/lib/route"
 import { CodeBlock } from "./code-block"
+import { Markdown } from "./markdown"
+import type { Block } from "@/lib/markdown"
 import { setPref, usePrefs } from "@/lib/store"
 
 const LANGS: { key: keyof Code; label: string }[] = [
@@ -68,7 +70,15 @@ export function ApproachLadder({
   journey,
   ladder,
   onCompare,
+  folded,
+  onWantDoc,
 }: {
+  /** what the teaching document still has to say about each rung, by key —
+   *  the worked example, the mistake, and whatever else that rung owns. Null
+   *  until the document is fetched, which is what `onWantDoc` asks for. */
+  folded?: Record<string, Block[]> | null
+  /** the reader opened a rung's full account: fetch the document */
+  onWantDoc?: () => void
   problem: Problem
   journey?: AnyJourney
   /** open `?compare=a,b` — offered only between rungs the ledger has earned */
@@ -189,6 +199,37 @@ export function ApproachLadder({
               </details>
             )}
             <RungCode code={r.code} />
+            {/* ── THE RUNG'S OWN ACCOUNT ───────────────────────────────────
+                The teaching document used to repeat this whole ladder at the
+                foot of the page — 4,222 of contains-duplicate's 7,807 words
+                were per-approach, and three of every approach's six
+                subsections (the idea, the code, the complexity) were the same
+                content as the rung above. The reader was asked to read the
+                same three approaches twice, in two shapes.
+                The half that is NOT a duplicate — how to think about it, a
+                worked trace, the mistake you are about to make — belongs to
+                the rung, so it is here, collapsed. See lib/doc-sections.ts. */}
+            {onWantDoc && (
+              <details
+                className="max-w-[35em] rounded-lg border px-4 py-3"
+                onToggle={(e) => {
+                  if ((e.currentTarget as HTMLDetailsElement).open) onWantDoc()
+                }}
+              >
+                <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
+                  Work it through — a traced example, and the mistake
+                </summary>
+                <div className="pt-3">
+                  {folded?.[r.key]?.length ? (
+                    <Markdown blocks={folded[r.key]} problemId={problem.id} />
+                  ) : (
+                    <p className="text-ui text-muted-foreground">
+                      {folded ? "nothing further for this rung" : "loading…"}
+                    </p>
+                  )}
+                </div>
+              </details>
+            )}
             {/* The pair worth comparing is this rung and the one it answers:
                 `whyNow` right above makes a claim about exactly that step, and
                 this is the button that shows it. Never on the first rung,

@@ -39,7 +39,11 @@ const arg = (k) => {
 const has = (k) => process.argv.includes(k)
 
 const DEEP = "docs/deep"
-const BINDINGS = JSON.parse(readFileSync("scripts/rung-bindings.json", "utf8"))
+// Moved under `src/data/` so the APP can read it too: the problem page folds
+// each `## Approach` section into the rung it teaches, and binding a section to
+// a rung is the same judgement this converter needs. One file, two consumers,
+// no second answer to the same question.
+const BINDINGS = JSON.parse(readFileSync("src/data/rung-bindings.json", "utf8"))
 /** `###` parts under a `##` section that has a field but no room for them */
 let leftover = []
 const OUT = "src/problems"
