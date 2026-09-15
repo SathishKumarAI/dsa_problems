@@ -104,7 +104,16 @@ export function ReadFurther({
 /** `top-16`, not `top-6`: the shell parks a fixed search control at
  *  `top-3 right-4` and this rail is the only thing that shares that corner. At
  *  1280 the button was measured painting over the rail's first entries. */
-export function ContentsRail({ outline }: { outline: Outline[] }) {
+export function ContentsRail({
+  outline,
+  label = "The explanation",
+}: {
+  outline: Outline[]
+  /** what the section this rail indexes is CALLED. Once the per-approach half
+   *  folds into the rungs, that section is "The rest of the story" and a rail
+   *  headed "The explanation" is indexing something the page no longer has. */
+  label?: string
+}) {
   return (
     <nav
       aria-label="contents"
@@ -112,7 +121,7 @@ export function ContentsRail({ outline }: { outline: Outline[] }) {
     >
       <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
         <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
-        The explanation
+        {label}
       </span>
       {outline.map((entry) => (
         <a

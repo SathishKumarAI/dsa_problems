@@ -536,7 +536,12 @@ function ProblemPage({
           below xl, where there is no second column to put it in. It lists the
           SAME array the page renders (`partsOf`), so it cannot offer a section
           that is not there. */}
-      {outline.length > 0 && <ContentsRail outline={outline} />}
+      {outline.length > 0 && (
+        <ContentsRail
+          outline={outline}
+          label={folded ? "The rest of the story" : "The explanation"}
+        />
+      )}
     </div>
   )
 }
