@@ -3,7 +3,7 @@ import { problem as balancedBrackets } from "../../../problems/balanced-brackets
 import { problem as dailyWarmer } from "../../../problems/daily-warmer/index.ts"
 import { problem as largestRectangle } from "../../../problems/largest-rectangle/index.ts"
 import { problem as rpnEval } from "../../../problems/rpn-eval/index.ts"
-import { problem as generateParens } from "./generate-parens.ts"
+import { problem as generateParens } from "../../../problems/generate-parens/index.ts"
 import { problem as asteroidCollision } from "./asteroid-collision.ts"
 import { problem as validParenthesisString } from "./valid-parenthesis-string.ts"
 import { problem as decodeString } from "./decode-string.ts"

@@ -1,5 +1,5 @@
 import type { Problem } from "../../types.ts"
-import { problem as bestTrade } from "./best-trade.ts"
+import { problem as bestTrade } from "../../../problems/best-trade/index.ts"
 import { problem as longestUniqueSubstring } from "./longest-unique-substring.ts"
 import { problem as minCoverSubstring } from "./min-cover-substring.ts"
 import { problem as charReplacement } from "../../../problems/char-replacement/index.ts"

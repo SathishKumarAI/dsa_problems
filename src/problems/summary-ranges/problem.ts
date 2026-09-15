@@ -9,7 +9,7 @@ export const id = "summary-ranges"
 
 export const title = "Collapse the Runs into Ranges"
 
-export const pattern = "arrays-hashing"
+export const pattern = "intervals"
 
 export const difficulty: Difficulty = "easy"
 

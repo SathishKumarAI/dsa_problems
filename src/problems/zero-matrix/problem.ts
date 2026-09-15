@@ -9,7 +9,7 @@ export const id = "zero-matrix"
 
 export const title = "One Zero Wipes Its Row and Column"
 
-export const pattern = "arrays-hashing"
+export const pattern = "matrix"
 
 export const difficulty: Difficulty = "medium"
 

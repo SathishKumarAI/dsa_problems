@@ -397,6 +397,26 @@ test("problems: a promoted problem's journey names its rung by key, not index", 
 // resources page renders each id as a link into this app. `docs/RESOURCES.md`
 // carried the same lists as prose and said so itself — "if a link 404s, that
 // is why" — which is exactly the state data should make impossible.
+test("patterns: every pattern carries a playbook and owns at least one problem", () => {
+  // The two ways a pattern page ships empty. Adding a pattern is one line in
+  // patterns.ts and the page renders either way, so nothing on screen complains
+  // until a reader clicks a name and finds a heading over white space. Both
+  // halves shipped broken once: eight of ten patterns had no playbook (fixed in
+  // #99), and a pattern is free to exist with nothing filed under it.
+  for (const pattern of PATTERNS) {
+    const moves = pattern.playbook ?? []
+    assert.ok(
+      moves.length >= 4,
+      `${pattern.id}: ${moves.length} playbook moves — a pattern page earns at least four`
+    )
+    const mine = PROBLEMS.filter((p) => p.pattern === pattern.id)
+    assert.ok(
+      mine.length >= 1,
+      `${pattern.id}: no problem is filed under it — the page would be a name over nothing`
+    )
+  }
+})
+
 test("patterns: every playbook row is usable, and points at real problems", () => {
   const ids = new Set(PROBLEMS.map((p) => p.id))
   let rows = 0

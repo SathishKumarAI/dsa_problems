@@ -10,7 +10,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/graphs/word-search.ts"
+import { problem } from "../../problems/word-search/index.ts"
 
 type B = Data<string> & { word: string }
 
@@ -356,7 +356,7 @@ function* backtrack({ nums, word }: B): Generator<DFrame> {
 export const wordSearch = deriveJourney<string>(problem, {
   slug: "give-the-square-back",
   subtitle: "a cell is unavailable while a path holds it, not forever",
-  reveals: ["graphs"],
+  reveals: ["graphs", "backtracking"],
   cells: "words",
   defaultPreset: "example",
   harder: { preset: "long", label: "a bigger board" },

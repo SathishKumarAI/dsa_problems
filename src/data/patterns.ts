@@ -756,4 +756,536 @@ export const PATTERNS: Pattern[] = [
       },
     ],
   },
+  {
+    id: "prefix-sums",
+    name: "Prefix Sums",
+    glyph: "Σ[0..i]",
+    blurb:
+      "Precompute a running total so any range answers in one subtraction, not a walk.",
+    references: [
+      {
+        title: "Prefix sum",
+        href: "https://en.wikipedia.org/wiki/Prefix_sum",
+        kind: "reference",
+        note: "The identity the whole pattern rests on, and its parallel form — which is why it appears in GPU work long before it appears in interviews.",
+      },
+      {
+        title: "Python: itertools.accumulate",
+        href: "https://docs.python.org/3/library/itertools.html#itertools.accumulate",
+        kind: "docs",
+        note: "The running total as one call, and the `func` argument that turns it into running products, maxima or anything else associative.",
+      },
+      {
+        title: "Sedgewick & Wayne, Analysis of Algorithms",
+        href: "https://algs4.cs.princeton.edu/14analysis/",
+        kind: "course",
+        note: "Why trading O(n) memory for O(1) queries is the right call when the queries outnumber the updates — the trade this pattern always makes.",
+      },
+    ],
+    playbook: [
+      {
+        name: "The range is a difference",
+        idea: "Build one array where entry i holds the total of everything before i. Then the sum from a to b is prefix[b+1] − prefix[a]: one subtraction, whatever the range's length.",
+        tell: '"the sum between i and j", "many queries over the same array", "subarray sum" — the same stretch of values keeps being re-added.',
+        invariant:
+          "prefix[0] is the total of NOTHING and must be 0. Seeding it wrong shifts every answer by one element, and the error is invisible on ranges that start at 0.",
+        learnOn: ["subarray-sum-k", "product-except-self"],
+        mistake:
+          "Off-by-one in the endpoints. Decide once whether prefix[i] means 'up to and including i' or 'everything strictly before i' — the second is almost always easier, because it gives the empty prefix a home.",
+      },
+      {
+        name: "A map of prefixes seen",
+        idea: "Counting subarrays with a given sum is a membership question in disguise: a stretch ending here sums to k exactly when some earlier prefix equalled running − k. A map answers that in one lookup.",
+        tell: '"how many subarrays sum to", "the longest subarray with sum" — a COUNT or a LENGTH over ranges, not a single range.',
+        invariant:
+          "The map is seeded with one occurrence of the empty prefix, {0: 1}. Without it every stretch that starts at index 0 goes uncounted, and no small example shows it.",
+        learnOn: ["subarray-sum-k"],
+        mistake:
+          "Storing one index per prefix sum rather than a COUNT. With negative values the same running total recurs, and several earlier positions can each start a qualifying stretch.",
+      },
+      {
+        name: "Forward and backward, folded together",
+        idea: "When the answer at each position needs everything before it AND everything after it, sweep twice — once each way — and combine. The output array can carry the first sweep, so the second needs one variable.",
+        tell: '"product of everything else", "water trapped above me", "the best on my left and my right" — a per-position answer that depends on both sides.',
+        invariant:
+          "The second sweep must read the first sweep's value at a position BEFORE overwriting it. Fold in place and the order of those two lines is the whole algorithm.",
+        learnOn: ["product-except-self", "trap-rain-water"],
+        mistake:
+          "Keeping both arrays when one plus a variable will do. Not wrong, but it is the step the optimal rung removes, and it is the difference between O(n) extra space and O(1).",
+      },
+      {
+        name: "The same trick, another operator",
+        idea: "Nothing here is about addition. Any associative operation with an identity works: running products, running maxima, running XOR. Only the inverse changes — and division is the one that fails, which is why product-except-self bans it.",
+        tell: "the question is a fold over a range and the operation has an identity.",
+        learnOn: ["product-except-self", "counting-bits"],
+        mistake:
+          "Assuming the range query still works. Subtraction undoes addition; nothing undoes `max`. Without an inverse a prefix array answers prefixes only, and range queries need a different structure entirely.",
+      },
+    ],
+  },
+  {
+    id: "greedy",
+    name: "Greedy",
+    glyph: "max↗",
+    blurb:
+      "Take the best local move and never reconsider — when an exchange argument says you may.",
+    references: [
+      {
+        title: "Greedy algorithm",
+        href: "https://en.wikipedia.org/wiki/Greedy_algorithm",
+        kind: "reference",
+        note: "What separates a greedy algorithm that is correct from one that merely passes the examples — the matroid and exchange-argument framings, stated plainly.",
+      },
+      {
+        title: "Jeff Erickson, Greedy Algorithms",
+        href: "https://jeffe.cs.illinois.edu/teaching/algorithms/book/04-greedy.pdf",
+        kind: "course",
+        note: "The chapter to read once and keep: it spends its length on PROVING greedy choices rather than listing them, which is the part that transfers.",
+      },
+      {
+        title: "Sedgewick & Wayne, Minimum Spanning Trees",
+        href: "https://algs4.cs.princeton.edu/43mst/",
+        kind: "reference",
+        note: "Kruskal and Prim as worked greedy proofs — the cut property is the exchange argument in its cleanest form.",
+      },
+    ],
+    playbook: [
+      {
+        name: "The exchange argument",
+        idea: "Before writing a greedy loop, argue it: take any optimal answer, and show that swapping in your greedy choice leaves it no worse. If you cannot make that argument, the algorithm is a guess that happens to pass the examples.",
+        tell: "you can describe a single local rule that seems obviously right — which is exactly when it needs proving rather than when it does not.",
+        invariant:
+          "Every step keeps at least one optimal solution reachable. That sentence IS the proof, and if you cannot say which optimal solution survives your choice, you do not have one.",
+        learnOn: ["jump-game", "container-water", "boats-to-save"],
+        mistake:
+          "Testing on the examples and calling it proven. Greedy fails on inputs nobody writes by hand — coin systems where the largest coin is wrong, weights that must be paired rather than taken.",
+      },
+      {
+        name: "Carry the best so far",
+        idea: "One pass, one or two numbers: the best answer seen, and whatever the next step needs to beat it. Nothing is stored and nothing is revisited.",
+        tell: '"the maximum profit", "the furthest you can reach", "the best single trade" — one sweep decides it, and past positions matter only through a running summary.',
+        invariant:
+          "The running value is a correct answer for the prefix read so far. Check it at the FIRST element, which is where the seed is usually wrong.",
+        learnOn: ["best-trade", "jump-game", "max-subarray"],
+        mistake:
+          "Seeding with zero when zero is not a legal answer. A best-trade seeded at 0 reports 0 on a falling market instead of the smallest loss — right for that problem's rules, and wrong the moment the rules change.",
+      },
+      {
+        name: "Sort, then be greedy",
+        idea: "Many greedy proofs need an order before the local rule is safe. Sorting is not the algorithm — it is what makes the algorithm's exchange argument true.",
+        tell: '"pair the heaviest with the lightest", "the fewest boats", "schedule the most tasks" — a rule about extremes, on input that arrives unordered.',
+        invariant:
+          "Name what the sort buys: after it, the element at one end is provably in or provably out. If sorting does not give you that sentence, it is decoration costing n log n.",
+        learnOn: ["boats-to-save", "sort-colors"],
+        mistake:
+          "Sorting and then reasoning as though the input were still in its original order. Half these problems return positions, and the sort has destroyed them.",
+      },
+      {
+        name: "Greedy fails — so use DP",
+        idea: "The most useful thing this pattern teaches is its own boundary. When a local choice can be regretted later, greedy is wrong and the fix is to consider the choices you rejected, which is dynamic programming.",
+        tell: "a counterexample exists where taking the locally best option forces a worse total later.",
+        learnOn: ["coin-change-min", "jump-game"],
+        mistake:
+          "Not looking for the counterexample. Coin change is greedy for the coins in your pocket and wrong for coins like 1, 3, 4 — where 6 is 3 + 3 and greedy says 4 + 1 + 1.",
+      },
+    ],
+  },
+  {
+    id: "bit-manipulation",
+    name: "Bit Manipulation",
+    glyph: "x ^ y",
+    blurb:
+      "Treat a number as a row of bits: XOR cancels, AND masks, and a shift is a halving.",
+    references: [
+      {
+        title: "Bitwise operation",
+        href: "https://en.wikipedia.org/wiki/Bitwise_operation",
+        kind: "reference",
+        note: "The operators and what each one is actually for. Read the XOR section twice — self-inverse and commutative is the whole of this pattern.",
+      },
+      {
+        title: "Python: bitwise operators on int",
+        href: "https://docs.python.org/3/library/stdtypes.html#bitwise-operations-on-integer-types",
+        kind: "docs",
+        note: "The guarantees you may rely on, including that Python integers are arbitrary precision — which is why a mask that works in C silently does something else here.",
+      },
+      {
+        title: "Hacker's Delight (companion site)",
+        href: "https://en.wikipedia.org/wiki/Hacker%27s_Delight",
+        kind: "reference",
+        note: "The book these tricks come from. Worth knowing it exists so you can stop trying to derive `n & (n - 1)` from first principles under time pressure.",
+      },
+    ],
+    playbook: [
+      {
+        name: "XOR cancels a pair",
+        idea: "x ^ x is 0 and x ^ 0 is x, and the operation does not care about order. So folding a whole array with XOR annihilates everything that appears twice and leaves what does not.",
+        tell: '"every value appears twice except one", "find the missing number", "the duplicate" — pairing is the structure, and you are asked for the odd one out.',
+        invariant:
+          "The accumulator holds the XOR of everything seen. It carries no count and no position — which is why it needs no memory, and why it cannot answer 'which index'.",
+        learnOn: ["single-number", "missing-number"],
+        mistake:
+          "Reaching for it when values appear three times rather than twice. XOR cancels PAIRS; an odd count survives and an even one vanishes, so a triple leaves the value behind exactly once and the answer is wrong in a way that looks right.",
+      },
+      {
+        name: "Index against value",
+        idea: "When the input is a permutation of a known range with one hole, XOR the indices against the values. Every present value cancels its own index and the hole is what remains.",
+        tell: '"n distinct values drawn from 0..n", "one is missing" — the input is a set you can enumerate, not arbitrary data.',
+        invariant:
+          "Seed with whatever the index range cannot supply — n itself, when indices run 0..n-1 and values 0..n. Getting the seed wrong shifts the answer by exactly that value.",
+        learnOn: ["missing-number"],
+        mistake:
+          "Using the sum formula instead and overflowing. Gauss's n(n+1)/2 is the same idea and it breaks on fixed-width integers at large n; XOR never overflows, which is the reason to prefer it.",
+      },
+      {
+        name: "Mask, test, clear",
+        idea: "`x & 1` reads the lowest bit, `x >> 1` drops it, and `x & (x - 1)` clears the lowest SET bit — which is how you count set bits in as many steps as there are ones rather than as there are bits.",
+        tell: '"how many 1 bits", "is it a power of two", "toggle the k-th" — the question is about the bits themselves, not the value.',
+        invariant:
+          "A shift is a halving and is only a division for NON-NEGATIVE values. The moment a negative can arrive, say what your language does with the sign bit before relying on it.",
+        learnOn: ["counting-bits"],
+        mistake:
+          "`x & (x - 1) == 0` for 'power of two', forgetting zero. Zero passes that test and is not a power of two, and it is the input nobody writes a case for.",
+      },
+      {
+        name: "Bits as a set",
+        idea: "An integer is a subset of a small universe: bit i means 'element i is in'. Union is OR, intersection is AND, and 'every subset' is counting from 0 to 2^n − 1.",
+        tell: '"at most 20 items", "all subsets", "which letters are present" — a bounded alphabet, and you need set operations that fit in a register.',
+        learnOn: ["single-number", "counting-bits"],
+        mistake:
+          "Letting the universe exceed the word size without noticing. It works, gets slow, and the point of the representation was that a set operation was one instruction.",
+      },
+    ],
+  },
+  {
+    id: "backtracking",
+    name: "Backtracking",
+    glyph: "try↯undo",
+    blurb:
+      "Build a candidate one choice at a time, and undo the choice the moment it cannot work.",
+    references: [
+      {
+        title: "Backtracking",
+        href: "https://en.wikipedia.org/wiki/Backtracking",
+        kind: "reference",
+        note: "The formulation as a search over a tree of partial candidates, which is the framing that makes pruning obvious rather than clever.",
+      },
+      {
+        title: "Jeff Erickson, Backtracking",
+        href: "https://jeffe.cs.illinois.edu/teaching/algorithms/book/02-backtracking.pdf",
+        kind: "course",
+        note: "Worked from n-queens and subset-sum upward, with the recursion written as 'decide one thing, recurse on the rest' every time — the shape to copy.",
+      },
+      {
+        title: "Python: recursion limit",
+        href: "https://docs.python.org/3/library/sys.html#sys.setrecursionlimit",
+        kind: "docs",
+        note: "What actually happens when a search goes deep, and why the answer is rarely to raise the limit.",
+      },
+    ],
+    playbook: [
+      {
+        name: "Choose, recurse, un-choose",
+        idea: "Three lines around the recursive call: make a choice, explore everything that follows from it, then take it back. The un-choose is what makes the same cell or the same number available to a different branch.",
+        tell: '"all combinations", "does a path exist", "place the", "generate every" — the answer is an arrangement, and a partial arrangement can be extended or abandoned.',
+        invariant:
+          "On return, the state is exactly as it was on entry. A single missing undo leaves a cell marked forever, and the failure surfaces several branches later somewhere unrelated.",
+        learnOn: ["word-search", "generate-parens"],
+        mistake:
+          "Marking as visited and never unmarking, which is flood fill. Flood fill wants each cell once; backtracking needs a cell rejected on one path to be available on another.",
+      },
+      {
+        name: "Prune with a counter, not a check at the end",
+        idea: "Do not generate every arrangement and filter. Carry just enough state to know a branch is dead before descending — how many openers are still unclosed, how many of each letter remain.",
+        tell: "the naive version enumerates something exponential and throws most of it away.",
+        invariant:
+          "The counter describes the PARTIAL candidate exactly. generate-parens carries opened and closed, and the two rules — never close more than you opened, never open past n — are the entire pruning.",
+        learnOn: ["generate-parens"],
+        mistake:
+          "Building all 2^2n strings and testing each for balance. Correct, and it does exponentially more work than the version that simply never builds an unbalanced prefix.",
+      },
+      {
+        name: "Copy at the leaf, not on the way down",
+        idea: "Carry ONE mutable path and append to it; when a complete candidate is reached, copy it into the answer. Copying at every level turns a linear walk into a quadratic one.",
+        tell: "the answer is a list of lists and the path is being rebuilt at every recursive call.",
+        learnOn: ["generate-parens", "max-depth"],
+        mistake:
+          "Appending the path itself rather than a copy. Every entry in the answer is then the same list object, and they all end up empty once the search unwinds.",
+      },
+      {
+        name: "Order the choices to fail fast",
+        idea: "The search tree's shape is yours to choose. Trying the most constrained option first collapses whole branches before they are entered — same algorithm, different constant, and sometimes a different complexity class in practice.",
+        tell: "the search is correct and too slow, and some choices are obviously more constrained than others.",
+        learnOn: ["word-search"],
+        mistake:
+          "Optimising the inner loop instead of the branching. A prune that removes a subtree beats any constant factor inside it.",
+      },
+    ],
+  },
+  {
+    id: "matrix",
+    name: "Matrix",
+    glyph: "[[r][c]]",
+    blurb:
+      "Two indices, one grid: walk it in the right order, or use the grid itself as your notes.",
+    references: [
+      {
+        title: "Row- and column-major order",
+        href: "https://en.wikipedia.org/wiki/Row-_and_column-major_order",
+        kind: "reference",
+        note: "Why walking a grid row by row is faster than column by column on real hardware — the same instructions, an order of magnitude apart on a large matrix.",
+      },
+      {
+        title: "Transpose",
+        href: "https://en.wikipedia.org/wiki/Transpose",
+        kind: "reference",
+        note: "The operation behind every in-place rotation: transpose, then reverse each row. Knowing the identity is quicker than deriving the index arithmetic.",
+      },
+      {
+        title: "Python: list of lists, and the aliasing trap",
+        href: "https://docs.python.org/3/faq/programming.html#how-do-i-create-a-multidimensional-list",
+        kind: "docs",
+        note: "Why `[[0] * n] * m` gives you one row repeated m times, which is the first bug everybody writes in this pattern.",
+      },
+    ],
+    playbook: [
+      {
+        name: "Four boundaries that close in",
+        idea: "For a spiral, hold top, bottom, left and right. Walk one edge, retire it by moving its boundary inward, and stop when the boundaries cross. No visited set and no direction vector.",
+        tell: '"spiral", "layer by layer", "ring" — the traversal peels the grid from the outside in.',
+        invariant:
+          "Everything outside the four boundaries has been emitted exactly once. Check the crossing condition BETWEEN the horizontal and vertical passes, not only at the top of the loop — a single leftover row is emitted twice otherwise.",
+        learnOn: ["spiral-order"],
+        mistake:
+          "Testing for the crossing only once per full lap. On a grid with one row left, the bottom pass re-emits the row the top pass just finished.",
+      },
+      {
+        name: "The grid is the scratch space",
+        idea: "When the answer must be in place, store the marks inside the matrix itself — the first row and the first column are n + m cells you can borrow, which is exactly the amount of note-taking these problems need.",
+        tell: '"in place", "O(1) extra space", "mark the rows and columns to blank" — and the obvious solution allocates a second grid.',
+        invariant:
+          "The two cells that overlap — position (0,0) belongs to both the row markers and the column markers — need one extra flag between them. That single cell is where the bug lives.",
+        learnOn: ["zero-matrix"],
+        mistake:
+          "Blanking as you scan. The first zero you act on writes more zeroes, and those get read as input by the rest of the sweep, so the whole grid goes to zero.",
+      },
+      {
+        name: "A grid is a graph with implicit edges",
+        idea: "Neighbours are (r±1, c) and (r, c±1) — no adjacency list needed. Every graph move applies: BFS for fewest steps, DFS for reachability, backtracking for paths.",
+        tell: '"islands", "shortest path in a grid", "rotting" — connectivity, on a rectangle.',
+        invariant:
+          "One bounds check, in one place. Four copies of `0 <= r < rows and 0 <= c < cols` is four chances to get an edge wrong; write a neighbours helper and check once.",
+        learnOn: ["island-count", "word-search", "shortest-path-grid"],
+        mistake:
+          "Indexing before checking. `grid[r][c]` with r == rows wraps to the last row in Python rather than raising, so an out-of-bounds read silently returns a real value from the wrong place.",
+      },
+      {
+        name: "Rows and columns are interchangeable",
+        idea: "A transpose swaps them, and most rotations and reflections are a transpose plus a reverse. Saying the transformation as a composition beats deriving the index arithmetic each time.",
+        tell: '"rotate 90 degrees", "mirror", "flip" — a rearrangement rather than a computation.',
+        learnOn: ["spiral-order", "zero-matrix"],
+        mistake:
+          "Transposing with a full double loop and swapping twice. Iterate the upper triangle only — swapping every pair twice returns the original, and it looks like the transpose simply did not happen.",
+      },
+    ],
+  },
+  {
+    id: "intervals",
+    name: "Intervals",
+    glyph: "[a,b)",
+    blurb:
+      "Ranges on a line: sort by one end, then decide each one against the last kept.",
+    references: [
+      {
+        title: "Interval scheduling",
+        href: "https://en.wikipedia.org/wiki/Interval_scheduling",
+        kind: "reference",
+        note: "The proof that sorting by END time is optimal for 'keep the most non-overlapping' — the one interval fact worth being able to derive rather than recall.",
+      },
+      {
+        title: "Jeff Erickson, Greedy Algorithms",
+        href: "https://jeffe.cs.illinois.edu/teaching/algorithms/book/04-greedy.pdf",
+        kind: "course",
+        note: "Section 4.2 is interval scheduling done as an exchange argument, which is why this pattern lives next door to Greedy.",
+      },
+      {
+        title: "Python: bisect",
+        href: "https://docs.python.org/3/library/bisect.html",
+        kind: "docs",
+        note: "Where to insert a new interval in a sorted list without re-sorting — the operation the insert-and-merge problems are really asking for.",
+      },
+    ],
+    playbook: [
+      {
+        name: "Sort by start, then merge forward",
+        idea: "With the intervals in start order, each one either overlaps the last kept — in which case extend that one's end — or it does not, and begins a new group. One pass after the sort.",
+        tell: '"merge overlapping", "how many rooms", "the union of" — ranges arriving in no particular order.',
+        invariant:
+          "Everything already emitted is disjoint and final. That is only true because of the sort: without it, an interval arriving late can overlap something you closed.",
+        learnOn: ["summary-ranges"],
+        mistake:
+          "Deciding overlap with `<` when the ranges are closed. [1,2] and [2,3] touch, and whether that is one range or two is a decision the problem makes for you — read it before writing the comparison.",
+      },
+      {
+        name: "Sort by end, to keep the most",
+        idea: "For 'keep as many non-overlapping as possible', sort by END and take greedily. Finishing earliest leaves the most room for everything after, which is the exchange argument in one sentence.",
+        tell: '"the maximum number of non-overlapping", "the fewest to remove" — a count, not a union.',
+        invariant:
+          "The last kept interval's end is the only state. Sorting by start instead is the classic wrong answer: one very long early interval blocks everything behind it.",
+        learnOn: ["summary-ranges"],
+        mistake:
+          "Using the same sort for both jobs. Merging wants start order; scheduling wants end order. They are different problems wearing the same input.",
+      },
+      {
+        name: "A run is an interval you did not know you had",
+        idea: "Consecutive values are a range in disguise. Walk with an anchor: hold where the current run began, and close it the moment the step is not one.",
+        tell: '"collapse into ranges", "consecutive", "summary" — the input is points, the answer is spans.',
+        invariant:
+          "The anchor always marks a value that is part of the run being built. The last run has no successor to close it, so it is closed after the loop — which is the case people forget.",
+        learnOn: ["summary-ranges", "longest-consecutive-run"],
+        mistake:
+          "Emitting inside the loop only. The final run never meets a break, so it never gets written, and every test whose last range is a single value passes anyway.",
+      },
+      {
+        name: "Sweep the endpoints",
+        idea: "Turn each interval into two events — +1 at the start, −1 at the end — sort the events, and walk them carrying a running count. The maximum of that count is the peak overlap.",
+        tell: '"maximum concurrent", "how many at once", "the busiest moment" — you need overlap DEPTH rather than the merged shape.',
+        learnOn: ["summary-ranges"],
+        mistake:
+          "Ordering a start and an end that share a coordinate arbitrarily. Whether a meeting ending at 10 frees the room for one starting at 10 is the entire answer, and it is decided by the tie-break.",
+      },
+    ],
+  },
+  {
+    id: "union-find",
+    name: "Union-Find",
+    glyph: "{a}∪{b}",
+    blurb:
+      "Keep a forest of groups: find which one a thing is in, merge two, answer connectivity.",
+    references: [
+      {
+        title: "Disjoint-set data structure",
+        href: "https://en.wikipedia.org/wiki/Disjoint-set_data_structure",
+        kind: "reference",
+        note: "Path compression and union by rank, and where the inverse-Ackermann bound comes from — which is worth seeing once so you stop calling it constant time by accident.",
+      },
+      {
+        title: "Sedgewick & Wayne, Union-Find",
+        href: "https://algs4.cs.princeton.edu/15uf/",
+        kind: "course",
+        note: "Built up from the naive version through quick-union to the weighted, path-compressed one, with the cost measured at each step. The clearest treatment there is.",
+      },
+      {
+        title: "Kruskal's algorithm",
+        href: "https://en.wikipedia.org/wiki/Kruskal%27s_algorithm",
+        kind: "reference",
+        note: "The reason this structure exists outside interviews: it is the thing that makes 'would this edge close a cycle' a constant-time question.",
+      },
+    ],
+    playbook: [
+      {
+        name: "Every element starts alone",
+        idea: "An array where each position points at a parent, seeded so everything is its own root. `find` walks to the root; `union` points one root at the other. Connectivity is 'do these two have the same root'.",
+        tell: '"how many groups", "are these connected", "provinces", "friend circles" — merging, and no need to walk a path.',
+        invariant:
+          "Only ROOTS are ever re-pointed. Pointing a non-root at something corrupts every element beneath it, and nothing errors — the groups just come out wrong.",
+        learnOn: ["count-provinces"],
+        mistake:
+          "Counting groups by counting merges. The count is the number of SUCCESSFUL merges subtracted from n; a union of two things already together must not decrement anything.",
+      },
+      {
+        name: "Compress the path",
+        idea: "On the way back from a `find`, point every node you passed straight at the root. The next query on any of them is one hop, and the structure flattens as it is used.",
+        tell: "the same elements are queried repeatedly, which is every problem in this pattern.",
+        invariant:
+          "Compression changes the SHAPE and never the membership. If a rewrite can move an element between groups, it is not compression.",
+        learnOn: ["count-provinces"],
+        mistake:
+          "Compressing without also merging by size or rank. Either alone is nearly enough; without the union rule a pathological order still builds a chain, and the bound you quoted is not the one you have.",
+      },
+      {
+        name: "Union-find or a traversal?",
+        idea: "DFS answers connectivity too, and on a static graph it is simpler. Reach for this when edges ARRIVE — when the question is asked between merges, or when the answer must be maintained as the graph grows.",
+        tell: '"as each edge is added", "at every step, how many groups" — an ONLINE question rather than one asked once at the end.',
+        learnOn: ["count-provinces", "island-count"],
+        mistake:
+          "Using it where a flood fill is clearer. count-provinces is genuinely a merge problem; island-count is a traversal, and writing it with union-find is more code for the same bound.",
+      },
+      {
+        name: "Two dimensions, one index",
+        idea: "A grid cell (r, c) becomes the integer r * cols + c, and the structure never knows it was a grid. The same trick gives you a virtual node — one extra index standing for 'the border' or 'the outside'.",
+        tell: '"surrounded regions", "islands that touch the edge", "percolation" — a grid where a whole class of cells should be treated as one thing.',
+        learnOn: ["count-provinces", "surrounded-regions"],
+        mistake:
+          "Sizing the array to rows * cols and then adding a virtual node. It needs one more slot, and the overflow is an index error at the exact moment the answer depends on it.",
+      },
+    ],
+  },
+  {
+    id: "design",
+    name: "Design",
+    glyph: "class{}",
+    blurb:
+      "Not one answer but an object: choose the structures so every operation hits its bound.",
+    references: [
+      {
+        title: "Amortized analysis",
+        href: "https://en.wikipedia.org/wiki/Amortized_analysis",
+        kind: "reference",
+        note: "Why 'O(1) on average' is a real guarantee and not a hedge — the accounting that makes a resizing array honest.",
+      },
+      {
+        title: "Python: collections",
+        href: "https://docs.python.org/3/library/collections.html",
+        kind: "docs",
+        note: "deque, OrderedDict and defaultdict, with their real bounds. Most design problems are two of these wired together, and knowing which end of a deque is cheap settles half of them.",
+      },
+      {
+        title: "Sedgewick & Wayne, Priority Queues",
+        href: "https://algs4.cs.princeton.edu/24pq/",
+        kind: "course",
+        note: "The structure behind most streaming design questions, built from scratch with its costs — read it before claiming a heap operation is free.",
+      },
+    ],
+    playbook: [
+      {
+        name: "Write the operations and their bounds first",
+        idea: "Before choosing a structure, list every method and the cost it must hit. The structures fall out of that table; choosing first and checking later is how you end up with a correct class that is too slow in one method.",
+        tell: '"design a", "implement a class supporting", "all operations in O(1)" — the answer is an object with a contract.',
+        invariant:
+          "Every method's bound holds at every call, not on average over a convenient sequence. Say which are amortised and which are worst case — they are different promises.",
+        learnOn: ["kth-largest-stream"],
+        mistake:
+          "Optimising the operation the examples call most. The contract binds all of them, and the one the examples barely touch is the one the grader hammers.",
+      },
+      {
+        name: "Two structures, kept in step",
+        idea: "Most of these are a map plus something ordered — a map for O(1) lookup, a list or heap or deque for order. The whole difficulty is that every mutation must update both.",
+        tell: "you need lookup by key AND an order, and no single structure gives both.",
+        invariant:
+          "The two views describe the same set at the end of every method. A key removed from one and left in the other is the bug, and it surfaces much later as a phantom entry.",
+        learnOn: ["kth-largest-stream"],
+        mistake:
+          "Deleting from the ordered half by value. That is a linear scan, which throws away the bound the map was bought for — store a handle, or mark the entry dead and skip it on the way out.",
+      },
+      {
+        name: "Keep only what the answer needs",
+        idea: "A stream question rarely needs the stream. For the kth largest, k values suffice — everything smaller can never be the answer again, so it is discarded on arrival.",
+        tell: '"a stream", "as values arrive", "at any point, return the" — unbounded input and a bounded question.',
+        invariant:
+          "What is held is exactly the candidates that could still be the answer. If a discarded value could ever come back, the pruning rule is wrong.",
+        learnOn: ["kth-largest-stream"],
+        mistake:
+          "Storing everything and sorting on each query. It passes the examples and it is the thing the question exists to stop you doing.",
+      },
+      {
+        name: "Lazy deletion",
+        idea: "When a structure cannot remove from the middle cheaply, do not remove: mark the entry stale and discard it when it surfaces. The cost is paid once, by whoever pops it.",
+        tell: "you need a heap or a queue with removals, and the removals are not at an end.",
+        learnOn: ["kth-largest-stream", "window-maximum"],
+        mistake:
+          "Not checking staleness on the way out. The structure hands back an entry that was logically deleted, and it looks like a correctness bug in the algorithm rather than in the bookkeeping.",
+      },
+    ],
+  },
 ]

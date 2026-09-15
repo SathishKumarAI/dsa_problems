@@ -1,0 +1,157 @@
+// count-provinces — the ladder: every way in, worst first.
+//
+// Each rung carries the weakness in the one below it. The KEYS on
+// `alternatives` are load-bearing where a journey exists: `lib/ladder.ts`
+// merges an alternative with the act that shares its key, and `from:` in the
+// journey must then name that key rather than an array index.
+//
+// Two arcs, and they are not duplicates. The one here is the short paragraph
+// the PROBLEM page renders under the ladder; `arc.ts` holds the long one the
+// teaching document ends on. Changing either does not oblige the other.
+
+import type { Solution } from "../../data/types.ts"
+
+export const approach = "Give every city its own group, then merge the groups at the two ends of every edge. `find` walks to a group's representative and flattens the path as it goes, so later lookups are almost immediate; `union` points one representative at the other. Because merging is transitive by construction, a chain of connections collapses into a single group without anyone having to walk the chain. The answer is the number of cities that are still their own representative at the end."
+
+export const whyNow = "The flood fill answers the question fine, and for a static matrix it is the simpler code. Union-find earns its place when the edges arrive over time — it never needs to re-traverse, because merging is what maintains the answer. Both are here because the choice is about the shape of the input, not about speed."
+
+export const arc = "Connected components again, only the graph arrives as an adjacency matrix rather than a grid, and the statement turns on one word: connection is TRANSITIVE, so a and c share a province through b with no direct link between them. Flood fill makes that happen by walking it — start at an unvisited city, mark everything reachable, add one per fill started. Union-find makes it happen by construction: merging at every edge collapses the chain without anyone walking it, and the answer is the count of cities still acting as their own representative. Neither wins on speed, and the honest reason to know both is the shape of the input. A static matrix favours the fill, which is less code; edges arriving over time favour union-find, because there is nothing to re-traverse — the answer is maintained rather than derived. Path compression in find and the count of roots at the end are the two lines to write from memory. Redundant-connection is this with the edges streaming."
+
+export const complexity = { time: "O(n² · α(n))", space: "O(n)" }
+
+export const python = `def find(parent: list[int], x: int) -> int:
+    while parent[x] != x:
+        parent[x] = parent[parent[x]]
+        x = parent[x]
+    return x
+
+
+def find_circle_num(matrix: list[list[int]]) -> int:
+    n = len(matrix)
+    parent = list(range(n))
+    for i in range(n):
+        for j in range(i + 1, n):
+            if matrix[i][j] == 1:
+                a, b = find(parent, i), find(parent, j)
+                if a != b:
+                    parent[a] = b
+    return sum(1 for i in range(n) if find(parent, i) == i)`
+
+export const java = `public int find(int[] parent, int x) {
+    while (parent[x] != x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+public int findCircleNum(int[][] matrix) {
+    int n = matrix.length;
+    int[] parent = new int[n];
+    for (int i = 0; i < n; i++) parent[i] = i;
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (matrix[i][j] == 1) {
+                int a = find(parent, i);
+                int b = find(parent, j);
+                if (a != b) parent[a] = b;
+            }
+        }
+    }
+    int groups = 0;
+    for (int i = 0; i < n; i++) {
+        if (find(parent, i) == i) groups++;
+    }
+    return groups;
+}`
+
+export const cpp = `int findRoot(vector<int>& parent, int x) {
+    while (parent[x] != x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+int findCircleNum(const vector<vector<int>>& matrix) {
+    int n = (int)matrix.size();
+    vector<int> parent(n);
+    for (int i = 0; i < n; i++) parent[i] = i;
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (matrix[i][j] == 1) {
+                int a = findRoot(parent, i);
+                int b = findRoot(parent, j);
+                if (a != b) parent[a] = b;
+            }
+        }
+    }
+    int groups = 0;
+    for (int i = 0; i < n; i++) {
+        if (findRoot(parent, i) == i) groups++;
+    }
+    return groups;
+}`
+
+export const alternatives: Solution[] = [
+  {
+    name: "Flood fill from each city",
+    summary:
+      "Walk the cities; when one has not been visited, depth-first search everything it can reach through the matrix, marking as you go, and add one province per fill started. This is the right answer and it reads the matrix as what it is, an adjacency table. Note that finding a city's neighbours means scanning a full row of n entries whether the graph is dense or nearly empty.",
+    complexity: { time: "O(n²)", space: "O(n)" },
+    python: `def sink(matrix: list[list[int]], seen: list[bool], i: int) -> None:
+    seen[i] = True
+    for j in range(len(matrix)):
+        if matrix[i][j] == 1 and not seen[j]:
+            sink(matrix, seen, j)
+
+
+def find_circle_num(matrix: list[list[int]]) -> int:
+    n = len(matrix)
+    seen = [False] * n
+    groups = 0
+    for i in range(n):
+        if not seen[i]:
+            sink(matrix, seen, i)
+            groups += 1
+    return groups`,
+    java: `public void sink(int[][] matrix, boolean[] seen, int i) {
+    seen[i] = true;
+    for (int j = 0; j < matrix.length; j++) {
+        if (matrix[i][j] == 1 && !seen[j]) sink(matrix, seen, j);
+    }
+}
+
+public int findCircleNum(int[][] matrix) {
+    int n = matrix.length;
+    boolean[] seen = new boolean[n];
+    int groups = 0;
+    for (int i = 0; i < n; i++) {
+        if (!seen[i]) {
+            sink(matrix, seen, i);
+            groups++;
+        }
+    }
+    return groups;
+}`,
+    cpp: `void sink(const vector<vector<int>>& matrix, vector<char>& seen, int i) {
+    seen[i] = 1;
+    for (int j = 0; j < (int)matrix.size(); j++) {
+        if (matrix[i][j] == 1 && !seen[j]) sink(matrix, seen, j);
+    }
+}
+
+int findCircleNum(const vector<vector<int>>& matrix) {
+    int n = (int)matrix.size();
+    vector<char> seen(n, 0);
+    int groups = 0;
+    for (int i = 0; i < n; i++) {
+        if (!seen[i]) {
+            sink(matrix, seen, i);
+            groups++;
+        }
+    }
+    return groups;
+}`,
+  },
+]

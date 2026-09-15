@@ -18,7 +18,7 @@ disagreed about what the noun IS. Fixed across #97, #98 and #99.
 |---|---|---|
 | Sidebar | a catalogue of journeys above a catalogue of patterns | Continue (in play) + one catalogue |
 | Problem page | a button, a panel and a 34-screen wall | a mode bar, explanation collapsed |
-| Home | 6 journey links, **0** patterns | 1 (the dock), **10** |
+| Home | 6 journey links, **0** patterns | 1 (the dock), **18** |
 | Pattern list | **0** problem links — every row a `<button>` | **21** |
 | Search palette | **220** rows for 127 problems | **127**, marked |
 | Pattern page | name + an 80-char blurb + a list | orient / act / review, playbook and reading |
@@ -28,6 +28,14 @@ playbook and references beside a pattern page carrying the name, the same
 references and the same problems. It redirects now.
 
 **Eight of the ten patterns had no playbook.** 47 moves now, up from 11.
+
+**Then ten patterns became 18.** prefix-sums, greedy, bit-manipulation, backtracking, matrix,
+intervals, union-find and design — 79 moves and 54 references across the 18, and **14 problems
+re-filed** onto the pattern the repo actually teaches them with. A problem moved only when the
+approach on its own ladder IS that pattern: `jump-game` went to greedy because its top rung is
+the furthest-reach sweep, and `coin-change-min` stayed in DP because greedy is *wrong* there
+and the playbook says so. **Trie was left out on purpose** — zero problems, so the page would
+be a name over nothing, which is what the previous branch spent itself fixing.
 
 
 
@@ -159,7 +167,7 @@ was deleted.
 
 | | |
 |---|---|
-| Problems | **127**, 10 patterns |
+| Problems | **127**, 18 patterns · 0 orphans |
 | Journeys | **93**; the other 34 ship a static walkthrough |
 | Teaching documents | **82**; **45** problems have none. **14 are typed** (`src/problems/<id>/doc.ts`), 68 are still Markdown |
 | Documents with all three required sections | **10 of 127** |

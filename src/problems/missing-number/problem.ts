@@ -9,7 +9,7 @@ export const id = "missing-number"
 
 export const title = "The Number That Is Not There"
 
-export const pattern = "arrays-hashing"
+export const pattern = "bit-manipulation"
 
 export const difficulty: Difficulty = "easy"
 

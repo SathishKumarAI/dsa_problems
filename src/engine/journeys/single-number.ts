@@ -1046,7 +1046,10 @@ export const singleNumber: Journey<SingleNumberData> = {
     return nums.length ? { nums } : null
   },
   challenge: SINGLE_NUMBER_CHALLENGE,
-  reveals: ["arrays-hashing"],
+  // XOR is the idea this journey withholds, so bit-manipulation is masked with
+  // it. ADDED rather than swapped: arrays-hashing was masked before and
+  // unmasking it here would be a leak introduced by a re-filing.
+  reveals: ["arrays-hashing", "bit-manipulation"],
   sample: { nums: [2, 2, 3] },
   edgeCases: [
     {

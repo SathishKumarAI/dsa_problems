@@ -4,7 +4,7 @@
 
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
-import { problem } from "../problems/sliding-window/best-trade.ts"
+import { problem } from "../../problems/best-trade/index.ts"
 
 type N = Data<number>
 
@@ -121,7 +121,7 @@ function* running({ nums }: N): Generator<DFrame> {
 export const bestTrade = deriveJourney(problem, {
   slug: "one-trade",
   subtitle: "the buy day you never have to search for",
-  reveals: ["sliding-window"],
+  reveals: ["sliding-window", "greedy"],
   defaultPreset: "example",
   harder: { preset: "long", label: "a longer run of days" },
   presets: {
