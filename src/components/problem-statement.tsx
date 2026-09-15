@@ -62,7 +62,11 @@ function Constraints({ problem }: { problem: Problem }) {
             key={c}
             // staggered so the list reads as a sequence rather than appearing
             // as a block — one reveal token, delayed, not a second duration
-            className="animate-edge-in-y rounded-md border border-transparent px-2 py-1.5 transition-colors hover:border-chart-1/40 hover:bg-accent/40"
+            // `-mx-2 px-2`: the hover highlight needs padding, and padding
+            // would push this text 8px right of the paragraph above it. The
+            // negative margin spends it outward instead, so the text keeps the
+            // page's left edge (the contents rail does the same, `-ml-4 pl-4`).
+            className="-mx-2 animate-edge-in-y rounded-md border border-transparent px-2 py-1.5 transition-colors hover:border-chart-1/40 hover:bg-accent/40"
             style={{ animationDelay: `${i * 45}ms` }}
           >
             <div className="flex max-w-[35em] items-baseline gap-2">

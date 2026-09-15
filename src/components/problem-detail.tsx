@@ -18,12 +18,7 @@
 // belongs to the learner, not to the page.
 import {
   ArrowLeftIcon,
-  BookOpenIcon,
-  FileCodeIcon,
-  GraduationCapIcon,
-  ArrowRightIcon,
   ExternalLinkIcon,
-  ListTreeIcon,
   RouteIcon,
   ScrollTextIcon,
 } from "lucide-react"
@@ -40,25 +35,22 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { PROBLEMS } from "@/data"
-import type { Code, Pattern, Problem } from "@/data"
+import type { Pattern, Problem } from "@/data"
 import { earnedOf, toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
-import type { AnyJourney } from "@/engine"
 import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
-import { compareHref, ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
-import type { Ladder, Rung } from "@/lib/ladder"
+import { ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href, navigate, useRoute } from "@/lib/route"
 import { useEffect, useState } from "react"
 import { ExplanationBody } from "./explanation"
 import { useExplanation } from "@/lib/use-explanation"
-import type { Outline } from "@/lib/markdown"
 import { MiniPlayer } from "@/features/journey/mini-player"
-import { CodeBlock } from "./code-block"
 import { ApproachCompare } from "./approach-compare"
 import { difficultyClass } from "@/lib/difficulty"
-import { setPref, usePrefs } from "@/lib/store"
 import { StepPlayer } from "./step-player"
+import { ApproachLadder } from "./approach-ladder"
+import { ContentsRail, ReadFurther } from "./problem-closing"
 import { ProblemStatement } from "./problem-statement"
 import { PreSolveCheck } from "./pre-solve-check"
 import { SimilarProblems } from "./similar-problems"
@@ -71,220 +63,6 @@ interface Props {
   onBack: () => void
 }
 
-const LANGS: { key: keyof Code; label: string }[] = [
-  { key: "python", label: "Python 3" },
-  { key: "java", label: "Java" },
-  { key: "cpp", label: "C++" },
-]
-
-// One language strip for the whole ladder. It was repeated per rung, and since
-// every copy wrote the same `codeTab` pref, three controls moved as one — which
-// reads as a bug whichever one you touch.
-function LanguageStrip({ langs }: { langs: (keyof Code)[] }) {
-  const { codeTab } = usePrefs()
-  if (langs.length < 2) return null
-  const lang = langs.includes(codeTab as keyof Code) ? codeTab : "python"
-  return (
-    <div className="flex gap-0.5" role="tablist" aria-label="language">
-      {LANGS.filter((l) => langs.includes(l.key)).map((l) => (
-        <button
-          key={l.key}
-          role="tab"
-          aria-selected={l.key === lang}
-          onClick={() => setPref("codeTab", l.key)}
-          className={cn(
-            // the language tabs are tapped repeatedly while reading a rung, so
-            // they take the touch target below lg (measured at 390px: 26px)
-            "inline-flex min-h-11 items-center rounded-md px-2.5 py-1 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:min-h-7",
-            l.key === lang
-              ? "bg-accent text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {l.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function RungCode({ code }: { code: Code }) {
-  const { codeTab } = usePrefs()
-  const lang = (code[codeTab as keyof Code] ? codeTab : "python") as keyof Code
-  return <CodeBlock code={code[lang] ?? code.python} />
-}
-
-// The ladder. Rungs read in build order; the "why now" line sits BETWEEN them,
-// because it belongs to the step from one to the next, not to either rung.
-function ApproachLadder({
-  problem,
-  journey,
-  ladder,
-  onCompare,
-}: {
-  problem: Problem
-  journey?: AnyJourney
-  /** open `?compare=a,b` — offered only between rungs the ledger has earned */
-  onCompare: (value: string) => void
-  /** computed by the PAGE, not here: the header needs `capped` too, to decide
-   *  whether the full-explanation door may be opened, and computing the same
-   *  ladder twice is how two controls drift into disagreeing about the ledger */
-  ladder: Ladder
-}) {
-  const { rungs, capped, hidden } = ladder
-  const langs = LANGS.map((l) => l.key).filter((k) =>
-    rungs.some((r) => r.code[k])
-  )
-  const id = (r: Rung) => `rung-${r.key.replace(/\W+/g, "-")}`
-
-  return (
-    <Band
-      label="approaches"
-      // "worst to best" promised a monotone climb the data does not always make:
-      // on island-count the middle rung is a generalisation the prose then argues
-      // is overkill, not a step up. What IS true of every pair is that each rung
-      // answers the one before it, which is exactly what `whyNow` says (V8).
-      count={`${rungs.length} ${rungs.length === 1 ? "way" : "ways"} in, each answering the one before it`}
-    >
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <LanguageStrip langs={langs} />
-        {rungs.length > 1 && (
-          <nav
-            aria-label="jump to an approach"
-            className="flex flex-wrap gap-x-3 gap-y-1"
-          >
-            {rungs.map((r, i) => (
-              <a
-                key={r.key}
-                href={`#${id(r)}`}
-                onClick={(e) => {
-                  // A BARE `#id` href in a hash-routed app is a ROUTE change,
-                  // not a scroll. Measured before this guard: clicking
-                  // "01 Brute Force" set location.hash to "#rung-brute", the
-                  // router parsed that as the route `rung-brute`, and the app
-                  // rendered HOME — the problem page you were reading was
-                  // gone. `learn-page-view.tsx` has guarded this since it was
-                  // written; this call site never got the same treatment.
-                  //
-                  // Scroll instead, and let `scroll-padding-top` (index.css)
-                  // keep the landing clear of the phone's sticky bar.
-                  e.preventDefault()
-                  document
-                    .getElementById(id(r))
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }}
-                className="inline-flex min-h-11 items-center text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-7"
-              >
-                <span className="font-mono">
-                  {String(i + 1).padStart(2, "0")}
-                </span>{" "}
-                {r.name}
-              </a>
-            ))}
-          </nav>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-6 pt-1" aria-label="approach ladder">
-        {rungs.map((r, i) => (
-          <div
-            key={r.key}
-            id={id(r)}
-            className="flex scroll-mt-4 flex-col gap-3"
-          >
-            {r.whyNow && (
-              <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
-                {r.whyNow}
-              </p>
-            )}
-            <div className="flex flex-wrap items-baseline gap-x-3">
-              <span className="font-mono text-meta text-muted-foreground">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <b className="text-body">{r.name}</b>
-              {/* B79. A rung the teaching document teaches and the journey
-                  skips — a baseline the animation has no reason to walk, or a
-                  variant it argues against. Marked rather than hidden: a
-                  learner should be able to tell which rungs they were walked
-                  through and which are being handed over as reading. */}
-              {r.aside && (
-                <span className="rounded-sm border border-chart-4/45 bg-chart-4/10 px-1.5 font-mono text-meta text-chart-4">
-                  reading only
-                </span>
-              )}
-              {/* the second channel on the whole ladder: read DOWN the rungs
-                  and the bars visibly shrink. That climb is what the prose
-                  between the rungs is describing, and this is it drawn. */}
-              <span className="inline-flex items-center gap-2 font-mono text-meta text-muted-foreground">
-                <ComplexityMark cost={r.cost} />
-                {r.cost}
-              </span>
-            </div>
-            <p className="max-w-[35em] text-body text-muted-foreground">
-              {r.idea}
-            </p>
-            {/* Where the bound comes from. The ladder has always shown the
-                cost and never the COUNT, so a reader could carry away
-                "the set one is O(n)" without being able to derive it — and
-                deriving it is the transferable half. A `details`, because it
-                is the second reading of a rung and not the first. */}
-            {r.costWhy && (
-              <details className="max-w-[35em] rounded-lg border px-3 py-2">
-                <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
-                  <span className="font-mono text-meta text-chart-2">
-                    {r.cost}
-                  </span>{" "}
-                  — how that was counted
-                </summary>
-                <p className="pt-2 text-body text-muted-foreground">
-                  {r.costWhy}
-                </p>
-              </details>
-            )}
-            <RungCode code={r.code} />
-            {/* The pair worth comparing is this rung and the one it answers:
-                `whyNow` right above makes a claim about exactly that step, and
-                this is the button that shows it. Never on the first rung,
-                which has nothing below it. */}
-            {i > 0 && (
-              <button
-                onClick={() => onCompare(compareHref(rungs[i - 1], r))}
-                className="inline-flex min-h-11 w-fit items-center font-mono text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-7"
-              >
-                compare with {rungs[i - 1].name.toLowerCase()} &rarr;
-              </button>
-            )}
-          </div>
-        ))}
-        {/* The idea the whole ladder shares, after the rungs that earned it.
-            Never while the ladder is capped: it names where the climb ends. */}
-        {problem.arc && !capped && (
-          // a <b> here would join the rung names the UI test reads out of this
-          // container — the label is a span for that reason
-          <p className="max-w-[35em] border-t border-border/60 pt-4 text-body text-muted-foreground">
-            <span className="font-semibold text-foreground">The arc.</span>{" "}
-            {problem.arc}
-          </p>
-        )}
-        {capped && journey && (
-          <p className="max-w-[35em] text-ui text-muted-foreground">
-            {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
-            still ahead of you.{" "}
-            <a
-              href={href(`/journey/${journey.slug}`)}
-              className="group inline-flex items-center gap-1 text-chart-1 underline-offset-2 hover:underline"
-            >
-              Continue the journey
-              <ArrowRightIcon aria-hidden className="size-3.5 shrink-0" />
-            </a>{" "}
-            — each one opens when the previous one runs out of road.
-          </p>
-        )}
-      </div>
-    </Band>
-  )
-}
-
 /**
  * Resolves the record, then renders it.
  *
@@ -293,92 +71,6 @@ function ApproachLadder({
  * is unreachable, but a manifest that has drifted should show a page rather
  * than break the rules of hooks.
  */
-/** which mark a source gets — a text, an official manual, or a course */
-const KIND_ICON = {
-  reference: BookOpenIcon,
-  docs: FileCodeIcon,
-  course: GraduationCapIcon,
-} as const
-
-/**
- * The pattern's reading, on the PROBLEM page.
- *
- * It used to sit on the pattern page. A reference is attached to a pattern and
- * not to a problem on purpose — there is an authoritative page on hash tables
- * and none on "Pair With Target Sum" — but the moment a reader wants it is the
- * moment they are stuck on a problem, not the moment they are choosing one.
- * Same rows, same notes, moved to where they are reached for.
- *
- * Masked with everything else: a source titled "Two pointers" names the idea a
- * journey mid-flight is still withholding.
- */
-/**
- * The reading list: this problem's own sources first, then the pattern's.
- *
- * References hang off a PATTERN on purpose (see `data/types.ts`) — the good
- * sources are about the technique, and attaching them per problem would have
- * meant 153 rows of the same three links. That argument holds for a textbook
- * chapter on hashing and does NOT hold for a second site's write-up of THIS
- * problem, which is wrong on every other problem in the pattern. So both, in
- * that order, and the row says which kind it is.
- */
-function ReadFurther({
-  pattern,
-  problem,
-}: {
-  pattern: Pattern
-  problem: Problem
-}) {
-  const own = problem.reading ?? []
-  const refs = [...own, ...(pattern.references ?? [])]
-  if (refs.length === 0) return null
-  return (
-    <section className="overflow-hidden rounded-xl border bg-card">
-      <div className="flex items-baseline gap-3 px-4 py-3">
-        <span className="text-meta tracking-wide text-muted-foreground uppercase">
-          read further
-        </span>
-        <span className="ml-auto font-mono text-meta text-dim tabular-nums">
-          {own.length ? `${own.length} on this problem · ` : ""}
-          {refs.length} sources
-        </span>
-      </div>
-      <ul className="divide-y border-t">
-        {refs.map((r) => {
-          const Icon = KIND_ICON[r.kind]
-          return (
-            <li key={r.href + r.title}>
-              <a
-                href={r.href}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
-              >
-                <Icon
-                  className="mt-0.5 size-4 shrink-0 text-chart-2"
-                  aria-hidden
-                />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex items-center gap-1.5 text-ui font-medium">
-                    {r.title}
-                    <ExternalLinkIcon
-                      className="size-3 shrink-0 text-dim"
-                      aria-hidden
-                    />
-                  </span>
-                  <span className="max-w-[35em] text-ui text-muted-foreground">
-                    {r.note}
-                  </span>
-                </span>
-              </a>
-            </li>
-          )
-        })}
-      </ul>
-    </section>
-  )
-}
-
 export function ProblemDetail({ problemId, pattern, onBack }: Props) {
   const problem = PROBLEMS.find((p) => p.id === problemId)
   if (!problem) return null
@@ -588,7 +280,10 @@ function ProblemPage({
           mid-journey. */}
         <div
           data-surface="raised"
-          className="flex flex-col gap-3 rounded-xl border bg-card p-5 md:p-6"
+          // `px-4` is the page's one box inset: the H1 used to start 25px right
+          // of every heading below it, which is the misalignment a reader sees
+          // first. Vertical padding stays generous — this is the raised surface.
+          className="flex flex-col gap-3 rounded-xl border bg-card px-4 py-5 md:py-6"
         >
           <h1 className="font-heading text-title font-semibold">
             {problem.title}
@@ -693,7 +388,9 @@ function ProblemPage({
           label="hints"
           count={`${problem.hints.length}, each one further in`}
         >
-          <Accordion multiple={false} className="w-full">
+          {/* `multiple`: reading hint 3 used to close hint 2, so a ladder meant
+            to be read in order could only ever show one rung of itself. */}
+          <Accordion multiple className="w-full">
             {problem.hints.map((hint, i) => (
               <AccordionItem key={i} value={`hint-${i}`}>
                 <AccordionTrigger className="font-mono text-ui">
@@ -793,51 +490,5 @@ function ProblemPage({
           that is not there. */}
       {outline.length > 0 && <ContentsRail outline={outline} />}
     </div>
-  )
-}
-
-/** `top-16`, not `top-6`: the shell parks a fixed search control at
- *  `top-3 right-4` and this rail is the only thing that shares that corner. At
- *  1280 the button was measured painting over the rail's first entries. */
-function ContentsRail({ outline }: { outline: Outline[] }) {
-  return (
-    <nav
-      aria-label="contents"
-      className="sticky top-16 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
-    >
-      <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
-        <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
-        The explanation
-      </span>
-      {outline.map((entry) => (
-        <a
-          key={entry.id}
-          href={`#${entry.id}`}
-          onClick={(e) => {
-            // a bare `#id` href would replace the hash ROUTE and navigate the
-            // app home; scroll to the heading instead (CLAUDE.md, the trap)
-            e.preventDefault()
-            document
-              .getElementById(entry.id)
-              ?.scrollIntoView({ behavior: "smooth", block: "start" })
-          }}
-          // `-ml-4 border-l-2 border-transparent pl-4` puts each entry's own
-          // indicator exactly on the rail's border, so the hovered section
-          // lights that hairline instead of adding a second line beside it.
-          // Border and colour only — the row never moves, which is what would
-          // make a 30-entry rail jitter.
-          className={cn(
-            // `text-ui`, not `text-meta`: several section labels run past 55
-            // characters, which is the threshold this repo's own audit uses to
-            // call something a SENTENCE rather than a label — and a sentence is
-            // never set below the ui step.
-            "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-colors hover:border-chart-1 hover:text-foreground",
-            entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
-          )}
-        >
-          {entry.text.replace(/`/g, "")}
-        </a>
-      ))}
-    </nav>
   )
 }

@@ -118,7 +118,8 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
     setCursor((c) => Math.max(-1, Math.min(last, c + d)))
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-3">
+    // `p-4`, the one box inset on this page — see problem-statement.tsx
+    <div className="flex flex-col gap-3 rounded-lg border p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-mono text-meta text-dim">{list.name}</span>
         {scalars.map((a) => (
@@ -174,12 +175,15 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
       {list.values.length > 0 ? (
         <Cells values={list.values} cursor={cursor} />
       ) : (
-        <p className="text-center font-mono text-ui text-dim">[ ] — empty</p>
+        <p className="font-mono text-ui text-dim">[ ] — empty</p>
       )}
 
       {/* where the cursor is, in words. A row of boxes with one lit is a
           picture; a reader needs the count to connect it to `n`. */}
-      <p className="text-center font-mono text-meta text-muted-foreground">
+      {/* left, not centred. Three centred paragraphs in a document of 56
+          left-aligned ones is what reads as "not justified" — the diagram
+          above is centred because it is a picture; its caption is prose. */}
+      <p className="font-mono text-meta text-muted-foreground">
         {cursor < 0
           ? `${last} value${last === 1 ? "" : "s"} — step or play`
           : done
@@ -211,7 +215,7 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
  *  shape the parser refuses */
 function PlainExample({ example }: { example: Example }) {
   return (
-    <div className="overflow-x-auto rounded-lg border p-3 font-mono text-ui">
+    <div className="overflow-x-auto rounded-lg border p-4 font-mono text-ui">
       <div>
         <span className="text-muted-foreground">in&nbsp;&nbsp;</span>
         {example.input}

@@ -216,17 +216,57 @@ before the record can carry them — 4 blocks, gated by `verify:code` and `verif
 
 ## 5. Other issues on this page, found while measuring
 
-| # | Finding | Evidence | Severity |
+| # | Finding | Evidence | State |
 |---|---|---|---|
-| **P1** | `problem-detail.tsx` is **843 lines** against the repo's own 500-line ceiling, and it owns the orient bar, the mode bar, the ladder, the comparator route, the reading list and the contents rail. Every change to this page reopens all of it. | `wc -l` | medium — it is the file every item in §4 has to edit |
-| **P2** | A path that is not a route still serves the app: `/spiral-matrix-ii.md#/p/arrays-hashing/contains-duplicate` renders the problem page normally. The SPA fallback answers 200 for any path, so a mistyped or stale URL looks like it worked. A reader who bookmarks that link keeps a URL that will break the day the file exists. | the URL in the request | low, but it is how this session's URL was formed |
-| **P3** | The page is now **6.6 screens closed**, up from 4.0. Three sections were added and none were removed; slice 2 removes the duplicate twenty. Until then the page is longer than it was. | `scrollHeight / innerHeight` | medium — stated so the next measurement is honest |
-| **P4** | `docs.txt` is untracked in the repo root — an empty file, not gitignored and not referenced by anything. | `git status` | low — delete it or ignore it, but not silently |
-| **P5** | `FEATURES.md` still lists the **Command palette** as `backlog #B12`. B12 shipped; the palette is on the page and the search control is the thing §2.1 just moved. A features table that is wrong about what exists is worse than no table. | `docs/FEATURES.md:32` | low |
-| **P6** | The hint accordion allows one hint open at a time (`multiple={false}`), so reading hint 3 closes hint 2 — a progressive ladder you cannot see the rungs of at once. | `problem-detail.tsx` | low |
-| **P7** | `Problem.reading`, `unlocks`, `checks` and `costWhy` exist on **1 of 153** problems. The gates check coherence, not presence, on purpose — a gate demanding them would fail 152 problems the day it landed. The ratchet is a future decision, not this branch's. | `problems.test.ts` | informational |
+| **P1** | `problem-detail.tsx` was **843 lines** against the repo's 500-line ceiling, holding six unrelated things. | `wc -l` | **fixed** — split into `problem-detail.tsx` 508, `approach-ladder.tsx` 225, `problem-closing.tsx` 148. Nothing rendered changed; the blocks moved verbatim |
+| **P2** | A path that is not a route still served the app: `/spiral-matrix-ii.md#/p/arrays-hashing/contains-duplicate` rendered the problem page normally, so a mistyped or stale URL looked like it worked and the address bar lied about where you were. | the URL this session was given | **fixed** — `lib/route.ts` rewrites anything but the base with `replaceState`, keeping hash and query. Verified: `pathname` `/`, hash intact, page renders, no history entry |
+| **P3** | The page is **6.6 screens closed**, up from 4.0. Three sections were added and none removed. | `scrollHeight / innerHeight` | open — B100 removes the duplicate twenty |
+| **P4** | `docs.txt` is an empty untracked file in the repo root, not gitignored and referenced by nothing. | `git status`, `ls -la` (0 bytes) | **left alone deliberately** — deleting needs a word from the owner (`CLAUDE.md`: never delete without asking) |
+| **P5** | `FEATURES.md` listed the **Command palette** as `backlog #B12`. B12 shipped. | `docs/FEATURES.md:32` | **fixed** — the row now describes the palette and where its trigger lives |
+| **P6** | The hint accordion allowed one hint open at a time, so reading hint 3 closed hint 2 — a ladder meant to be read in order could only ever show one rung of itself. | `problem-detail.tsx` | **fixed** — `<Accordion multiple>` |
+| **P7** | `reading`, `unlocks`, `checks` and `costWhy` exist on **1 of 153** problems. The gates check coherence, not presence, on purpose. | `problems.test.ts` | informational |
+| **P8** | **The page had five different left edges** — 459 (the column), 460 and 472 (three different box paddings), 484 (the H1, inside the raised card, starting 25px right of every heading below it) and 581 (a centred caption). Three paragraphs were centred in a document of 56 left-aligned ones. That is what reads as "not justified". | content-box lefts of all 59 text blocks, 1440 × 1000 | **fixed** — see §7 |
 
 ---
+
+## 7. One layout, measured
+
+A page reads as "not aligned" when its left edges disagree, and this one had five. Every
+bordered box chose its own padding, the one raised surface chose a third, and two captions
+were centred inside a left-aligned document.
+
+**The rule now: two edges and no third.** Text is either at the page column's edge, or
+inset by one box inset — `p-4` — and there is no other option.
+
+| Measure (1440 × 1000, content-box left of every text block) | Before | After |
+|---|---|---|
+| Distinct left edges | **5** — 459, 460, 472, 476, 484 | **2** — 459 and 476 (each ±1px of sub-pixel layout) |
+| The H1's edge vs the headings below it | 484 vs 459 — **25px out** | both on the column |
+| Centred paragraphs | 3 of 59 | **1** of 59 |
+
+What moved:
+
+- **Every bordered box takes `p-4`** — the example cards, the check cards, the rung cost
+  disclosures, the sibling rows, the reading rows. They were `p-3`, `px-3 py-2` and `px-4`.
+- **The raised card keeps its vertical air and takes the same horizontal inset**, so the
+  page title lines up with the headings under it instead of floating 25px to their right.
+- **The constraint rows spend their padding outward** (`-mx-2 px-2`): the hover highlight
+  needs the padding, and without the negative margin the text sat 8px right of the
+  paragraph above it. The contents rail already does exactly this (`-ml-4 pl-4`).
+- **Captions are left-aligned.** The cells above them are centred because they are a
+  picture; the caption is prose and belongs on the text edge.
+- **The two quoted rules** (`whyNow`, and a check's reason) went `pl-3` → `pl-4`, landing
+  on the box inset.
+
+**The one centred paragraph left** is the walkthrough's narration, which comes from
+`MiniPlayer` — the journey's own component, shared with the journey page, where it is
+centred under a stage on purpose. Changing it there is a journey decision, not this page's.
+
+**What was NOT changed, and why.** The right edges are still ragged: prose is capped at
+`35em`, which is 595px at the 17px body step and 525px at the 15px one. A single pixel cap
+would line them up and break the U7 measure gate — 595px of 15px text is 79 characters
+against a 68-character ceiling. The cap is em-relative because readability is em-relative.
+The ragged right edge is the type scale doing its job, not a defect.
 
 ## 6. What a second problem costs, once this shape is approved
 

@@ -51,7 +51,7 @@ export function SimilarProblems({
           <li key={p.id}>
             <a
               href={href(`/p/${pattern.id}/${p.id}`)}
-              className="group flex min-h-11 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-accent/40"
+              className="group flex min-h-11 items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent/40"
             >
               <DifficultyMeter difficulty={p.difficulty} />
               <span

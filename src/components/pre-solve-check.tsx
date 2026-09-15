@@ -30,7 +30,7 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
   const right = picked === check.answer
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border p-3">
+    <div className="flex flex-col gap-2 rounded-lg border p-4">
       <p className="flex max-w-[35em] gap-2 text-body">
         <span className="shrink-0 font-mono text-meta text-dim">
           {n}/{of}
@@ -85,7 +85,7 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
       </div>
       {answered && (
         <p
-          className="max-w-[35em] animate-edge-in-y border-l-2 border-chart-1/50 pl-3 text-ui text-muted-foreground"
+          className="max-w-[35em] animate-edge-in-y border-l-2 border-chart-1/50 pl-4 text-ui text-muted-foreground"
           aria-live="polite"
         >
           <span
