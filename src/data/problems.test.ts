@@ -65,7 +65,11 @@ test("problems: the approach ladder is well-formed, worst → best", () => {
     const journey = JOURNEYS.find((j) => j.problemId === p.id)
     const { rungs } = ladderOf(p, journey, Number.MAX_SAFE_INTEGER)
     assert.ok(rungs.length >= 1, `${p.id}: no rungs`)
-    assert.equal(rungs[0].whyNow, undefined, `${p.id}: the first rung has nothing before it`)
+    assert.equal(
+      rungs[0].whyNow,
+      undefined,
+      `${p.id}: the first rung has nothing before it`
+    )
     // the bar is presence, not length: an authored rung writes a sentence or
     // two, while a journey act's `insight` is a deliberately short question
     // ("The map costs memory — what if the drawer organized itself?")
@@ -76,8 +80,14 @@ test("problems: the approach ladder is well-formed, worst → best", () => {
       )
     for (const r of rungs) {
       assert.ok(r.name.trim(), `${p.id}: a rung with no name`)
-      assert.ok(/O\(/.test(r.cost), `${p.id}/${r.name}: cost does not read as a complexity`)
-      assert.ok(r.idea.trim().length > 40, `${p.id}/${r.name}: the idea needs a sentence or two`)
+      assert.ok(
+        /O\(/.test(r.cost),
+        `${p.id}/${r.name}: cost does not read as a complexity`
+      )
+      assert.ok(
+        r.idea.trim().length > 40,
+        `${p.id}/${r.name}: the idea needs a sentence or two`
+      )
       assert.ok(r.code.python.trim(), `${p.id}/${r.name}: no Python`)
     }
   }
@@ -93,14 +103,22 @@ test("problems: an arc, where one exists, is a paragraph and not a restatement",
       p.arc.length > 200,
       `${p.id}: the arc is one sentence — it should tie the whole ladder together`
     )
-    assert.notEqual(p.arc.trim(), p.approach.trim(), `${p.id}: the arc repeats the approach`)
+    assert.notEqual(
+      p.arc.trim(),
+      p.approach.trim(),
+      `${p.id}: the arc repeats the approach`
+    )
   }
 })
 
 test("problems: every LeetCode slug is a slug, and unique", () => {
   const slugs = PROBLEMS.map((p) => p.leetcode)
   for (const s of slugs) assert.match(s, /^[a-z0-9-]+$/, `bad slug "${s}"`)
-  assert.equal(new Set(slugs).size, slugs.length, "two problems point at one LeetCode page")
+  assert.equal(
+    new Set(slugs).size,
+    slugs.length,
+    "two problems point at one LeetCode page"
+  )
 })
 
 test("journeys: every revealed pattern id exists, and covers the journey's own pattern", () => {
@@ -129,8 +147,7 @@ test("problems: a journeyed problem has no hand-written walkthrough (one source 
         undefined,
         `${p.id} has both a journey and a static walkthrough — they drift (B1)`
       )
-    else
-      assert.ok(p.walkthrough?.length, `${p.id} has no walkthrough at all`)
+    else assert.ok(p.walkthrough?.length, `${p.id} has no walkthrough at all`)
 })
 
 // Java and C++ are optional until a problem has a journey, but the moment a
@@ -216,7 +233,11 @@ test("problems: the ladder never shows a rung the ledger has not earned", () => 
         `${p.id}: the ladder shows "${r.name}", which is act ${j.acts.findIndex((a) => a.name === r.name)} and not yet earned`
       )
     if (j.acts.length > 2) {
-      assert.equal(capped, true, `${p.id}: a mid-flight ladder must say it is capped`)
+      assert.equal(
+        capped,
+        true,
+        `${p.id}: a mid-flight ladder must say it is capped`
+      )
       assert.ok(hidden > 0, `${p.id}: capped, but claims to hide nothing`)
     }
   }
@@ -445,5 +466,127 @@ test("patterns: every playbook row is usable, and points at real problems", () =
         assert.ok(ids.has(id), `${where}: "${id}" is not a problem in this app`)
     }
   }
-  assert.ok(rows >= 10, `only ${rows} playbook rows — the page has nothing to show`)
+  assert.ok(
+    rows >= 10,
+    `only ${rows} playbook rows — the page has nothing to show`
+  )
+})
+
+// ---------------------------------------------------------------------------
+// The pilot fields (docs/PROBLEM-PAGE.md): `unlocks`, `checks`, `reading` and
+// `costWhy`. All four are optional — 152 problems carry none of them yet — so
+// every assertion here is about a record that HAS the field being coherent,
+// never about the field existing. A gate that demanded them would fail 152
+// problems on the day it landed and get deleted the same afternoon.
+
+test("problems: an unlocked constraint names a constraint that exists", () => {
+  for (const p of PROBLEMS) {
+    for (const u of p.unlocks ?? []) {
+      assert.ok(
+        p.constraints.includes(u.constraint),
+        `${p.id}: unlocks names a constraint the problem does not declare — ${JSON.stringify(u.constraint)}`
+      )
+      // the row exists to say what the bound BUYS; a few words cannot
+      assert.ok(
+        u.what.length > 40,
+        `${p.id}: "${u.constraint}" says what it unlocks in ${u.what.length} chars`
+      )
+    }
+    const named = (p.unlocks ?? []).map((u) => u.constraint)
+    assert.equal(
+      new Set(named).size,
+      named.length,
+      `${p.id}: two unlocks rows for one constraint`
+    )
+  }
+})
+
+test("problems: a pre-solve check has a real answer and says why", () => {
+  for (const p of PROBLEMS) {
+    for (const c of p.checks ?? []) {
+      const where = `${p.id} → ${c.ask.slice(0, 40)}`
+      assert.ok(
+        c.options.length >= 2,
+        `${where}: a check needs at least two options`
+      )
+      assert.equal(
+        new Set(c.options).size,
+        c.options.length,
+        `${where}: two identical options`
+      )
+      assert.ok(
+        Number.isInteger(c.answer) &&
+          c.answer >= 0 &&
+          c.answer < c.options.length,
+        `${where}: answer ${c.answer} is not an index into ${c.options.length} options`
+      )
+      // shown on a right answer too, so it is the teaching and not a scold
+      assert.ok(
+        c.because.length > 60,
+        `${where}: the reason must cite the statement (${c.because.length} chars)`
+      )
+      assert.match(c.ask, /\?$/, `${where}: a check asks a question`)
+    }
+  }
+})
+
+test("problems: a problem's own reading is usable, attributed and not the pattern's", () => {
+  for (const p of PROBLEMS) {
+    const own = p.reading ?? []
+    const pattern = PATTERNS.find((x) => x.id === p.pattern)
+    const patternHrefs = new Set((pattern?.references ?? []).map((r) => r.href))
+    for (const r of own) {
+      const where = `${p.id} → ${r.title}`
+      assert.match(r.href, /^https:\/\//, `${where}: not an https URL`)
+      assert.ok(
+        !/example\.com|localhost|TODO/i.test(r.href),
+        `${where}: placeholder URL`
+      )
+      assert.ok(
+        r.note.length > 40,
+        `${where}: the note must say what the source is FOR (${r.note.length} chars)`
+      )
+      // the whole reason problem-level reading exists is that it is NOT the
+      // pattern's — a duplicate row would render the same link twice, stacked
+      assert.ok(
+        !patternHrefs.has(r.href),
+        `${where}: already on the ${p.pattern} pattern's list; it belongs to the technique, not this problem`
+      )
+    }
+    assert.equal(
+      new Set(own.map((r) => r.href)).size,
+      own.length,
+      `${p.id}: the same source listed twice`
+    )
+  }
+})
+
+test("problems: a counting argument names the bound it is counting", () => {
+  const cites = (why: string, cost: { time: string; space: string }) =>
+    // the argument has to mention at least one of the two bounds it explains,
+    // or it is prose next to a number rather than an account of it
+    why.includes(cost.time) || why.includes(cost.space) || /O\(/.test(why)
+  for (const p of PROBLEMS) {
+    if (p.costWhy) {
+      assert.ok(
+        p.costWhy.length > 80,
+        `${p.id}: costWhy is too short to be a count (${p.costWhy.length} chars)`
+      )
+      assert.ok(
+        cites(p.costWhy, p.complexity),
+        `${p.id}: costWhy names no bound`
+      )
+    }
+    for (const a of p.alternatives ?? []) {
+      if (!a.costWhy) continue
+      assert.ok(
+        a.costWhy.length > 80,
+        `${p.id}/${a.name}: costWhy is too short to be a count (${a.costWhy.length} chars)`
+      )
+      assert.ok(
+        cites(a.costWhy, a.complexity),
+        `${p.id}/${a.name}: costWhy names no bound`
+      )
+    }
+  }
 })

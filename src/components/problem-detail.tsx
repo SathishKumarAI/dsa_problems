@@ -59,6 +59,9 @@ import { ApproachCompare } from "./approach-compare"
 import { difficultyClass } from "@/lib/difficulty"
 import { setPref, usePrefs } from "@/lib/store"
 import { StepPlayer } from "./step-player"
+import { ProblemStatement } from "./problem-statement"
+import { PreSolveCheck } from "./pre-solve-check"
+import { SimilarProblems } from "./similar-problems"
 
 interface Props {
   /** the id, not the record: this component is lazy, so it resolves the record
@@ -184,7 +187,11 @@ function ApproachLadder({
 
       <div className="flex flex-col gap-6 pt-1" aria-label="approach ladder">
         {rungs.map((r, i) => (
-          <div key={r.key} id={id(r)} className="flex scroll-mt-4 flex-col gap-3">
+          <div
+            key={r.key}
+            id={id(r)}
+            className="flex scroll-mt-4 flex-col gap-3"
+          >
             {r.whyNow && (
               <p className="max-w-[35em] border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
                 {r.whyNow}
@@ -216,6 +223,24 @@ function ApproachLadder({
             <p className="max-w-[35em] text-body text-muted-foreground">
               {r.idea}
             </p>
+            {/* Where the bound comes from. The ladder has always shown the
+                cost and never the COUNT, so a reader could carry away
+                "the set one is O(n)" without being able to derive it — and
+                deriving it is the transferable half. A `details`, because it
+                is the second reading of a rung and not the first. */}
+            {r.costWhy && (
+              <details className="max-w-[35em] rounded-lg border px-3 py-2">
+                <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
+                  <span className="font-mono text-meta text-chart-2">
+                    {r.cost}
+                  </span>{" "}
+                  — how that was counted
+                </summary>
+                <p className="pt-2 text-body text-muted-foreground">
+                  {r.costWhy}
+                </p>
+              </details>
+            )}
             <RungCode code={r.code} />
             {/* The pair worth comparing is this rung and the one it answers:
                 `whyNow` right above makes a claim about exactly that step, and
@@ -242,7 +267,7 @@ function ApproachLadder({
           </p>
         )}
         {capped && journey && (
-          <p className="text-ui max-w-[35em] text-muted-foreground">
+          <p className="max-w-[35em] text-ui text-muted-foreground">
             {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
             still ahead of you.{" "}
             <a
@@ -287,8 +312,25 @@ const KIND_ICON = {
  * Masked with everything else: a source titled "Two pointers" names the idea a
  * journey mid-flight is still withholding.
  */
-function ReadFurther({ pattern }: { pattern: Pattern }) {
-  const refs = pattern.references ?? []
+/**
+ * The reading list: this problem's own sources first, then the pattern's.
+ *
+ * References hang off a PATTERN on purpose (see `data/types.ts`) — the good
+ * sources are about the technique, and attaching them per problem would have
+ * meant 153 rows of the same three links. That argument holds for a textbook
+ * chapter on hashing and does NOT hold for a second site's write-up of THIS
+ * problem, which is wrong on every other problem in the pattern. So both, in
+ * that order, and the row says which kind it is.
+ */
+function ReadFurther({
+  pattern,
+  problem,
+}: {
+  pattern: Pattern
+  problem: Problem
+}) {
+  const own = problem.reading ?? []
+  const refs = [...own, ...(pattern.references ?? [])]
   if (refs.length === 0) return null
   return (
     <section className="overflow-hidden rounded-xl border bg-card">
@@ -297,6 +339,7 @@ function ReadFurther({ pattern }: { pattern: Pattern }) {
           read further
         </span>
         <span className="ml-auto font-mono text-meta text-dim tabular-nums">
+          {own.length ? `${own.length} on this problem · ` : ""}
           {refs.length} sources
         </span>
       </div>
@@ -457,15 +500,16 @@ function ProblemPage({
       </div>
     )
 
-  const outline = explanation.present && explanation.ready ? explanation.outline : []
+  const outline =
+    explanation.present && explanation.ready ? explanation.outline : []
 
   return (
     <div className="mx-auto flex w-full max-w-(--container-page) gap-10">
       {/* min-w-0: a flex item's default `min-width: auto` is its content's
           min-content width, and the widest comparison table would push this
           column open and take the whole document sideways with it. */}
-      <div className="mx-auto flex w-full min-w-0 max-w-reading flex-col gap-8">
-      {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
+      <div className="mx-auto flex w-full max-w-reading min-w-0 flex-col gap-8">
+        {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
           Four facts, one row: where am I, how hard is it, what do I have to
           beat, have I done it. Each changes what you do in the next thirty
           seconds; nothing else qualified.
@@ -478,41 +522,54 @@ function ProblemPage({
           The glyph is gone — it restated the pattern the back link already
           names and spent the accent doing it. The mask still holds: the back
           link is what renders `· · ·` while a journey is mid-flight (B45). */}
-      <OrientBar>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
-        >
-          <ArrowLeftIcon data-icon="inline-start" />
-          {hidden ? MASKED_NAME : pattern.name}
-        </Button>
-        <Fact label="difficulty">
-          <DifficultyMeter difficulty={problem.difficulty} />
-          <span className={difficultyClass[problem.difficulty].split(" ").pop()}>
-            {problem.difficulty}
-          </span>
-        </Fact>
-        {/* the bar to clear. Each rung carries its own cost; this is the one
+        <OrientBar>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
+          >
+            <ArrowLeftIcon data-icon="inline-start" />
+            {hidden ? MASKED_NAME : pattern.name}
+          </Button>
+          <Fact label="difficulty">
+            <DifficultyMeter difficulty={problem.difficulty} />
+            <span
+              className={difficultyClass[problem.difficulty].split(" ").pop()}
+            >
+              {problem.difficulty}
+            </span>
+          </Fact>
+          {/* the bar to clear. Each rung carries its own cost; this is the one
             the best rung reaches. */}
-        <Fact label="target">
-          <ComplexityMark value={problem.complexity.time} />
-          <span className="font-mono">{problem.complexity.time}</span>
-          <span className="text-dim">·</span>
-          <ComplexityMark value={problem.complexity.space} />
-          <span className="font-mono">{problem.complexity.space}</span>
-        </Fact>
-        <label className="ml-auto flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
-          <Checkbox
-            checked={solved.has(problem.id)}
-            onCheckedChange={() => toggleSolved(problem.id)}
-          />
-          solved
-        </label>
-      </OrientBar>
+          <Fact label="target">
+            <ComplexityMark value={problem.complexity.time} />
+            <span className="font-mono">{problem.complexity.time}</span>
+            <span className="text-dim">·</span>
+            <ComplexityMark value={problem.complexity.space} />
+            <span className="font-mono">{problem.complexity.space}</span>
+            {/* the bound is a label until you can reproduce the count; the
+              title carries the counting argument on the bar, and every rung
+              carries its own below (`Solution.costWhy`) */}
+            {problem.costWhy && (
+              <span
+                title={problem.costWhy}
+                className="cursor-help text-meta text-dim underline decoration-dotted underline-offset-4"
+              >
+                why?
+              </span>
+            )}
+          </Fact>
+          <label className="ml-auto flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
+            <Checkbox
+              checked={solved.has(problem.id)}
+              onCheckedChange={() => toggleSolved(problem.id)}
+            />
+            solved
+          </label>
+        </OrientBar>
 
-      {/* ── ZONE 2 · ACT ────────────────────────────────────────────────
+        {/* ── ZONE 2 · ACT ────────────────────────────────────────────────
           The one thing this page exists to make you do, and the ONE raised
           surface on the screen (DESIGN.md allows exactly one per page; the
           journey invitation below is a bordered panel, not a second dock).
@@ -529,85 +586,85 @@ function ProblemPage({
           explanation opens IN PLACE. The phrase "Learn this problem" is
           load-bearing: a UI test reads it to prove the ledger still hides this
           mid-journey. */}
-      <div
-        data-surface="raised"
-        className="flex flex-col gap-3 rounded-xl border bg-card p-5 md:p-6"
-      >
-        <h1 className="font-heading text-title font-semibold">
-          {problem.title}
-        </h1>
-        <p className="max-w-[35em] text-body text-muted-foreground">
-          {problem.brief}
-        </p>
-        <div className="flex flex-wrap items-center gap-3 pt-1">
-          {/* The journey is the PRIMARY action where one exists: it is the way
+        <div
+          data-surface="raised"
+          className="flex flex-col gap-3 rounded-xl border bg-card p-5 md:p-6"
+        >
+          <h1 className="font-heading text-title font-semibold">
+            {problem.title}
+          </h1>
+          <p className="max-w-[35em] text-body text-muted-foreground">
+            {problem.brief}
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            {/* The journey is the PRIMARY action where one exists: it is the way
               this app teaches, and everything else on the page is what you
               read once you have. LeetCode takes the primary slot only when
               there is no journey to offer. */}
-          {journey ? (
+            {journey ? (
+              <a
+                href={href(`/journey/${journey.slug}`)}
+                className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
+              >
+                <RouteIcon className="size-4 shrink-0" />
+                {earned.earned > 0 ? "Continue the journey" : "Build it up"}
+                <span className="font-mono text-meta opacity-80">
+                  {earned.earned}/{journey.acts.length}
+                </span>
+              </a>
+            ) : null}
             <a
-              href={href(`/journey/${journey.slug}`)}
-              className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
+              href={leetcodeUrl(problem.leetcode)}
+              target="_blank"
+              rel="noopener"
+              className={cn(
+                "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-9",
+                journey
+                  ? "border hover:border-chart-1/60"
+                  : "btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
+              )}
             >
-              <RouteIcon className="size-4 shrink-0" />
-              {earned.earned > 0 ? "Continue the journey" : "Build it up"}
-              <span className="font-mono text-meta opacity-80">
-                {earned.earned}/{journey.acts.length}
-              </span>
+              Solve on LeetCode
+              <ExternalLinkIcon className="size-4" />
             </a>
-          ) : null}
-          <a
-            href={leetcodeUrl(problem.leetcode)}
-            target="_blank"
-            rel="noopener"
-            className={cn(
-              "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-9",
-              journey
-                ? "border hover:border-chart-1/60"
-                : "btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
+            {explanation.present && (
+              <button
+                type="button"
+                aria-expanded={reading}
+                aria-controls="explanation"
+                onClick={() => {
+                  setOpened(true)
+                  // the section is below the fold and its content is FETCHED, so
+                  // the scroll waits for the render that brings it — see the
+                  // `?read=explanation` effect above, which this reuses
+                  if (reading)
+                    document
+                      .getElementById("explanation")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }}
+                className="group inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
+              >
+                <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
+                Learn this problem
+                <span className="hidden font-normal text-muted-foreground sm:inline">
+                  — the long explanation
+                </span>
+                <RowNudge />
+              </button>
             )}
-          >
-            Solve on LeetCode
-            <ExternalLinkIcon className="size-4" />
-          </a>
-          {explanation.present && (
-            <button
-              type="button"
-              aria-expanded={reading}
-              aria-controls="explanation"
-              onClick={() => {
-                setOpened(true)
-                // the section is below the fold and its content is FETCHED, so
-                // the scroll waits for the render that brings it — see the
-                // `?read=explanation` effect above, which this reuses
-                if (reading)
-                  document
-                    .getElementById("explanation")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }}
-              className="group inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
-            >
-              <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
-              Learn this problem
-              <span className="hidden font-normal text-muted-foreground sm:inline">
-                — the long explanation
-              </span>
-              <RowNudge />
-            </button>
-          )}
-        </div>
-        {/* What a journey IS — the one sentence the deleted panel carried, and
+          </div>
+          {/* What a journey IS — the one sentence the deleted panel carried, and
             only while it is unstarted. Once earning has begun the button's
             "3/5" says everything a returning reader needs. */}
-        {journey && earned.earned === 0 && (
-          <p className="max-w-[35em] text-ui text-muted-foreground">
-            {journey.acts.length} acts: the need, every approach earned by the
-            last one's weakness, your own code animated, then the reveal.
-          </p>
-        )}
-      </div>
+          {journey && earned.earned === 0 && (
+            <p className="max-w-[35em] text-ui text-muted-foreground">
+              {journey.acts.length} acts: the need, every approach earned by the
+              last one's weakness, your own code animated, then the reveal.
+            </p>
+          )}
+        </div>
 
-      {/* ── ZONE 3 · REVIEW — the material, as bands. A band is a heading and
+        {/* ── ZONE 3 · REVIEW — the material, as bands. A band is a heading and
           a hairline, never a card: a card says "this has its own actions" and
           none of these do.
 
@@ -618,96 +675,78 @@ function ProblemPage({
           products. Its one irreplaceable sentence, what a journey actually IS,
           moved up under the mode bar where the button is. */}
 
-      <Band label="the problem">
-        <p className="max-w-[35em] text-body">{problem.statement}</p>
-        {/* the promises the input makes — a corner case is trivia until a
-            constraint makes it a decision (R2) */}
-        <div className="flex flex-col gap-1.5" aria-label="constraints">
-          <div className="text-meta tracking-wide text-muted-foreground uppercase">
-            constraints
-          </div>
-          <ul className="flex flex-col gap-1">
-            {problem.constraints.map((c, i) => (
-              <li
-                key={i}
-                className="flex max-w-[35em] gap-2 text-ui text-muted-foreground"
-              >
-                <span className="text-dim">·</span>
-                <span className="font-mono">{c}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="flex flex-col gap-2">
-          {problem.examples.map((ex, i) => (
-            <div
-              key={i}
-              className="overflow-x-auto rounded-lg border p-3 font-mono text-ui"
-            >
-              <div>
-                <span className="text-muted-foreground">in&nbsp;&nbsp;</span>
-                {ex.input}
-              </div>
-              <div>
-                <span className="text-muted-foreground">out&nbsp;</span>
-                {ex.output}
-              </div>
-              {ex.note && (
-                <div className="mt-1 text-meta text-muted-foreground">
-                  {ex.note}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </Band>
-
-      <Band
-        label="hints"
-        count={`${problem.hints.length}, each one further in`}
-      >
-        <Accordion multiple={false} className="w-full">
-          {problem.hints.map((hint, i) => (
-            <AccordionItem key={i} value={`hint-${i}`}>
-              <AccordionTrigger className="font-mono text-ui">
-                hint {i + 1} of {problem.hints.length}
-              </AccordionTrigger>
-              <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
-                {hint}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </Band>
-
-      {(journey || problem.walkthrough) && (
-        <Band
-          label="walkthrough"
-          count={steps ? `${steps} steps` : "from the journey, as far as you have earned"}
-        >
-          {/* one source of truth: a problem with a journey draws the
-              journey's own frames, not a second hand-written copy (B1) */}
-          {journey ? (
-            <MiniPlayer journey={journey} />
-          ) : (
-            <StepPlayer frames={problem.walkthrough!} />
-          )}
+        {/* Three `h3` sections, not one column of three kinds of thing — and
+          the examples are watchable rather than printed. See
+          `problem-statement.tsx`, which owns all three. */}
+        <Band label="the problem">
+          <ProblemStatement problem={problem} />
         </Band>
-      )}
 
-      <ApproachLadder
-        problem={problem}
-        journey={journey}
-        ladder={ladder}
-        onCompare={compare}
-      />
+        {/* Between the statement and the hints on purpose: the first thing this
+          page used to offer a reader who had finished reading was a way out of
+          thinking. Absent unless the record authors questions. */}
+        {problem.checks?.length ? (
+          <PreSolveCheck checks={problem.checks} />
+        ) : null}
 
-      {/* The pattern's reading, above the explanation because it is short and
+        <Band
+          label="hints"
+          count={`${problem.hints.length}, each one further in`}
+        >
+          <Accordion multiple={false} className="w-full">
+            {problem.hints.map((hint, i) => (
+              <AccordionItem key={i} value={`hint-${i}`}>
+                <AccordionTrigger className="font-mono text-ui">
+                  hint {i + 1} of {problem.hints.length}
+                </AccordionTrigger>
+                <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
+                  {hint}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </Band>
+
+        {(journey || problem.walkthrough) && (
+          <Band
+            label="walkthrough"
+            count={
+              steps
+                ? `${steps} steps`
+                : "from the journey, as far as you have earned"
+            }
+          >
+            {/* one source of truth: a problem with a journey draws the
+              journey's own frames, not a second hand-written copy (B1) */}
+            {journey ? (
+              <MiniPlayer journey={journey} />
+            ) : (
+              <StepPlayer frames={problem.walkthrough!} />
+            )}
+          </Band>
+        )}
+
+        <ApproachLadder
+          problem={problem}
+          journey={journey}
+          ladder={ladder}
+          onCompare={compare}
+        />
+
+        {/* The pattern's reading, above the explanation because it is short and
           the explanation is thirty screens folded shut. Hidden with the rest
           while a journey is still withholding this pattern's name. */}
-      {!hidden && <ReadFurther pattern={pattern} />}
+        {/* Where this move goes next. Above the reading list because a sibling
+          problem is a cheaper next step than a textbook chapter, and hidden
+          with everything else while a journey is still withholding the
+          pattern's name. */}
+        {!hidden && (
+          <SimilarProblems problem={problem} pattern={pattern} all={PROBLEMS} />
+        )}
 
-      {/* ── THE EXPLANATION ─────────────────────────────────────────────
+        {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
+
+        {/* ── THE EXPLANATION ─────────────────────────────────────────────
           The long-form document, in full, at the foot of the page it belongs
           to. Gated by the SAME `capped` flag as the ladder and the arc: it
           walks the whole climb, and a journey mid-flight has not earned that.
@@ -717,34 +756,34 @@ function ProblemPage({
           without, which made the ladder the first twelve percent of its own
           page. Closed it is a heading and a sentence, and the document is not
           even fetched — `hasExplanation` answers from the glob's keys. */}
-      {explanation.present && (
-        <section
-          id="explanation"
-          className="flex min-w-0 scroll-mt-6 flex-col gap-6 border-t pt-8"
-        >
-          <div className="flex flex-col gap-1">
-            <h2 className="font-heading text-title font-semibold">
-              The long explanation
-            </h2>
-            <p className="max-w-[35em] text-body text-muted-foreground">
-              Every approach in full: the idea, the mental model, a worked
-              trace, the bug you are about to write, and a script you can run.
-            </p>
-            {!reading && (
-              <button
-                type="button"
-                onClick={() => setOpened(true)}
-                className="group mt-2 inline-flex min-h-11 w-fit items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
-              >
-                <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
-                Read it
-                <RowNudge />
-              </button>
-            )}
-          </div>
-          <ExplanationBody state={explanation} problemId={problem.id} />
-        </section>
-      )}
+        {explanation.present && (
+          <section
+            id="explanation"
+            className="flex min-w-0 scroll-mt-6 flex-col gap-6 border-t pt-8"
+          >
+            <div className="flex flex-col gap-1">
+              <h2 className="font-heading text-title font-semibold">
+                The long explanation
+              </h2>
+              <p className="max-w-[35em] text-body text-muted-foreground">
+                Every approach in full: the idea, the mental model, a worked
+                trace, the bug you are about to write, and a script you can run.
+              </p>
+              {!reading && (
+                <button
+                  type="button"
+                  onClick={() => setOpened(true)}
+                  className="group mt-2 inline-flex min-h-11 w-fit items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
+                >
+                  <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
+                  Read it
+                  <RowNudge />
+                </button>
+              )}
+            </div>
+            <ExplanationBody state={explanation} problemId={problem.id} />
+          </section>
+        )}
       </div>
 
       {/* The contents rail. The explanation runs to a few thousand words with

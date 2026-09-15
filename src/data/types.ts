@@ -70,10 +70,34 @@ export interface Solution extends Code {
   name: string // short tab label: "Brute force", "Sorting", "Hash map"
   summary: string
   complexity: { time: string; space: string }
+  /** how this rung's bound was counted — see `Problem.costWhy` */
+  costWhy?: string
   // The weakness in the PREVIOUS rung of the ladder that this one removes.
   // Absent on the first rung, which has nothing before it (docs/PROBLEMS.md
   // §P1). A journeyed problem gets this from the act's `insight` instead.
   whyNow?: string
+}
+
+/**
+ * One question asked BEFORE the approaches, about the statement alone.
+ *
+ * Not a quiz on the solution — a reader who can pick the right answer here has
+ * understood what is being asked, which is the step the page used to skip. The
+ * ladder starts at "brute force compares every pair", and a reader who has not
+ * yet noticed that the question is *whether* a repeat exists rather than
+ * *which* value repeats reads all three rungs without that landing.
+ *
+ * `because` is the whole value: it is shown once answered, right or wrong, and
+ * says what the statement or the constraints already told you.
+ */
+export interface Check {
+  ask: string
+  /** two or more; the reader picks one */
+  options: string[]
+  /** index into `options` */
+  answer: number
+  /** why that is the answer, in one or two sentences, citing the statement */
+  because: string
 }
 
 export interface Problem extends Code {
@@ -100,6 +124,27 @@ export interface Problem extends Code {
   // approach the ledger has not handed over yet.
   arc?: string
   complexity: { time: string; space: string }
+  // How that bound was COUNTED, not just what it is. A reader who cannot
+  // reproduce the count cannot transfer it: `O(n)` on this page is one pass
+  // over n values with a constant-time membership test inside it, and saying
+  // so is the difference between a label and a skill. Rendered under the
+  // target in the orient zone, and per rung on the ladder (`Solution.costWhy`).
+  costWhy?: string
+  // What each bound BUYS — the constraint line, and the decision it permits or
+  // forbids. Same shape as a teaching document's `unlocks` table, because it is
+  // the same content: a corner case is trivia until a constraint makes it a
+  // decision (R2), and a bound is noise until it rules something out.
+  // `constraint` must match one of `constraints` exactly (problems.test.ts).
+  unlocks?: { constraint: string; what: string }[]
+  // Read-before-you-solve. See `Check` — comprehension of the statement, asked
+  // before the first approach and never about the solution.
+  checks?: Check[]
+  // Sources for THIS problem, beside the pattern's own reading list: the
+  // editorial, a second site's write-up of the same problem, a video. The
+  // pattern owns the sources about the TECHNIQUE (see `Reference`); this owns
+  // the ones that are about this instance and would be wrong on any other
+  // problem in the pattern.
+  reading?: Reference[]
   walkthrough?: Frame[] // stepped visualization of the approach on an example
   alternatives?: Solution[] // other ways in, worst-to-best order; optimal stays top-level
 }
