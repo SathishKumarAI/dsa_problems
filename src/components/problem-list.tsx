@@ -9,11 +9,7 @@
 // is the bug, so while anything is set there is a banner saying what is on,
 // how many rows it hid, and how to clear it.
 import {
-  BookMarkedIcon,
-  ExternalLinkIcon,
-  FileCodeIcon,
   FilterIcon,
-  GraduationCapIcon,
   RouteIcon,
   SearchIcon,
   SearchXIcon,
@@ -55,11 +51,6 @@ import { setPref, usePrefs } from "@/lib/store"
 // One outbound reading. The mark says what KIND of source it is before the
 // title says which one — a manual, a text, or a course are read differently
 // and at different moments.
-const KIND_ICON = {
-  reference: BookMarkedIcon,
-  docs: FileCodeIcon,
-  course: GraduationCapIcon,
-} as const
 
 /** Where to go when this app runs out of road.
  *
@@ -69,54 +60,6 @@ const KIND_ICON = {
  *  during a journey that has not reached its reveal would hand over exactly
  *  the word the whole disclosure rule exists to withhold (B45, and the same
  *  reason the glyph and the back link are masked on the problem page). */
-function ReadFurther({ pattern }: { pattern: Pattern }) {
-  const refs = pattern.references ?? []
-  if (refs.length === 0) return null
-  return (
-    <section className="overflow-hidden rounded-xl border bg-card">
-      <div className="flex items-baseline gap-3 px-4 py-3">
-        <span className="text-meta tracking-wide text-muted-foreground uppercase">
-          read further
-        </span>
-        <span className="ml-auto font-mono text-meta text-dim tabular-nums">
-          {refs.length} sources
-        </span>
-      </div>
-      <ul className="divide-y border-t">
-        {refs.map((r) => {
-          const Icon = KIND_ICON[r.kind]
-          return (
-            <li key={r.href + r.title}>
-              <a
-                href={r.href}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
-              >
-                <Icon
-                  className="mt-0.5 size-4 shrink-0 text-chart-2"
-                  aria-hidden
-                />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex items-center gap-1.5 text-ui font-medium">
-                    {r.title}
-                    <ExternalLinkIcon
-                      className="size-3 shrink-0 text-dim"
-                      aria-hidden
-                    />
-                  </span>
-                  <span className="max-w-[35em] text-ui text-muted-foreground">
-                    {r.note}
-                  </span>
-                </span>
-              </a>
-            </li>
-          )
-        })}
-      </ul>
-    </section>
-  )
-}
 
 interface Props {
   pattern: Pattern
@@ -409,7 +352,6 @@ export function ProblemList({ pattern }: Props) {
       {!hidden && (
         <PatternPlaybook name={pattern.name} playbook={pattern.playbook ?? []} />
       )}
-      {!hidden && <ReadFurther pattern={pattern} />}
     </div>
   )
 }
