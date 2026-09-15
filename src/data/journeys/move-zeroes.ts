@@ -5,7 +5,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/two-pointers/move-zeroes.ts"
+import { problem } from "../../problems/move-zeroes/index.ts"
 
 type N = Data<number>
 
@@ -232,7 +232,7 @@ export const moveZeroes = deriveJourney(problem, {
       key: "copy",
       name: "Filter into a copy",
       short: "the honest one",
-      from: 0,
+      from: "copy",
       insight: "",
       idea: "Collect the non-zero values into a new list in the order they appear, pad it with zeroes until it is as long as the original, then copy it back over the original.",
       takeaways: [

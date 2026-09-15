@@ -10,7 +10,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | What to build next, and why | `docs/BACKLOG.md` (top unchecked P0) |
 | Which **problem** is next, and what "done" means for one | `docs/PROBLEMS.md` |
 | **Everything about one problem, on one page** | `#/p/<pattern>/<id>` — there is no second route. The long explanation is a section at the foot (`#explanation`), gated by the same `capped` flag as the ladder and the arc. `#/learn/<id>` redirects. Sections: `lib/teaching-parts.ts` (data) → `components/teaching-doc.tsx` (markup) |
-| **Everything about one problem, in one directory** | `src/problems/<id>/` — the record (`problem.ts`, `hints.ts`, `solutions.ts`) and the teaching document (`understanding.ts`, `traps.ts`, `approaches/<rung>.ts`, `arc.ts`, `interview.ts`, `script.ts`) side by side. Map: `src/problems/README.md`. **Two entry files on purpose**: `index.ts` is the record and is EAGER, `doc.ts` is the document and is LAZY — nothing eager may reach a doc file. 39 of 82 converted and every one of them whole — record and document, both split into sections, nothing over 500 lines. The rest are still `docs/deep/<id>_explained.md` spliced into the generated `docs/learn/<id>.md` (`npm run docs:learn`). The page shows the ending, so the app links it only when the ladder is not capped |
+| **Everything about one problem, in one directory** | `src/problems/<id>/` — the record (`problem.ts`, `hints.ts`, `solutions.ts`) and the teaching document (`understanding.ts`, `traps.ts`, `approaches/<rung>.ts`, `arc.ts`, `interview.ts`, `script.ts`) side by side. Map: `src/problems/README.md`. **Two entry files on purpose**: `index.ts` is the record and is EAGER, `doc.ts` is the document and is LAZY — nothing eager may reach a doc file. 49 of 82 converted and every one of them whole — record and document, both split into sections, nothing over 500 lines. The rest are still `docs/deep/<id>_explained.md` spliced into the generated `docs/learn/<id>.md` (`npm run docs:learn`). The page shows the ending, so the app links it only when the ladder is not capped |
 | What to read outside this repo, and how to drill a pattern | `docs/RESOURCES.md` |
 | What exists on screen, every button, its status | `docs/FEATURES.md` |
 | What IS this box, who owns it, how data flows | `docs/ARCHITECTURE.md` |
@@ -100,6 +100,23 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   the paragraph four documents put under that heading arguing what the bound buys. Five documents
   lost a table, then fifteen lost prose. `content-roundtrip.mjs` caught both and nothing else
   would have — run it on every conversion, and only delete the Markdown after it says ok.
+
+- **An extra rung is not always a baseline or a variant.** `lib/ladder.ts` placed one at the foot
+  or the top and nothing else, which is right for those two and wrong for a STEPPING STONE — the
+  rung a document reaches its answer THROUGH. sorted-squares' "merge two runs" rendered above the
+  answer, and tree-diameter's misplacement silently moved `whyNow` above a different rung. Set
+  `Solution.after` to the key it follows; gate: *"a rung that names where it goes, names a rung that
+  exists"*.
+
+- **Promoting a rung can leave the rung ABOVE it without a `whyNow`.** A journey's first act writes
+  no `insight` because nothing is under it — promote a baseline beneath it and that stops being
+  true. `ladderOf` reads the matching alternative's `whyNow` for exactly this case, and the ladder
+  gate fails until one exists.
+
+- **A test that NAMES a problem goes stale when a batch converts it.** `max-depth` was the
+  Markdown example in a UI check and this slice made it typed, so the check failed on a document
+  that had graduated. Read the subject off disk — the richest still-Markdown page — the way
+  `EXPLAINED` does.
 
 - **A brace counter reads `'{'` as structure.** Two of them did: `problems.test.ts`'s well-formed
   check called a correct Java block malformed, and `localsmith/run.mjs`'s `cDefs` never closed a

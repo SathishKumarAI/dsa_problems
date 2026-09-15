@@ -9,7 +9,7 @@
 
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
-import { problem } from "../problems/trees/max-depth.ts"
+import { problem } from "../../problems/max-depth/index.ts"
 import { GAP, asSlots, marksOf, present, wellFormed } from "./tree-slots.ts"
 
 type T = Data<string>
@@ -357,7 +357,7 @@ export const maxDepth = deriveJourney<string>(problem, {
       key: "bfs",
       name: "Count the levels",
       short: "the honest one",
-      from: 0,
+      from: "bfs",
       insight: "",
       idea: "Hold the current level in a queue, and each round replace it with all of its children. The number of rounds is the depth.",
       takeaways: [
@@ -371,7 +371,7 @@ export const maxDepth = deriveJourney<string>(problem, {
       key: "stack",
       name: "Carry the depth on a stack",
       short: "one path at a time",
-      from: 1,
+      from: "stack",
       insight:
         "Counting levels means holding an entire level at once, and the widest level is the widest part of the tree. A stack of node-and-depth pairs walks one path down instead, so what is held is a path rather than a tier.",
       idea: "Push the root with depth 1. Pop a node, record its depth as a candidate for the best, and push its children carrying one more. When the stack empties, the largest depth seen is the answer.",

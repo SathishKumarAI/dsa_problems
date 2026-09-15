@@ -330,6 +330,34 @@ test("problems: rung keys are unique within a problem, and look like keys", () =
   }
 })
 
+// `Solution.after` names the rung a stepping stone follows. A key that names
+// nothing relocates nothing — `ladderOf` leaves the rung where the pivot rule
+// put it and says nothing — so a typo would quietly restore the ordering this
+// field exists to fix. Check the name resolves, against the REAL ladder.
+test("problems: a rung that names where it goes, names a rung that exists", () => {
+  for (const p of PROBLEMS) {
+    const anchored = (p.alternatives ?? []).filter((a) => a.after)
+    if (!anchored.length) continue
+    const { rungs } = ladderOf(
+      p,
+      JOURNEYS.find((j) => j.problemId === p.id),
+      Number.MAX_SAFE_INTEGER
+    )
+    const keys = new Set(rungs.map((r) => r.key))
+    for (const a of anchored) {
+      assert.ok(
+        keys.has(a.after!),
+        `${p.id}: "${a.name}" says it follows "${a.after}", which is not on the ladder (${[...keys].join(", ")})`
+      )
+      assert.notEqual(
+        a.after,
+        a.key,
+        `${p.id}: "${a.name}" says it follows itself`
+      )
+    }
+  }
+})
+
 // B79, and the bug that wrote this test. `DerivedSpec.from` was a positional
 // INDEX into `problem.alternatives`. Promoting an approach inserts a rung into
 // that array, so every index after the insertion point moves: the first

@@ -23,7 +23,8 @@ import { audit } from "./learn-gaps.mjs"
 //
 // 116 -> 105 on 2026-09-14 as the first batch of twelve converted, 105 -> 104
 // when balanced-brackets moved to `src/problems/<id>/`, 104 -> 81 when the
-// twenty-five whose approaches already matched their ladder followed. Every batch
+// twenty-five whose approaches already matched their ladder followed, 81 -> 72 when
+// the first ten B79 promotions converted. Every batch
 // moves these three by one per document that lacked those sections, so the
 // number belongs to whoever merges the batch — a parallel agent must NOT edit
 // it, or twelve agents collide on three integers.
@@ -36,9 +37,9 @@ import { audit } from "./learn-gaps.mjs"
 // conversion, and this ratchet is what noticed.
 const BASELINE = {
   untaught: 45, // problems with no teaching document at all
-  calculations: 81, // missing "Reading the Calculations"
-  fluent: 81, // missing "How to Get Fluent"
-  hood: 81, // missing an "Under the hood" callout
+  calculations: 72, // missing "Reading the Calculations"
+  fluent: 72, // missing "How to Get Fluent"
+  hood: 72, // missing an "Under the hood" callout
   interview: 45,
   arc: 45,
   comparison: 45,

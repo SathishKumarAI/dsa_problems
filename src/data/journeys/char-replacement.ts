@@ -5,7 +5,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/sliding-window/char-replacement.ts"
+import { problem } from "../../problems/char-replacement/index.ts"
 
 type S = Data<string> & { k: number }
 
@@ -249,7 +249,7 @@ export const charReplacement = deriveJourney<string>(problem, {
       key: "brute",
       name: "Price every stretch",
       short: "the honest one",
-      from: 0,
+      from: "brute",
       insight: "",
       idea: "Take every start and every end, count the letters in that stretch, and keep the longest whose price fits the budget.",
       takeaways: [

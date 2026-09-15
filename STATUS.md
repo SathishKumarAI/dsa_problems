@@ -2,95 +2,85 @@
 
 ## Where the code is
 
-Four branches, stacked in this order. Merge them in it.
+Five branches, stacked in this order. Merge them in it.
 
 | | Branch | What |
 |---|---|---|
 | **#90** | `refactor/problems-dir-balanced-brackets` | one directory per problem, proved on one |
 | **#91** | `feat/one-page-per-problem` | the explanation stops being a second route |
 | **#92** | `refactor/problems-dir-batch-1` | 25 more problems moved |
-| **#93** | `refactor/split-doc-monoliths` | the last 13 finished — **every directory is now whole** |
+| **#93** | `refactor/split-doc-monoliths` | the last 13 finished — every directory whole |
+| **#94** | `feat/promote-rungs-slice-1` | the first 10 B79 promotions, and the 10 problems they unblocked |
 
-### Where a problem lives now
+**49 of 127 problems** live in `src/problems/<id>/`, both halves, split into sections.
+**49 of 82 documents** are typed; 33 are still Markdown. Nothing under `src/problems/` is over the
+500-line ceiling.
 
-`src/problems/<id>/` holds both halves. **39 of 82** documents converted; 43 still Markdown.
-**All 39 directories are whole** — record and document, both split into sections. Nothing under
-`src/problems/` is over the 500-line ceiling; the worst was 928.
-Read `src/problems/README.md` before converting the next one — it is the change → file table, the
-rules, and the two-script recipe.
-
-**Two entry files, and it is load-bearing.** `index.ts` is the `Problem` record and is imported
-statically by the pattern barrel, so it is in the first chunk. `doc.ts` is the `TeachingDoc` and is
-reached only by `lib/content.ts`'s glob. **Nothing eager may reach a doc file**, or 127 documents
-join the first load and B95 is undone.
-
-`#/p/<pattern>/<id>` is the only route a problem has; the explanation is a section at
+`#/p/<pattern>/<id>` is the only route a problem has. The explanation is a section at
 `#explanation`, gated by the same `capped` flag as the ladder — the SECTION, not just the door.
 
-### The batch, and what its round-trip caught
+### What is left, and what it costs
 
-25 problems, chosen as every document whose approaches already matched its ladder, so the batch is
-one kind of work and owes no B79 promotion. `content-roundtrip.mjs` refused the batch **twice**, and
-both causes hit every remaining document:
+**33 documents, 78 new rungs.** 22 need 2, 10 need 3, `isomorphic-strings` needs 4. Every one of
+them teaches approaches the record has no entry for, so each owes B79 before it can convert.
 
-* **`## Understanding` can hold a SECOND table.** The old strip took every `|` line in the section
-  and parsed the lot as one table, which is right only while there is one. A misconception table, a
-  "what 3Sum does differently" table, a false-start trace — **5 documents**, every row gone.
-* **The constraints `###` part is not only a table.** Four documents argue under that heading what
-  the bound actually buys, and zero-matrix's — *at most `rows + cols` bits describe a 40 000-cell
-  answer* — is the reason its last rung exists. Lifting the whole part lost **15 documents**' worth.
-* Then mirror-tree alone: **two tables under one heading**. Only the first contiguous run comes out.
+The Python is never written — it is lifted from the document's own `### Code` section. The work is
+the two translations, **156 blocks** across those 33 problems, and `docs/MODELS.md` is the policy:
+local models draft, `verify:code` and `verify:run` decide. That is the cheaper path than writing
+them by hand, and the gates are already exactly the ones it needs.
 
-`mirror-tree` was also the batch's one real judgement call: its document teaches the recursion
-before the iterative version and the ladder has them the other way round, so its binding is not
-ladder order. That is what `scripts/rung-bindings.json` is for.
+Then, separately: **45 problems with no teaching document at all.** That is writing, not migration.
 
-### The record half has its own script and its own proof
+### Two mechanism bugs this slice found
 
-`scripts/split-record.mjs` slices each top-level key out as TEXT — no parse, no re-serialise,
-because a record is mostly template literals holding Python whose indentation is the program. It
-outdents by two and skips the inside of a template literal while doing it. Every move is
-**deep-equalled against the record the catalogue carries before the original is deleted**, and
-`scripts/split-record.test.mjs` re-proves it on every change, plus that no code block's indentation
-stopped nesting.
+* **The ladder could only put an extra at the foot or the top**, and five of the ten were STEPPING
+  STONES. sorted-squares reaches its answer *through* "split at zero and merge two runs", and the
+  rule rendered it ABOVE the answer — the one ordering the page promises it never shows (R1).
+  tree-diameter has no journey at all, and its misplaced rung silently moved `whyNow` above the
+  wrong one: the sentence explaining why the one-pass fold beats a cached map ended up over a rung
+  about the call stack. `Solution.after` names the rung a stepping stone follows;
+  `problems.test.ts` fails the build if the name resolves to nothing.
+* **A UI test named `max-depth` as its Markdown example** and this slice converted it, so the check
+  failed on a document that had simply graduated. It reads the richest still-Markdown problem off
+  disk now — the same lesson as `EXPLAINED`, learned twice.
 
-Verified green, not asserted:
+The `max-depth` ladder gate earned its place too: promoting `paths` to the foot meant `bfs` was no
+longer the first rung and needed the sentence saying what it beats. Nothing else would have noticed.
+
+### The recipe, now proven three times
+
+```
+node scripts/split-record.mjs --id <id>            # the RECORD -> src/problems/<id>/
+node scripts/md-to-content.mjs --id <id>           # the DOCUMENT -> the same directory
+node scripts/content-roundtrip.mjs --id <id>       # prove no line was lost, THEN delete the md
+node scripts/verify-deep.mjs --id <id>
+```
+
+Bind the rungs in `scripts/rung-bindings.json` FIRST — it is the one judgement a machine must not
+make. Rewire the pattern barrel and any journey that imports the record, delete both sources, and
+run `npm run docs:learn`. A promoted rung also means the journey must name its act by KEY, not by
+index, in the same commit.
+
+**A stale disclosure is content that becomes a lie.** Three documents in this slice opened their
+promoted approach with "this rung is an addition — not in the data file's ladder", which the
+promotion made false. `content-roundtrip.mjs` reported them as lost content, which is how they were
+found; delete them from the Markdown deliberately so the diff shows it.
+
+Verified green on #94, not asserted:
 
 | Gate | Result |
 |---|---|
-| `npm run check` | **778 tests, 0 fail** |
+| `npm run check` | **780 tests, 0 fail** |
 | `npm run test:ui` | **172 / 0 fail**, real Chrome |
-| `npm run verify:code` | **758 blocks compiled, 0 failed** |
-| `npm run verify:run` | see the branch's commit — run in full on the batch |
-| `verify-deep.mjs` | **82/82** ran clean and reported agreement (43 from Markdown, 39 from a field) |
-| `content-roundtrip.mjs --all` | **every line of all 25** carried through |
-| `learn-gaps.mjs --strict` | clean; the ratchet dropped 104 → 81 |
+| `npm run verify:code` | **778 blocks compiled, 0 failed** — up from 758, the 20 new translations |
+| `npm run verify:run` | **2,239 oracle runs, 4,478 translations compared, 0 disagreed**, zero launch flakes |
+| `verify-deep.mjs` | **82/82** ran clean and reported agreement |
+| `content-roundtrip.mjs --all` | every line of all 10 carried through |
+| `learn-gaps.mjs --strict` | clean; ratchet 81 → 72 |
 | `gen-manifest.mjs --check` | clean |
 
-### Three scripts, one scanner
-
-`scripts/ts-literal.mjs` reads a TypeScript object literal as TEXT — string- and depth-aware,
-because a `{` inside a C++ block is a brace in a program and not structure. Three splitters sit on
-it: `split-record.mjs` (the record), `split-doc.mjs` (a document that is typed but still one file),
-and `md-to-content.mjs`'s emitter (Markdown → a directory). None of them may silently drop a key:
-every one claims the keys it knows and **throws** on one it does not. That rule exists because the
-first Markdown converter did not have it and ate 456 lines.
-
-Every move is proved before the original is deleted — the assembled object is **deep-equalled**
-against the one the app imports. That caught nothing, which is the point: it is what makes deleting
-the source safe.
-
-### The next action, concretely, and what it costs
-
-**43 documents to go, and they are all the expensive kind.** Every one teaches approaches the record
-has no entry for, so each owes B79 first: **88 new rungs in total**, and a rung is not prose — it is
-a summary, a complexity, a `whyNow`, a key, and Python, Java and C++ that must compile
-(`verify:code`) and agree with each other (`verify:run`).
-
-The Python is already written: it is in the document's own `### Code` section for that approach. It
-is the two translations that are the work, 176 blocks of them. `docs/MODELS.md` is the policy for
-that — local models draft, the gates decide — and the split is 1 extra rung on 10 documents, 2 on
-22, 3 on 10, 4 on one, so the natural first slice is the ten with a single extra each.
+Each moved record was **deep-equalled against the one the catalogue carries** before its original
+was deleted.
 
 ## Start here
 

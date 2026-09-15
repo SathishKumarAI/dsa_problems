@@ -6,7 +6,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/arrays-hashing/product-except-self.ts"
+import { problem } from "../../problems/product-except-self/index.ts"
 
 type N = Data<number>
 
@@ -268,7 +268,7 @@ export const productExceptSelf = deriveJourney(problem, {
       key: "brute",
       name: "Multiply the others, each time",
       short: "the honest one",
-      from: 0,
+      from: "brute",
       insight: "",
       idea: "For each position, walk the whole row multiplying together everything except that position. No division, no cleverness, n answers each costing n − 1 multiplications.",
       takeaways: [
@@ -282,7 +282,7 @@ export const productExceptSelf = deriveJourney(problem, {
       key: "prefix",
       name: "Two rows of running products",
       short: "linear, and two arrays",
-      from: 1,
+      from: "prefix",
       insight:
         "Every position wants the product of everything to its left — and its neighbour wants almost the same thing, one value different. Computing each from the one before it costs a single multiplication instead of a whole walk.",
       idea: "Build one array where entry i is the product of everything strictly before position i, and another where entry i is the product of everything strictly after. The answer at each position is the two multiplied together.",

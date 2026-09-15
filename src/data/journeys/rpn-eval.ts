@@ -8,7 +8,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/stack/rpn-eval.ts"
+import { problem } from "../../problems/rpn-eval/index.ts"
 
 type T = Data<string>
 
@@ -398,7 +398,7 @@ export const rpnEval = deriveJourney<string>(problem, {
       key: "rewrite",
       name: "Collapse the first operator, repeat",
       short: "the honest one",
-      from: 0,
+      from: "rewrite",
       insight: "",
       idea: "Scan for the first operator, replace it and the two tokens before it with their result, and repeat until one token remains.",
       takeaways: [

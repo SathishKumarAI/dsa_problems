@@ -9,7 +9,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/trees/same-tree.ts"
+import { problem } from "../../problems/same-tree/index.ts"
 import { GAP, asSlots, present, wellFormed } from "./tree-slots.ts"
 
 type T = Data<string>
@@ -425,7 +425,7 @@ export const sameTree = deriveJourney<string>(problem, {
       key: "serialise",
       name: "Write both down and compare the text",
       short: "the honest one",
-      from: 0,
+      from: "serialise",
       insight: "",
       idea: "Turn each tree into a string that records every value and every empty child, then compare the two strings.",
       takeaways: [

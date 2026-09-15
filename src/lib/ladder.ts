@@ -68,6 +68,38 @@ const joinTabs = (code: {
   cpp: code.cpp?.join("\n"),
 })
 
+/**
+ * Move a rung that says where it goes.
+ *
+ * `alternatives` is worst -> best, and so are a journey's acts, but the two
+ * lists interleave and neither one alone can say how. Both builders below place
+ * extras by a rule that has exactly two outcomes — the foot, or the top — and
+ * both are right for what they were written for: a baseline, and a variant
+ * argued against the optimal. A rung the document teaches BETWEEN two others is
+ * neither.
+ *
+ * Two of them found this. sorted-squares reaches its answer through "split at
+ * zero and merge two runs", which the rule rendered ABOVE the answer — the one
+ * ordering the page promises it never shows (R1). tree-diameter has no journey
+ * at all, and its explicit-stack rung landed under the optimal, which silently
+ * repointed `whyNow`: the sentence explaining why the one-pass fold beats a
+ * cached map was suddenly sitting above a rung about the call stack.
+ *
+ * Only a rung already on the ladder can be named, so a typo relocates nothing
+ * rather than dropping a rung — and `problems.test.ts` fails the build on one.
+ */
+function place(rungs: Rung[], alts: Solution[]): Rung[] {
+  for (const alt of alts) {
+    if (!alt.after) continue
+    const from = rungs.findIndex((r) => r.key === rungKey(alt))
+    const anchor = rungs.findIndex((r) => r.key === alt.after)
+    if (from === -1 || anchor === -1 || from === anchor + 1) continue
+    const [moved] = rungs.splice(from, 1)
+    rungs.splice(rungs.findIndex((r) => r.key === alt.after) + 1, 0, moved)
+  }
+  return rungs
+}
+
 function fromJourney(
   problem: Problem,
   journey: AnyJourney,
@@ -143,9 +175,7 @@ function fromJourney(
             .map(asRung),
         }
 
-  const rungs = [...extras.before, ...taught, ...extras.after]
-  // whatever the data says, the first rung has nothing before it
-  if (rungs[0]) rungs[0] = { ...rungs[0], whyNow: undefined }
+  const rungs = place([...extras.before, ...taught, ...extras.after], alts)
   return { rungs, capped, hidden: acts.length - shown.length }
 }
 
@@ -163,9 +193,12 @@ function fromProblem(problem: Problem): Ladder {
     whyNow: problem.whyNow,
     code: problem,
   })
+  // a rung that says where it goes is moved there, `optimal` included as an
+  // anchor — tree-diameter teaches its explicit-stack version AFTER the answer
+  const placed = place(rungs, problem.alternatives ?? [])
   // whatever the data says, the first rung has nothing before it
-  if (rungs[0]) rungs[0] = { ...rungs[0], whyNow: undefined }
-  return { rungs, capped: false, hidden: 0 }
+  if (placed[0]) placed[0] = { ...placed[0], whyNow: undefined }
+  return { rungs: placed, capped: false, hidden: 0 }
 }
 
 export function ladderOf(

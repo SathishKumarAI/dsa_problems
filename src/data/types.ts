@@ -50,6 +50,23 @@ export interface Solution extends Code {
   // explicitly when the key is load-bearing: a compare link, a doc anchor, or
   // a rung that must line up with an act.
   key?: string
+  /**
+   * The key of the rung this one sits immediately ABOVE on the ladder.
+   *
+   * `alternatives` is worst -> best and so are a journey's acts, but the two
+   * lists interleave and the array alone cannot say how. `lib/ladder.ts` used
+   * to infer it from one pivot: everything before the first act-matching
+   * alternative was a baseline and went to the foot, everything after it was a
+   * variant argued against the optimal and went on top. That is right for a
+   * baseline and for a variant, and WRONG for a stepping stone — sorted-squares
+   * teaches "merge two runs" between the sort and the two-pointer answer, and
+   * the pivot rule rendered it above the answer, which is the one ordering the
+   * page promises it never shows.
+   *
+   * So a stepping stone says where it goes. Absent, the pivot rule still
+   * applies, which is why 249 alternatives did not need touching.
+   */
+  after?: string
   name: string // short tab label: "Brute force", "Sorting", "Hash map"
   summary: string
   complexity: { time: string; space: string }
