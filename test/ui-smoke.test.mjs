@@ -45,7 +45,26 @@ const pageOf = (p) => `/#/p/${p.pattern}/${p.id}`
 /** the explanation is FETCHED, so every check on it has to wait for it */
 const EXPLANATION_READY =
   '!!document.getElementById("explanation") && ' +
+  '!!document.querySelector("#explanation h3, #explanation table, #explanation pre") && ' +
   '!/loading the explanation/.test(document.body.innerText)'
+
+/**
+ * Open the explanation, then wait for it.
+ *
+ * It is COLLAPSED on arrival and not fetched until asked for: open, `pair-sum`
+ * measures 33.8 screens against 4.3 closed, which made the ladder the first
+ * twelve percent of its own page. Every check below that reads the document has
+ * to press the door first, exactly as a reader does.
+ */
+const openExplanation = async (page) => {
+  await page.run(`
+    const b = [...document.querySelectorAll('button')]
+      .find(x => /learn this problem|read it/i.test(x.innerText))
+    if (b) b.click()
+    return !!b
+  `)
+  await page.waitFor(EXPLANATION_READY, { tries: 60 })
+}
 import { chromePath, launch, startServer } from "./browser.mjs"
 
 const exe = chromePath()
@@ -117,38 +136,72 @@ describe(
     // The journeys disclosure used to call setAllJourneys(true) and then hide
     // itself, so expanding was a one-way door and the only way back was a
     // reload. Round-trip it, in both places that carry one.
-    test("the journeys disclosure goes both ways (sidebar and home)", async () => {
+    test("home's journeys disclosure goes both ways", async () => {
+      // The SIDEBAR half of this check is gone with the feature: it used to
+      // carry a catalogue of journeys behind a "show all 93" chevron, which is
+      // the duplication the check below now forbids. Home still discloses.
       await page.goto(`${server.base}/#/`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
-        const side = () => document.querySelector('[data-slot="sidebar"]') || document.querySelector('aside');
         const main = () => document.querySelector('main');
         const btn = root => [...root.querySelectorAll('button')]
           .find(b => /more journeys|show all|show only|fewer/i.test(b.textContent));
         const count = root => root.querySelectorAll('a[href*="/journey/"]').length;
-        const steps = [];
-        for (const root of [side, main]) {
-          const start = count(root());
-          btn(root()).click();
-          await wait(500);
-          const opened = count(root());
-          const backBtn = btn(root());
-          const hasWayBack = !!backBtn;
-          if (hasWayBack) { backBtn.click(); await wait(500); }
-          steps.push({ start, opened, hasWayBack, closed: count(root()) });
-        }
-        return steps;
+        const start = count(main());
+        btn(main()).click();
+        await wait(500);
+        const opened = count(main());
+        const backBtn = btn(main());
+        const hasWayBack = !!backBtn;
+        if (hasWayBack) { backBtn.click(); await wait(500); }
+        return { start, opened, hasWayBack, closed: count(main()) };
       `)
-      for (const [i, s] of out.entries()) {
-        const where = i === 0 ? "sidebar" : "home"
-        assert.ok(s.opened > s.start, `${where}: expanding should show more`)
-        assert.ok(s.hasWayBack, `${where}: no control left to collapse again`)
-        assert.equal(
-          s.closed,
-          s.start,
-          `${where}: collapsing should return to ${s.start}`
-        )
-      }
+      assert.ok(out.opened > out.start, "home: expanding should show more")
+      assert.ok(out.hasWayBack, "home: no control left to collapse again")
+      assert.equal(out.closed, out.start, `home: collapsing should return to ${out.start}`)
+    })
+
+    // The IA rule, asserted because nothing was watching it and it drifted for
+    // months: a problem is ONE noun. The sidebar used to open with a list of
+    // journeys and carry a list of patterns below it, so 93 of the 127 problems
+    // appeared twice under two headings and the app read as two products.
+    test("the sidebar is one catalogue, and Continue is progress not navigation", async () => {
+      const slug = "two-sum"
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
+      await page.goto(`${server.base}/#/`)
+      const read = `
+        const root = document.querySelector('[data-slot="sidebar"]') || document.querySelector('aside');
+        const links = [...root.querySelectorAll('a[href]')].map(a => a.getAttribute('href') || '');
+        return {
+          journeys: links.filter(h => h.includes('/journey/')).length,
+          patterns: links.filter(h => new RegExp('p/[a-z-]+$').test(h)).length,
+          hasContinue: /Continue/.test(root.textContent || ''),
+        };
+      `
+      const fresh = await page.run(read)
+      assert.equal(
+        fresh.journeys,
+        0,
+        "a fresh learner is offered a second catalogue of journeys in the sidebar"
+      )
+      assert.ok(fresh.patterns >= 8, `only ${fresh.patterns} patterns listed`)
+      assert.equal(fresh.hasContinue, false, "Continue appears with nothing to continue")
+
+      // started and unfinished: Continue appears, with exactly that one
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.setItem('dsa:unlocked:${slug}', '3'); return 1`)
+      await page.goto(`${server.base}/#/`)
+      const started = await page.run(read)
+      await page.goto(`${server.base}/#/`)
+      await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
+      assert.ok(started.hasContinue, "a started journey is not offered for resuming")
+      assert.equal(
+        started.journeys,
+        1,
+        `Continue listed ${started.journeys} journeys; only the started one belongs there`
+      )
+      assert.deepEqual(page.errors(), [])
     })
 
     test("an unknown route falls back to home instead of a blank page", async () => {
@@ -487,7 +540,7 @@ describe(
     test("the problem page runs the document's Python, and it agrees (B82)", async () => {
       const problem = PROBLEMS.find((p) => p.id === "cycle-detect")
       await page.goto(`${server.base}${pageOf(problem)}`)
-      await page.waitFor(EXPLANATION_READY, { tries: 40 })
+      await openExplanation(page)
 
       const before = await page.run(`
         const runs = [...document.querySelectorAll('button')]
@@ -2069,7 +2122,7 @@ describe(
       assert.ok(RICHEST_MARKDOWN, "no problem is still on a Markdown explanation")
       const problem = PROBLEMS.find((p) => p.id === RICHEST_MARKDOWN)
       await page.goto(`${server.base}${pageOf(problem)}`)
-      await page.waitFor(EXPLANATION_READY, { tries: 40 })
+      await openExplanation(page)
       const out = await page.run(`
         // The PROSE elements only, each read live. Two things this had to
         // learn: a Python comment inside a code block legitimately starts
@@ -2157,9 +2210,11 @@ describe(
       await page.goto(`${server.base}/#/`)
       await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
       await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
+      // a BUTTON, not a link: the explanation opens in place rather than
+      // navigating, so the door stopped being an anchor when the route merged
       const offered = await page.run(`
-        return !![...document.querySelectorAll('a')]
-          .find(a => /learn this problem/i.test(a.textContent || ''));
+        return !![...document.querySelectorAll('a,button')]
+          .find(e => /learn this problem/i.test(e.textContent || ''));
       `)
 
       // started and unfinished: the ladder is capped, so the link must go.
@@ -2170,8 +2225,8 @@ describe(
       await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
       const gated = await page.run(`
         return {
-          link: !![...document.querySelectorAll('a')]
-            .find(a => /learn this problem/i.test(a.textContent || '')),
+          link: !![...document.querySelectorAll('a,button')]
+            .find(e => /learn this problem/i.test(e.textContent || '')),
           // the section itself, not just the door to it
           section: !!document.getElementById('explanation'),
           capped: /still ahead of you/.test(document.body.innerText),
@@ -2201,7 +2256,9 @@ describe(
     test("#/learn/<id> lands on the problem page, at the explanation", async () => {
       const problem = PROBLEMS.find((p) => p.id === "balanced-brackets")
       await page.goto(`${server.base}/#/learn/${problem.id}`)
-      await page.waitFor(EXPLANATION_READY, { tries: 40 })
+      // no click here on purpose: `?read=explanation` must open it by itself,
+      // or every link written before the merge lands on a closed section
+      await page.waitFor(EXPLANATION_READY, { tries: 60 })
       const out = await page.run(`
         const root = document.getElementById('explanation');
         return {
@@ -2246,7 +2303,7 @@ describe(
       await page.resize(390)
       const problem = PROBLEMS.find((p) => p.id === "balanced-tree")
       await page.goto(`${server.base}${pageOf(problem)}`)
-      await page.waitFor(EXPLANATION_READY, { tries: 40 })
+      await openExplanation(page)
       const out = await page.run(`
         return {
           scrollW: document.documentElement.scrollWidth,

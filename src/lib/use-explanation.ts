@@ -37,7 +37,18 @@ export type Explanation =
 export const hasExplanation = (id: string) =>
   hasContent(id) || hasExplanationMarkdown(id)
 
-export function useExplanation(id: string, allowed: boolean): Explanation {
+/**
+ * `allowed` is the ledger's gate — a started, unfinished journey has not earned
+ * the ending. `open` is the reader's: the explanation runs to 15–30 screens, so
+ * it is collapsed until asked for, and NOT FETCHED until then either. Whether
+ * one exists is answered from the glob's keys with no fetch at all, so the door
+ * can be decided during render while the document stays on disk.
+ */
+export function useExplanation(
+  id: string,
+  allowed: boolean,
+  open: boolean
+): Explanation {
   const present = allowed && hasExplanation(id)
   const [loaded, setLoaded] = useState<Explanation | undefined>()
 
@@ -45,7 +56,7 @@ export function useExplanation(id: string, allowed: boolean): Explanation {
   // problem is a different component instance and starts empty. A synchronous
   // setState in an effect is also what react-hooks v7 forbids.
   useEffect(() => {
-    if (!present) return
+    if (!present || !open) return
     let live = true
     const fetchIt = async (): Promise<Explanation> => {
       if (hasContent(id)) {
@@ -75,8 +86,9 @@ export function useExplanation(id: string, allowed: boolean): Explanation {
     return () => {
       live = false
     }
-  }, [id, present])
+  }, [id, present, open])
 
   if (!present) return { present: false }
+  if (!open) return { present: true, ready: false }
   return loaded ?? { present: true, ready: false }
 }

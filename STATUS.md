@@ -2,6 +2,31 @@
 
 ## Where the code is
 
+**Merged to `master`.** PRs #90, #96 (re-created from #91), #92, #93, #94 and #95 are all in;
+`master` is green at 780 tests. A note for next time: squash-merging a stacked PR DELETES its
+branch, which makes GitHub **close** the PR stacked on top of it rather than retarget it. Rebase
+each branch onto master with `--onto` first, or retarget every PR to master before merging any.
+
+Then **#97** (`feat/one-entry-point-per-problem`), which is the IA fix — see below.
+
+### One entry point per problem
+
+The sidebar opened with a catalogue of JOURNEYS and carried a catalogue of patterns below it, so
+**93 of the 127 problems appeared twice**, under two headings, and the app read as though
+"journeys" and "patterns" were two products. The titles were not the problem — 92 of 93 agree. The
+structure was.
+
+A problem is one noun; its journey is a mode of it. The journey list is **Continue** now — started
+and unfinished only, absent when there is nothing to resume — and the one catalogue is
+"Problems · by pattern". The problem page opens with a mode bar: the journey (primary where one
+exists, carrying `3/5`), Solve on LeetCode, Learn this problem.
+
+**And the page I merged in #91 was 34 screens tall.** I verified "no sideways scroll" and never
+measured HEIGHT. `pair-sum` was 33.8 screens, of which 29.7 was the explanation. It is collapsed
+now, and not fetched until opened: **4.3 screens closed, 33.8 opened.**
+
+
+
 Five branches, stacked in this order. Merge them in it.
 
 | | Branch | What |
