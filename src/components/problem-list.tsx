@@ -293,7 +293,7 @@ export function ProblemList({ pattern }: Props) {
                       broke it, and it is the row that matters most. */}
                   <a
                     href={href(`/p/${pattern.id}/${p.id}`)}
-                    className="flex min-w-0 flex-1 items-baseline gap-2 text-left"
+                    className="-my-2 flex min-w-0 flex-1 items-baseline gap-2 py-2 text-left"
                   >
                     {/* NOT shrink-0: at 390 the title and the difficulty badge
                         were both unshrinkable, so twelve of the twenty-one
