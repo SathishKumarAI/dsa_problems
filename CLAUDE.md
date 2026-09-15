@@ -1,4 +1,4 @@
-# CLAUDE.md — dsa_problems (dsa.patterns)
+# CLAUDE.md — Patternsmith
 
 One Vite + React + TS app: practice set + learning journeys + algorithm visualizer, over a
 DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled.

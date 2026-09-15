@@ -1,10 +1,10 @@
-# Product requirements — dsa.patterns
+# Product requirements — Patternsmith
 
 Status: living document · Owner: Sathish Kumar · Last revised: 2026-09-13
 
 ## 1. One paragraph
 
-`dsa.patterns` is a single-page learning product for engineers preparing for algorithm interviews.
+`Patternsmith` is a single-page learning product for engineers preparing for algorithm interviews.
 It teaches the way Brilliant and Khan Academy teach — *learn by doing, one earned insight at a
 time* — and animates the way 3Blue1Brown's Manim animates — *states morph, they don't teleport*.
 Every other DSA site tells you the answer and then shows you why it works. This one withholds the

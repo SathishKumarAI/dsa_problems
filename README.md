@@ -1,28 +1,43 @@
-# dsa.patterns — learn the insight, then the name
+# Patternsmith
+
+### Learn the idea before you learn its name.
 
 [![gates](https://github.com/SathishKumarAI/dsa_problems/actions/workflows/gates.yml/badge.svg)](.github/workflows/gates.yml)
 [![MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
-[![problems](https://img.shields.io/badge/problems-127-brightgreen.svg)](docs/PROBLEMS.md)
+[![problems](https://img.shields.io/badge/problems-153-brightgreen.svg)](docs/PROBLEMS.md)
+[![patterns](https://img.shields.io/badge/patterns-19-brightgreen.svg)](docs/RESOURCES.md)
 [![journeys](https://img.shields.io/badge/journeys-93-brightgreen.svg)](docs/AUTHORING.md)
-[![tests](https://img.shields.io/badge/tests-780%20passing-brightgreen.svg)](#the-seven-gates)
+[![tests](https://img.shields.io/badge/tests-967%20passing-brightgreen.svg)](#the-eight-gates)
 [![contributions](https://img.shields.io/badge/contributions-wanted-orange.svg)](CONTRIBUTING.md)
 
-One app: a pattern-organised interview practice set (**153 problems** across 19 patterns, SQL
-drills, stats flashcards) plus **learning journeys** — problems built all the way down,
-Brilliant/Khan style: the need first, approaches unlocked one at a time by the previous one's
-weakness, predictions mid-playback, quiz gates, your own code driving the animation, and the
-pattern named only at the reveal. **93 of the 127 problems have a journey**, drawn as a chip row,
-a grid, a tree (heaps reuse it), a linked list, a DP table or a bar chart — whichever the problem
-actually is. The other 34 carry a static walkthrough until their journeys are written. Plus a
-sorting / search / graph visualizer whose bars morph instead of teleporting.
+Most interview prep hands you the name first — *this is the sliding window pattern* — and asks you
+to recognise it later. That is backwards. A name you were given is a label; a name you earned is a
+tool. Patternsmith withholds it: you meet the need, watch the obvious approach fail for a reason you
+can see, and the pattern is named only once you have already used it.
 
-Every problem also carries an **approach ladder** — each way in, worst to best, in Python, Java and
-C++ — where a rung says three things: what it does, what it costs, and **the promise it ignores**.
-Sorting both lists in `merge-two-sorted` is not slow because `n log n` beats `n`; it is slow because
-both inputs were *already sorted*. Plus an **arc**: one paragraph naming the single idea the whole
-ladder applies. It all lands on **one page per problem** — `#/p/<pattern>/<id>`, and there is no
-second route: the statement, the hints, the walkthrough, the ladder in three languages and the long
-explanation in full are one document, in that order.
+**153 problems across 19 patterns**, each one a single page — `#/p/<pattern>/<id>`, no second route
+— carrying the statement, progressive hints, a stepped walkthrough, the approach ladder and the long
+explanation, in that order.
+
+**93 of them are guided journeys**: the need first, approaches unlocked one at a time by the
+previous one's weakness, predictions mid-playback, quiz gates, your own code driving the animation,
+and the pattern named only at the reveal. Drawn as a chip row, a grid, a tree, a linked list, a DP
+table or a bar chart — whichever the problem actually is. The other 60 carry a static walkthrough
+until their journeys are written.
+
+**Every problem carries an approach ladder** — each way in, worst to best — where a rung says three
+things: what it does, what it costs, and **the promise it ignores**. Sorting both lists in
+`merge-two-sorted` is not slow because `n log n` beats `n`; it is slow because both inputs were
+*already sorted*. Plus an **arc**: one paragraph naming the single idea the whole ladder applies —
+the part you carry to the next problem.
+
+**Every pattern carries a playbook** — the moves that make it, each with the tell that says to reach
+for it, the invariant that keeps it correct, the mistake that breaks it, and the problems to learn
+it on. Plus three attributed readings, because the good sources are about the technique, not about
+one instance of it.
+
+Also: SQL drills, statistics flashcards, in-browser Python you can edit and run, and a sorting /
+search / graph visualizer whose bars morph instead of teleporting.
 
 ## The thing that makes this different
 
@@ -85,13 +100,13 @@ npm run build      # production build (static; the API runs in-process)
 npm run api        # standalone API on :8787 — see docs/API.md
 ```
 
-## The seven gates
+## The eight gates
 
-None of them is sufficient on its own. That is the point of having seven.
+None of them is sufficient on its own. That is the point of having eight.
 
 | Command | What it proves |
 |---|---|
-| `npm run check` | `tsc -b`, `eslint`, **780** Node tests |
+| `npm run check` | `tsc -b`, `eslint`, **789** Node tests |
 | `npm run test:ui` | Real Chrome — routes, the earn loop, rails, deep links, panel sizes |
 | `npm run verify:code` | Every Java and C++ block **compiles** (778 blocks) |
 | `npm run verify:run` | Those blocks **agree with the Python** (2,239 oracle runs, 4,478 translations compared) |

@@ -1,4 +1,4 @@
-# Contributing to dsa.patterns
+# Contributing to Patternsmith
 
 **Collaborators welcome, and there is a specific shape of help this project needs.** Read the two
 paragraphs under *"The one rule"* before anything else — they are what makes a contribution here

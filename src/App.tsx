@@ -187,7 +187,7 @@ export default function App() {
               content, which left a 127-problem list with no way back. */}
           <div className="sticky top-0 z-20 flex items-center gap-2 border-b bg-background/70 px-4 py-2 backdrop-blur-md md:hidden">
             <SidebarTrigger />
-            <span className="font-mono text-ui">dsa.patterns</span>
+            <span className="font-mono text-ui">Patternsmith</span>
             <SearchTrigger className="ml-auto" />
             <Button
               size="icon-sm"
