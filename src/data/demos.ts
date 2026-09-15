@@ -9,7 +9,7 @@
 // fence in every teaching document. Without it, Run defines a function and
 // reports "the script printed nothing".
 //
-// 126 of 127 problems are here. A linked list or a tree is built with the
+// 152 of 153 problems are here. A linked list or a tree is built with the
 // `__mklist` / `__mktree` that ride along in `src/lib/py-preamble.ts`. The
 // rest are `shape: "class"` — a class to instantiate against a script of
 // operations, which is not one appended line — and those blocks say so.
@@ -143,4 +143,30 @@ export const DEMOS: Record<string, string> = {
   "calculator-basic": "\"3+2*2\"",
   "ship-in-d-days": "[1,2,3,4,5,6,7,8,9,10], 5",
   "k-closest-values": "[1,2,3,4,5], 4, 3",
+  "merge-intervals": "[[1,3],[2,6],[8,10],[15,18]]",
+  "insert-interval": "[[1,3],[6,9]], [2,5]",
+  "non-overlapping-intervals": "[[1,2],[2,3],[3,4],[1,3]]",
+  "burst-balloons-arrows": "[[10,16],[2,8],[1,6],[7,12]]",
+  "redundant-connection": "[[1,2],[1,3],[2,3]]",
+  "equations-possible": "[\"a==b\",\"b!=a\"]",
+  "connect-the-network": "4, [[0,1],[0,2],[1,2]]",
+  "min-stack": "[\"push\",\"push\",\"push\",\"getMin\",\"pop\",\"top\",\"getMin\"], [[-2],[0],[-3],[],[],[],[]]",
+  "lru-cache": "2, [\"put\",\"put\",\"get\",\"put\",\"get\",\"get\"], [[1,1],[2,2],[1],[3,3],[2],[3]]",
+  "queue-from-stacks": "[\"push\",\"push\",\"peek\",\"pop\",\"empty\"], [[1],[2],[],[],[]]",
+  "implement-trie": "[\"insert\",\"search\",\"search\",\"startsWith\",\"insert\",\"search\"], [\"apple\",\"apple\",\"app\",\"app\",\"app\",\"app\"]",
+  "wildcard-dictionary": "[\"addWord\",\"addWord\",\"addWord\",\"search\",\"search\",\"search\",\"search\"], [\"bad\",\"dad\",\"mad\",\"pad\",\"bad\",\".ad\",\"b..\"]",
+  "replace-words": "[\"cat\",\"bat\",\"rat\"], \"the cattle was rattled by the battery\"",
+  "find-pivot-index": "[1,7,3,6,5,6]",
+  "contiguous-array": "[0,1]",
+  "range-sum-immutable": "[-2,0,3,-5,2,-1], [[0,2],[2,5],[0,5]]",
+  "gas-station": "[1,2,3,4,5], [3,4,5,1,2]",
+  "partition-labels": "\"ababcbacadefegdehijhklij\"",
+  "jump-game-ii": "[2,3,1,1,4]",
+  "hamming-weight": "11",
+  "reverse-bits": "43261596",
+  "subsets": "[1,2,3]",
+  "permutations": "[1,2,3]",
+  "combination-sum": "[2,3,6,7], 7",
+  "rotate-image": "[[1,2,3],[4,5,6],[7,8,9]]",
+  "spiral-matrix-ii": "3",
 }

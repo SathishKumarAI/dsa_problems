@@ -5,13 +5,11 @@ import { problem as coinChangeMin } from "./coin-change-min.ts"
 import { problem as longestIncreasingRun } from "./longest-increasing-run.ts"
 import { problem as maxSubarray } from "./max-subarray.ts"
 import { problem as longestCommonSubsequence } from "./longest-common-subsequence.ts"
-import { problem as countingBits } from "../../../problems/counting-bits/index.ts"
 import { problem as partitionEqualSubset } from "./partition-equal-subset.ts"
 import { problem as uniquePaths } from "./unique-paths.ts"
 import { problem as wordBreak } from "./word-break.ts"
 import { problem as minCostStairs } from "./min-cost-stairs.ts"
 import { problem as decodeWays } from "./decode-ways.ts"
-import { problem as jumpGame } from "../../../problems/jump-game/index.ts"
 import { problem as maxProductSubarray } from "./max-product-subarray.ts"
 
 export const dp: Problem[] = [
@@ -21,12 +19,10 @@ export const dp: Problem[] = [
   longestIncreasingRun,
   maxSubarray,
   longestCommonSubsequence,
-  countingBits,
   partitionEqualSubset,
   uniquePaths,
   wordBreak,
   minCostStairs,
   decodeWays,
-  jumpGame,
   maxProductSubarray,
 ]

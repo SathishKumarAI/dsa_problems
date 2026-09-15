@@ -1,5 +1,4 @@
 import type { Problem } from "../../types.ts"
-import { problem as kthLargestStream } from "../../../problems/kth-largest-stream/index.ts"
 import { problem as kClosestPoints } from "./k-closest-points.ts"
 import { problem as taskCooldown } from "./task-cooldown.ts"
 import { problem as lastStoneWeight } from "./last-stone-weight.ts"
@@ -10,7 +9,6 @@ import { problem as topKFrequentWords } from "./top-k-frequent-words.ts"
 import { problem as uglyNumber } from "./ugly-number.ts"
 
 export const heaps: Problem[] = [
-  kthLargestStream,
   kClosestPoints,
   taskCooldown,
   lastStoneWeight,

@@ -29,6 +29,13 @@ references and the same problems. It redirects now.
 
 **Eight of the ten patterns had no playbook.** 47 moves now, up from 11.
 
+**Then 18 patterns became 19, and the thin ones got problems.** Eight patterns owned one or two
+problems each, which is a playbook over a list of one. 26 problems added across them, plus **trie**,
+which the previous branch withheld on purpose until problems existed for it. Smallest page is now 3
+rows, was 1. Every rung was RUN: 76 of them, agreeing with each other on the vectors, and 213 calls
+checked against the published examples. Python only — Java and C++ are optional until a problem has
+a journey.
+
 **Then ten patterns became 18.** prefix-sums, greedy, bit-manipulation, backtracking, matrix,
 intervals, union-find and design — 79 moves and 54 references across the 18, and **14 problems
 re-filed** onto the pattern the repo actually teaches them with. A problem moved only when the
@@ -167,14 +174,14 @@ was deleted.
 
 | | |
 |---|---|
-| Problems | **127**, 18 patterns · 0 orphans |
-| Journeys | **93**; the other 34 ship a static walkthrough |
+| Problems | **153**, 19 patterns · 0 orphans |
+| Journeys | **93**; the other 60 ship a static walkthrough |
 | Teaching documents | **82**; **45** problems have none. **14 are typed** (`src/problems/<id>/doc.ts`), 68 are still Markdown |
 | Documents with all three required sections | **10 of 127** |
 | Thin rungs (summary under 160 chars) | **0** — B68, closed 2026-09-13 |
 | Undisclosed approach additions | **0** |
 
-All seven gates green: `check` **789/789** · `test:ui` **178/178** · `verify:code` **752 blocks, 0
+All eight gates green: `check` **789/789** · `test:ui` **178/178** · `verify:code` **752 blocks, 0
 failed** · `verify:run` **2,168 oracle runs, 4,336 translations, 0 disagreed** · `verify:vectors` ·
 `verify-deep` **82/82 agreed** · `learn-gaps --strict` clean. `npm run build` clean.
 
