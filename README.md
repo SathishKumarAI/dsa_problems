@@ -98,6 +98,7 @@ None of them is sufficient on its own. That is the point of having seven.
 | `npm run verify:vectors` | The vectors are strong enough to catch a mutation |
 | `node scripts/verify-deep.mjs` | All **82** teaching scripts run and their approaches agree |
 | `node scripts/learn-gaps.mjs --strict` | No document adds approaches without disclosing it |
+| `npm run verify:fences` | Every code block on a page **runs** the way the page runs it (338 clean, baseline 7) |
 
 Compiling is not correctness — which is why `verify:code` and `verify:run` are separate gates.
 

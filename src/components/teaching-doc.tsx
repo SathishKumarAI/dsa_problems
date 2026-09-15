@@ -29,7 +29,15 @@ const Table = ({ head, rows }: { head: string[]; rows: string[][] }) => (
   <Markdown blocks={[{ kind: "table", head, rows }]} />
 )
 
-function Body({ part }: { part: Part }) {
+function Body({
+  part,
+  problemId,
+  scaffold,
+}: {
+  part: Part
+  problemId: string
+  scaffold: string
+}) {
   switch (part.kind) {
     case "heading":
       return null
@@ -50,14 +58,23 @@ function Body({ part }: { part: Part }) {
         <RunnableCode
           id={part.id}
           code={part.code}
-          editable={part.editable}
+          problemId={problemId}
+          scaffold={scaffold}
           className="w-0 min-w-full"
         />
       )
   }
 }
 
-export function TeachingDocView({ parts }: { parts: Part[] }) {
+export function TeachingDocView({
+  parts,
+  problemId,
+  scaffold,
+}: {
+  parts: Part[]
+  problemId: string
+  scaffold: string
+}) {
   return (
     <div className="flex min-w-0 flex-col gap-5">
       {parts.map((part) => (
@@ -77,7 +94,7 @@ export function TeachingDocView({ parts }: { parts: Part[] }) {
               {part.title}
             </h3>
           )}
-          <Body part={part} />
+          <Body part={part} problemId={problemId} scaffold={scaffold} />
         </section>
       ))}
     </div>

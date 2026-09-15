@@ -77,8 +77,14 @@ const DEFAULT_ACCENT = "border-chart-1/60"
 export function Markdown({
   blocks,
   runnable = false,
+  problemId,
+  scaffold,
 }: {
   blocks: Block[]
+  /** whose first test case the Run button calls a definition-only block with */
+  problemId?: string
+  /** the document's own script, which every fence above it was written against */
+  scaffold?: string
   /**
    * B82/B83. Give every ```python fence a Run button, and the LAST one an
    * editor as well.
@@ -95,13 +101,9 @@ export function Markdown({
    */
   runnable?: boolean
 }) {
-  // which fence is the full script — the last python one, and only when the
-  // document actually has more than one (a generated page with a single fence
-  // has no "script at the foot", it has a code sample)
-  const pythonAt = blocks.flatMap((b, i) =>
-    b.kind === "code" && /^py(thon)?$/i.test(b.lang) ? [i] : []
-  )
-  const scriptAt = pythonAt.length > 1 ? pythonAt[pythonAt.length - 1] : -1
+  // The "which fence is the full script" heuristic is gone with the thing it
+  // decided. It picked the LAST python fence and made only that one editable;
+  // every block is editable now, so there is nothing left to guess.
   // min-w-0: a flex child sizes to `min-width: auto` by default, so the widest
   // comparison table would push this column open and take the whole page
   // sideways with it. Measured at 1440: scrollWidth 1440 against clientWidth
@@ -173,7 +175,8 @@ export function Markdown({
                   key={i}
                   id={`block-${i}`}
                   code={block.code}
-                  editable={i === scriptAt}
+                  problemId={problemId}
+                  scaffold={scaffold}
                   className="w-0 min-w-full"
                 />
               )

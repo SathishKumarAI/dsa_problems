@@ -10,24 +10,49 @@
 // The code on this page is not illustrative — it is the code CI ran. This
 // component is the difference between telling a reader that and showing them.
 //
-// `editable` is for the full runnable script at the foot of a document: the one
-// block a reader wants to poke at, because it already contains every approach
-// and a differential test over random inputs. The other fences are read.
+// EVERY block is editable, and nothing is saved. A reader learns by changing a
+// line and seeing what happens, and the draft is component state — navigate away
+// and the author's version is back. That is deliberate: this is a teaching
+// document, not the reader's file, and an edit that persisted would quietly
+// become a fork of the document nobody can tell from the original.
+//
+// EVERY block also PRINTS something. Measured in a real browser on 2026-09-15:
+// three of the four Run buttons on balanced-brackets gave "exit 0 · 5 ms" and
+// "the script printed nothing", because every approach fence in every teaching
+// document is a bare function definition — no print, no top-level call. A
+// definition has nothing to print. So when a block defines a function and calls
+// nothing, Run appends one line that calls it on the problem's own first test
+// case (`data/demos.ts`, generated from the vectors that drive the Java and C++
+// gates). The appended line is shown in the output, not hidden, so nobody is
+// left wondering where a number came from.
 import { useState } from "react"
 import { PlayIcon, RotateCcwIcon, SquareIcon } from "lucide-react"
 import { CodeBlock } from "./code-block"
 import { cn } from "@/lib/utils"
+import { DEMOS } from "@/data/demos"
+import { printsSomething, pyEntry } from "@/lib/py-entry"
+import { PREAMBLE, stripFuture } from "@/lib/py-preamble"
 import { stopPython, usePython } from "@/lib/use-python"
 
 export function RunnableCode({
   id,
   code,
-  editable = false,
+  problemId,
+  scaffold,
+  editable = true,
   className,
 }: {
   /** stable within the page — the block's index is enough */
   id: string
   code: string
+  /** the document's own runnable script, minus its `__main__` guard. A fence is
+   *  an EXCERPT of it and inherits its helpers — `format_range`, `seed_sum`,
+   *  `PAIRS` — so without this 45 of the 184 fences raise NameError. Measured
+   *  by `scripts/verify-fences.mjs`, which runs the same three pieces. */
+  scaffold?: string
+  /** whose test case to call the block with; absent on a block with no problem
+   *  behind it, which then runs exactly as written */
+  problemId?: string
   editable?: boolean
   className?: string
 }) {
@@ -36,6 +61,28 @@ export function RunnableCode({
   const edited = editable && draft !== code
 
   const source = editable ? draft : code
+
+  // The line the Run button adds, or "" when the block already does something.
+  // Derived from the DRAFT, so a reader who types their own `print(...)` stops
+  // getting ours — which is the whole point of letting them edit it.
+  const entry = printsSomething(source) ? null : pyEntry(source)
+  const args = problemId ? DEMOS[problemId] : undefined
+  const call =
+    entry && args !== undefined
+      ? `\n\n# ── added by Run, so the block prints something: your code, on this\n# problem's first test case. Edit it, or write your own call instead.\nprint(${entry}(${args}))`
+      : ""
+  // A fence is an EXCERPT: it was lifted out of a document that declares its
+  // imports and its node classes once at the top, so on its own it raises
+  // NameError before reaching the algorithm — `Optional`, `ListNode`,
+  // `TreeNode`. The preamble is the same scaffolding the Java and C++ gates
+  // drive Python with, so the block runs here the way it runs in CI. A block
+  // that starts itself is a full script and is run exactly as written.
+  const toRun = call
+    ? PREAMBLE +
+      (scaffold ? stripFuture(scaffold) + "\n" : "") +
+      stripFuture(source) +
+      call
+    : source
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
@@ -55,7 +102,7 @@ export function RunnableCode({
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <button
-          onClick={() => (running ? stopPython() : run(source))}
+          onClick={() => (running ? stopPython() : run(toRun))}
           disabled={blocked}
           className={cn(
             "inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:min-h-8",
@@ -147,7 +194,11 @@ export function RunnableCode({
           <pre className="max-h-96 w-0 min-w-full overflow-auto px-4 py-3 font-mono text-ui leading-relaxed">
             {result.output || (
               <span className="text-dim">
-                {result.error ? "" : "the script printed nothing"}
+                {result.error
+                  ? ""
+                  : entry
+                    ? `${entry}() is defined but nothing called it — add a print(), or run the full script at the foot of this page`
+                    : "the script printed nothing"}
               </span>
             )}
             {result.error && (
