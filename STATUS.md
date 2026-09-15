@@ -1,13 +1,28 @@
 # STATUS — read this when you return
 
+**The project is called Patternsmith.** *Learn the idea before you learn its name.* Renamed
+2026-09-15 (#106). The GitHub repo slug is still `dsa_problems` on purpose, so no link breaks —
+do not "fix" that unless you also update every clone and reference.
+
 ## Where the code is
 
-**Merged to `master`.** PRs #90, #96 (re-created from #91), #92, #93, #94 and #95 are all in;
-`master` is green at 780 tests. A note for next time: squash-merging a stacked PR DELETES its
-branch, which makes GitHub **close** the PR stacked on top of it rather than retarget it. Rebase
-each branch onto master with `--onto` first, or retarget every PR to master before merging any.
+**`master`, clean, everything merged.** This session shipped **#97 through #106**. Branch from
+`master`.
 
-Then **#97** (`feat/one-entry-point-per-problem`), which is the IA fix — see below.
+| | |
+|---|---|
+| Problems | **153**, 19 patterns, 0 orphans |
+| Journeys | 93; the other 60 ship a static walkthrough |
+| Records in `src/problems/<id>/` | 84 (58 converted, 26 written fresh) |
+| Playbook moves · references | 83 · 57, across 19 patterns |
+| Gates | `check` **789** · `test:ui` **178** · `verify:fences` 338 clean (baseline 7) · `verify-deep` **82/82** |
+
+### What this session was about, in one line
+
+The app read as **two products** — "DSA journeys" and "DSA patterns" — with 93 of 127 problems
+appearing twice under two headings. It is one noun now: a problem, with its journey as a mode of it.
+Then the patterns went 10 → 19 and the problems 127 → 153, aimed at coverage rather than count.
+Full account: `docs/WORKLOG.md`, entry for 2026-09-15.
 
 ### One noun, on every surface
 
@@ -107,7 +122,8 @@ the two translations, **156 blocks** across those 33 problems, and `docs/MODELS.
 local models draft, `verify:code` and `verify:run` decide. That is the cheaper path than writing
 them by hand, and the gates are already exactly the ones it needs.
 
-Then, separately: **45 problems with no teaching document at all.** That is writing, not migration.
+Then, separately: problems with no teaching document at all — **45 when this was written, 71 after
+the 2026-09-15 batch added 26 more**. That is writing, not migration.
 
 ### Two mechanism bugs this slice found
 
@@ -148,8 +164,8 @@ Verified green on #94, not asserted:
 
 | Gate | Result |
 |---|---|
-| `npm run check` | **780 tests, 0 fail** |
-| `npm run test:ui` | **172 / 0 fail**, real Chrome |
+| `npm run check` | **780 tests, 0 fail** *(that slice; 789 as of 2026-09-15)* |
+| `npm run test:ui` | **172 / 0 fail**, real Chrome *(178 as of 2026-09-15)* |
 | `npm run verify:code` | **778 blocks compiled, 0 failed** — up from 758, the 20 new translations |
 | `npm run verify:run` | **2,239 oracle runs, 4,478 translations compared, 0 disagreed**, zero launch flakes |
 | `verify-deep.mjs` | **82/82** ran clean and reported agreement |
@@ -162,52 +178,63 @@ was deleted.
 
 ## Start here
 
-1. **`docs/LEARN-PLAN.md`** — the ordered queue. The current item is #2/3/4, retrofitting the
-   remaining **117** documents in sidebar order.
+1. **`docs/BACKLOG.md`** — the top unchecked P0. **B65** now means coverage, not count.
 2. **`docs/LEARN-GAPS.md`** — per problem, exactly what is missing. Regenerate with
-   `node scripts/learn-gaps.mjs`; never trust the numbers in prose, including the ones below.
-3. **`docs/deep/TEMPLATE.md`** and **`docs/deep/PROMPT.md`** — the skeleton and the brief. Read the
-   four-readers table before writing anything.
-4. **`CONTRIBUTING.md`** — new. If you are not the owner, this is your entry point.
+   `node scripts/learn-gaps.mjs`; never trust a number in prose, including the ones on this page.
+3. **`docs/deep/TEMPLATE.md`** and **`docs/deep/PROMPT.md`** — the skeleton and the brief, if you
+   are writing a teaching document.
+4. **`CONTRIBUTING.md`** — if you are not the owner, start here.
 
 ## What "done" looks like right now
 
 | | |
 |---|---|
 | Problems | **153**, 19 patterns · 0 orphans |
-| Journeys | **93**; the other 60 ship a static walkthrough |
-| Teaching documents | **82**; **45** problems have none. **14 are typed** (`src/problems/<id>/doc.ts`), 68 are still Markdown |
-| Documents with all three required sections | **10 of 127** |
+| Journeys | **93**; the other **60** ship a static walkthrough |
+| Teaching documents | **82**; **71 problems have none** (26 of those arrived on 2026-09-15) |
 | Thin rungs (summary under 160 chars) | **0** — B68, closed 2026-09-13 |
 | Undisclosed approach additions | **0** |
 
-All eight gates green: `check` **789/789** · `test:ui` **178/178** · `verify:code` **752 blocks, 0
-failed** · `verify:run` **2,168 oracle runs, 4,336 translations, 0 disagreed** · `verify:vectors` ·
-`verify-deep` **82/82 agreed** · `learn-gaps --strict` clean. `npm run build` clean.
+All eight gates green: `check` **789/789** · `test:ui` **178/178** · `verify:code` · `verify:run` ·
+`verify:vectors` · `verify-deep` **82/82** · `verify:fences` **338 clean, baseline 7** ·
+`learn-gaps --strict`. `npm run build` clean.
 
-## The next action, concretely
+## The next action — pick one of three
 
-Retrofit **`group-anagrams`** — it is #6 in sidebar order and the next one in the queue. The method
-that produced the last five, in order:
+**1. More problems, thinnest pattern first (B65).** The nine newest patterns sit at 3–5 problems
+where the mature ones are at 9–17. `trie` (3), `matrix` (4), `union-find` (4) and `design` (4) are
+the thinnest. The method is proven and scripted — see the WORKLOG entry for 2026-09-15, section
+*"Twenty-six problems"*: author the content, emit the directory, then verify **twice** (rungs
+against each other, and rungs against the published examples). Roughly a day for 26.
 
-1. `grep -n "^## " docs/deep/<id>_explained.md` to see the shape.
-2. Extract the document's last Python fence to a scratch file (that is what `verify-deep.mjs` runs)
-   and write a **candidate measurement** against it. Do not write prose first — the measurement
-   decides what the prose says. Three of five documents so far found something nobody expected.
-3. Add three things to the document: `## Reading the Calculations` (symbol table, the one
-   rearrangement, a hand-trace whose rows the script prints), `## How to Get Fluent` (drills with
-   done-conditions), and at least one `> **Under the hood.**` callout **carrying a measured number**.
-4. Move the measurement code **into the document's own script** so a reader reproduces it. Keep
-   `ALL APPROACHES AGREED` as the last thing printed.
-5. Re-run the script, and **pin the prose to that run's actual numbers.** Timings move between runs;
-   exact counts do not.
-6. `node scripts/verify-deep.mjs` · `node scripts/learn-gaps.mjs` · lower the ratchet in
-   `scripts/learn-gaps.test.mjs` by one · `npm run docs:learn` (**mandatory** — the drift gate fails
-   without it) · `npm run check` · commit.
+**2. Teaching documents for the 71 problems without one (B70).** The highest-value single thing,
+and the slowest: 2–4 hours each. Method unchanged — measure first, let the numbers decide the
+prose, move the measurement into the document's own script, pin the prose to that run's output.
+Lower the ratchet in `scripts/learn-gaps.test.mjs` by one in the same commit.
 
-Budget about 2–4 hours per document at this depth.
+**3. B71 — audit every rung labelled *optimal*.** The smallest of the three, and it fixes a claim
+that is currently false: timing found the designated optimal rung LOSING on the clock in 3 of 5
+problems measured. Not a wrong asymptotic — an unstated claim that the top rung is the one to
+reach for. Two acceptable outcomes per problem: relabel, or add the sentence naming when the lower
+rung wins. Silence is the only unacceptable one.
 
 ## Traps that cost real time this session
+
+- **A mutation test can destroy the fix it is testing.** Proving a new gate could fail, I reverted
+  `ui/toggle.tsx` with `git checkout --` while the fix in it was **still uncommitted**. PR #103
+  merged without it, and its own commit message quoted the gate as green. **Commit first, then
+  mutate** — or stash. The gate caught it on the next branch, which is the argument for writing it.
+- **A name split across a span is invisible to a search for the name.** The home headline was
+  `dsa<span>.patterns</span>`, so a rename sweep for `dsa.patterns` missed the biggest instance of
+  it on the site. Found by opening the page and reading the header. Read the rendered page, not the
+  diff.
+- **A gate's own output can be wrong for months.** `verify-deep.mjs` printed `82/33` — numerator
+  counting both document sources, denominator counting one. Nothing failed, so nothing complained.
+  When a gate prints a ratio, check that both halves count the same thing.
+- **The learn-gaps ratchet counts PROBLEMS, not documents.** Adding 26 untaught problems moved every
+  count by 26 without a single document getting worse. Raising the baseline was right; raising it
+  without recording the problem count beside it would have made the ratchet quietly meaningless.
+
 
 - **A `bash` heredoc cannot carry prose containing apostrophes.** The Bash tool wraps the command in
   `bash -c '…'`, so the first `'` in the payload ends the string — quoting the heredoc delimiter
@@ -229,8 +256,9 @@ Budget about 2–4 hours per document at this depth.
 |---|---|
 | **G11** | `top-k-frequent`'s optimal rung is the slowest real rung on its page — the `n + 1` bucket wall is 5.8 of its 13.2 ms. Filed, **not** fixed: Approach 4's own Watch out currently teaches `n + 1` as the *correct* size against the `len(nums)` crash, so a third sizing needs that callout rewritten rather than appended to |
 | **The sweep G11 implies** | Three of the five documents retrofitted found the designated optimal rung losing on the clock. That hit rate argues for auditing every "optimal" label, not just fixing this one |
-| **B67** | 34 problems still without a journey — arrays-hashing (9), two-pointers (7), trees (4) are the big slices |
-| **B70** | 45 problems with no teaching document — trees, heaps, graphs, dp are thinnest |
+| **B67** | **60** problems still without a journey — every one of the 26 added on 2026-09-15, plus arrays-hashing (9), two-pointers (7), trees (4) |
+| **B70** | **71** problems with no teaching document — the nine newest patterns have none at all |
+| **B65** | Coverage, not count: trie (3), matrix (4), union-find (4) and design (4) against 9–17 in the mature patterns |
 | **`docs/EDGE-CASES.md`** | Not started. Generate it from `journey.edgeCases` joined to the `> **Watch out.**` callouts; every case must name the approach it breaks and be **run**, not asserted |
 | **Statistics chapter 5** | Hypothesis testing, still unwritten |
 | **Learn page contents rail** | Should collapse to approach level; pages are long now |

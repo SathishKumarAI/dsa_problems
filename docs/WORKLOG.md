@@ -95,6 +95,133 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-15 — one noun, nineteen patterns, a hundred and fifty-three problems, and a name
+
+Nine PRs: **#97–#106**. The project ends the day called **Patternsmith**.
+
+### The complaint that started it
+
+*"why i am seeing still the ui the frondtend the smae way with dsa journety and dsa paatren instared
+fo combine in the ui with al infomation in one for a probelm"* — and it was right. The app read as
+**two products**. Ninety-three of 127 problems appeared twice, under two headings, and four surfaces
+disagreed about what a problem even IS.
+
+A problem is one noun. Its journey is a MODE of it. Six surfaces collapsed onto that:
+
+| Surface | Was | Is |
+|---|---|---|
+| Sidebar | a catalogue of journeys above a catalogue of patterns | Continue (in play) + one catalogue, and the open pattern lists its problems |
+| Problem page | a button, a panel and a 34-screen wall | a mode bar, explanation collapsed |
+| Home | 6 journey links, 0 patterns | 1 (the dock), 19 |
+| Pattern list | 0 problem links — every row a `<button>` | every row a link |
+| Search palette | 220 rows for 127 problems | 127, marked |
+| Pattern page | a name and an 80-character blurb | orient / act / review, playbook and reading |
+| `#/resources` | a second page about a pattern | redirects |
+
+### Then the rest of one long request
+
+*"most oif the python code runnnig are not pringting anything … enable edit but dont sav eht eedit …
+raedfurthter should be shown only at the priobem … make sure we have all teh problem liek 120 or
+more … are we having trhe all the pattern in the dsa that you cna think of … chekc hge justificaiton
+and padding and also they scalling of the text as the windows size moves … the sidebar is not
+showing all the tasks"*
+
+Every part, with what it measured:
+
+| Ask | Shipped | Evidence |
+|---|---|---|
+| Python prints nothing | `py-preamble.ts` + `py-entry.ts` prepend the imports and node classes and synthesise the call | **45 of 184 fences raised NameError invisibly**; 338 now run clean, gated by `verify:fences` |
+| Editable, not saved | `editable` default on, nothing persisted | the edit is for thinking; resets on navigate |
+| Read further only on a problem | moved into `problem-detail.tsx` | pattern pages carry playbook + references only |
+| All the problems | 127 filed, 0 orphans, then **153** | new gate: every pattern owns at least one problem |
+| All the patterns | 10 → 18 → **19** | prefix-sums, greedy, bit-manipulation, backtracking, matrix, intervals, union-find, design, trie |
+| Padding and scaling | 6 widths × 5 routes measured | 0 sideways, 0 text under 12px, 0 justified runs; **controls under 40px on touch 37 → 0** |
+| Sidebar shows everything | the open pattern lists its problems | a masked pattern lists nothing — the titles are the idea it withholds |
+
+### Nineteen patterns, and the rule that governed the re-filing
+
+Eight patterns were added (#102) and 14 problems re-filed onto them, under one rule worth keeping:
+**a problem moves only if the approach this repo actually TEACHES for it is that pattern.**
+`jump-game` went to greedy because its top rung is the furthest-reach sweep; `coin-change-min`
+stayed in DP because greedy is *wrong* there, and the greedy playbook's fourth move is about exactly
+that boundary. Otherwise the label lies.
+
+**Trie was deliberately left out** of #102 — zero problems would have made it a heading over white
+space. It arrived in #105 with three problems, as the nineteenth pattern.
+
+A journey teaching a re-filed problem must gain the new pattern in `reveals` — **added, never
+swapped**. Masking more is safe; masking less leaks the name the journey is still withholding.
+
+### Twenty-six problems, aimed at coverage rather than count (#105)
+
+Eight patterns owned one or two problems each — a playbook over a list of one row is a curriculum
+promise unkept. intervals 1→5, union-find 1→4, design 1→4, trie 0→3, prefix-sums 2→5, greedy 2→5,
+bit-manipulation 3→5, backtracking 2→5, matrix 2→4.
+
+**The verification method is the reusable part.** Dump every rung through the app's own import
+chain, then check it twice:
+
+1. **a differential WITHIN a problem** — every rung against every other rung on its own vectors,
+   the same idea as `verify:run` but across rungs instead of across languages. 76 rungs, 0
+   disagreements.
+2. **against the published EXAMPLES**, written from the statement rather than read off the code.
+   213 calls, 0 wrong.
+
+Three rungs written by one author agreeing proves consistency, not correctness. Only the second
+check can catch all three being wrong the same way.
+
+### Two mistakes, both caught by gates rather than by review
+
+**A mutation test destroyed the fix it was testing.** Proving the new touch-target gate could fail,
+`ui/toggle.tsx` was reverted with `git checkout --` while the fix in it was **still uncommitted** —
+so #103 merged without it and its own commit message quoted 178/178 green. The gate failed on the
+next branch and named all seven filter pills. **Commit first, then mutate.**
+
+**`verify-deep.mjs` had printed `82/33` since the first document was converted.** It counts both
+sources in `ok` — typed documents under `src/problems/<id>/` and markdown in `docs/deep/` — while
+the denominator was the markdown half alone. Found while quoting it in the README. Now 82/82.
+
+### Three gates added, all mutation-tested
+
+A gate not proven to fail is decoration, so each was broken on purpose and watched to fail:
+
+- **`verify:fences`** — every code block runs the way the page runs it (338 clean, baseline 7)
+- **a pattern owns at least one problem and at least four playbook moves** — fails on both halves
+- **on a phone, no visible control is under the touch floor** — 360 wide; inline prose links exempt
+  per WCAG 2.5.8, the copy button exempt by name because it floats over an editable block
+
+### The name (#106)
+
+`dsa.patterns` is a category label. It cannot be claimed, searched for as a product, or put on a
+profile as one's own — and the repo and the product did not even agree with each other.
+
+**Patternsmith** — *learn the idea before you learn its name.* The tagline is the thesis: the
+product withholds the pattern's name until you have already used it. `smith` was already the house
+idiom (`scripts/localsmith/`), and the name survives the project growing past DSA.
+
+The GitHub slug stays `dsa_problems` on purpose, so no link breaks. `WORKLOG.md` keeps the old name
+wherever it appears below this entry, because it is a dated record and rewriting it would make the
+log lie.
+
+The headline that nearly escaped the rename was `dsa<span>.patterns</span>` — **the name split
+across a span**, invisible to a search for the whole string. Found by opening the page and reading
+the header, not by reading the diff.
+
+### Where it ended
+
+| | |
+|---|---|
+| Problems | **153**, 19 patterns, 0 orphans |
+| Journeys | 93; the other 60 ship a static walkthrough |
+| Records in `src/problems/<id>/` | **84** (58 converted + 26 new) |
+| Playbook moves · references | **83 · 57** across 19 patterns |
+| `npm run check` | **789 pass, 0 fail** |
+| `npm run test:ui` | **178 pass, 0 fail** |
+| `verify:fences` | 338 clean, 7 failed (baseline 7) |
+| `verify-deep.mjs` | **82/82** |
+
+---
+
 ## 2026-09-14 — a problem gets one directory and one page, and five gates earned their keep
 
 Five branches, stacked: **#90** → **#91** → **#92** → **#93** → **#94**. The through-line is one
