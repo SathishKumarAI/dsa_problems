@@ -37,7 +37,7 @@ Two things to know before you start:
 ## The shape of a journey
 
 One file, `src/engine/journeys/<slug>.ts`, exporting a `Journey<D>`; one line in
-`src/engine/index.ts`; one `Problem` in its own `src/data/problems/<pattern>/<id>.ts`, imported
+`src/engine/index.ts`; one `Problem` in its own directory `src/problems/<id>/` (or, for the 78 not yet moved, `src/data/problems/<pattern>/<id>.ts`), imported
 by that directory's `index.ts`, with the same id as `problemId` (so the practice-set page gets
 the CTA). Nothing else — no HTML, no route, no sidebar entry: the registry drives all of it.
 

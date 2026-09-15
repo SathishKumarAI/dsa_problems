@@ -9,7 +9,7 @@ Two generated files keep it honest, so nothing here is remembered rather than co
 | File | What it counts | Regenerate with |
 |---|---|---|
 | [`LEARN-GAPS.md`](LEARN-GAPS.md) | per problem: which required sections are missing | `node scripts/learn-gaps.mjs` |
-| [`learn/`](learn/) | the pages themselves | `npm run docs:learn` |
+| [`learn/`](learn/) | the Markdown explanations, for the problems not yet converted | `npm run docs:learn` |
 
 ---
 
@@ -20,8 +20,10 @@ at the arithmetic, a working engineer choosing between approaches, a candidate r
 say, and an architect asking what the data structure really costs. `docs/deep/TEMPLATE.md` holds
 that table; every document is measured against it.
 
-The generated half of each page is finished and cannot rot: statement, constraints, examples, hints,
-the ladder in three languages, a runnable script. **The authored half is the work.**
+The generated half cannot rot, because it is not generated any more — the statement, the
+constraints, the examples, the hints and the ladder in three languages are the problem page itself,
+rendered from the record. **The authored half is the work**, and it lives in one of two places: a
+typed document under `src/problems/<id>/` (49 problems) or `docs/deep/<id>_explained.md` (33).
 
 ---
 

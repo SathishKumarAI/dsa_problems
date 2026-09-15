@@ -57,7 +57,7 @@ actually costs, and here is the script that says so."
 | Documents carrying all three required sections | **10 of 127** |
 | Rungs whose summary does not argue | **0** — closed 2026-09-13 |
 | Gates | **7**, all green |
-| Node tests | **758** |
+| Node tests | **780** |
 
 Every problem carries an approach ladder in Python, Java and C++, an arc naming the single idea the
 ladder applies, and a generated page at `docs/learn/<id>.md`.
@@ -71,7 +71,7 @@ ladder applies, and a generated page at `docs/learn/<id>.md`.
 The queue is `docs/LEARN-PLAN.md`; the counter is `docs/LEARN-GAPS.md`; the ratchet is
 `scripts/learn-gaps.test.mjs`, which fails when a number grows.
 
-1. **Retrofit the 117 documents** missing *Reading the Calculations*, *How to Get Fluent*, or an
+1. **Retrofit the 72 documents** missing *Reading the Calculations*, *How to Get Fluent*, or an
    `Under the hood` callout with a measured number. In sidebar order, so the most-read problems
    land first. Roughly 2–4 hours each, and — on the evidence of the first six — about one in three
    turns up a defect.
@@ -133,7 +133,7 @@ journey, ladder, teaching document, runnable script.
 
 | Risk | Signal | Mitigation |
 |---|---|---|
-| The retrofit is too slow to finish | 117 documents at 2–4 hours each is 30+ working days for one person | This is the top ask in `CONTRIBUTING.md`; each document is fully independent, so it parallelises perfectly across contributors |
+| The retrofit is too slow to finish | 72 documents at 2–4 hours each is 20+ working days for one person | This is the top ask in `CONTRIBUTING.md`; each document is fully independent, so it parallelises perfectly across contributors |
 | The measurements rot as machines change | A contributor cannot reproduce a quoted timing | Exact counts (probes, comparisons, allocations) are preferred over timings, and every document says its timings are one machine's with the column *shape* as the claim |
 | The ratchet grows slack and passes while content rots | Baseline sits above the actual count | `learn-gaps.test.mjs` already asserts the baseline is **not set above the tree** — keep that assertion |
 | Two agents write the same branch | A commit that does not compile, or a ledger entry claiming an approval that never happened | **One writer per branch.** Both happened on 2026-09-13; `docs/AGENTS.md` carries the rules |
