@@ -1,12 +1,18 @@
-// Navigation in three sections — DSA (journeys, visualizer, patterns), SQL,
-// Data science — every entry a hash link so back/forward and middle-click
-// work. Header carries the wordmark and the help ("how to use") button;
+// Navigation in four sections — Continue (journeys actually in play),
+// Reference (the visualizer and the resources page), Problems by pattern, then
+// SQL and Data science — every entry a hash link so back/forward and
+// middle-click work.
+//
+// ONE CATALOGUE, and that is the point. This used to open with a list of
+// JOURNEYS and carry a separate list of patterns below it, so 93 of the 127
+// problems appeared twice under two headings — the app read as though
+// "journeys" and "patterns" were two products. A problem is the noun; its
+// journey is a mode of it, reached from its page. "Continue" is progress, not
+// navigation, and it is absent until there is something to resume. Header carries the wordmark and the help ("how to use") button;
 // footer carries where-you-are, settings, shortcuts and the collapse toggle.
 // Collapses to a 3 rem icon rail that peeks open on hover (ui/sidebar.tsx).
-import { useState } from "react"
 import {
   CheckIcon,
-  ChevronDownIcon,
   CircleHelpIcon,
   DatabaseIcon,
   KeyboardIcon,
@@ -160,20 +166,27 @@ function FooterButton({
   )
 }
 
-// 45 journeys is a catalogue, not a menu. Show the ones actually in play —
-// started-and-unfinished first, then the next few unstarted — and put the rest
-// behind one click. Every journey is still reachable from its problem page.
-// One store key per journey is more than a hook may subscribe to in a loop, so
-// re-render on any store write and read the plain getters (as home-view does).
-function journeysInPlay(open: string | undefined) {
-  const ledger = JOURNEYS.map((j) => ({
-    journey: j,
-    earned: earnedOf(getStored<number>(K.unlocked(j.slug), 1), j.acts.length),
-  }))
-  const started = ledger.filter((r) => r.earned.earned > 0 && !r.earned.done)
-  const fresh = ledger.filter((r) => r.earned.earned === 0)
-  const picked = [...started, ...fresh].slice(0, Math.max(6, started.length))
-  const shown = picked.map((r) => r.journey)
+/**
+ * The journeys actually in play — started and not yet finished.
+ *
+ * This used to be a CATALOGUE: the six or so most relevant journeys, then
+ * "show all 93" behind a chevron. Which made the sidebar two lists of the same
+ * thing. 93 of the 127 problems appeared once here under the journey's title
+ * and again under their pattern, so the app read as though "journeys" and
+ * "patterns" were two products rather than one noun and one of its modes.
+ *
+ * A problem is the noun. Its journey is reached FROM it — every problem page
+ * carries the invitation — so this group is now progress, not navigation, and
+ * it is empty until there is something to resume.
+ *
+ * One store key per journey is more than a hook may subscribe to in a loop, so
+ * re-render on any store write and read the plain getters (as home-view does).
+ */
+function continuing(open: string | undefined) {
+  const shown = JOURNEYS.filter((j) => {
+    const e = earnedOf(getStored<number>(K.unlocked(j.slug), 1), j.acts.length)
+    return e.earned > 0 && !e.done
+  })
   // never hide the journey the learner is looking at
   const current = JOURNEYS.find((j) => j.slug === open)
   if (current && !shown.includes(current)) shown.unshift(current)
@@ -181,16 +194,15 @@ function journeysInPlay(open: string | undefined) {
 }
 
 export function AppSidebar({ view }: { view: string }) {
-  const [allJourneys, setAllJourneys] = useState(false)
   useStoreVersion()
   const solved = useSolved()
   const mask = usePatternMask()
   const { state, toggleSidebar } = useSidebar()
   const collapsed = state === "collapsed"
   const route = useRoute()
-  const shown = allJourneys
-    ? JOURNEYS
-    : journeysInPlay(route.parts[0] === "journey" ? route.parts[1] : undefined)
+  const resume = continuing(
+    route.parts[0] === "journey" ? route.parts[1] : undefined
+  )
 
   return (
     <Sidebar collapsible="icon">
@@ -225,51 +237,35 @@ export function AppSidebar({ view }: { view: string }) {
         // the rest. The rail scrolls like the expanded column does.
         className="group-data-[collapsible=icon]:overflow-y-auto"
       >
+        {/* CONTINUE — progress, not a catalogue. Absent until a journey has
+            been started and not finished, because a heading over an empty list
+            is a promise the app is not keeping. Every journey is reached from
+            its problem page; this is only the way back into one. */}
+        {resume.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Continue</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {resume.map((j) => (
+                  <JourneyItem
+                    key={j.slug}
+                    slug={j.slug}
+                    title={j.title}
+                    acts={j.acts.length}
+                    active={
+                      view === "journey" &&
+                      location.hash.includes(`/journey/${j.slug}`)
+                    }
+                  />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         <SidebarGroup>
-          <SidebarGroupLabel>DSA</SidebarGroupLabel>
+          <SidebarGroupLabel>Reference</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {shown.map((j) => (
-                <JourneyItem
-                  key={j.slug}
-                  slug={j.slug}
-                  title={j.title}
-                  acts={j.acts.length}
-                  active={
-                    view === "journey" &&
-                    location.hash.includes(`/journey/${j.slug}`)
-                  }
-                />
-              ))}
-              {/* A disclosure has to go both ways. This used to set the flag
-                  to true and then hide itself, so expanding to all 46 was a
-                  one-way door — the only way back was a reload. */}
-              {(allJourneys || JOURNEYS.length > shown.length) && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => setAllJourneys((v) => !v)}
-                    aria-expanded={allJourneys}
-                    tooltip={
-                      allJourneys
-                        ? "show only the journeys in play"
-                        : `show all ${JOURNEYS.length} journeys`
-                    }
-                    className="text-muted-foreground"
-                  >
-                    <ChevronDownIcon
-                      className={cn(
-                        "size-3.5 shrink-0 transition-transform",
-                        allJourneys && "rotate-180"
-                      )}
-                    />
-                    <span className="truncate">
-                      {allJourneys
-                        ? "show fewer"
-                        : `${JOURNEYS.length - shown.length} more journeys`}
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={<a href={href("/algorithms")} />}
@@ -298,7 +294,7 @@ export function AppSidebar({ view }: { view: string }) {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>DSA · patterns</SidebarGroupLabel>
+          <SidebarGroupLabel>Problems · by pattern</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {PATTERNS.map((p) => {

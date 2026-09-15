@@ -38,7 +38,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { PROBLEMS } from "@/data"
 import type { Code, Pattern, Problem } from "@/data"
-import { toggleSolved, useSolved } from "@/lib/progress"
+import { earnedOf, toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import type { AnyJourney } from "@/engine"
 import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
@@ -46,7 +46,7 @@ import { compareHref, ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
 import type { Ladder, Rung } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 import { href, navigate, useRoute } from "@/lib/route"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { ExplanationBody } from "./explanation"
 import { useExplanation } from "@/lib/use-explanation"
 import type { Outline } from "@/lib/markdown"
@@ -299,11 +299,17 @@ function ProblemPage({
     1
   )
   const ladder = ladderOf(problem, journey, unlocked)
+  // the ledger, as the mode bar reads it: how many acts this learner has earned
+  const earned = earnedOf(unlocked, journey?.acts.length ?? 0)
   // The explanation, fetched on arrival and never with the bundle: a typed
   // document is ~30 KB of prose and the Markdown ones are larger. Not fetched
   // at all while the ladder is CAPPED — a started journey has not earned the
   // ending, and the cheapest way to not leak it is to not ask for it.
-  const explanation = useExplanation(problem.id, !ladder.capped)
+  // The explanation is 15–30 screens. Collapsed until asked for, and not
+  // fetched until then either — `pair-sum` measured 33.8 screens with it open
+  // against 4.1 without, so rendering it on arrival made the ladder the first
+  // twelve percent of the page.
+  const [opened, setOpened] = useState(false)
   // `?compare=a,b` is state that belongs in the URL: the comparison is a claim
   // worth sending to someone, and the back button should undo it. Resolved
   // against the rungs the LADDER returned, never against the problem, so a
@@ -316,8 +322,16 @@ function ProblemPage({
   // `ready` in the dependency is what makes this fire exactly once, on the
   // render where the document arrives. Above the `?compare=` early return,
   // because a hook after a conditional return is a hook that changes order.
-  const jumpToExplanation =
-    query.get("read") === "explanation" && explanation.present && explanation.ready
+  // `?read=explanation` — what `#/learn/<id>` becomes. It has to OPEN the
+  // section as well as scroll to it. DERIVED, not an effect that sets state:
+  // react-hooks v7 forbids a synchronous setState in an effect, and there is
+  // nothing to store here anyway — the URL already says it.
+  const asked = query.get("read") === "explanation"
+  const reading = opened || asked
+  const explanation = useExplanation(problem.id, !ladder.capped, reading)
+  // the scroll still waits for the document to arrive, because until then
+  // there is nothing at that offset to scroll to
+  const jumpToExplanation = asked && explanation.present && explanation.ready
   useEffect(() => {
     if (!jumpToExplanation) return
     document
@@ -432,10 +446,16 @@ function ProblemPage({
           surface on the screen (DESIGN.md allows exactly one per page; the
           journey invitation below is a bordered panel, not a second dock).
 
-          This page explains and hosts no editor, so the primary action leaves
-          for LeetCode. The second door is the written explanation, which is
-          now FURTHER DOWN THIS PAGE rather than on another route — so it
-          scrolls rather than navigates. The phrase "Learn this problem" is
+          THE MODE BAR. A problem is one noun and these are the three things
+          you can do with it: work it up from nothing (the journey), read it in
+          full (the explanation), or go and solve it. They were three different
+          shapes in three places — a primary button here, a bordered panel
+          below, and a list in the sidebar — which is what made the app read as
+          "journeys" and "patterns" being two products.
+
+          The journey still opens full-screen, because its stage needs the
+          viewport; it is simply never reached except from here. The
+          explanation opens IN PLACE. The phrase "Learn this problem" is
           load-bearing: a UI test reads it to prove the ledger still hides this
           mid-journey. */}
       <div
@@ -449,59 +469,83 @@ function ProblemPage({
           {problem.brief}
         </p>
         <div className="flex flex-wrap items-center gap-3 pt-1">
+          {/* The journey is the PRIMARY action where one exists: it is the way
+              this app teaches, and everything else on the page is what you
+              read once you have. LeetCode takes the primary slot only when
+              there is no journey to offer. */}
+          {journey ? (
+            <a
+              href={href(`/journey/${journey.slug}`)}
+              className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
+            >
+              <RouteIcon className="size-4 shrink-0" />
+              {earned.earned > 0 ? "Continue the journey" : "Build it up"}
+              <span className="font-mono text-meta opacity-80">
+                {earned.earned}/{journey.acts.length}
+              </span>
+            </a>
+          ) : null}
           <a
             href={leetcodeUrl(problem.leetcode)}
             target="_blank"
             rel="noopener"
-            className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
+            className={cn(
+              "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-9",
+              journey
+                ? "border hover:border-chart-1/60"
+                : "btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
+            )}
           >
             Solve on LeetCode
             <ExternalLinkIcon className="size-4" />
           </a>
           {explanation.present && (
-            <a
-              // A bare `#id` href is a ROUTE change in a hash-routed app, not a
-              // scroll: it would set the route to `explanation` and render
-              // home. Every in-page anchor here needs both of these lines.
-              href="#explanation"
-              onClick={(e) => {
-                e.preventDefault()
-                document
-                  .getElementById("explanation")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            <button
+              type="button"
+              aria-expanded={reading}
+              aria-controls="explanation"
+              onClick={() => {
+                setOpened(true)
+                // the section is below the fold and its content is FETCHED, so
+                // the scroll waits for the render that brings it — see the
+                // `?read=explanation` effect above, which this reuses
+                if (reading)
+                  document
+                    .getElementById("explanation")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
               }}
               className="group inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
             >
               <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
               Learn this problem
               <span className="hidden font-normal text-muted-foreground sm:inline">
-                — the long explanation, further down
+                — the long explanation
               </span>
               <RowNudge />
-            </a>
+            </button>
           )}
         </div>
+        {/* What a journey IS — the one sentence the deleted panel carried, and
+            only while it is unstarted. Once earning has begun the button's
+            "3/5" says everything a returning reader needs. */}
+        {journey && earned.earned === 0 && (
+          <p className="max-w-[35em] text-ui text-muted-foreground">
+            {journey.acts.length} acts: the need, every approach earned by the
+            last one's weakness, your own code animated, then the reveal.
+          </p>
+        )}
       </div>
 
       {/* ── ZONE 3 · REVIEW — the material, as bands. A band is a heading and
           a hairline, never a card: a card says "this has its own actions" and
-          none of these do. */}
-      {journey && (
-        <a
-          href={href(`/journey/${journey.slug}`)}
-          className="group flex items-center gap-3 rounded-xl border border-chart-1/40 bg-chart-1/5 p-4 transition-colors hover:border-chart-1"
-        >
-          <RouteIcon className="size-5 shrink-0 text-chart-1" />
-          <span className="flex min-w-0 flex-col">
-            <b className="text-body">Start the learning journey</b>
-            <span className="text-ui text-muted-foreground">
-              {journey.acts.length} acts: the need, every approach earned by the
-              last one's weakness, your own code animated, then the reveal.
-            </span>
-          </span>
-          <RowNudge as="arrow" className="ml-auto size-5" />
-        </a>
-      )}
+          none of these do.
+
+          The bordered journey panel that used to open this zone is gone. It
+          said the same thing the mode bar above now says, in a second shape and
+          a second place — three doors into one journey (a panel here, a primary
+          button there, a list in the sidebar) is what made the app read as two
+          products. Its one irreplaceable sentence, what a journey actually IS,
+          moved up under the mode bar where the button is. */}
 
       <Band label="the problem">
         <p className="max-w-[35em] text-body">{problem.statement}</p>
@@ -592,9 +636,11 @@ function ProblemPage({
           to. Gated by the SAME `capped` flag as the ladder and the arc: it
           walks the whole climb, and a journey mid-flight has not earned that.
 
-          It is the last thing on the page on purpose. A reader who wants it
-          presses the door in zone 2 and is scrolled here; a reader who wants
-          the ladder never meets it. */}
+          It is the last thing on the page, and CLOSED until asked for. Open,
+          it is 15 to 30 screens: pair-sum measured 33.8 with it against 4.1
+          without, which made the ladder the first twelve percent of its own
+          page. Closed it is a heading and a sentence, and the document is not
+          even fetched — `hasExplanation` answers from the glob's keys. */}
       {explanation.present && (
         <section
           id="explanation"
@@ -608,6 +654,17 @@ function ProblemPage({
               Every approach in full: the idea, the mental model, a worked
               trace, the bug you are about to write, and a script you can run.
             </p>
+            {!reading && (
+              <button
+                type="button"
+                onClick={() => setOpened(true)}
+                className="group mt-2 inline-flex min-h-11 w-fit items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
+              >
+                <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
+                Read it
+                <RowNudge />
+              </button>
+            )}
           </div>
           <ExplanationBody state={explanation} />
         </section>
