@@ -6,7 +6,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/two-pointers/sorted-squares.ts"
+import { problem } from "../../problems/sorted-squares/index.ts"
 
 type N = Data<number>
 
@@ -231,7 +231,7 @@ export const sortedSquares = deriveJourney(problem, {
       key: "sort",
       name: "Square, then sort",
       short: "the honest one",
-      from: 0,
+      from: "sort",
       insight: "",
       idea: "Replace every value with its square and hand the result to a sort. One line, obviously correct, and it never looks at the order the input arrived in.",
       takeaways: [

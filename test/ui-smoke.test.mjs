@@ -11,7 +11,7 @@
 import assert from "node:assert/strict"
 import { after, before, describe, test } from "node:test"
 import { JOURNEYS } from "../src/engine/index.ts"
-import { existsSync, readdirSync } from "node:fs"
+import { existsSync, readdirSync, statSync } from "node:fs"
 import { PROBLEMS } from "../src/data/index.ts"
 
 // Which problems have a long explanation, read from disk rather than listed
@@ -26,6 +26,19 @@ const EXPLAINED = new Set([
     .filter((d) => d.isDirectory() && existsSync(`src/problems/${d.name}/doc.ts`))
     .map((d) => d.name),
 ])
+
+// The biggest problem whose explanation is still MARKDOWN, chosen from disk.
+// Naming one was fine until a batch converted it: this check asked for
+// `max-depth` and got the typed renderer, so it failed on a document that had
+// simply graduated. The typed half is checked separately, by name, because
+// there the point is the fields — here the point is the parser.
+const markdownOnly = readdirSync("docs/learn")
+  .filter((f) => f.endsWith(".md") && f !== "README.md")
+  .map((f) => f.replace(/\.md$/, ""))
+  .filter((id) => !existsSync(`src/problems/${id}/doc.ts`))
+  .map((id) => ({ id, size: statSync(`docs/learn/${id}.md`).size }))
+  .sort((a, b) => b.size - a.size)
+const RICHEST_MARKDOWN = markdownOnly[0]?.id
 
 /** the one route a problem has, now that the explanation is a section of it */
 const pageOf = (p) => `/#/p/${p.pattern}/${p.id}`
@@ -2049,10 +2062,12 @@ describe(
       // fence swallowing the rest of the file, a table that never became a
       // table, a `#` heading printed literally.
       //
-      // `max-depth` is deliberately one of the problems still on MARKDOWN —
-      // the typed half is checked by the balanced-brackets test below, and
-      // both halves have to render, so neither check stands in for the other.
-      const problem = PROBLEMS.find((p) => p.id === "max-depth")
+      // Whichever problem is still on MARKDOWN and has the most of it — read
+      // from disk, because the batches keep converting whichever one is named.
+      // The typed half is checked by the balanced-brackets test below, and both
+      // halves have to render, so neither check stands in for the other.
+      assert.ok(RICHEST_MARKDOWN, "no problem is still on a Markdown explanation")
+      const problem = PROBLEMS.find((p) => p.id === RICHEST_MARKDOWN)
       await page.goto(`${server.base}${pageOf(problem)}`)
       await page.waitFor(EXPLANATION_READY, { tries: 40 })
       const out = await page.run(`

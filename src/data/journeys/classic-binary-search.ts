@@ -6,7 +6,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/binary-search/classic-binary-search.ts"
+import { problem } from "../../problems/classic-binary-search/index.ts"
 
 type N = Data<number> & { target: number }
 
@@ -295,7 +295,7 @@ export const classicBinarySearch = deriveJourney<number>(problem, {
       key: "scan",
       name: "Read them all",
       short: "the honest one",
-      from: 0,
+      from: "scan",
       insight: "",
       idea: "Walk from the front comparing each element with the target, and return the first position that matches. If the walk finishes, return −1.",
       takeaways: [
@@ -318,7 +318,7 @@ export const classicBinarySearch = deriveJourney<number>(problem, {
       key: "recurse",
       name: "Halve the range",
       short: "log n reads, n frames",
-      from: 1,
+      from: "recurse",
       insight:
         "Reading front to back throws away what each comparison tells you about everything else. Read the MIDDLE instead and the answer to one comparison rules out half the row — then ask the same question of what is left.",
       idea: "Look at the midpoint of the range still in play. Equal means done. Smaller means the target can only be to the right, larger only to the left. Ask the same question of that half, and again, until the range is empty.",

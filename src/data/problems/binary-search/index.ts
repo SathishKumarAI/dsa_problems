@@ -1,5 +1,5 @@
 import type { Problem } from "../../types.ts"
-import { problem as classicBinarySearch } from "./classic-binary-search.ts"
+import { problem as classicBinarySearch } from "../../../problems/classic-binary-search/index.ts"
 import { problem as rotatedMinimum } from "./rotated-minimum.ts"
 import { problem as kokoBananas } from "./koko-bananas.ts"
 import { problem as search2dMatrix } from "./search-2d-matrix.ts"

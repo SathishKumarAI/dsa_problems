@@ -5,7 +5,7 @@
 import { deriveJourney } from "../../engine/derive.ts"
 import type { DFrame, Data } from "../../engine/derive.ts"
 import type { ChipRole } from "../../engine/types.ts"
-import { problem } from "../problems/arrays-hashing/subarray-sum-k.ts"
+import { problem } from "../../problems/subarray-sum-k/index.ts"
 
 type N = Data<number> & { k: number }
 
@@ -285,7 +285,7 @@ export const subarraySumK = deriveJourney(problem, {
       key: "brute",
       name: "Add up every stretch",
       short: "the honest one",
-      from: 0,
+      from: "brute",
       insight: "",
       idea: "Take every start, extend to every end adding as you go, and count each time the total lands on k. Never stop early — a longer stretch from the same start can hit k again.",
       takeaways: [
@@ -299,7 +299,7 @@ export const subarraySumK = deriveJourney(problem, {
       key: "prefix",
       name: "Totals up to each point",
       short: "no re-adding, still quadratic",
-      from: 1,
+      from: "prefix",
       insight:
         "Each start re-walks values the one before it already added. Compute the total up to every position once, and the sum of any stretch becomes the difference of two of them — a single subtraction, no walking.",
       idea: "Build the running total up to each position. The sum of the stretch from i to j−1 is then prefix[j] − prefix[i]. Try every pair of endpoints and count the differences that equal k.",
