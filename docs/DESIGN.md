@@ -141,7 +141,27 @@ Uppercase labels take `tracking-wide`. Nothing else does.
 
 ## Measure
 
-Prose is capped at **`35em`** — about 68 characters at any step, which is inside the 45–75 band.
+**One absolute width — `max-w-measure`, 36rem / 576px — and it is a token, not an
+arbitrary value.**
+
+It was `max-w-[35em]` written out **fifty times across twenty files**, and `em` is relative to
+the element's own size, so the same "cap" rendered 595px on a 17px paragraph and 525px on a 15px
+one. Measured on the problem page: **eight different sentence widths inside one 768px column** —
+595, 527, 525, 509, 488, 480, 707, 349. Eight right edges is what reads as text nobody set.
+
+576px is about 68 characters at the body step: the middle of the 45–75 band, and inside the 80ch
+the U7 gate allows at every step.
+
+Two rules keep a column to one edge:
+
+| Rule | Why |
+|---|---|
+| **The measure goes on the TEXT, never on a padded box around it** | `max-w-measure` on a `<details>` with `px-4` leaves 544px of text; on a row with a glyph and a gap, 560. Every nesting depth subtracts its own amount — that is where 539, 543 and 550 came from |
+| **A decorative glyph is not structure** | A `·` before a bound and a `→` before its explanation cost 16px of measure each and bought nothing that position and voice could not say. The constraint list is a definition list now: term, then definition beneath it, both on the column's own edges |
+
+And sentences take `text-body`. `text-ui` is for buttons and labels; a sentence set at the control
+step wraps to a different width than the prose beside it, which is the same defect from the other
+direction.
 
 > `ch` is **not** a character. It is the width of the "0" glyph, roughly 1.3× the average character
 > in a proportional face, so a `68ch` cap renders about 90 characters. Use `em` at 0.5 em per
