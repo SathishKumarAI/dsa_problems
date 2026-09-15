@@ -174,7 +174,7 @@ was deleted.
 | Thin rungs (summary under 160 chars) | **0** — B68, closed 2026-09-13 |
 | Undisclosed approach additions | **0** |
 
-All seven gates green: `check` **758/758** · `test:ui` **166/166** · `verify:code` **752 blocks, 0
+All seven gates green: `check` **789/789** · `test:ui` **178/178** · `verify:code` **752 blocks, 0
 failed** · `verify:run` **2,168 oracle runs, 4,336 translations, 0 disagreed** · `verify:vectors` ·
 `verify-deep` **82/82 agreed** · `learn-gaps --strict` clean. `npm run build` clean.
 
