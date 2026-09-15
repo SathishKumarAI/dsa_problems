@@ -23,14 +23,29 @@ import { hasContent, loadContent } from "@/lib/content"
 import { hasExplanationMarkdown, loadExplanationMarkdown } from "@/lib/learn-pages"
 import { outlineOf, parseMarkdown } from "@/lib/markdown"
 import type { Block, Outline } from "@/lib/markdown"
-import { outlineOfParts, partsOf } from "@/lib/teaching-parts"
+import { outlineOfParts, partsOf, scaffoldOf } from "@/lib/teaching-parts"
 import type { Part } from "@/lib/teaching-parts"
 
 export type Explanation =
   | { present: false }
   | { present: true; ready: false }
-  | { present: true; ready: true; kind: "typed"; parts: Part[]; outline: Outline[] }
-  | { present: true; ready: true; kind: "markdown"; blocks: Block[]; outline: Outline[] }
+  | {
+      present: true
+      ready: true
+      kind: "typed"
+      parts: Part[]
+      outline: Outline[]
+      /** what a fence inherits from the document around it */
+      scaffold: string
+    }
+  | {
+      present: true
+      ready: true
+      kind: "markdown"
+      blocks: Block[]
+      outline: Outline[]
+      scaffold: string
+    }
 
 /** whether a problem has an explanation at all — answered from the glob's KEYS,
  *  with no fetch, so the door can be decided during render */
@@ -69,17 +84,28 @@ export function useExplanation(
             kind: "typed",
             parts,
             outline: outlineOfParts(parts),
+            scaffold: scaffoldOf(doc),
           }
         }
       }
       const md = await loadExplanationMarkdown(id)
       const blocks = parseMarkdown(md ?? "")
+      // The same inheritance the typed half gets. A Markdown document's script
+      // is its LAST python fence — every fence above it was written against the
+      // helpers that script declares, so without this they raise NameError on a
+      // name the reader can see three sections further down.
+      const fences = blocks.filter(
+        (b): b is Block & { kind: "code" } =>
+          b.kind === "code" && /^py(thon)?$/i.test(b.lang)
+      )
+      const script = fences.length > 1 ? fences[fences.length - 1].code : ""
       return {
         present: true,
         ready: true,
         kind: "markdown",
         blocks,
         outline: outlineOf(blocks),
+        scaffold: script.split(/^if __name__/m)[0],
       }
     }
     fetchIt().then((e) => live && setLoaded(e))

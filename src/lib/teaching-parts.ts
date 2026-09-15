@@ -161,5 +161,12 @@ export function partsOf(doc: TeachingDoc): Part[] {
   return parts
 }
 
+/** the document's own runnable script with its `__main__` guard removed — the
+ *  module-level scaffolding every fence in it was written against. Without it
+ *  45 of the 184 fences raise NameError on a helper the document defines once
+ *  at the top (`format_range`, `seed_sum`, `PAIRS`). */
+export const scaffoldOf = (doc: TeachingDoc) =>
+  doc.script.split(/^if __name__/m)[0]
+
 export const outlineOfParts = (parts: Part[]): Outline[] =>
   parts.map(({ id, title, level }) => ({ id, text: title, level }))

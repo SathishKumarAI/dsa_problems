@@ -602,6 +602,67 @@ describe(
       )
     })
 
+    // The Run button used to do nothing a reader could see. Measured in this
+    // browser on 2026-09-15: three of the four buttons on balanced-brackets gave
+    // "exit 0 · 5 ms" and "the script printed nothing", because every approach
+    // fence in every teaching document is a bare function definition.
+    //
+    // Two halves, and both are asserted here because neither is visible from the
+    // code alone: every block is EDITABLE (a reader learns by changing a line),
+    // and every block PRINTS (the button appends a call on the problem's own
+    // first test case, with the document's scaffolding in front of it).
+    test("every code block is editable, and Run prints an answer", async () => {
+      const problem = PROBLEMS.find((p) => p.id === "balanced-brackets")
+      await page.goto(`${server.base}${pageOf(problem)}`)
+      await openExplanation(page)
+
+      const shape = await page.run(`
+        return {
+          runs: [...document.querySelectorAll('button')]
+            .filter(b => b.innerText.trim() === 'Run').length,
+          editors: document.querySelectorAll('textarea').length,
+        };
+      `)
+      assert.ok(shape.runs >= 3, `only ${shape.runs} Run buttons`)
+      assert.equal(
+        shape.editors,
+        shape.runs,
+        "a block can be run but not edited — every block is the reader's to change"
+      )
+
+      // press the FIRST one: an ordinary approach block, not the full script
+      await page.run(`
+        const runs = [...document.querySelectorAll('button')]
+          .filter(b => b.innerText.trim() === 'Run');
+        runs[0].click();
+        return true;
+      `)
+      await page.waitFor(`!!document.body.innerText.match(/exit 0|error ·/)`, {
+        tries: 90,
+        gap: 1000,
+      })
+      const out = await page.run(`
+        const text = document.body.innerText;
+        return {
+          ok: /exit 0/.test(text),
+          nothing: /printed nothing/.test(text),
+          broke: /NameError|TypeError|SyntaxError|Traceback/.test(text),
+        };
+      `)
+      assert.ok(out.ok, "the first block did not exit cleanly")
+      assert.equal(
+        out.nothing,
+        false,
+        "an approach block still prints nothing — the appended call is missing"
+      )
+      assert.equal(
+        out.broke,
+        false,
+        "the block raised — a fence needs the document's scaffolding in front of it"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     // B82 / B83. The one check that matters for the Python runtime: a real
     // browser, a real fetch of 10.6 MB of CPython, real output. Everything
     // else about this feature is a claim.
@@ -635,7 +696,13 @@ describe(
         };
       `)
       assert.ok(before.buttons >= 2, `only ${before.buttons} Run buttons`)
-      assert.equal(before.editors, 1, "the full script is not editable")
+      // every block is editable now, not only the full script — a reader learns
+      // by changing a line, and the draft is component state, so nothing is saved
+      assert.equal(
+        before.editors,
+        before.buttons,
+        "a block can be run but not edited"
+      )
       assert.equal(before.started, false, "CPython started before Run was pressed")
       assert.equal(before.output, false, "an output panel rendered before any run")
 
@@ -2365,7 +2432,10 @@ describe(
         `the typed document's sections are missing: ${out.headings.join(" | ")}`
       )
       assert.ok(out.tables >= 3, `only ${out.tables} tables in the explanation`)
-      assert.equal(out.editors, 1, "the full script is not editable")
+      assert.ok(
+        out.editors >= 1,
+        "no block is editable — every one is the reader's to change"
+      )
       assert.equal(
         out.statements,
         1,

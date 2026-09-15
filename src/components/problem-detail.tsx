@@ -666,7 +666,7 @@ function ProblemPage({
               </button>
             )}
           </div>
-          <ExplanationBody state={explanation} />
+          <ExplanationBody state={explanation} problemId={problem.id} />
         </section>
       )}
       </div>
