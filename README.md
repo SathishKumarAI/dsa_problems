@@ -4,7 +4,7 @@
 [![MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 [![problems](https://img.shields.io/badge/problems-127-brightgreen.svg)](docs/PROBLEMS.md)
 [![journeys](https://img.shields.io/badge/journeys-93-brightgreen.svg)](docs/AUTHORING.md)
-[![tests](https://img.shields.io/badge/tests-778%20passing-brightgreen.svg)](#the-seven-gates)
+[![tests](https://img.shields.io/badge/tests-780%20passing-brightgreen.svg)](#the-seven-gates)
 [![contributions](https://img.shields.io/badge/contributions-wanted-orange.svg)](CONTRIBUTING.md)
 
 One app: a pattern-organised interview practice set (**127 problems** across 10 patterns, SQL
@@ -53,7 +53,7 @@ self-contained the work is:
 | What | Size | Counted in |
 |---|---|---|
 | Write a teaching document for one of the **45 problems that have none** | ~half a day | `docs/LEARN-GAPS.md` |
-| Retrofit the three required sections onto one of the **117 documents missing them** | ~2–4 hours | `docs/LEARN-GAPS.md` |
+| Retrofit the three required sections onto one of the **72 documents missing them** | ~2–4 hours | `docs/LEARN-GAPS.md` |
 | Write a journey for one of the **34 problems** still on a static walkthrough | ~1 day | `docs/AUTHORING.md` |
 | **Find a claim that does not survive being run** | minutes | `docs/BACKLOG.md`, the `G` table |
 
@@ -91,10 +91,10 @@ None of them is sufficient on its own. That is the point of having seven.
 
 | Command | What it proves |
 |---|---|
-| `npm run check` | `tsc -b`, `eslint`, **778** Node tests |
+| `npm run check` | `tsc -b`, `eslint`, **780** Node tests |
 | `npm run test:ui` | Real Chrome — routes, the earn loop, rails, deep links, panel sizes |
-| `npm run verify:code` | Every Java and C++ block **compiles** (758 blocks) |
-| `npm run verify:run` | Those blocks **agree with the Python** (2,186 oracle runs, 4,372 translations compared) |
+| `npm run verify:code` | Every Java and C++ block **compiles** (778 blocks) |
+| `npm run verify:run` | Those blocks **agree with the Python** (2,239 oracle runs, 4,478 translations compared) |
 | `npm run verify:vectors` | The vectors are strong enough to catch a mutation |
 | `node scripts/verify-deep.mjs` | All **82** teaching scripts run and their approaches agree |
 | `node scripts/learn-gaps.mjs --strict` | No document adds approaches without disclosing it |
@@ -122,7 +122,7 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
-| Add / edit a **problem** (statement, constraints, ladder, three languages) | `src/data/problems/<pattern>/<id>.ts` → its `index.ts` barrel (map: `src/data/problems/README.md`). **Problems being migrated live in `src/problems/<id>/` instead**, one file per section, and their pattern barrel imports from there — map: `src/problems/README.md` |
+| Add / edit a **problem** (statement, constraints, ladder, three languages) | **49 of 127 live in `src/problems/<id>/`**, one file per section, with the pattern barrel importing from there — map: `src/problems/README.md`. The other 78 are still one file at `src/data/problems/<pattern>/<id>.ts` (map: `src/data/problems/README.md`); `scripts/split-record.mjs` moves one |
 | Add / edit a **teaching document** (understanding, traps, one file per approach, arc, interview, the runnable script) | `src/problems/<id>/` — entered through `doc.ts`, converted from `docs/deep/<id>_explained.md` by `scripts/md-to-content.mjs`. Gate: `src/content/content.test.ts` |
 | **The one page per problem** — `#/p/<pattern>/<id>`, and there is no second route. Statement, hints, walkthrough, the ladder in three languages, then the long explanation in full at the foot | `src/components/problem-detail.tsx` |
 | The explanation's sections, and the order they come in | `src/lib/teaching-parts.ts` (data) → `src/components/teaching-doc.tsx` (markup). Which form a problem has, and fetching it: `src/lib/use-explanation.ts` |

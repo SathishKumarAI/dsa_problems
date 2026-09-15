@@ -19,7 +19,7 @@ measurement.
 
 **Scale today:** **127 problems** across 10 patterns, **93** built as animated journeys, **82**
 carrying an authored teaching document, every problem with an approach ladder in Python, Java and
-C++ and a generated one-page reference at `docs/learn/<id>.md`. Seven gates, **758** Node tests.
+C++ and the long explanation in full, all on one page. Seven gates, **780** Node tests.
 
 ## 2. Users
 
@@ -170,7 +170,7 @@ the Vite dev middleware, the standalone Node server and the in-process client us
 | Accessibility | Every state has a non-colour channel (marker / icon / fade); `:focus-visible` rings on every control; narration is `aria-live="polite"`; reduced motion honoured | chip grammar, `index.css` |
 | Responsiveness | 390 px viewport has no horizontal scroll; bucket table scrolls inside its own box | verified via CDP screenshot |
 | Privacy | No network call carries learner data anywhere but the local API; nothing leaves the browser | there is no analytics endpoint |
-| Quality gate | Seven gates, each checking something the others cannot. `npm run check` (tsc, eslint, **758** node tests) on every commit; `test:ui` in real Chrome for anything rendered; `verify:code` compiles every Java and C++ block; `verify:run` checks they agree with the Python; `verify:vectors` checks the vectors catch a mutation; `verify-deep` runs all 82 teaching scripts; `learn-gaps --strict` catches undisclosed content drift | run locally; **none is sufficient alone** — that is why there are seven |
+| Quality gate | Seven gates, each checking something the others cannot. `npm run check` (tsc, eslint, **780** node tests) on every commit; `test:ui` in real Chrome for anything rendered; `verify:code` compiles every Java and C++ block; `verify:run` checks they agree with the Python; `verify:vectors` checks the vectors catch a mutation; `verify-deep` runs all 82 teaching scripts; `learn-gaps --strict` catches undisclosed content drift | run locally; **none is sufficient alone** — that is why there are seven |
 | Payload | A content page must not download the stage | `React.lazy` on the journey and visualizer; index ~400 kB + shared ~204 kB, journey chunk ~44 kB |
 
 ## 7. Success metrics (local, no tracking)

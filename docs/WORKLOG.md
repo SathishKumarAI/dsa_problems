@@ -95,6 +95,110 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ---
 
+## 2026-09-14 — a problem gets one directory and one page, and five gates earned their keep
+
+Five branches, stacked: **#90** → **#91** → **#92** → **#93** → **#94**. The through-line is one
+sentence — *everything about a problem in one place* — applied twice, once to the files and once to
+the screen.
+
+### What shipped
+
+| PR | What |
+|---|---|
+| #90 | `src/problems/<id>/` — one directory per problem, record and document, proved on `balanced-brackets` |
+| #91 | The explanation stops being a second route; `#/p/<pattern>/<id>` is the only page a problem has |
+| #92 | 25 more problems moved — every document whose approaches already matched its ladder |
+| #93 | The last 13 single-file documents split; every directory whole, nothing over 500 lines |
+| #94 | The first ten B79 promotions, and the ten problems they unblocked |
+
+**49 of 127 problems** live in `src/problems/<id>/` now, both halves split into sections. **49 of 82
+documents typed**, 33 still Markdown. Largest file under `src/problems/`: 363 lines, against 928
+before.
+
+### The dedupe, measured
+
+A page that stands alone has to restate the title, the statement, the constraints, the examples, the
+hints and every rung in three languages. `gen-learn.mjs` emitted all six because it had to. Merged
+into the problem page, all six are the screen directly above the explanation.
+
+**93,055 generated lines fell to 59,372.** A third of that corpus was the page above it, said twice.
+`gen-learn.test.mjs` fails the build if any of the six headings comes back — and strips fences
+first, because a Python comment legitimately starts a line with `#`.
+
+### Three scripts over one scanner
+
+`scripts/ts-literal.mjs` reads a TypeScript object literal as TEXT, string- and depth-aware, because
+a `{` inside a C++ block is a brace in a program and not structure. `split-record.mjs` moves a
+record, `split-doc.mjs` splits a typed document that is still one file, `md-to-content.mjs` converts
+Markdown. None may silently drop a key: each claims the keys it knows and **throws** on one it does
+not — the rule the first converter lacked when it ate 456 lines.
+
+**Every move is deep-equalled against the object the app imports, before the original is deleted.**
+That caught nothing across 49 problems, which is exactly the point: it is what makes deleting the
+source safe rather than hopeful.
+
+### What the gates found, which is the reason to run them
+
+1. **Two brace counters were lying, and one was skipping work.** `problems.test.ts` and
+   `localsmith/run.mjs`'s `cDefs` both counted `{`/`}` without skipping character and string
+   literals. A rung whose code tests `ch == '{'` was called malformed by the first; by the second it
+   was never closed at all, so it reported **"no function to call"** and silently skipped both
+   translations. That reads exactly like a rung that passed.
+2. **`\|` in a table cell is a literal pipe, and `lib/markdown.ts` split on it anyway.**
+   `three-sum-closest` writes `|s − 1|` for absolute value in four worked-example headers, so those
+   tables rendered a column too wide with a bare backtick painted in each. **It had rendered that way
+   for as long as the document existed** — on the old learn page and the new one alike. Found by
+   driving four converted pages in a browser, not by reading them.
+3. **`## Understanding` is not one table.** The converter's strip took every `|` line in the section
+   and parsed the lot as one, which is right only while there is exactly one — five documents lost a
+   second table. Then lifting the whole constraints `###` part threw away the paragraph four
+   documents put under that heading arguing what the bound buys — fifteen more. `content-roundtrip`
+   refused the batch twice; nothing else would have noticed either.
+4. **The ladder could only place an extra rung at the foot or the top.** Five of ten promotions were
+   STEPPING STONES — the rung a document reaches its answer *through*. `sorted-squares` got its
+   "merge two runs" rendered **above** the answer, the one ordering the page promises it never shows;
+   `tree-diameter`'s misplacement silently moved `whyNow` above a different rung. `Solution.after`
+   names the rung it follows, gated by `problems.test.ts`.
+5. **Promoting a baseline can leave the rung above it without a `whyNow`.** A journey's first act
+   writes no `insight` while nothing is under it. `max-depth`'s ladder gate failed until `bfs` got
+   the sentence saying what it beats.
+6. **A test that NAMES a problem goes stale when a batch converts it.** A UI check used `max-depth`
+   as its Markdown example and #94 made it typed, so it failed on a document that had graduated. It
+   reads the richest still-Markdown page off disk now — the same lesson as `EXPLAINED`, twice.
+
+### A stale disclosure is content that becomes a lie
+
+Four documents opened a promoted approach with *"this rung is an addition — not in the data file's
+ladder"*, which the promotion made false. `content-roundtrip.mjs` reported them as **lost content**,
+which is how they were found. Deleted from the Markdown deliberately, so the diff shows it rather
+than letting the converter drop them in silence.
+
+### Evidence
+
+| Gate | Result |
+|---|---|
+| `npm run check` | **780 tests, 0 fail** |
+| `npm run test:ui` | **172 / 0 fail**, real Chrome |
+| `npm run verify:code` | **778 blocks compiled, 0 failed** — 758 before the ten promotions |
+| `npm run verify:run` | **2,239 oracle runs, 4,478 translations compared, 0 disagreed**, zero launch flakes |
+| `verify-deep.mjs` | **82/82** ran clean and reported agreement |
+| `content-roundtrip.mjs --all` | every line of all 35 converted documents carried through |
+| `learn-gaps.mjs --strict` | clean; ratchet 105 → 72 |
+| First load of `#/` | **197.0 KB / 5 files → 195.3 KB / 3 files**, from the page's own resource timeline |
+
+Pages driven in Chrome at 1440 and 390 throughout, because none of those gates looks at a page:
+zero duplicated headings, the statement exactly once, no markdown syntax on screen, no sideways
+scroll, no console errors.
+
+### What is left
+
+**33 documents, 78 rungs.** Every one teaches approaches the record has no entry for, so each owes
+B79 first. The Python is always liftable from the document; the work is **156 translations**, which
+is what `docs/MODELS.md` exists for. Then, separately, the **45 problems with no document at all** —
+that is writing, not migration.
+
+---
+
 ## 2026-09-13 (night) — every rung argues, two false claims died, and the content got a standard
 
 Three pieces of work, and the third changed what this project is for.

@@ -43,7 +43,7 @@ and see exactly what "done" means.
 | # | What | Size | Where it is counted |
 |---|---|---|---|
 | 1 | **Write a teaching document** for one of the **45 problems that have none** | ~half a day | `docs/LEARN-GAPS.md`, "no document" |
-| 2 | **Retrofit the three required sections** onto one of the **117 documents missing them** — *Reading the Calculations*, *How to Get Fluent*, and an `Under the hood` callout carrying a measured number | ~2–4 hours | `docs/LEARN-GAPS.md` |
+| 2 | **Retrofit the three required sections** onto one of the **72 documents missing them** — *Reading the Calculations*, *How to Get Fluent*, and an `Under the hood` callout carrying a measured number | ~2–4 hours | `docs/LEARN-GAPS.md` |
 | 3 | **Write a journey** for one of the **34 problems that still ship a static walkthrough** | ~1 day | `docs/AUTHORING.md` |
 | 4 | **Fix `G11`** — size `top-k-frequent`'s bucket wall to `max(count) + 1` instead of `n + 1`, and rewrite the Approach 4 "Watch out" that currently teaches `n + 1` as the correct size | ~2 hours | `docs/BACKLOG.md`, G11 |
 | 5 | **Add a problem** — statement, constraints, an approach ladder in Python, Java and C++, an arc | ~half a day | `docs/PROBLEMS.md` |
@@ -87,7 +87,7 @@ Compiling is not correctness — that is why `verify:code` and `verify:run` are 
 green diff is not verification either.
 
 **CI runs the fast subset** on every pull request ([`.github/workflows/gates.yml`](.github/workflows/gates.yml)):
-typecheck, lint, the 758 tests, the build, all 82 teaching scripts, the drift gate, and a check that
+typecheck, lint, the 780 tests, the build, all 82 teaching scripts, the drift gate, and a check that
 `docs/learn/**` was regenerated. It deliberately does **not** run the browser suite or the Java/C++
 toolchain — those need Chrome and a JDK/g++, and they are slow. Run them locally; the PR template
 asks for their output. A green tick means *nothing obviously broke*, which is not the same as
@@ -206,7 +206,7 @@ reproduced — that distinction is the one that matters here, and it is not the 
 
 | Question | File |
 |---|---|
-| Everything about one problem, on one page | `docs/learn/<id>.md` (generated: `npm run docs:learn`) |
+| Everything about one problem, on one page | The problem page itself — `#/p/<pattern>/<id>`, explanation included. The files are `src/problems/<id>/` (49 problems) or `src/data/problems/<pattern>/<id>.ts` plus `docs/deep/<id>_explained.md` (the rest) |
 | What is missing, per problem, counted | `docs/LEARN-GAPS.md` |
 | The ordered queue of content work | `docs/LEARN-PLAN.md` |
 | What to build next, and why | `docs/BACKLOG.md` |
