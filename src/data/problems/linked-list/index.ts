@@ -1,6 +1,6 @@
 import type { Problem } from "../../types.ts"
 import { problem as reverseList } from "../../../problems/reverse-list/index.ts"
-import { problem as cycleDetect } from "./cycle-detect.ts"
+import { problem as cycleDetect } from "../../../problems/cycle-detect/index.ts"
 import { problem as mergeTwoSorted } from "../../../problems/merge-two-sorted/index.ts"
 import { problem as middleOfList } from "./middle-of-list.ts"
 import { problem as palindromeList } from "./palindrome-list.ts"

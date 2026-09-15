@@ -2,17 +2,20 @@
 
 ## Where the code is
 
-Three branches, stacked in this order. Merge them in it.
+Four branches, stacked in this order. Merge them in it.
 
 | | Branch | What |
 |---|---|---|
 | **#90** | `refactor/problems-dir-balanced-brackets` | one directory per problem, proved on one |
 | **#91** | `feat/one-page-per-problem` | the explanation stops being a second route |
 | **#92** | `refactor/problems-dir-batch-1` | 25 more problems moved |
+| **#93** | `refactor/split-doc-monoliths` | the last 13 finished — **every directory is now whole** |
 
 ### Where a problem lives now
 
 `src/problems/<id>/` holds both halves. **39 of 82** documents converted; 43 still Markdown.
+**All 39 directories are whole** — record and document, both split into sections. Nothing under
+`src/problems/` is over the 500-line ceiling; the worst was 928.
 Read `src/problems/README.md` before converting the next one — it is the change → file table, the
 rules, and the two-script recipe.
 
@@ -64,17 +67,30 @@ Verified green, not asserted:
 | `learn-gaps.mjs --strict` | clean; the ratchet dropped 104 → 81 |
 | `gen-manifest.mjs --check` | clean |
 
-### The next action, concretely
+### Three scripts, one scanner
 
-**Split the 11 `doc.ts` monoliths.** They are the only files in `src/problems/` over the 500-line
-ceiling — 928 lines at the worst (`backspace-compare`) — because branch #90 moved the thirteen
-earlier documents here *unchanged* rather than re-converting them. Their Markdown is gone, so
-`md-to-content.mjs` cannot be re-run: this needs the same textual treatment `split-record.mjs` gives
-a record. Their records have not moved either.
+`scripts/ts-literal.mjs` reads a TypeScript object literal as TEXT — string- and depth-aware,
+because a `{` inside a C++ block is a brace in a program and not structure. Three splitters sit on
+it: `split-record.mjs` (the record), `split-doc.mjs` (a document that is typed but still one file),
+and `md-to-content.mjs`'s emitter (Markdown → a directory). None of them may silently drop a key:
+every one claims the keys it knows and **throws** on one it does not. That rule exists because the
+first Markdown converter did not have it and ate 456 lines.
 
-After that: **43 documents to go**, and every one of them teaches approaches the record has no entry
-for, so each owes B79 promotion — a keyed alternative with Python, Java and C++ — before it can
-convert. That is the expensive half, and it is all that is left.
+Every move is proved before the original is deleted — the assembled object is **deep-equalled**
+against the one the app imports. That caught nothing, which is the point: it is what makes deleting
+the source safe.
+
+### The next action, concretely, and what it costs
+
+**43 documents to go, and they are all the expensive kind.** Every one teaches approaches the record
+has no entry for, so each owes B79 first: **88 new rungs in total**, and a rung is not prose — it is
+a summary, a complexity, a `whyNow`, a key, and Python, Java and C++ that must compile
+(`verify:code`) and agree with each other (`verify:run`).
+
+The Python is already written: it is in the document's own `### Code` section for that approach. It
+is the two translations that are the work, 176 blocks of them. `docs/MODELS.md` is the policy for
+that — local models draft, the gates decide — and the split is 1 extra rung on 10 documents, 2 on
+22, 3 on 10, 4 on one, so the natural first slice is the ten with a single extra each.
 
 ## Start here
 
