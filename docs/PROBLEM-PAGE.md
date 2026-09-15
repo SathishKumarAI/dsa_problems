@@ -25,7 +25,7 @@
 | 9 | At least three references, plus similar-pattern links at the end | **shipped** — 5 sources, 2 of them about this problem, plus 13 sibling problems | `similar-problems.tsx` |
 | 10 | Explain WHY and HOW the complexities are calculated | **shipped** | `Solution.costWhy`, `Problem.costWhy` |
 | 11 | Make the reader think before solving | **shipped** | `pre-solve-check.tsx` |
-| 12 | "Next walkthrough" | **needs a decision** — see §3, Q1 |
+| 12 | "Next walkthrough" | **shipped** — the walkthrough steps between approaches | `features/journey/watchable.ts` |
 | 13 | Check the page for other issues and write them down | **this document**, §5 | — |
 
 ---

@@ -3,12 +3,25 @@
 // same chip grammar, the same panels — no hand-written frames to drift.
 //
 // It respects the ledger. A learner midway through the journey sees only the
-// best approach they have EARNED, with a nudge back to the journey; someone
-// who never opened it (or already finished) sees the optimal act. Owns the
-// picking and the small layout; owns no content.
+// approaches they have EARNED, with a nudge back to the journey; someone who
+// never opened it (or already finished) sees all of them. Owns the picking and
+// the small layout; owns no content.
+//
+// IT STEPS BETWEEN APPROACHES. It used to draw exactly one — the best earned,
+// or the optimal — and that is the ladder's argument thrown away: the whole
+// point of "each rung answers the one below it" is watching the one below it
+// run out of road. `next approach` walks the same list the ladder does, in the
+// same order, and it opens at the FOOT of that list so the climb runs forwards
+// (see watchable.ts — opening at the top left `next` disabled on arrival).
+//
+// The cap is not a rendering detail. The list offered here is the EARNED list,
+// never the full one, because an approach name is exactly what progressive
+// disclosure withholds — offering "Ask a set" as a next step would name the
+// answer to a learner still on the brute force.
 
 import { useEffect, useState } from "react"
-import { RouteIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, RouteIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { api } from "@/api/client"
 import type { Data } from "@/api/client"
 import type { AnyJourney, BaseFrame, StageModel } from "@/engine"
@@ -17,28 +30,19 @@ import { K, setPref, usePrefs, useStored } from "@/lib/store"
 import { Transport } from "./controls"
 import { Stage } from "./panels"
 import { delayFor, usePlayer } from "./use-player"
-
-/** the best act this learner is allowed to watch, and whether more is hidden */
-function pickAct(journey: AnyJourney, unlocked: number) {
-  // never the story act (no algorithm), never the challenge or the recap
-  const shown = journey.acts.filter(
-    (a) => a.chart !== false && a.key !== journey.acts[0].key
-  )
-  const finished = unlocked >= journey.acts.length
-  const earned = shown.filter((a) => journey.acts.indexOf(a) < unlocked)
-  const act =
-    finished || earned.length === 0
-      ? shown[shown.length - 1]
-      : earned[earned.length - 1]
-  return {
-    act,
-    capped: !finished && earned.length > 0 && earned.length < shown.length,
-  }
-}
+// the disclosure rule, in a .ts so a node test can hold it — see watchable.ts
+import { watchable } from "./watchable"
 
 export function MiniPlayer({ journey }: { journey: AnyJourney }) {
   const unlocked = Math.max(useStored<number>(K.unlocked(journey.slug), 1), 1)
-  const { act, capped } = pickAct(journey, unlocked)
+  const { acts, opens, capped } = watchable(journey, unlocked)
+  // Which approach is on the stage. `null` means "whatever this opens on", so
+  // earning an act moves the default forward instead of pinning the learner to
+  // a rung they chose once — and a key that is no longer offered (the ledger
+  // was reset) falls back the same way, in render, with no effect to sync.
+  const [picked, setPicked] = useState<string | null>(null)
+  const act = acts.find((a) => a.key === picked) ?? opens
+  const at = acts.indexOf(act)
   const { speed } = usePrefs()
   const delay = delayFor(speed)
   const data = journey.sample as Data
@@ -65,9 +69,36 @@ export function MiniPlayer({ journey }: { journey: AnyJourney }) {
         <span className="font-mono text-meta text-muted-foreground">
           {act.complexity}
         </span>
+        {acts.length > 1 && (
+          <span className="flex items-center gap-0.5">
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="size-11 lg:size-8"
+              aria-label="previous approach"
+              disabled={at <= 0}
+              onClick={() => setPicked(acts[at - 1].key)}
+            >
+              <ChevronLeftIcon />
+            </Button>
+            <span className="font-mono text-meta text-dim tabular-nums">
+              {at + 1}/{acts.length}
+            </span>
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              className="size-11 lg:size-8"
+              aria-label="next approach"
+              disabled={at >= acts.length - 1}
+              onClick={() => setPicked(acts[at + 1].key)}
+            >
+              <ChevronRightIcon />
+            </Button>
+          </span>
+        )}
         <a
           href={href(`/journey/${journey.slug}`)}
-          className="ml-auto inline-flex min-h-11 items-center gap-1 text-meta text-chart-1 underline-offset-2 lg:min-h-7 hover:underline"
+          className="ml-auto inline-flex min-h-11 items-center gap-1 text-meta text-chart-1 underline-offset-2 hover:underline lg:min-h-7"
         >
           <RouteIcon className="size-3.5" />
           {capped ? "continue the journey" : "build it up in the journey"}
@@ -111,11 +142,19 @@ export function MiniPlayer({ journey }: { journey: AnyJourney }) {
         </div>
       </div>
 
-      {capped && (
+      {capped ? (
         <p className="max-w-[35em] text-ui text-muted-foreground">
-          This is the best approach you have earned so far. The journey has more
-          — each one opens when the previous one runs out of road.
+          {acts.length > 1
+            ? `These are the ${acts.length} approaches you have earned so far. The journey has more — each one opens when the previous one runs out of road.`
+            : "This is the best approach you have earned so far. The journey has more — each one opens when the previous one runs out of road."}
         </p>
+      ) : (
+        acts.length > 1 && (
+          <p className="max-w-[35em] text-ui text-muted-foreground">
+            Step through the approaches in build order and watch each one run
+            out of road — that argument is what the ladder below is written on.
+          </p>
+        )
       )}
     </div>
   )

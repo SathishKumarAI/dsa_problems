@@ -1690,12 +1690,15 @@ describe(
           capped: /best approach you have earned/i.test(panel.innerText),
         };
       `
-      // never opened the journey → the optimal approach, uncapped
+      // Never opened the journey → the whole ladder is on offer and the
+      // player opens at its FOOT, stepping up with `next approach`. It used to
+      // open on the optimal, which was right while it could only show one act
+      // and left `next` disabled on arrival once it could show several.
       await page.goto(`${server.base}/#/`)
       await page.run(`${FRESH} return 1`)
       await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
       const fresh = await page.run(openTab)
-      assert.match(fresh.act, /one-pass hash/i)
+      assert.match(fresh.act, /brute force/i)
       assert.ok(fresh.chips > 0, "the engine stage did not render")
       assert.ok(fresh.note.length > 10, "no narration")
       assert.equal(fresh.capped, false)
