@@ -120,6 +120,15 @@ function ProblemPage({
   // against 4.1 without, so rendering it on arrival made the ladder the first
   // twelve percent of the page.
   const [opened, setOpened] = useState(false)
+  // "Read it all" — one switch for every fold on the page.
+  //
+  // Measured before it existed: 9.8 screens on arrival, 38.1 with everything
+  // open, and ELEVEN separate toggles between the two — three cost folds,
+  // three per-rung accounts, three hints, the explanation's own door. A reader
+  // who wants the whole thing had to hunt for all eleven. Nothing here is
+  // hidden for disclosure: the ledger's cap is a different mechanism and this
+  // switch cannot touch it.
+  const [expandAll, setExpandAll] = useState(false)
   // `?compare=a,b` is state that belongs in the URL: the comparison is a claim
   // worth sending to someone, and the back button should undo it. Resolved
   // against the rungs the LADDER returned, never against the problem, so a
@@ -319,7 +328,29 @@ function ProblemPage({
               </span>
             )}
           </Fact>
-          <label className="ml-auto flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
+          {/* In the STICKY bar on purpose: a switch that opens the whole page is
+            useless if you have to scroll back to the top to reach it. */}
+          <button
+            type="button"
+            aria-pressed={expandAll}
+            onClick={() => {
+              const next = !expandAll
+              setExpandAll(next)
+              // the long read is fetched, not merely hidden, so asking for
+              // everything has to ask for it too
+              if (next) setOpened(true)
+            }}
+            className={cn(
+              "ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7",
+              expandAll
+                ? "border-chart-1/50 bg-chart-1/10 text-foreground"
+                : "text-muted-foreground hover:border-chart-1/40 hover:text-foreground"
+            )}
+          >
+            <ScrollTextIcon className="size-3.5 shrink-0 text-chart-1" />
+            {expandAll ? "everything open" : "read it all"}
+          </button>
+          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
             <Checkbox
               checked={solved.has(problem.id)}
               onCheckedChange={() => toggleSolved(problem.id)}
@@ -462,7 +493,16 @@ function ProblemPage({
         >
           {/* `multiple`: reading hint 3 used to close hint 2, so a ladder meant
             to be read in order could only ever show one rung of itself. */}
-          <Accordion multiple className="w-full">
+          <Accordion
+            multiple
+            // keyed so the switch SETS the hints and then lets go: a reader can
+            // close one afterwards without the switch reopening it
+            key={`hints-${expandAll}`}
+            defaultValue={
+              expandAll ? problem.hints.map((_, i) => `hint-${i}`) : []
+            }
+            className="w-full"
+          >
             {problem.hints.map((hint, i) => (
               <AccordionItem key={i} value={`hint-${i}`}>
                 <AccordionTrigger className="font-mono text-ui">
@@ -501,6 +541,7 @@ function ProblemPage({
           journey={journey}
           ladder={ladder}
           onCompare={compare}
+          expandAll={expandAll}
           folded={folded?.byRung ?? null}
           // opening a rung's account is a reason to fetch the document, the
           // same as opening the section below — one fetch serves every rung

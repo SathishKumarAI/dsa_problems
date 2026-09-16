@@ -72,7 +72,13 @@ export function ApproachLadder({
   onCompare,
   folded,
   onWantDoc,
+  expandAll = false,
 }: {
+  /** the page's "read it all" switch — every fold on the ladder opens with it.
+   *  `key`ed on the value rather than merely bound to it, so flipping the
+   *  switch sets the folds and a reader can still close one afterwards
+   *  without the switch fighting them for it. */
+  expandAll?: boolean
   /** what the teaching document still has to say about each rung, by key —
    *  the worked example, the mistake, and whatever else that rung owns. Null
    *  until the document is fetched, which is what `onWantDoc` asks for. */
@@ -187,7 +193,11 @@ export function ApproachLadder({
                 deriving it is the transferable half. A `details`, because it
                 is the second reading of a rung and not the first. */}
             {r.costWhy && (
-              <details className="rounded-lg border px-4 py-3">
+              <details
+                key={`cost-${expandAll}`}
+                open={expandAll}
+                className="rounded-lg border px-4 py-3"
+              >
                 <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
                   <span className="font-mono text-meta text-chart-2">
                     {r.cost}
@@ -212,6 +222,8 @@ export function ApproachLadder({
                 the rung, so it is here, collapsed. See lib/doc-sections.ts. */}
             {onWantDoc && (
               <details
+                key={`doc-${expandAll}`}
+                open={expandAll}
                 // No measure on this BOX: its `px-4` would come out of the
                 // 576 twice over, once here and again on the callouts nested
                 // inside it — measured 547 on a page where every other
