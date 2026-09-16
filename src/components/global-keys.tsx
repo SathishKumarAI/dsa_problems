@@ -11,8 +11,10 @@ import { setPref, usePrefs } from "@/lib/store"
 
 export function GlobalKeys() {
   const { state, toggleSidebar } = useSidebar()
-  const { reading } = usePrefs()
-  const onJourney = useRoute().parts[0] === "journey"
+  const { reading, pageRail } = usePrefs()
+  const parts = useRoute().parts
+  const onJourney = parts[0] === "journey"
+  const onProblem = parts[0] === "p" && parts.length > 2
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -38,15 +40,19 @@ export function GlobalKeys() {
       } else if (e.key === "f") {
         e.preventDefault()
         // anything open → close everything; nothing open → open everything
-        const anyOpen = state === "expanded" || (onJourney && reading)
+        const anyOpen =
+          state === "expanded" ||
+          (onJourney && reading) ||
+          (onProblem && pageRail)
         const target = !anyOpen
         if ((state === "expanded") !== target) toggleSidebar()
         if (onJourney) setPref("reading", target)
+        if (onProblem) setPref("pageRail", target)
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [state, toggleSidebar, reading, onJourney])
+  }, [state, toggleSidebar, reading, onJourney, pageRail, onProblem])
 
   return null
 }

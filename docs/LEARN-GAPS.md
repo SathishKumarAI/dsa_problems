@@ -13,21 +13,21 @@ here at all — the sections are fields of a type, and `content.test.ts` fails
 the build when one is absent or a stub. The rest are still Markdown in
 `docs/deep/<id>_explained.md`, and those are what the table below counts.
 
-**82 of 127 problems have a teaching document** 
+**82 of 153 problems have a teaching document** 
 (49 typed, 33 still Markdown).
 
 ## The gap, by section
 
 | Section | Have it | Missing | What a reader loses without it |
 |---|---|---|---|
-| Reading the Calculations | 55 | **72** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
-| How to Get Fluent | 55 | **72** | no drills: the page can be read and still not be practised |
-| Under the hood | 55 | **72** | a cost is taken on faith — what the language actually does is never shown |
-| Interview Priority | 82 | **45** | no guidance on which approaches to know cold |
-| The Overall Arc | 82 | **45** | the rungs never join into one story |
-| Comparison | 82 | **45** | no side-by-side of the trade-offs |
+| Reading the Calculations | 55 | **98** | no symbol table: a reader who stalls at `j = index_of.get(target - x, -1)` has nowhere to go |
+| How to Get Fluent | 55 | **98** | no drills: the page can be read and still not be practised |
+| Under the hood | 55 | **98** | a cost is taken on faith — what the language actually does is never shown |
+| Interview Priority | 82 | **71** | no guidance on which approaches to know cold |
+| The Overall Arc | 82 | **71** | the rungs never join into one story |
+| Comparison | 82 | **71** | no side-by-side of the trade-offs |
 
-## Problems with no teaching document at all — 45
+## Problems with no teaching document at all — 71
 
 - **Stack** (2): calculator-basic, simplify-path
 - **Binary Search** (4): koko-bananas, find-peak-element, k-closest-values, ship-in-d-days
@@ -36,11 +36,15 @@ the build when one is absent or a stub. The rest are still Markdown in
 - **Heaps** (8): k-closest-points, task-cooldown, last-stone-weight, kth-largest-element, sort-by-frequency, kth-smallest-matrix, top-k-frequent-words, ugly-number
 - **Graphs** (9): island-count, course-order, rotting-fruit, max-island-area, network-delay, surrounded-regions, flood-fill, pacific-atlantic, shortest-path-grid
 - **Dynamic Programming** (12): stair-ways, house-robber, coin-change-min, longest-increasing-run, max-subarray, longest-common-subsequence, partition-equal-subset, unique-paths, word-break, min-cost-stairs, decode-ways, max-product-subarray
-- **Greedy** (1): jump-game
-- **Bit Manipulation** (1): counting-bits
-- **Backtracking** (1): word-search
-- **Union-Find** (1): count-provinces
-- **Design** (1): kth-largest-stream
+- **Prefix Sums** (3): contiguous-array, find-pivot-index, range-sum-immutable
+- **Greedy** (4): gas-station, jump-game, jump-game-ii, partition-labels
+- **Bit Manipulation** (3): counting-bits, hamming-weight, reverse-bits
+- **Backtracking** (4): combination-sum, permutations, subsets, word-search
+- **Matrix** (2): rotate-image, spiral-matrix-ii
+- **Intervals** (4): burst-balloons-arrows, insert-interval, merge-intervals, non-overlapping-intervals
+- **Union-Find** (4): connect-the-network, count-provinces, equations-possible, redundant-connection
+- **Design** (4): kth-largest-stream, lru-cache, min-stack, queue-from-stacks
+- **Tries** (3): implement-trie, replace-words, wildcard-dictionary
 
 ## Documents that add approaches without saying so — 0
 
@@ -58,24 +62,17 @@ None.
 | [pair-sum](learn/pair-sum.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [top-k-frequent](learn/top-k-frequent.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [longest-consecutive-run](learn/longest-consecutive-run.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [single-number](learn/single-number.md) | bit-manipulation | yes | · | · | · | · | · | · |
 | [contains-duplicate](learn/contains-duplicate.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [valid-anagram](learn/valid-anagram.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [product-except-self](learn/product-except-self.md) | prefix-sums | yes | · | · | · | · | · | · |
 | [group-anagrams](learn/group-anagrams.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [subarray-sum-k](learn/subarray-sum-k.md) | prefix-sums | yes | · | · | · | · | · | · |
 | [majority-element](learn/majority-element.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [longest-common-prefix](learn/longest-common-prefix.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [isomorphic-strings](learn/isomorphic-strings.md) | arrays-hashing | yes | **no** | **no** | **no** | · | · | · |
 | [find-all-duplicates](learn/find-all-duplicates.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [first-missing-positive](learn/first-missing-positive.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [intersection-of-arrays](learn/intersection-of-arrays.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [missing-number](learn/missing-number.md) | bit-manipulation | yes | · | · | · | · | · | · |
 | [plus-one](learn/plus-one.md) | arrays-hashing | yes | · | · | · | · | · | · |
 | [rotate-array](learn/rotate-array.md) | arrays-hashing | yes | · | · | · | · | · | · |
-| [summary-ranges](learn/summary-ranges.md) | intervals | yes | · | · | · | · | · | · |
-| [spiral-order](learn/spiral-order.md) | matrix | yes | **no** | **no** | **no** | · | · | · |
-| [zero-matrix](learn/zero-matrix.md) | matrix | yes | · | · | · | · | · | · |
 | [sorted-pair-sum](learn/sorted-pair-sum.md) | two-pointers | yes | · | · | · | · | · | · |
 | [container-water](learn/container-water.md) | two-pointers | yes | · | · | · | · | · | · |
 | [three-sum-zero](learn/three-sum-zero.md) | two-pointers | yes | · | · | · | · | · | · |
@@ -93,7 +90,6 @@ None.
 | [backspace-compare](learn/backspace-compare.md) | two-pointers | yes | · | · | · | · | · | · |
 | [boats-to-save](learn/boats-to-save.md) | two-pointers | yes | · | · | · | · | · | · |
 | [next-permutation](learn/next-permutation.md) | two-pointers | yes | · | · | · | · | · | · |
-| [best-trade](learn/best-trade.md) | greedy | yes | **no** | **no** | **no** | · | · | · |
 | [longest-unique-substring](learn/longest-unique-substring.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [min-cover-substring](learn/min-cover-substring.md) | sliding-window | yes | **no** | **no** | **no** | · | · | · |
 | [char-replacement](learn/char-replacement.md) | sliding-window | yes | · | · | · | · | · | · |
@@ -107,7 +103,6 @@ None.
 | [daily-warmer](learn/daily-warmer.md) | stack | yes | · | · | · | · | · | · |
 | [largest-rectangle](learn/largest-rectangle.md) | stack | yes | · | · | · | · | · | · |
 | [rpn-eval](learn/rpn-eval.md) | stack | yes | · | · | · | · | · | · |
-| [generate-parens](learn/generate-parens.md) | backtracking | yes | **no** | **no** | **no** | · | · | · |
 | [asteroid-collision](learn/asteroid-collision.md) | stack | yes | **no** | **no** | **no** | · | · | · |
 | [valid-parenthesis-string](learn/valid-parenthesis-string.md) | stack | yes | **no** | **no** | **no** | · | · | · |
 | [decode-string](learn/decode-string.md) | stack | yes | **no** | **no** | **no** | · | · | · |
@@ -148,7 +143,6 @@ None.
 | [mirror-tree](learn/mirror-tree.md) | trees | yes | · | · | · | · | · | · |
 | [right-side-view](learn/right-side-view.md) | trees | yes | · | · | · | · | · | · |
 | [tree-diameter](learn/tree-diameter.md) | trees | yes | · | · | · | · | · | · |
-| [kth-largest-stream](learn/kth-largest-stream.md) | design | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [k-closest-points](learn/k-closest-points.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [task-cooldown](learn/task-cooldown.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [last-stone-weight](learn/last-stone-weight.md) | heaps | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
@@ -161,8 +155,6 @@ None.
 | [course-order](learn/course-order.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [rotting-fruit](learn/rotting-fruit.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [max-island-area](learn/max-island-area.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [word-search](learn/word-search.md) | backtracking | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [count-provinces](learn/count-provinces.md) | union-find | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [network-delay](learn/network-delay.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [surrounded-regions](learn/surrounded-regions.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [flood-fill](learn/flood-fill.md) | graphs | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
@@ -174,11 +166,49 @@ None.
 | [longest-increasing-run](learn/longest-increasing-run.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [max-subarray](learn/max-subarray.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [longest-common-subsequence](learn/longest-common-subsequence.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [counting-bits](learn/counting-bits.md) | bit-manipulation | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [partition-equal-subset](learn/partition-equal-subset.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [unique-paths](learn/unique-paths.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [word-break](learn/word-break.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [min-cost-stairs](learn/min-cost-stairs.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [decode-ways](learn/decode-ways.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
-| [jump-game](learn/jump-game.md) | greedy | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
 | [max-product-subarray](learn/max-product-subarray.md) | dp | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [combination-sum](learn/combination-sum.md) | backtracking | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [generate-parens](learn/generate-parens.md) | backtracking | yes | **no** | **no** | **no** | · | · | · |
+| [permutations](learn/permutations.md) | backtracking | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [subsets](learn/subsets.md) | backtracking | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [word-search](learn/word-search.md) | backtracking | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [counting-bits](learn/counting-bits.md) | bit-manipulation | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [hamming-weight](learn/hamming-weight.md) | bit-manipulation | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [missing-number](learn/missing-number.md) | bit-manipulation | yes | · | · | · | · | · | · |
+| [reverse-bits](learn/reverse-bits.md) | bit-manipulation | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [single-number](learn/single-number.md) | bit-manipulation | yes | · | · | · | · | · | · |
+| [kth-largest-stream](learn/kth-largest-stream.md) | design | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [lru-cache](learn/lru-cache.md) | design | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [min-stack](learn/min-stack.md) | design | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [queue-from-stacks](learn/queue-from-stacks.md) | design | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [best-trade](learn/best-trade.md) | greedy | yes | **no** | **no** | **no** | · | · | · |
+| [gas-station](learn/gas-station.md) | greedy | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [jump-game](learn/jump-game.md) | greedy | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [jump-game-ii](learn/jump-game-ii.md) | greedy | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [partition-labels](learn/partition-labels.md) | greedy | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [burst-balloons-arrows](learn/burst-balloons-arrows.md) | intervals | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [insert-interval](learn/insert-interval.md) | intervals | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [merge-intervals](learn/merge-intervals.md) | intervals | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [non-overlapping-intervals](learn/non-overlapping-intervals.md) | intervals | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [summary-ranges](learn/summary-ranges.md) | intervals | yes | · | · | · | · | · | · |
+| [rotate-image](learn/rotate-image.md) | matrix | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [spiral-matrix-ii](learn/spiral-matrix-ii.md) | matrix | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [spiral-order](learn/spiral-order.md) | matrix | yes | **no** | **no** | **no** | · | · | · |
+| [zero-matrix](learn/zero-matrix.md) | matrix | yes | · | · | · | · | · | · |
+| [contiguous-array](learn/contiguous-array.md) | prefix-sums | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [find-pivot-index](learn/find-pivot-index.md) | prefix-sums | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [product-except-self](learn/product-except-self.md) | prefix-sums | yes | · | · | · | · | · | · |
+| [range-sum-immutable](learn/range-sum-immutable.md) | prefix-sums | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [subarray-sum-k](learn/subarray-sum-k.md) | prefix-sums | yes | · | · | · | · | · | · |
+| [implement-trie](learn/implement-trie.md) | trie | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [replace-words](learn/replace-words.md) | trie | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [wildcard-dictionary](learn/wildcard-dictionary.md) | trie | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [connect-the-network](learn/connect-the-network.md) | union-find | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [count-provinces](learn/count-provinces.md) | union-find | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [equations-possible](learn/equations-possible.md) | union-find | **no** | **no** | **no** | **no** | **no** | **no** | **no** |
+| [redundant-connection](learn/redundant-connection.md) | union-find | **no** | **no** | **no** | **no** | **no** | **no** | **no** |

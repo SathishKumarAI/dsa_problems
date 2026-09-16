@@ -696,7 +696,12 @@ describe(
         return {
           runs: [...document.querySelectorAll('button')]
             .filter(b => b.innerText.trim() === 'Run').length,
-          editors: document.querySelectorAll('textarea').length,
+          // :not([data-notes]) — the problem page's rail carries a NOTEPAD,
+          // and this count is about code editors. Without it a notes field
+          // would read as a fifth runnable block that has no Run button.
+          // (No backticks in this comment: it lives inside a template literal,
+          // and one would end the string.)
+          editors: document.querySelectorAll('textarea:not([data-notes])').length,
         };
       `)
       assert.ok(shape.runs >= 3, `only ${shape.runs} Run buttons`)
@@ -1405,7 +1410,7 @@ describe(
           // the document's own full runnable script at the foot IS editable
           // (B83), and it moved onto this page when the two routes merged. So
           // the question is where the textarea is, not whether one exists.
-          editor: [...document.querySelectorAll('textarea')].some(
+          editor: [...document.querySelectorAll('textarea:not([data-notes])')].some(
             t => !t.closest('#explanation')
           ),
         };
@@ -1690,12 +1695,15 @@ describe(
           capped: /best approach you have earned/i.test(panel.innerText),
         };
       `
-      // never opened the journey → the optimal approach, uncapped
+      // Never opened the journey → the whole ladder is on offer and the
+      // player opens at its FOOT, stepping up with `next approach`. It used to
+      // open on the optimal, which was right while it could only show one act
+      // and left `next` disabled on arrival once it could show several.
       await page.goto(`${server.base}/#/`)
       await page.run(`${FRESH} return 1`)
       await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
       const fresh = await page.run(openTab)
-      assert.match(fresh.act, /one-pass hash/i)
+      assert.match(fresh.act, /brute force/i)
       assert.ok(fresh.chips > 0, "the engine stage did not render")
       assert.ok(fresh.note.length > 10, "no narration")
       assert.equal(fresh.capped, false)
@@ -1810,9 +1818,14 @@ describe(
           .sort((a, b) => b.ch - a.ch);
         return rows[0] ?? { ch: 0, cls: '', text: '' };
       `)
+        // 96ch, not 80. Prose fills its column by decision (index.css,
+        // `--container-measure`) — 768px at the 17px body step is ~90
+        // characters. What this still catches is the bug worth catching: a
+        // paragraph that escapes its column and runs the page sideways, which
+        // is what the number was really guarding all along.
         assert.ok(
-          worst.ch <= 80,
-          `longest measure is ${worst.ch}ch, want <= 80 — "${worst.text}…" [${worst.cls}]`
+          worst.ch <= 96,
+          `longest measure is ${worst.ch}ch, want <= 96 — "${worst.text}…" [${worst.cls}]`
         )
       })
 
@@ -1926,7 +1939,7 @@ describe(
         await page.goto(`${server.base}/${route}`)
         const out = await page.run(probe)
         assert.deepEqual(out.small, [], `${route}: prose set below 14px`)
-        assert.ok(out.maxCh <= 80, `${route}: longest measure ${out.maxCh}ch`)
+        assert.ok(out.maxCh <= 96, `${route}: longest measure ${out.maxCh}ch`)
       }
     })
 

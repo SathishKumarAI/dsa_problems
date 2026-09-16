@@ -31,7 +31,7 @@ export function NotFound({ path, back }: Props) {
         #{path}
       </code>
 
-      <p className="max-w-[35em] text-body text-muted-foreground">
+      <p className="max-w-measure text-body text-muted-foreground">
         No pattern, problem, journey or page here goes by that name. It was
         probably renamed, or the link was copied short.
       </p>

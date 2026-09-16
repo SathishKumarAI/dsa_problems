@@ -69,7 +69,7 @@ export function HelpDialog() {
       title="How to use Patternsmith"
       description="Earn the insight, then the name. Two minutes to read; everything else is on the page."
     >
-      <div className="flex max-w-[35em] flex-col gap-3 text-body">
+      <div className="flex max-w-measure flex-col gap-3 text-body">
         <H>the idea</H>
         <p>
           Every <b>journey</b> builds one problem all the way down. You start

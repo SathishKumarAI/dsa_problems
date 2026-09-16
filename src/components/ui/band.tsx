@@ -73,18 +73,22 @@ export function OrientBar({
  * so a reader never clicks into something to discover there was nothing there.
  */
 export function Band({
+  id,
   label,
   count,
   children,
   className,
 }: {
+  /** an anchor, so the contents rail can offer this section. `scroll-mt`
+   *  because the shell parks a sticky bar over the top of the page. */
+  id?: string
   label: string
   count?: string
   children: React.ReactNode
   className?: string
 }) {
   return (
-    <section className={cn("flex flex-col gap-3", className)}>
+    <section id={id} className={cn("flex scroll-mt-20 flex-col gap-3", className)}>
       <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
         {label}
         {/* the rule IS the separator. A filled divider would add a third

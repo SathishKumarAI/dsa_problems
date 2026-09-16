@@ -1,13 +1,52 @@
 # STATUS — read this when you return
 
-**The project is called Patternsmith.** *Learn the idea before you learn its name.* Renamed
-2026-09-15 (#106). The GitHub repo slug is still `dsa_problems` on purpose, so no link breaks —
-do not "fix" that unless you also update every clone and reference.
+**The project is called Patternsmith.** *Learn the idea before you learn its name.* The GitHub repo
+slug is still `dsa_problems` on purpose, so no link breaks — do not "fix" that unless you also
+update every clone and reference.
+
+## The last session, in one line
+
+**The problem page got a pilot: `contains-duplicate`.** A reader asked seventeen things of it; this
+answered fourteen, half-answered two, and left one a question. The mechanisms are all generic —
+only the CONTENT is per problem — so the shape is approved on one problem before 152 records are
+edited. Full account, every measurement, and what is still open: **`docs/PROBLEM-PAGE.md`**.
+
+| | |
+|---|---|
+| Problems | **153**, 19 patterns, 0 orphans |
+| Records in `src/problems/<id>/` | **84**; the other 69 are one file under `src/data/problems/` |
+| Teaching documents | **82**; 71 problems have none; 33 still Markdown under `docs/deep/` |
+| Gates | `check` **823** · `test:ui` **178** · `verify:fences` 338 clean (baseline 7) · `learn-gaps --strict` clean |
+
+### What changed on the problem page
+
+| | |
+|---|---|
+| Nothing is read twice | The document's per-approach half folds INTO each rung (`lib/doc-sections.ts`). 0 repeated headings across the ladder |
+| The bounds teach | Each says what it BUYS; notation is mono and sentences are not (`lib/notation.ts`, 668 lines gated) |
+| You think before you solve | Three questions from the statement alone, before the hints |
+| Every cost is counted, not asserted | `costWhy` per rung — how the bound was derived |
+| The walkthrough climbs | `‹ 1/3 ›` steps the approaches, capped by the ledger (`watchable.ts`) |
+| The page ends somewhere | 13 sibling problems, then this problem's own sources beside the pattern's |
+| One layout | 5 left edges → 2; 111 off-scale text nodes → 0; one measure token |
+| Prose fills its column, set like a book | Justified with `hyphens: auto` — the owner's call, and the U7 gate moved with it (80 → 96ch) |
+| The rail earns its column | "On this page" from the first paint, **notes** (B86), and it HIDES (`f`) — text widens 689 → 768 |
+| Search lives with navigation | In the sidebar; the top bar is a phone shell again |
+
+### Traps this session paid for
+
+Both are in `CLAUDE.md` now, and neither was visible in a diff:
+
+* **A backtick in a comment inside a template literal ends the string.** `ui-smoke.test.mjs` runs
+  page scripts as template literals; one comment quoting a CSS selector stopped the whole file
+  parsing — 16 tests ran instead of 178, reported as a file-level failure. `node --check` names it.
+* **`getBoundingClientRect` on an inline element spans every line it wraps across.** I reported a
+  6200px vertical hole on a 6898px page. It did not exist. Closed, the page has zero gaps over 40px.
 
 ## Where the code is
 
-**`master`, clean, everything merged.** This session shipped **#97 through #106**. Branch from
-`master`.
+**`master`, clean, everything merged.** #97–#106, then **#108** (the visualizer moved to the foot
+of the sidebar) and **#109** (the problem-page pilot, 12 commits). Branch from `master`.
 
 | | |
 |---|---|

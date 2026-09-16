@@ -50,7 +50,7 @@ export function SqlView() {
             {SQL_PROBLEMS.length} drills
           </span>
         </div>
-        <p className="max-w-[35em] text-body text-muted-foreground">
+        <p className="max-w-measure text-body text-muted-foreground">
           The window-function and join patterns that show up in every data
           round: dedupe, top-N per group, running totals, gaps and islands.
         </p>
@@ -69,7 +69,7 @@ export function SqlView() {
                 {p.difficulty}
               </Badge>
             </div>
-            <p className="mt-2 max-w-[35em] text-body text-muted-foreground">
+            <p className="mt-2 max-w-measure text-body text-muted-foreground">
               {p.question}
             </p>
             {/* the tables you are querying — code, so it renders as code:
@@ -92,7 +92,7 @@ export function SqlView() {
                       <AccordionTrigger className="font-mono text-ui">
                         hint {i + 1} of {p.hints.length}
                       </AccordionTrigger>
-                      <AccordionContent className="max-w-[35em] text-body text-muted-foreground">
+                      <AccordionContent className="max-w-measure text-body text-muted-foreground">
                         {h}
                       </AccordionContent>
                     </AccordionItem>
@@ -102,7 +102,7 @@ export function SqlView() {
               <TabsContent value="solution">
                 <div className="flex flex-col gap-3 pt-2">
                   <CodeBlock code={p.solution} />
-                  <p className="max-w-[35em] text-body leading-relaxed text-muted-foreground">
+                  <p className="max-w-measure text-body leading-relaxed text-muted-foreground">
                     {p.explanation}
                   </p>
                 </div>

@@ -106,7 +106,7 @@ None of them is sufficient on its own. That is the point of having eight.
 
 | Command | What it proves |
 |---|---|
-| `npm run check` | `tsc -b`, `eslint`, **789** Node tests |
+| `npm run check` | `tsc -b`, `eslint`, **823** Node tests |
 | `npm run test:ui` | Real Chrome — routes, the earn loop, rails, deep links, panel sizes |
 | `npm run verify:code` | Every Java and C++ block **compiles** (778 blocks) |
 | `npm run verify:run` | Those blocks **agree with the Python** (2,239 oracle runs, 4,478 translations compared) |
@@ -138,9 +138,17 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 | Sort / search / graph algorithms + their precomputed timelines | `src/engine/algorithms.ts` |
 | Content gate (schema, disclosure lint, drain, correctness) | `src/engine/journeys.test.ts` |
 | Practice-set gate (ids, three languages) | `src/data/problems.test.ts` |
-| Add / edit a **problem** (statement, constraints, ladder, three languages) | **49 of 127 live in `src/problems/<id>/`**, one file per section, with the pattern barrel importing from there — map: `src/problems/README.md`. The other 78 are still one file at `src/data/problems/<pattern>/<id>.ts` (map: `src/data/problems/README.md`); `scripts/split-record.mjs` moves one |
+| Add / edit a **problem** (statement, constraints, ladder, three languages) | **84 of 153 live in `src/problems/<id>/`**, one file per section, with the pattern barrel importing from there — map: `src/problems/README.md`. The other 69 are still one file at `src/data/problems/<pattern>/<id>.ts` (map: `src/data/problems/README.md`); `scripts/split-record.mjs` moves one |
 | Add / edit a **teaching document** (understanding, traps, one file per approach, arc, interview, the runnable script) | `src/problems/<id>/` — entered through `doc.ts`, converted from `docs/deep/<id>_explained.md` by `scripts/md-to-content.mjs`. Gate: `src/content/content.test.ts` |
-| **The one page per problem** — `#/p/<pattern>/<id>`, and there is no second route. Statement, hints, walkthrough, the ladder in three languages, then the long explanation in full at the foot | `src/components/problem-detail.tsx` |
+| **The one page per problem** — `#/p/<pattern>/<id>`, and there is no second route | `src/components/problem-detail.tsx` (the page and its zones) · `problem-statement.tsx` (statement, bounds, examples) · `approach-ladder.tsx` (the rungs) · `problem-closing.tsx` (reading list + the right rail) |
+| The statement, the bounds and the **examples you can step through** | `src/components/problem-statement.tsx` · the example parser: `src/lib/example-shape.ts` (it REFUSES a shape it cannot draw) · the cell marks: `src/lib/cell-roles.ts` |
+| Whether a constraint line is **notation or a sentence** (mono vs the reading face, per run) | `src/lib/notation.ts` — gate over all 668 lines in `notation.test.ts` |
+| The **read-before-you-solve** questions | `src/components/pre-solve-check.tsx` · authored per problem in `Problem.checks` |
+| **Notes** on a problem (B86) — saved as you type, never exported, never reset | `src/components/problem-notes.tsx` · key + the rules: `src/lib/store.ts` (`NOT_PROGRESS`) |
+| The right rail — "On this page", notes, and hiding it (`f`) | `src/components/problem-closing.tsx` · pref `pageRail` in `src/lib/store.ts` |
+| Which `## Approach` section of a document belongs to which **rung** | `src/data/rung-bindings.json` — read by BOTH the converter (`scripts/md-to-content.mjs`) and the page (`src/lib/doc-sections.ts`) |
+| Folding a document's per-approach half **into** the ladder, so nothing is read twice | `src/lib/doc-sections.ts` |
+| Which approaches the walkthrough may OFFER (the disclosure rule) | `src/features/journey/watchable.ts` — a `.ts`, so a node test can hold it |
 | The explanation's sections, and the order they come in | `src/lib/teaching-parts.ts` (data) → `src/components/teaching-doc.tsx` (markup). Which form a problem has, and fetching it: `src/lib/use-explanation.ts` |
 | The Markdown half of the explanation, for problems not yet converted (`npm run docs:learn`) | `scripts/gen-learn.mjs` · output: `docs/learn/**` · drift gate: `scripts/gen-learn.test.mjs` |
 | Draft code/content with a LOCAL model, and the gates that check it | `scripts/localsmith/` (why and limits: its `README.md`) |

@@ -19,6 +19,9 @@ export interface Rung {
   key: string
   name: string
   cost: string // "O(n) time · O(1) space"
+  /** how that cost was COUNTED — `Solution.costWhy` / `Problem.costWhy`. A
+   *  bound a reader cannot reproduce is a label, not a skill. */
+  costWhy?: string
   idea: string
   whyNow?: string // absent on the first rung, which has nothing before it
   code: Code
@@ -44,12 +47,17 @@ const costOf = (c: { time: string; space: string }) =>
 
 /** a rung's key, falling back to a slug of its name (see Solution.key) */
 export const rungKey = (a: { key?: string; name: string }) =>
-  a.key ?? a.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+  a.key ??
+  a.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
 
 const asRung = (a: Solution): Rung => ({
   key: rungKey(a),
   name: a.name,
   cost: costOf(a.complexity),
+  costWhy: a.costWhy,
   idea: a.summary,
   whyNow: a.whyNow,
   code: a,
@@ -129,12 +137,27 @@ function fromJourney(
     key: a.key,
     name: a.name,
     cost: a.complexity,
+    // an act carries no counting argument of its own; the matching
+    // alternative is where it is written, exactly as `whyNow` is
+    costWhy: byKey.get(a.key)?.costWhy,
     idea: a.idea,
     whyNow:
       (i === 0 ? undefined : a.insight || undefined) ??
       byKey.get(a.key)?.whyNow,
     code: joinTabs(a.code),
   }))
+
+  // The record's own `complexity` describes the TOP rung, so its `costWhy` is
+  // that rung's counting argument and there is no alternative to hang it on —
+  // the optimal is the problem itself (see `fromProblem`, where it becomes the
+  // rung named "The one to remember"). Only when the ladder is whole: on a
+  // capped one the last rung shown is a step on the way, not the destination,
+  // and giving it the optimal's count would be a lie about a rung the learner
+  // has not earned.
+  if (!capped && taught.length) {
+    const top = taught[taught.length - 1]
+    if (!top.costWhy) top.costWhy = problem.costWhy
+  }
 
   // B79. A journeyed problem's ladder used to be the acts and nothing else, so
   // an approach the teaching document taught but the animation skipped was
@@ -189,6 +212,7 @@ function fromProblem(problem: Problem): Ladder {
     key: "optimal",
     name: rungs.length ? "The one to remember" : "The approach",
     cost: costOf(problem.complexity),
+    costWhy: problem.costWhy,
     idea: problem.approach,
     whyNow: problem.whyNow,
     code: problem,

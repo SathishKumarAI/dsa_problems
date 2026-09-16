@@ -94,8 +94,7 @@ function View() {
   const [root, a, b] = parts
   // home is the empty path and nothing else now: every other fallthrough is a
   // route that named something which does not exist
-  if (parts.length === 0)
-    return <HomeView />
+  if (parts.length === 0) return <HomeView />
   if (root === "journey") {
     const card = a ? cardBySlug(a) : undefined
     if (card) return <JourneyPage key={card.slug} slug={card.slug} />
@@ -134,10 +133,7 @@ function View() {
           onBack={() => navigate(`/p/${pattern.id}`)}
         />
       )
-    if (pattern && !b)
-      return (
-        <ProblemList pattern={pattern} />
-      )
+    if (pattern && !b) return <ProblemList pattern={pattern} />
     // the pattern is real and the problem is not: the list it came from is a
     // better second option than home
     if (pattern) return <NotFound path={path} back={`/p/${pattern.id}`} />
@@ -181,10 +177,27 @@ export default function App() {
         <SidebarInset
           className={cn("min-w-0", panels && "h-svh overflow-hidden")}
         >
-          {/* On a phone there is no rail, so this bar IS the shell: it stays
-              put and lets the page pass under it, blurred, the way every other
-              floating surface here does. It used to scroll away with the
-              content, which left a 127-problem list with no way back. */}
+          {/* A PHONE SHELL, and nothing above `md`. On a phone there is no
+              rail, so this bar is the only way to reach navigation and it
+              stays. Above `md` the page starts at the top of the window: the
+              search control moved into the sidebar, which is where navigation
+              already lives, and a band of chrome over every page bought
+              nothing once it was the only thing in it.
+
+              It used to be two things: this bar below `md`, and a `fixed
+              top-3 right-4` Search button above it. A fixed button is OUT of
+              flow, so nothing reserved its corner and it painted over
+              whatever the page put there. Measured on
+              `#/p/arrays-hashing/contains-duplicate`: it covered the `solved`
+              checkbox by 25 x 5 px at 1280 and 69 x 24 px from 1100 down —
+              the control was unclickable under it. `ContentsRail` had already
+              met the same button and worked around it with `top-16`.
+
+              A bar in FLOW cannot overlap anything: the page starts beneath
+              it. The panel pages (journey, visualizer) own their own top-right
+              corner, so above `md` they keep the keyboard-only palette and
+              this bar is hidden — exactly what the fixed button did for
+              them. */}
           <div className="sticky top-0 z-20 flex items-center gap-2 border-b bg-background/70 px-4 py-2 backdrop-blur-md md:hidden">
             <SidebarTrigger />
             <span className="font-mono text-ui">Patternsmith</span>
@@ -199,13 +212,6 @@ export default function App() {
               <CircleHelpIcon />
             </Button>
           </div>
-          {/* The panel pages already own their top-right corner (measured:
-              the journey's meta row and the visualizer's h1 sit there), so on
-              those the palette is keyboard-only. Everywhere else it gets a
-              visible control. */}
-          {!panels && (
-            <SearchTrigger className="fixed top-3 right-4 z-20 hidden md:inline-flex" />
-          )}
           {/* `key={path}` is the route-change moment. `main` already carries
               the one authored arrival animation (index.css, `surface-in`), but
               it never replayed: the element is mounted once and every route

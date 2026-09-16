@@ -18,7 +18,7 @@ export const SHORTCUTS: { scope: string; items: Shortcut[] }[] = [
       },
       {
         keys: ["f"],
-        does: "focus — close the sidebar and the reading column, or open both again",
+        does: "focus — close the sidebar and the page's own rail (the journey's reading column, or a problem's contents and notes), or open them again",
       },
       { keys: ["Esc"], does: "close a dialog" },
       {

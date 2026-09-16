@@ -285,7 +285,7 @@ export function HomeView() {
             </span>
           </div>
         </div>
-        <p className="max-w-[35em] text-body text-muted-foreground">
+        <p className="max-w-measure text-body text-muted-foreground">
           Feel the weakness, earn the insight, then learn its name. Three
           problems are built all the way down — story, the corner cases to
           bring, approaches you unlock one at a time, your own code as the

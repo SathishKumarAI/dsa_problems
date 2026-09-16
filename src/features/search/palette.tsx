@@ -27,12 +27,12 @@ import { navigate } from "@/lib/route"
 import { setPref, usePrefs } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { COUNTS, buildIndex, hitByKey, search, type Hit } from "./results"
-import { closePalette, openPalette, usePaletteOpen } from "./palette-state"
-
-const MAC =
-  typeof navigator !== "undefined" &&
-  /Mac|iP(hone|ad|od)/.test(navigator.platform)
-const KEYHINT = MAC ? "⌘ K" : "Ctrl K"
+import {
+  KEYHINT,
+  closePalette,
+  openPalette,
+  usePaletteOpen,
+} from "./palette-state"
 
 const RECENT_MAX = 5
 const EMPTY: Hit[] = []
@@ -114,9 +114,7 @@ export function CommandPalette() {
         showCloseButton={false}
         className="top-[12vh] max-h-[76vh] translate-y-0 gap-0 overflow-hidden p-0 sm:max-w-xl"
       >
-        <DialogTitle className="sr-only">
-          Search problems
-        </DialogTitle>
+        <DialogTitle className="sr-only">Search problems</DialogTitle>
         <DialogDescription className="sr-only">
           Type to filter. Arrow keys move, Enter opens, Escape closes.
         </DialogDescription>

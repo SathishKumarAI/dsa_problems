@@ -74,7 +74,7 @@ export function FlashcardsView() {
         <h1 className="font-heading text-title font-semibold">
           Statistics Flashcards
         </h1>
-        <p className="max-w-[35em] text-body text-muted-foreground">
+        <p className="max-w-measure text-body text-muted-foreground">
           Click a card to flip it. The answer should come to you before the flip
           does.
         </p>

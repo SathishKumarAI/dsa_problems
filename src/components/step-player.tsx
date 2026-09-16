@@ -15,23 +15,9 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { CellRole, Frame } from "@/data"
-
-const roleClass: Record<CellRole, string> = {
-  focus:
-    "border-chart-1 bg-chart-1/15 text-chart-1 shadow-[0_0_16px_-2px] shadow-chart-1/40 scale-110",
-  compare:
-    "border-chart-4 bg-chart-4/15 text-chart-4 shadow-[0_0_16px_-2px] shadow-chart-4/40",
-  window: "border-chart-2 bg-chart-2/15 text-chart-2",
-  done: "border-chart-3/40 bg-chart-3/10 text-chart-3/80",
-}
-
-const legend: { role: CellRole; label: string }[] = [
-  { role: "focus", label: "current" },
-  { role: "compare", label: "comparing" },
-  { role: "window", label: "in window" },
-  { role: "done", label: "settled" },
-]
+import type { Frame } from "@/data"
+// the mark vocabulary, shared with the example viewer — see lib/cell-roles.ts
+import { cellRest, roleClass, roleLegend as legend } from "@/lib/cell-roles"
 
 function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
   return (
@@ -43,7 +29,7 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
               "flex size-12 items-center justify-center rounded-lg border font-mono text-body tabular-nums transition-all duration-(--duration-reveal)",
               frame.marks?.[i]
                 ? roleClass[frame.marks[i]]
-                : "border-border/60 bg-background/60 text-foreground/80"
+                : cellRest
             )}
           >
             {v}
