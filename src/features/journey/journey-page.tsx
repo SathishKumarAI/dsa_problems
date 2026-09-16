@@ -35,7 +35,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { BookOpenIcon, LightbulbIcon, ListTreeIcon, SplitIcon } from "lucide-react"
+import {
+  BookOpenIcon,
+  LightbulbIcon,
+  ListTreeIcon,
+  SplitIcon,
+} from "lucide-react"
 import { DataControls, Transport } from "./controls"
 import { Stage } from "./panels"
 import { useJourney } from "./use-journey"
@@ -92,13 +97,34 @@ function ReadingToggle({ open }: { open: boolean }) {
  * cannot miss — but it is guarded anyway rather than asserted, because a
  * manifest that has drifted should show a page, not throw.
  */
-export function JourneyPage({ slug }: { slug: string }) {
+export function JourneyPage({
+  slug,
+  embedded = false,
+}: {
+  slug: string
+  /**
+   * Rendered INSIDE a problem page rather than as its own route.
+   *
+   * Two things have to go when it is: the trail, which would send a reader
+   * "back" to the page they are already on, and the 28px title, which would be
+   * a second one under the problem's own. Everything else — the stage, the
+   * transport, XP, restart, the acts, the ledger — is identical, because it is
+   * the same component and not a copy of it.
+   */
+  embedded?: boolean
+}) {
   const journey = journeyBySlug(slug)
   if (!journey) return null
-  return <JourneyView journey={journey} />
+  return <JourneyView journey={journey} embedded={embedded} />
 }
 
-function JourneyView({ journey }: { journey: AnyJourney }) {
+function JourneyView({
+  journey,
+  embedded = false,
+}: {
+  journey: AnyJourney
+  embedded?: boolean
+}) {
   const j = useJourney(journey)
   const problem = PROBLEMS.find((p) => p.id === journey.problemId)
   const pattern = problem && PATTERNS.find((p) => p.id === problem.pattern)
@@ -148,8 +174,16 @@ function JourneyView({ journey }: { journey: AnyJourney }) {
         {/* One bar from lg — the trail and title on the left, the transport in
             the middle, XP and restart on the right (spec 1.1). Stacked below
             lg, where there is no width to put them side by side. */}
-        <div className="flex flex-wrap items-center gap-2 text-ui text-muted-foreground lg:flex-nowrap">
-          {problem && pattern ? (
+        {/* `lg:flex-nowrap` is right on the route, where this row has the
+            1760px stage to spread across. Embedded it has a reading column,
+            and the same row overflowed it by 36px — so embedded it wraps. */}
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-2 text-ui text-muted-foreground",
+            !embedded && "lg:flex-nowrap"
+          )}
+        >
+          {embedded ? null : problem && pattern ? (
             <a
               href={href(`/p/${pattern.id}/${problem.id}`)}
               title={`back to ${problem.title}`}
@@ -167,7 +201,13 @@ function JourneyView({ journey }: { journey: AnyJourney }) {
               <ArrowLeftIcon className="size-4" /> home
             </a>
           )}
-          <span className="hidden min-w-0 items-baseline gap-3 lg:flex">
+          <span
+            className={cn(
+              "hidden min-w-0 items-baseline gap-3",
+              // embedded, the problem page's own h1 names this already
+              embedded ? "lg:hidden" : "lg:flex"
+            )}
+          >
             {/* the title does not shrink — the subtitle is the one that gives
                 way, because an ellipsis on the name of the page is worse than
                 an ellipsis on its gloss */}
@@ -266,7 +306,16 @@ function JourneyView({ journey }: { journey: AnyJourney }) {
             </Button>
           </div>
         )}
-        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 lg:hidden">
+        {/* Below lg the header bar has no room for the title, so it is
+            restated here. Embedded, there is nothing to restate: the problem
+            page's own h1 is six inches up the same page, and two identical
+            28px titles is the duplication this page keeps removing. */}
+        <div
+          className={cn(
+            "flex-wrap items-baseline gap-x-4 gap-y-1 lg:hidden",
+            embedded ? "hidden" : "flex"
+          )}
+        >
           <h1 className="font-heading text-title font-semibold tracking-tight">
             {journey.title}
           </h1>

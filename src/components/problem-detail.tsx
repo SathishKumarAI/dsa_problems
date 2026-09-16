@@ -41,7 +41,8 @@ import { journeyForProblem } from "@/engine"
 import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import { ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
-import { href, navigate, useRoute } from "@/lib/route"
+// `href` went with the journey link: the primary action is a button now
+import { navigate, useRoute } from "@/lib/route"
 import { useEffect, useState } from "react"
 import { ExplanationBody } from "./explanation"
 import { useExplanation } from "@/lib/use-explanation"
@@ -50,6 +51,7 @@ import { outlineOf } from "@/lib/markdown"
 import { Markdown } from "./markdown"
 import BINDINGS from "@/data/rung-bindings.json"
 import { MiniPlayer } from "@/features/journey/mini-player"
+import { JourneyEmbed } from "./journey-embed"
 import { ApproachCompare } from "./approach-compare"
 import { difficultyClass } from "@/lib/difficulty"
 import { StepPlayer } from "./step-player"
@@ -129,6 +131,10 @@ function ProblemPage({
   // hidden for disclosure: the ledger's cap is a different mechanism and this
   // switch cannot touch it.
   const [expandAll, setExpandAll] = useState(false)
+  // The journey, open on THIS page. It was a route, and leaving a problem to
+  // work it — then coming back to the top of it — is the attention shift this
+  // page has spent the branch removing.
+  const [building, setBuilding] = useState(false)
   // `?compare=a,b` is state that belongs in the URL: the comparison is a claim
   // worth sending to someone, and the back button should undo it. Resolved
   // against the rungs the LADDER returned, never against the problem, so a
@@ -398,8 +404,22 @@ function ProblemPage({
               read once you have. LeetCode takes the primary slot only when
               there is no journey to offer. */}
             {journey ? (
-              <a
-                href={href(`/journey/${journey.slug}`)}
+              // A BUTTON, not a link. It navigated to `#/journey/<slug>`: a
+              // different page, a different scroll position, and no way back
+              // except a trail that returned you to the TOP of this one. The
+              // journey opens in place now — the route still exists for deep
+              // links and the sidebar's Continue.
+              <button
+                type="button"
+                aria-expanded={building}
+                onClick={() => {
+                  setBuilding(true)
+                  requestAnimationFrame(() =>
+                    document
+                      .getElementById("build-it-up")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  )
+                }}
                 className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
               >
                 <RouteIcon className="size-4 shrink-0" />
@@ -407,7 +427,7 @@ function ProblemPage({
                 <span className="font-mono text-meta opacity-80">
                   {earned.earned}/{journey.acts.length}
                 </span>
-              </a>
+              </button>
             ) : null}
             <a
               href={leetcodeUrl(problem.leetcode)}
@@ -521,18 +541,29 @@ function ProblemPage({
 
         {(journey || problem.walkthrough) && (
           <Band
-            id="walkthrough"
-            label="walkthrough"
+            id={building ? "build-it-up" : "walkthrough"}
+            label={building ? "building it up" : "walkthrough"}
             count={
-              steps
-                ? `${steps} steps`
-                : "from the journey, as far as you have earned"
+              building
+                ? "the whole journey, on this page"
+                : steps
+                  ? `${steps} steps`
+                  : "from the journey, as far as you have earned"
             }
           >
             {/* one source of truth: a problem with a journey draws the
               journey's own frames, not a second hand-written copy (B1) */}
             {journey ? (
-              <MiniPlayer journey={journey} />
+              building ? (
+                <JourneyEmbed
+                  slug={journey.slug}
+                  earned={earned.earned}
+                  acts={journey.acts.length}
+                  onClose={() => setBuilding(false)}
+                />
+              ) : (
+                <MiniPlayer journey={journey} />
+              )
             ) : (
               <StepPlayer frames={problem.walkthrough!} />
             )}
