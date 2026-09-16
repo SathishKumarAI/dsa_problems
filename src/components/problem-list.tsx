@@ -121,7 +121,7 @@ export function ProblemList({ pattern }: Props) {
             the title. The title is already at full opacity above it. */}
         <span
           aria-hidden
-          className="h-px w-full max-w-[35em] animate-edge-in-x bg-gradient-to-r from-primary/60 to-transparent"
+          className="h-px w-full max-w-measure animate-edge-in-x bg-gradient-to-r from-primary/60 to-transparent"
         />
         {hidden ? (
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-3 text-ui">
@@ -135,7 +135,7 @@ export function ProblemList({ pattern }: Props) {
             </Button>
           </div>
         ) : (
-          <p className="max-w-[35em] text-body text-muted-foreground">
+          <p className="max-w-measure text-body text-muted-foreground">
             {pattern.blurb}
           </p>
         )}

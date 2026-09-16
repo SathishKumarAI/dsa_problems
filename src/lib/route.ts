@@ -27,6 +27,26 @@ function parse(): Route {
   }
 }
 
+/**
+ * The PATH is not ours — only the hash is — so anything but the base is a
+ * mistake, and it is silently a successful-looking one.
+ *
+ * A static SPA answers 200 for every path: `/spiral-matrix-ii.md#/p/a/b`
+ * served the problem page and looked like it worked, so a reader could
+ * bookmark a URL that breaks the day a file of that name exists, and the
+ * address bar lies about where they are. Rewritten to the base, hash and
+ * query kept, with `replaceState` so no history entry records the wrong URL.
+ *
+ * Not a redirect to home: the hash is the route and it is still correct.
+ */
+function normalisePath() {
+  if (typeof location === "undefined" || typeof history === "undefined") return
+  const base = import.meta.env.BASE_URL || "/"
+  if (location.pathname === base) return
+  history.replaceState(null, "", base + location.search + location.hash)
+}
+normalisePath()
+
 let current =
   typeof location !== "undefined"
     ? parse()

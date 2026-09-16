@@ -77,6 +77,30 @@
        appears, resizes or slides. The default above covers everything else. */
   --duration-reveal: 320ms;
 
+  /* THE MEASURE. One absolute width for every sentence on the site, so a
+     column of prose has ONE right edge.
+
+     It was `max-w-measure` written out 50 times, and `em` is relative to the
+     element's own size — so the same "cap" rendered 595px on a 17px paragraph
+     and 525px on a 15px one. Measured on the problem page: EIGHT different
+     sentence widths inside one 768px column (595, 527, 525, 509, 488, 480,
+     707, 349), which is what reads as text that was never set.
+
+     36rem = 576px ≈ 68 characters at the body step, which is the middle of the
+     45–75 band and inside the 80ch the U7 gate allows at every step. */
+  /* FULL WIDTH. The owner's call, made twice and recorded here rather than
+     argued with: prose fills the column it is in, and the COLUMN is the
+     measure. `max-w-measure` is now the reading column's own width, so every
+     sentence still shares one right edge — the edge is just the column's.
+
+     What it costs, stated because it is a real trade: 768px at the 17px body
+     step is ~90 characters a line against the 45–75 band typography usually
+     recommends. The U7 gate moved with the decision rather than being deleted
+     — it asserts prose never escapes the reading column, which is the
+     invariant that still catches a real bug (a paragraph running the whole
+     page sideways). */
+  --container-measure: 48rem; /* 768 — the reading column; prose fills it */
+
   /* three container widths, so a new page has an obvious one to pick */
   --container-reading: 48rem; /* 768 — a single document              */
   --container-page: 70rem; /* 1120 — an index or an overview       */
@@ -504,6 +528,25 @@
   to {
     transform: scaleY(1);
   }
+}
+
+/* THE BOOK SETTING. Prose fills its column by decision, and a 90-character
+   line set ragged-right leaves a very uneven right margin — the wider the
+   measure, the more the rag shows. Justified with automatic hyphenation is how
+   a book sets a line this long: the hyphen dictionary breaks words so the word
+   spaces stay even instead of opening into rivers, which is the failure mode
+   justification is blamed for and which is really justification WITHOUT
+   hyphenation.
+
+   `hyphens: auto` needs a language to pick a dictionary — `index.html` sets
+   `lang="en"`, and without it this silently does nothing.
+
+   `text-wrap: pretty` stays on for the last line, so a paragraph still cannot
+   end on a single short word. */
+@utility prose-set {
+  text-align: justify;
+  hyphens: auto;
+  text-wrap: pretty;
 }
 
 @utility animate-edge-in-y {

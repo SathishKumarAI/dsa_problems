@@ -249,7 +249,7 @@ export const containsDuplicate = deriveJourney(problem, {
       key: "brute",
       name: "Every pair",
       short: "the honest one",
-      from: 0,
+      from: "brute",
       insight: "",
       idea: "Compare each position with every position after it. If any two hold the same value, the answer is true; if none do, it is false.",
       takeaways: [
@@ -272,7 +272,7 @@ export const containsDuplicate = deriveJourney(problem, {
       key: "sort",
       name: "Put them in order",
       short: "one comparison per position",
-      from: 1,
+      from: "sort",
       insight:
         "The nested scan re-reads the entire tail for every element, because two equal values can be arbitrarily far apart. Put the row in order and they cannot: equal values become neighbours, so each position needs to look at exactly one other.",
       idea: "Sort a copy, then walk it once comparing each element with the one before it. Anything that repeats is now adjacent, so a single pass of neighbour comparisons decides it.",

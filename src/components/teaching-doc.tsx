@@ -82,15 +82,14 @@ export function TeachingDocView({
           {part.level === 2 ? (
             <h2
               id={part.id}
-              className="scroll-mt-6 border-b pt-6 pb-2 text-title font-semibold"
+              // matches the Markdown renderer exactly — a typed document and
+              // a Markdown one must not read at two different sizes
+              className="scroll-mt-6 border-b pt-6 pb-2 text-body font-semibold"
             >
               {part.title}
             </h2>
           ) : (
-            <h3
-              id={part.id}
-              className="scroll-mt-6 pt-2 text-narration font-semibold"
-            >
+            <h3 id={part.id} className="scroll-mt-6 pt-2 text-ui font-semibold">
               {part.title}
             </h3>
           )}

@@ -40,14 +40,16 @@ function Part({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-meta tracking-wide text-dim uppercase">{label}</span>
+      <span className="text-meta tracking-wide text-dim uppercase">
+        {label}
+      </span>
       <p
         className={
           accent === "tell"
-            ? "max-w-[35em] border-l-2 border-chart-2/60 pl-3 text-body text-chart-2"
+            ? "max-w-measure border-l-2 border-chart-2/60 pl-3 text-body text-chart-2"
             : accent === "mistake"
-              ? "max-w-[35em] border-l-2 border-chart-5/60 pl-3 text-body text-muted-foreground"
-              : "max-w-[35em] text-body text-muted-foreground"
+              ? "max-w-measure border-l-2 border-chart-5/60 pl-3 text-body text-muted-foreground"
+              : "max-w-measure text-body text-muted-foreground"
         }
       >
         {children}
@@ -66,7 +68,9 @@ function MoveRow({ move, n }: { move: Move; n: number }) {
         <b className="text-body">{move.name}</b>
       </div>
 
-      <p className="max-w-[35em] text-body text-muted-foreground">{move.idea}</p>
+      <p className="max-w-measure text-body text-muted-foreground">
+        {move.idea}
+      </p>
 
       {/* The tell is the reason to read this rather than a textbook: it is the
           only part that works BEFORE you know which technique applies. */}
@@ -74,9 +78,7 @@ function MoveRow({ move, n }: { move: Move; n: number }) {
         {move.tell}
       </Part>
 
-      {move.invariant && (
-        <Part label="keep this true">{move.invariant}</Part>
-      )}
+      {move.invariant && <Part label="keep this true">{move.invariant}</Part>}
 
       <Part label="the classic mistake" accent="mistake">
         {move.mistake}
@@ -120,7 +122,9 @@ export function PatternPlaybook({
             not written yet
           </span>
         </div>
-        <p className="max-w-[35em] border-t px-4 py-4 text-body text-muted-foreground">
+        {/* `pl-4`, not `px-4`: padding on the RIGHT comes out of the measure
+            and pulls this line's right edge 16px inside every other one. */}
+        <p className="max-w-measure border-t py-4 pl-4 text-body text-muted-foreground">
           {name} has its reading below, but nobody has written its moves down
           yet. The shape is{" "}
           <code className="rounded bg-muted px-1 py-0.5 font-mono text-meta">

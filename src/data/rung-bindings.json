@@ -1,0 +1,312 @@
+{
+  "_": [
+    "Which rung each ## Approach section teaches, in document order.",
+    "",
+    "This is the ONE judgement call in converting a teaching document, and it is",
+    "the only thing in the conversion a machine should not guess: the heading says",
+    "'Floyd's tortoise and hare' and the record says 'floyd', and on a journeyed",
+    "problem the ladder's keys come from the journey's ACT keys, not from",
+    "alternatives[].key at all.",
+    "",
+    "It lives in a file because the converter is re-runnable: a converter bug means",
+    "re-emitting every module, and hand-binding 82 documents twice is how the",
+    "second pass gets a different answer from the first. `md-to-content.mjs` reads",
+    "this and fills `rung` from it; anything absent is emitted blank and fails",
+    "src/content/content.test.ts until a human decides.",
+    "",
+    "The first twelve below were decided by an agent on 2026-09-14 and are",
+    "reproduced from its report. inorder-walk is deliberately out of ladder order:",
+    "the document's third approach IS the problem's top-level approach, and Morris",
+    "threading sits below optimal rather than above it.",
+    "",
+    "A `null` entry is an approach the LADDER DOES NOT CARRY — the document",
+    "teaches it and the record has no rung for it. `lib/doc-sections.ts` leaves",
+    "those sections whole, under their own heading, instead of folding them into",
+    "a rung that does not exist. contains-duplicate is the first: its document",
+    "teaches five approaches against three rungs, and promoting the other two",
+    "needs Java and C++ for each (problems.test.ts), which is a separate branch."
+  ],
+  "anagram-positions": [
+    "sort-every-window",
+    "count-every-window-from-scratch",
+    "slide-the-tally-compare-all-26",
+    "optimal"
+  ],
+  "backspace-compare": [
+    "recursion-one-cancel-at-a-time",
+    "rebuild-the-text-by-slicing",
+    "cancel-with-a-stack",
+    "backward-pass-with-a-skip-counter",
+    "optimal"
+  ],
+  "balanced-brackets": [
+    "delete",
+    "stack",
+    "counter"
+  ],
+  "boats-to-save": [
+    "exact-search-over-every-group",
+    "rescan-for-the-heaviest-and-the-lightest",
+    "sort-then-empty-the-queue-from-both-ends",
+    "count-the-weights-into-buckets",
+    "optimal"
+  ],
+  "char-replacement": [
+    "brute",
+    "recompute",
+    "window"
+  ],
+  "classic-binary-search": [
+    "scan",
+    "recurse",
+    "loop",
+    "converge"
+  ],
+  "container-water": [
+    "brute",
+    "squeeze"
+  ],
+  "contains-duplicate": [
+    "brute",
+    "sort",
+    null,
+    "set",
+    null
+  ],
+  "daily-warmer": [
+    "brute",
+    "backward",
+    "stack"
+  ],
+  "find-all-duplicates": [
+    "compare-every-pair",
+    "sort-then-read-neighbours",
+    "count-in-a-hash-map",
+    "a-flag-per-value",
+    "optimal"
+  ],
+  "first-missing-positive": [
+    "try-1-then-2-then-3",
+    "sort-then-walk",
+    "hash-set",
+    "boolean-table-of-size-n-1",
+    "optimal"
+  ],
+  "fruit-baskets": [
+    "try-every-starting-tree",
+    "a-window-that-shrinks-until-it-is-legal",
+    "optimal"
+  ],
+  "group-anagrams": [
+    "pairs",
+    "sorted",
+    "tally"
+  ],
+  "inorder-walk": [
+    "rebuild-the-answer-at-every-node",
+    "one-list-handed-down",
+    "optimal",
+    "morris-threading"
+  ],
+  "intersection-of-arrays": [
+    "cross-off-with-used-flags",
+    "sort-both-then-two-cursors",
+    "count-both-sides-take-the-minimum",
+    "one-count-table-spend-as-you-go",
+    "optimal"
+  ],
+  "is-subsequence": [
+    "search",
+    "walk"
+  ],
+  "largest-rectangle": [
+    "expand",
+    "divide",
+    "stack"
+  ],
+  "max-depth": [
+    "paths",
+    "bfs",
+    "stack",
+    "recurse"
+  ],
+  "merge-sorted-array": [
+    "insert-one-at-a-time",
+    "append-and-sort",
+    "merge-into-a-scratch-array",
+    "copy-only-a-s-prefix",
+    "optimal"
+  ],
+  "merge-two-sorted": [
+    "collect",
+    "recurse",
+    "dummy"
+  ],
+  "mirror-tree": [
+    "palindrome-of-the-values-broken",
+    "build-the-mirror-then-compare",
+    "optimal",
+    "a-queue-of-crossed-pairs"
+  ],
+  "missing-number": [
+    "sort-and-scan",
+    "table-of-flags",
+    "put-each-value-at-its-own-index",
+    "subtract-from-the-total",
+    "optimal"
+  ],
+  "move-zeroes": [
+    "copy",
+    "readwrite",
+    "swap"
+  ],
+  "next-permutation": [
+    "list-every-arrangement-in-order",
+    "try-every-swap-then-sort-the-tail",
+    "find-the-pivot-then-sort-the-tail",
+    "pivot-swap-rebuild-the-tail-backwards",
+    "optimal"
+  ],
+  "permutation-in-string": [
+    "sort",
+    "tally",
+    "agree"
+  ],
+  "plus-one": [
+    "build-the-number-add-one-split-it-back",
+    "reverse-carry-reverse-back",
+    "carry-from-the-back",
+    "special-case-all-nines",
+    "optimal"
+  ],
+  "product-except-self": [
+    "brute",
+    "division",
+    "prefix",
+    "sweeps"
+  ],
+  "remove-duplicates-sorted": [
+    "copy",
+    "readwrite"
+  ],
+  "remove-element": [
+    "delete-and-shift",
+    "filter-into-a-copy",
+    "count-then-compact",
+    "reader-and-writer",
+    "optimal"
+  ],
+  "remove-list-elements": [
+    "restart",
+    "rebuild",
+    "recurse",
+    "strip",
+    "dummy"
+  ],
+  "reverse-list": [
+    "copy",
+    "recurse",
+    "three"
+  ],
+  "reverse-string": [
+    "recursion",
+    "grow-a-new-string",
+    "stack-of-characters",
+    "copy-back-to-front",
+    "optimal"
+  ],
+  "right-side-view": [
+    "collect-every-level-keep-the-last-of-each",
+    "level-order-remembering-only-the-last",
+    "depth-first-left-to-right-overwriting",
+    "optimal"
+  ],
+  "rotate-array": [
+    "one-step-at-a-time",
+    "copy-into-a-second-array",
+    "cut-and-rejoin",
+    "cyclic-replacements",
+    "optimal"
+  ],
+  "rpn-eval": [
+    "rewrite",
+    "tree",
+    "stack"
+  ],
+  "same-tree": [
+    "serialise",
+    "compare",
+    "iterative"
+  ],
+  "sort-colors": [
+    "count",
+    "pointers"
+  ],
+  "sorted-pair-sum": [
+    "brute",
+    "hash",
+    "squeeze"
+  ],
+  "sorted-squares": [
+    "sort",
+    "merge",
+    "twoends"
+  ],
+  "subarray-sum-k": [
+    "brute",
+    "prefix",
+    "window",
+    "counts"
+  ],
+  "summary-ranges": [
+    "paint-the-number-line",
+    "bucket-by-value-minus-index",
+    "split-into-run-lists",
+    "collect-the-break-points",
+    "optimal"
+  ],
+  "swap-pairs": [
+    "values",
+    "array",
+    "recurse",
+    "prev",
+    "dummy"
+  ],
+  "three-sum-closest": [
+    "every-triple",
+    "sort-then-prune",
+    "binary-search-the-third",
+    "two-pointers",
+    "optimal"
+  ],
+  "three-sum-zero": [
+    "brute",
+    "hash",
+    "twoptr"
+  ],
+  "trap-rain-water": [
+    "percolumn",
+    "prefix",
+    "ends"
+  ],
+  "tree-diameter": [
+    "depth-measured-from-every-node",
+    "depths-cached-in-a-map",
+    "optimal",
+    "iterative"
+  ],
+  "valid-palindrome": [
+    "clean",
+    "ends"
+  ],
+  "window-maximum": [
+    "scan",
+    "heap",
+    "deque"
+  ],
+  "zero-matrix": [
+    "write-into-a-copy",
+    "two-lists-of-doomed-lines",
+    "optimal"
+  ]
+}

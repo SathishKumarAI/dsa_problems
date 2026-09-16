@@ -40,6 +40,33 @@ and `text-[13.5px]` in the code panel; the two code surfaces went UP to
 type left below the scale is the 7px ▲ / ✓ in the chip legend, which sits on a
 swatch beside its own label and is a mark rather than a word (B58).
 
+### Inline code is a role, not a fraction
+
+`text-[0.9em]` on inline `<code>` was a **seventh type step that moved with
+wherever it landed**: 15.3 px inside `text-body`, 13.5 px inside a table cell,
+so one span of inline code was three sizes on one page — 103 nodes of it
+measured on the problem page alone. It takes `text-ui` now, with `text-meta`
+inside table cells, which is the same rule as everything else: mono one step
+below its sans sibling, by ROLE.
+
+### Mono is for notation, and a constraint line is often both
+
+`Problem.constraints` holds bounds and sentences in one field. Counted across
+the corpus: **668 constraint lines, 170 notation and 498 English** — so three
+quarters of the bounds on this site were prose wearing the data face, which
+reads as something the reader is supposed to type.
+
+A per-line choice cannot fix it, because the most useful lines are hybrids —
+`1 <= nums[i] <= n — every value is a legal index of the array`. So the split is
+per RUN (`lib/notation.ts`): the notation is set in mono, the words in the
+reading face, and `notation.test.ts` asserts over every line in the corpus that
+the runs rebuild the original character for character.
+
+### Weights: 400, 500, 600
+
+And nothing above. A bare `<b>` renders 700, which is off this scale — write
+`font-semibold` and keep the element where a test selects on it.
+
 ## The quiet layer — `text-dim`
 
 `text-muted-foreground` at 7.4:1 is the secondary voice. Below it there was an
@@ -114,11 +141,73 @@ Uppercase labels take `tracking-wide`. Nothing else does.
 
 ## Measure
 
-Prose is capped at **`35em`** — about 68 characters at any step, which is inside the 45–75 band.
+**The measure IS the reading column — `max-w-measure`, 48rem / 768px — and prose is
+justified with automatic hyphenation.**
+
+Changed 2026-09-15 on the owner's call, made twice. Prose fills the column it is in rather than
+stopping short of it; the column is the measure, so every sentence still shares one right edge —
+the edge is just the column's now, and it is a straight edge rather than a rag.
+
+**What it costs, recorded because it is a real trade.** 768px at the 17px body step is about 90
+characters a line, against the 45–75 the typographic literature recommends. A line that long set
+ragged-right leaves a very uneven right margin, which is why the setting is justified:
+
+| Setting | Why |
+|---|---|
+| `text-align: justify` | Both edges flush. At 90 characters there is enough room in a line for the word spaces to absorb the difference |
+| `hyphens: auto` | **Not optional.** Justification without a hyphen dictionary is what opens rivers of white space between words — the failure everyone blames justification for. It needs a language to pick a dictionary; `index.html` sets `lang="en"`, and without that this silently does nothing |
+| `text-wrap: pretty` | The last line of a paragraph is set ragged, so it still cannot end on a single short word |
+
+It is the `prose-set` utility, applied to RUNNING TEXT only — never to labels, controls, code, or
+a term in a definition list, none of which are read as sentences.
+
+**The gate moved with the decision rather than being deleted.** U7 asserted 80 characters; it
+asserts 96 now, and what it still catches is the bug worth catching — a paragraph that escapes its
+column and runs the page sideways. Measured after the change: the widest prose on the problem page
+is 81ch.
+
+The original rule, kept because the reasoning is still true and the numbers are still the evidence:
+
+It was `max-w-[35em]` written out **fifty times across twenty files**, and `em` is relative to
+the element's own size, so the same "cap" rendered 595px on a 17px paragraph and 525px on a 15px
+one. Measured on the problem page: **eight different sentence widths inside one 768px column** —
+595, 527, 525, 509, 488, 480, 707, 349. Eight right edges is what reads as text nobody set.
+
+576px is about 68 characters at the body step: the middle of the 45–75 band, and inside the 80ch
+the U7 gate allows at every step.
+
+Two rules keep a column to one edge:
+
+| Rule | Why |
+|---|---|
+| **One cap per FLOW, not one per block** | A per-block cap is applied after the nesting, so a callout inside a fold got its own 576 on top of two levels of left inset and ended 35px PAST the column — 611 against 576. On the flow container it is a ceiling that nesting can only move inwards from |
+| **Padding-RIGHT comes out of the measure; padding-left does not** | A `<p class="max-w-measure pl-4">` still ends at 576 — the inset eats the left. `px-4` on the same element ends at 560, and a `<details px-4>` holding a callout with `pr-3` ended at 547. Only the right side moves the edge |
+| **A decorative glyph is not structure** | A `·` before a bound and a `→` before its explanation cost 16px of measure each and bought nothing that position and voice could not say. The constraint list is a definition list now: term, then definition beneath it, both on the column's own edges |
+
+And sentences take `text-body`. `text-ui` is for buttons and labels; a sentence set at the control
+step wraps to a different width than the prose beside it, which is the same defect from the other
+direction.
 
 > `ch` is **not** a character. It is the width of the "0" glyph, roughly 1.3× the average character
 > in a proportional face, so a `68ch` cap renders about 90 characters. Use `em` at 0.5 em per
 > character. This cost one round trip during U7 and is the kind of thing a system file exists for.
+
+### A document's headings may not outrank the page's own
+
+The teaching document renders `##` and `###` inside a section of the problem
+page. They were `text-title` (28) and `text-narration` (20) — sized when the
+explanation was its own ROUTE and 28 was its top level. As a section they made a
+SUBSECTION of the last band render at the size of the page title, and more than
+twice every actual section heading on the page, which are 13px labels.
+
+They are `text-body` semibold with a rule, and `text-ui` semibold — one step
+under, and level with the page's own sub-headings. Both renderers carry the same
+classes, because a typed document and a Markdown one must never read at two
+different sizes.
+
+The page's heading ladder, top to bottom: **28** the problem title · **13
+uppercase** every section · **17** a document subsection · **15** a
+sub-heading.
 
 ## Shape — how a surface is built
 

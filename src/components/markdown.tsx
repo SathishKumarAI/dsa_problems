@@ -24,7 +24,15 @@ function Inline({ text }: { text: string }) {
           return (
             <code
               key={i}
-              className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground"
+              // `text-ui`, not `text-[0.9em]`. A relative size is a SEVENTH
+              // type step that changes with wherever it lands: 0.9em rendered
+              // 15.3px inside body prose and 13.5px inside a table cell, so
+              // the same inline code was three different sizes on one page
+              // (103 nodes measured on contains-duplicate). DESIGN.md's rule
+              // is the role, never the size — and mono one step below its sans
+              // sibling, which beside `text-body` is exactly `text-ui`. The
+              // table cells drop theirs to `text-meta` for the same reason.
+              className="rounded bg-muted px-1 py-0.5 font-mono text-ui text-foreground"
             >
               {span.text}
             </code>
@@ -109,7 +117,12 @@ export function Markdown({
   // sideways with it. Measured at 1440: scrollWidth 1440 against clientWidth
   // 1430 — exactly the scrollbar — until this was set.
   return (
-    <div className="flex min-w-0 flex-col gap-5">
+    // `max-w-measure` ONCE, here. Per-block caps are applied after the
+    // nesting, so a callout inside a fold got 576 of its own on top of two
+    // levels of left inset and ended 35px past every paragraph above it —
+    // measured 611 against the column's 576. On the flow it is a ceiling that
+    // nesting can only move inwards from.
+    <div className="flex max-w-measure min-w-0 flex-col gap-5">
       {blocks.map((block, i) => {
         switch (block.kind) {
           // the page renders the document's own title in its header
@@ -119,7 +132,15 @@ export function Markdown({
               <h2
                 key={i}
                 id={slugify(block.text)}
-                className="scroll-mt-6 border-b pt-6 pb-2 text-title font-semibold"
+                // `text-body`, not `text-title`. These were sized when the
+                // explanation was its own ROUTE and 28px was its top level.
+                // It is a section of the problem page now, so a `##` inside it
+                // was rendering at 28 — the size of the page title, and more
+                // than twice every actual section heading on the page, which
+                // are 13px labels. A document's heading may not outrank the
+                // page's own. The rule keeps it reading as a heading at the
+                // body step.
+                className="scroll-mt-6 border-b pt-6 pb-2 text-body font-semibold"
               >
                 <Inline text={block.text} />
               </h2>
@@ -127,7 +148,9 @@ export function Markdown({
               <h3
                 key={i}
                 id={slugify(block.text)}
-                className="scroll-mt-6 pt-2 text-narration font-semibold"
+                // one step under its `##`, and the same step as the page's own
+                // sub-headings ("What it asks", "Examples")
+                className="scroll-mt-6 pt-2 text-ui font-semibold"
               >
                 <Inline text={block.text} />
               </h3>
@@ -135,7 +158,7 @@ export function Markdown({
 
           case "paragraph":
             return (
-              <p key={i} className="max-w-[35em] text-body text-muted-foreground">
+              <p key={i} className="prose-set text-body text-muted-foreground">
                 <Inline text={block.text} />
               </p>
             )
@@ -145,12 +168,20 @@ export function Markdown({
               <blockquote
                 key={i}
                 className={cn(
-                  "flex max-w-[35em] flex-col gap-2 border-l-2 bg-card/40 py-2 pr-3 pl-4",
+                  // NO `max-w-measure` on this box. The measure belongs to
+                  // the text inside it (below): with it here, the rule, the
+                  // padding and the inset all came out of the 576 and the
+                  // callout's lines ended 29px short of every paragraph
+                  // around them.
+                  "flex flex-col gap-2 border-l-2 bg-card/40 py-2 pr-3 pl-4",
                   ACCENT[block.label ?? ""] ?? DEFAULT_ACCENT
                 )}
               >
                 {block.paragraphs.map((text, j) => (
-                  <p key={j} className="text-body text-muted-foreground">
+                  <p
+                    key={j}
+                    className="prose-set text-body text-muted-foreground"
+                  >
                     {j === 0 && block.label && (
                       <span className="font-semibold text-foreground">
                         {block.label}{" "}
@@ -180,7 +211,9 @@ export function Markdown({
                   className="w-0 min-w-full"
                 />
               )
-            return <CodeBlock key={i} code={block.code} className="w-0 min-w-full" />
+            return (
+              <CodeBlock key={i} code={block.code} className="w-0 min-w-full" />
+            )
 
           case "table":
             return (
@@ -191,7 +224,7 @@ export function Markdown({
                       {block.head.map((cell, j) => (
                         <th
                           key={j}
-                          className="px-3 py-2 text-left font-semibold text-foreground"
+                          className="px-3 py-2 text-left font-semibold text-foreground [&_code]:text-meta"
                         >
                           <Inline text={cell} />
                         </th>
@@ -207,7 +240,7 @@ export function Markdown({
                         {row.map((cell, k) => (
                           <td
                             key={k}
-                            className="px-3 py-2 align-top text-muted-foreground"
+                            className="px-3 py-2 align-top text-muted-foreground [&_code]:text-meta"
                           >
                             <Inline text={cell} />
                           </td>
@@ -221,11 +254,11 @@ export function Markdown({
 
           case "list":
             return (
-              <ul key={i} className="flex max-w-[35em] flex-col gap-2 pl-5">
+              <ul key={i} className="flex flex-col gap-2 pl-5">
                 {block.items.map((item, j) => (
                   <li
                     key={j}
-                    className="list-disc text-body text-muted-foreground marker:text-border"
+                    className="list-disc prose-set text-body text-muted-foreground marker:text-border"
                   >
                     <Inline text={item} />
                   </li>
@@ -240,7 +273,7 @@ export function Markdown({
             return (
               <details
                 key={i}
-                className="max-w-[35em] rounded-lg border bg-card/40 px-4 py-3 [&[open]]:max-w-full"
+                className="w-fit rounded-lg border bg-card/40 px-4 py-3 [&[open]]:w-auto"
               >
                 <summary className="cursor-pointer text-body font-medium text-foreground transition-colors marker:text-muted-foreground hover:text-chart-1">
                   <Inline text={block.summary} />
