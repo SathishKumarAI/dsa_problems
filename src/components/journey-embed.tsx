@@ -7,6 +7,17 @@
 // problem is supposed to be in one place; the journey was the last thing that
 // was not.
 //
+// WHY FULLSCREEN IS THE MODE, not a button on a box. Measured inline at 88svh
+// in a 632px viewport: the act stepper wrapped to two rows, the journey's own
+// chrome took 155px, and the stage — which at the story act is deliberately
+// empty — was a 320px hole in the middle of a document. The component owns a
+// canvas by design; a letterbox is the worst of both, too small for the journey
+// and too large to sit politely in a page. So the gesture that opens it asks
+// for the display, and LEAVING the display leaves the journey: you land back on
+// the problem page at the same scroll position, with the walkthrough in the
+// band where it was. The inline box survives only as the fallback for a browser
+// that refuses fullscreen.
+//
 // WHY A BOUNDED BOX AND NOT AN INLINE SECTION. The journey's whole mechanism is
 // that the stage owns its height and the regions inside it scroll — that is how
 // the transport stays put instead of riding the page (U1, spec 1.1). Dropped
@@ -40,7 +51,13 @@ export function JourneyEmbed({
   earned,
   acts,
   onClose,
+  openFull = false,
 }: {
+  /** ask for the whole display as the journey opens. Measured at 632px of
+   *  viewport: inline, the journey's own chrome takes 195px and the STAGE —
+   *  the thing you came to watch — is left with 217. The canvas is not a
+   *  luxury for this component, so the gesture that opens it asks for one. */
+  openFull?: boolean
   slug: string
   earned: number
   acts: number
@@ -48,14 +65,37 @@ export function JourneyEmbed({
 }) {
   const box = useRef<HTMLDivElement>(null)
   const [full, setFull] = useState(false)
+  const asked = useRef(false)
+  const wasFull = useRef(false)
 
-  // the browser owns this state — Esc leaves fullscreen without telling us, so
-  // the flag is read back from the document rather than assumed
+  // The browser owns this state — Esc leaves fullscreen without telling us, so
+  // it is read back from the document rather than assumed.
+  //
+  // And leaving fullscreen CLOSES the journey, which is the decision this
+  // component is built around: fullscreen is the mode, not a bigger version of
+  // a box. Esc therefore does what it looks like it does — puts you back on the
+  // page you were reading — instead of dropping you into a cramped letterbox
+  // you then have to dismiss a second time.
   useEffect(() => {
-    const sync = () => setFull(document.fullscreenElement === box.current)
+    const sync = () => {
+      const now = document.fullscreenElement === box.current
+      setFull(now)
+      if (!now && wasFull.current) onClose()
+      wasFull.current = now
+    }
     document.addEventListener("fullscreenchange", sync)
     return () => document.removeEventListener("fullscreenchange", sync)
-  }, [])
+  }, [onClose])
+
+  // once, on mount, and only when the caller asked: `requestFullscreen` needs
+  // a user gesture, and the click that mounted this component is one. A
+  // rejected promise is not an error worth showing — the inline box is a
+  // perfectly good fallback and the control is right there.
+  useEffect(() => {
+    if (!openFull || asked.current) return
+    asked.current = true
+    void box.current?.requestFullscreen?.().catch(() => {})
+  }, [openFull])
 
   const toggleFull = () => {
     if (document.fullscreenElement) void document.exitFullscreen()
@@ -68,9 +108,10 @@ export function JourneyEmbed({
       data-journey-embed=""
       className={cn(
         "flex flex-col gap-2 rounded-xl border bg-background",
-        // 78svh: tall enough for the stage and its transport, short enough
-        // that the page it sits in is still visibly a page
-        full ? "h-screen rounded-none p-4" : "h-[78svh] p-3"
+        // 88svh inline. Measured at 78: the journey's chrome took 195px and
+        // the stage was left 217 — the component is a canvas and a letterbox
+        // does it no favours, which is why the gesture asks for fullscreen.
+        full ? "h-screen rounded-none p-4" : "h-[88svh] p-3"
       )}
     >
       <div className="flex items-center gap-2">
@@ -86,8 +127,10 @@ export function JourneyEmbed({
             size="icon-sm"
             variant="ghost"
             className="size-11 text-muted-foreground lg:size-8"
-            aria-label={full ? "leave full screen" : "full screen"}
-            title={full ? "leave full screen" : "full screen"}
+            aria-label={full ? "back to the page" : "full screen"}
+            title={
+              full ? "back to the page — your progress is saved" : "full screen"
+            }
             onClick={toggleFull}
           >
             {full ? <MinimizeIcon /> : <MaximizeIcon />}

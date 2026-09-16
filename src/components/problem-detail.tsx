@@ -556,6 +556,7 @@ function ProblemPage({
             {journey ? (
               building ? (
                 <JourneyEmbed
+                  openFull
                   slug={journey.slug}
                   earned={earned.earned}
                   acts={journey.acts.length}

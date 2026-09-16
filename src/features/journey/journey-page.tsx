@@ -174,15 +174,11 @@ function JourneyView({
         {/* One bar from lg — the trail and title on the left, the transport in
             the middle, XP and restart on the right (spec 1.1). Stacked below
             lg, where there is no width to put them side by side. */}
-        {/* `lg:flex-nowrap` is right on the route, where this row has the
-            1760px stage to spread across. Embedded it has a reading column,
-            and the same row overflowed it by 36px — so embedded it wraps. */}
-        <div
-          className={cn(
-            "flex flex-wrap items-center gap-2 text-ui text-muted-foreground",
-            !embedded && "lg:flex-nowrap"
-          )}
-        >
+        {/* One row at lg, embedded or not. Wrapping it instead cost ~60px of
+            vertical in a box where the stage only had 217px to begin with —
+            the wrong trade in a letterbox. What overflowed was the WORDS on
+            restart, so embedded those go and the icon stays. */}
+        <div className="flex flex-wrap items-center gap-2 text-ui text-muted-foreground lg:flex-nowrap">
           {embedded ? null : problem && pattern ? (
             <a
               href={href(`/p/${pattern.id}/${problem.id}`)}
@@ -270,7 +266,11 @@ function JourneyView({
             aria-label="restart journey"
           >
             <RotateCcwIcon data-icon="inline-start" />
-            <span className="hidden sm:inline">restart journey</span>
+            {/* embedded, the icon carries it — its title and aria-label both
+                still say "restart journey", so nothing is lost but the width */}
+            <span className={cn("hidden", !embedded && "sm:inline")}>
+              restart journey
+            </span>
           </Button>
         </div>
         {/* B19. Restart re-locks every act, and a confirm dialog in front of it
