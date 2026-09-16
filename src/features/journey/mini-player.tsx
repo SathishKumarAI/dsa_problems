@@ -143,14 +143,14 @@ export function MiniPlayer({ journey }: { journey: AnyJourney }) {
       </div>
 
       {capped ? (
-        <p className="max-w-measure text-ui text-muted-foreground">
+        <p className="max-w-measure prose-set text-body text-muted-foreground">
           {acts.length > 1
             ? `These are the ${acts.length} approaches you have earned so far. The journey has more — each one opens when the previous one runs out of road.`
             : "This is the best approach you have earned so far. The journey has more — each one opens when the previous one runs out of road."}
         </p>
       ) : (
         acts.length > 1 && (
-          <p className="max-w-measure text-ui text-muted-foreground">
+          <p className="max-w-measure prose-set text-body text-muted-foreground">
             Step through the approaches in build order and watch each one run
             out of road — that argument is what the ladder below is written on.
           </p>

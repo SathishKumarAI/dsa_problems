@@ -428,7 +428,7 @@ function ProblemPage({
             only while it is unstarted. Once earning has begun the button's
             "3/5" says everything a returning reader needs. */}
           {journey && earned.earned === 0 && (
-            <p className="max-w-measure text-ui text-muted-foreground">
+            <p className="max-w-measure prose-set text-body text-muted-foreground">
               {journey.acts.length} acts: the need, every approach earned by the
               last one's weakness, your own code animated, then the reveal.
             </p>
@@ -560,7 +560,7 @@ function ProblemPage({
                     : "every approach in full"}
                 </span>
               </h2>
-              <p className="max-w-measure text-body text-muted-foreground">
+              <p className="max-w-measure prose-set text-body text-muted-foreground">
                 {binding
                   ? "What is not about any single approach: how to read the problem, where the cost actually goes, the comparison, what to say in an interview, and a script you can run."
                   : "Every approach in full: the idea, the mental model, a worked trace, the bug you are about to write, and a script you can run."}

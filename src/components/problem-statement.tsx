@@ -106,7 +106,7 @@ function Constraints({ problem }: { problem: Problem }) {
               )}
             </p>
             {what && (
-              <p className="max-w-measure text-body text-muted-foreground">
+              <p className="max-w-measure prose-set text-body text-muted-foreground">
                 {what}
               </p>
             )}
@@ -122,7 +122,7 @@ export function ProblemStatement({ problem }: { problem: Problem }) {
   return (
     <div className="flex flex-col gap-6">
       <Part id="what-it-asks" title="What it asks">
-        <p className="max-w-measure text-body">{problem.statement}</p>
+        <p className="max-w-measure prose-set text-body">{problem.statement}</p>
       </Part>
 
       <Part

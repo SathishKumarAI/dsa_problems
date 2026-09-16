@@ -158,7 +158,7 @@ export function Markdown({
 
           case "paragraph":
             return (
-              <p key={i} className="text-body text-muted-foreground">
+              <p key={i} className="prose-set text-body text-muted-foreground">
                 <Inline text={block.text} />
               </p>
             )
@@ -178,7 +178,10 @@ export function Markdown({
                 )}
               >
                 {block.paragraphs.map((text, j) => (
-                  <p key={j} className="text-body text-muted-foreground">
+                  <p
+                    key={j}
+                    className="prose-set text-body text-muted-foreground"
+                  >
                     {j === 0 && block.label && (
                       <span className="font-semibold text-foreground">
                         {block.label}{" "}
@@ -255,7 +258,7 @@ export function Markdown({
                 {block.items.map((item, j) => (
                   <li
                     key={j}
-                    className="list-disc text-body text-muted-foreground marker:text-border"
+                    className="list-disc prose-set text-body text-muted-foreground marker:text-border"
                   >
                     <Inline text={item} />
                   </li>

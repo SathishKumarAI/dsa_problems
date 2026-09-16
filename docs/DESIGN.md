@@ -141,8 +141,32 @@ Uppercase labels take `tracking-wide`. Nothing else does.
 
 ## Measure
 
-**One absolute width — `max-w-measure`, 36rem / 576px — and it is a token, not an
-arbitrary value.**
+**The measure IS the reading column — `max-w-measure`, 48rem / 768px — and prose is
+justified with automatic hyphenation.**
+
+Changed 2026-09-15 on the owner's call, made twice. Prose fills the column it is in rather than
+stopping short of it; the column is the measure, so every sentence still shares one right edge —
+the edge is just the column's now, and it is a straight edge rather than a rag.
+
+**What it costs, recorded because it is a real trade.** 768px at the 17px body step is about 90
+characters a line, against the 45–75 the typographic literature recommends. A line that long set
+ragged-right leaves a very uneven right margin, which is why the setting is justified:
+
+| Setting | Why |
+|---|---|
+| `text-align: justify` | Both edges flush. At 90 characters there is enough room in a line for the word spaces to absorb the difference |
+| `hyphens: auto` | **Not optional.** Justification without a hyphen dictionary is what opens rivers of white space between words — the failure everyone blames justification for. It needs a language to pick a dictionary; `index.html` sets `lang="en"`, and without that this silently does nothing |
+| `text-wrap: pretty` | The last line of a paragraph is set ragged, so it still cannot end on a single short word |
+
+It is the `prose-set` utility, applied to RUNNING TEXT only — never to labels, controls, code, or
+a term in a definition list, none of which are read as sentences.
+
+**The gate moved with the decision rather than being deleted.** U7 asserted 80 characters; it
+asserts 96 now, and what it still catches is the bug worth catching — a paragraph that escapes its
+column and runs the page sideways. Measured after the change: the widest prose on the problem page
+is 81ch.
+
+The original rule, kept because the reasoning is still true and the numbers are still the evidence:
 
 It was `max-w-[35em]` written out **fifty times across twenty files**, and `em` is relative to
 the element's own size, so the same "cap" rendered 595px on a 17px paragraph and 525px on a 15px

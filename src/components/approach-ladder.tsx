@@ -151,7 +151,7 @@ export function ApproachLadder({
             className="flex scroll-mt-4 flex-col gap-3"
           >
             {r.whyNow && (
-              <p className="max-w-measure border-l-2 border-chart-1/60 pl-4 text-body text-chart-1">
+              <p className="max-w-measure border-l-2 border-chart-1/60 pl-4 prose-set text-body text-chart-1">
                 {r.whyNow}
               </p>
             )}
@@ -178,7 +178,7 @@ export function ApproachLadder({
                 {r.cost}
               </span>
             </div>
-            <p className="max-w-measure text-body text-muted-foreground">
+            <p className="max-w-measure prose-set text-body text-muted-foreground">
               {r.idea}
             </p>
             {/* Where the bound comes from. The ladder has always shown the
@@ -194,7 +194,7 @@ export function ApproachLadder({
                   </span>{" "}
                   — how that was counted
                 </summary>
-                <p className="max-w-measure pt-2 text-body text-muted-foreground">
+                <p className="max-w-measure pt-2 prose-set text-body text-muted-foreground">
                   {r.costWhy}
                 </p>
               </details>
@@ -255,13 +255,13 @@ export function ApproachLadder({
         {problem.arc && !capped && (
           // a <b> here would join the rung names the UI test reads out of this
           // container — the label is a span for that reason
-          <p className="max-w-measure border-t border-border/60 pt-4 text-body text-muted-foreground">
+          <p className="max-w-measure border-t border-border/60 pt-4 prose-set text-body text-muted-foreground">
             <span className="font-semibold text-foreground">The arc.</span>{" "}
             {problem.arc}
           </p>
         )}
         {capped && journey && (
-          <p className="max-w-measure text-ui text-muted-foreground">
+          <p className="max-w-measure text-body text-muted-foreground">
             {hidden} more {hidden === 1 ? "approach is" : "approaches are"}{" "}
             still ahead of you.{" "}
             <a
