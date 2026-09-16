@@ -137,3 +137,46 @@ test("nothing is lost: every block lands somewhere, or is a known duplicate", ()
     `${blocks.length} blocks in, ${kept} kept + ${dropped} deliberately dropped`
   )
 })
+
+test("the constraints table goes when the page draws the bounds as cards", () => {
+  const withCards = foldDoc(blocks, binding, RUNGS, true)
+  const without = foldDoc(blocks, binding, RUNGS, false)
+  const heads = (f: ReturnType<typeof foldDoc>) =>
+    f.shared
+      .filter((b) => b.kind === "heading")
+      .map((b) => (b as { text: string }).text)
+  assert.ok(
+    heads(without).includes("The constraints, and what each one unlocks"),
+    "without unlocks the document keeps its own table"
+  )
+  assert.ok(
+    !heads(withCards).includes("The constraints, and what each one unlocks"),
+    "with unlocks it is the same content twice"
+  )
+  // exactly one table fewer, and nothing else lost
+  const tables = (f: ReturnType<typeof foldDoc>) =>
+    f.shared.filter((b) => b.kind === "table").length
+  assert.equal(tables(without) - tables(withCards), 1)
+  assert.equal(
+    without.shared.length - withCards.shared.length,
+    2,
+    "the heading and its table — and NOT the worked-example note under them"
+  )
+})
+
+test("…and the note and fence under that heading survive", () => {
+  const withCards = foldDoc(blocks, binding, RUNGS, true)
+  const text = withCards.shared
+    .filter((b) => b.kind === "paragraph")
+    .map((b) => (b as { text: string }).text)
+    .join(" ")
+  assert.match(
+    text,
+    /worked example traced in every section below/,
+    "the document's own note was taken with the table"
+  )
+  assert.ok(
+    withCards.shared.some((b) => b.kind === "code"),
+    "the fence under it went too"
+  )
+})

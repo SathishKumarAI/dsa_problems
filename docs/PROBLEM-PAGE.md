@@ -371,3 +371,37 @@ Worth recording, because both were mine and neither was visible in a diff:
 - **B100 is half closed**: the fold works for Markdown documents, not yet for the 49 typed ones.
 - Two of `contains-duplicate`'s four "constraints" are English sentences that arguably belong in
   `unlocks` — a content question, not a formatting one.
+
+---
+
+## 10. The duplication that survived the fold
+
+The fold (§4) moved the document's per-approach half onto the rungs and left
+the SHARED half alone. That was right for six of the seven shared sections and
+wrong for one.
+
+**`### The constraints, and what each one unlocks` was the bound cards, again.**
+Measured by comparing the two sections sentence by sentence at a 5-word shingle
+overlap: one row matched a card at **ratio 1.00** and a second at 0.50. That is
+not a coincidence — I authored `unlocks` by lifting from that exact table.
+
+Its five rows, checked one at a time before anything was deleted:
+
+| Row | Already on the page? |
+|---|---|
+| `1 <= nums.length <= 10^5` | yes — bound card, with the work drawn |
+| `-10^9 <= nums[i] <= 10^9` | yes — bound card, with the sparsity drawn |
+| a single element cannot repeat | yes — bound card |
+| unbounded in range, bounded in count | yes — bound card |
+| *(implied)* existence, not identity | yes — the **pre-solve check's** own reason says it |
+
+All five. So the heading and the table go, and the page loses nothing.
+
+**Only the heading and the table.** The rest of that subsection is the
+worked-example note and its fence, which belong to the document — and lifting a
+whole constraints `###` is a mistake this repo has already made once, at the
+cost of four documents' prose. The gate asserts exactly two blocks fewer, and
+that the note and the fence survive.
+
+Measured after: **zero overlapping sentences** between "the problem" and the
+long read, at a threshold of 0.4 — down from two at 1.00 and 0.50.

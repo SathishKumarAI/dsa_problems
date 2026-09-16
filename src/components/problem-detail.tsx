@@ -224,7 +224,10 @@ function ProblemPage({
           binding,
           // a rung whose costWhy is authored already says where its bound comes
           // from; one without it must keep the document's own account
-          new Set(ladder.rungs.filter((r) => r.costWhy).map((r) => r.key))
+          new Set(ladder.rungs.filter((r) => r.costWhy).map((r) => r.key)),
+          // the page draws every bound as a card with a figure, so the
+          // document's own constraints table is the same content twice
+          (problem.unlocks?.length ?? 0) > 0
         )
       : null
 

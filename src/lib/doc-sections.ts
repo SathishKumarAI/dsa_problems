@@ -29,6 +29,9 @@ const RUNG_ALREADY_SHOWS = {
   "Complexity and when to use this": "cost",
 } as const
 
+/** the one `###` inside the shared half that the PAGE renders better */
+const CONSTRAINTS_HEADING = "The constraints, and what each one unlocks"
+
 export interface Folded {
   /** blocks to render inside a rung, by rung key */
   byRung: Record<string, Block[]>
@@ -50,11 +53,21 @@ const isApproachHeading = (b: Block) =>
  * @param hasCost  rung keys whose `costWhy` is authored — only for those is the
  *                 document's own complexity section a duplicate. Without it the
  *                 fold would DELETE the only account of the cost on the page.
+ * @param hasUnlocks the record carries `unlocks`, so the page draws every bound
+ *                 as a card with a figure. The document's own constraints TABLE
+ *                 is then the same content twice — measured on
+ *                 contains-duplicate, one row matched the card word for word.
+ *                 Only the HEADING and the TABLE go: the rest of that
+ *                 subsection is the worked-example note and its fence, which
+ *                 belong to the document. Lifting the whole `###` is a mistake
+ *                 this repo has already made once, and it cost four documents
+ *                 their prose.
  */
 export function foldDoc(
   blocks: Block[],
   binding: (string | null)[],
-  hasCost: ReadonlySet<string> = new Set()
+  hasCost: ReadonlySet<string> = new Set(),
+  hasUnlocks = false
 ): Folded {
   const byRung: Record<string, Block[]> = {}
   const shared: Block[] = []
@@ -63,6 +76,7 @@ export function foldDoc(
   let approach = -1 // index into `binding`, -1 while outside an approach
   let key: string | null = null
   let dropping = false // inside a `###` the rung already shows
+  let atConstraints = false // the `###` the bound CARDS replace
 
   for (const b of blocks) {
     if (isApproachHeading(b)) {
@@ -89,6 +103,16 @@ export function foldDoc(
     }
 
     if (key === null) {
+      // the constraints `###`: drop its heading and the table under it, and
+      // nothing else — the note and fence that follow are the document's
+      if (b.kind === "heading" && b.level === 3) {
+        atConstraints = hasUnlocks && b.text.trim() === CONSTRAINTS_HEADING
+        if (atConstraints) continue
+      }
+      if (atConstraints && b.kind === "table") {
+        atConstraints = false
+        continue
+      }
       shared.push(b)
       continue
     }
