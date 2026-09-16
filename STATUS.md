@@ -56,7 +56,9 @@ of the sidebar) and **#109** (the problem-page pilot, 12 commits). Branch from `
 | Playbook moves · references | 83 · 57, across 19 patterns |
 | Gates | `check` **789** · `test:ui` **178** · `verify:fences` 338 clean (baseline 7) · `verify-deep` **82/82** |
 
-### What this session was about, in one line
+### The session BEFORE this one (#97–#106), in one line
+
+*Counts in this section were true when it was written — 127 problems, not the 153 above.*
 
 The app read as **two products** — "DSA journeys" and "DSA patterns" — with 93 of 127 problems
 appearing twice under two headings. It is one noun now: a problem, with its journey as a mode of it.
@@ -234,7 +236,7 @@ was deleted.
 | Thin rungs (summary under 160 chars) | **0** — B68, closed 2026-09-13 |
 | Undisclosed approach additions | **0** |
 
-All eight gates green: `check` **789/789** · `test:ui` **178/178** · `verify:code` · `verify:run` ·
+All eight gates green: `check` **823/823** · `test:ui` **178/178** · `verify:code` · `verify:run` ·
 `verify:vectors` · `verify-deep` **82/82** · `verify:fences` **338 clean, baseline 7** ·
 `learn-gaps --strict`. `npm run build` clean.
 

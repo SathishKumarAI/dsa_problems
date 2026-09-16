@@ -67,7 +67,7 @@ self-contained the work is:
 
 | What | Size | Counted in |
 |---|---|---|
-| Write a teaching document for one of the **45 problems that have none** | ~half a day | `docs/LEARN-GAPS.md` |
+| Write a teaching document for one of the **71 problems that have none** | ~half a day | `docs/LEARN-GAPS.md` |
 | Retrofit the three required sections onto one of the **72 documents missing them** | ~2–4 hours | `docs/LEARN-GAPS.md` |
 | Write a journey for one of the **34 problems** still on a static walkthrough | ~1 day | `docs/AUTHORING.md` |
 | **Find a claim that does not survive being run** | minutes | `docs/BACKLOG.md`, the `G` table |
