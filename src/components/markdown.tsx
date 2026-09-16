@@ -47,7 +47,7 @@ function Inline({ text }: { text: string }) {
               {...(/^https?:/.test(span.href)
                 ? { target: "_blank", rel: "noreferrer" }
                 : {})}
-              className="text-chart-1 underline-offset-2 hover:underline"
+              className="text-foreground underline-offset-2 hover:underline"
             >
               <Inline text={span.text} />
             </a>
@@ -78,9 +78,9 @@ function Inline({ text }: { text: string }) {
 // share the accent the problem page already uses for `whyNow`.
 const ACCENT: Record<string, string> = {
   "Watch out.": "border-destructive/60",
-  "In an interview.": "border-chart-4/60",
+  "In an interview.": "border-border",
 }
-const DEFAULT_ACCENT = "border-chart-1/60"
+const DEFAULT_ACCENT = "border-border"
 
 export function Markdown({
   blocks,
@@ -275,7 +275,7 @@ export function Markdown({
                 key={i}
                 className="w-fit rounded-lg border bg-card/40 px-4 py-3 [&[open]]:w-auto"
               >
-                <summary className="cursor-pointer text-body font-medium text-foreground transition-colors marker:text-muted-foreground hover:text-chart-1">
+                <summary className="cursor-pointer text-body font-medium text-foreground underline-offset-4 marker:text-muted-foreground hover:underline">
                   <Inline text={block.summary} />
                 </summary>
                 <div className="pt-3">

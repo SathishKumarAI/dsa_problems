@@ -98,7 +98,7 @@ export function MiniPlayer({ journey }: { journey: AnyJourney }) {
         )}
         <a
           href={href(`/journey/${journey.slug}`)}
-          className="ml-auto inline-flex min-h-11 items-center gap-1 text-meta text-chart-1 underline-offset-2 hover:underline lg:min-h-7"
+          className="ml-auto inline-flex min-h-11 items-center gap-1 text-meta text-foreground underline-offset-2 hover:underline lg:min-h-7"
         >
           <RouteIcon className="size-3.5" />
           {capped ? "continue the journey" : "build it up in the journey"}

@@ -64,7 +64,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="flex flex-wrap items-center gap-3">
           <a
             href={href("/")}
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium transition-colors hover:border-chart-1/60 lg:min-h-9"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium transition-colors hover:border-edge/60 lg:min-h-9"
           >
             go home
           </a>

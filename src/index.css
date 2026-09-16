@@ -116,6 +116,7 @@
   /* The ORDERED scale, exposed so a sequence can be drawn in it. Roles above
      are categorical and answer "what is this"; the ramp answers "where in the
      order", and the two must never be swapped. */
+  --color-edge: var(--edge);
   --color-ramp-0: var(--ramp-0);
   --color-ramp-1: var(--ramp-1);
   --color-ramp-2: var(--ramp-2);
@@ -194,7 +195,11 @@
   --destructive: #b3001b;
   --border: #cdd4dd;
   --input: #b9c2ce;
-  --ring: #005b8f;
+  /* CHROME'S OWN ACCENT. Hover, focus, selection and "you are here" are not
+     data, so they may not borrow a data hue — they are drawn in the ink. One
+     token, so the whole app agrees about what "here" looks like. */
+  --edge: #101722;
+  --ring: #101722;
   /* Okabe–Ito, darkened for a light ground: the canonical colour-blind-safe
      qualitative set of scientific graphics. One hue per ROLE, and the role
      never changes hue between themes — a screenshot of one reads as the
@@ -246,7 +251,8 @@
   --destructive: #ff6b3d;
   --border: #22304d;
   --input: #2c3c5e;
-  --ring: #56b4e9;
+  --edge: #e6ecf5;
+  --ring: #e6ecf5;
   --chart-1: #e69f00; /* focus   */
   --chart-2: #56b4e9; /* window  */
   --chart-3: #00b888; /* settled */

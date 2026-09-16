@@ -52,9 +52,7 @@ export function Chip({ chip, index }: { chip: ChipModel; index?: number }) {
         <span
           className={cn(
             "font-mono text-meta leading-none",
-            r.includes("dim")
-              ? "text-dim"
-              : "text-dim"
+            r.includes("dim") ? "text-dim" : "text-dim"
           )}
         >
           {index}

@@ -462,13 +462,7 @@ function JourneyView({
                         "animate-in duration-(--duration-reveal) fade-in slide-in-from-bottom-1"
                     )}
                   >
-                    <Button
-                      onClick={j.nextButton.onClick}
-                      className={cn(
-                        j.nextButton.reveal &&
-                          "bg-chart-3 text-primary-foreground hover:bg-chart-3/90"
-                      )}
-                    >
+                    <Button onClick={j.nextButton.onClick}>
                       {j.nextButton.label}
                     </Button>
                   </div>

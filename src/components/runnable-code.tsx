@@ -57,7 +57,8 @@ export function RunnableCode({
   className?: string
 }) {
   const [draft, setDraft] = useState(code)
-  const { run, result, clear, running, blocked, booting, failed } = usePython(id)
+  const { run, result, clear, running, blocked, booting, failed } =
+    usePython(id)
   const edited = editable && draft !== code
 
   const source = editable ? draft : code
@@ -106,9 +107,7 @@ export function RunnableCode({
           disabled={blocked}
           className={cn(
             "inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 text-meta font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:min-h-8",
-            running
-              ? "border-chart-5/50 bg-chart-5/10 text-chart-5 hover:bg-chart-5/20"
-              : "border-chart-3/50 bg-chart-3/10 text-chart-3 hover:bg-chart-3/20",
+            "hover:border-edge hover:bg-accent",
             blocked && "cursor-not-allowed opacity-50"
           )}
         >

@@ -27,9 +27,7 @@ function Cells({ frame }: { frame: NonNullable<Frame["cells"]> }) {
           <div
             className={cn(
               "flex size-12 items-center justify-center rounded-lg border font-mono text-body tabular-nums transition-all duration-(--duration-reveal)",
-              frame.marks?.[i]
-                ? roleClass[frame.marks[i]]
-                : cellRest
+              frame.marks?.[i] ? roleClass[frame.marks[i]] : cellRest
             )}
           >
             {v}

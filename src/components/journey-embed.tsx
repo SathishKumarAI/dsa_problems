@@ -116,7 +116,7 @@ export function JourneyEmbed({
     >
       <div className="flex items-center gap-2">
         <span className="flex items-center gap-1.5 text-meta font-semibold text-foreground">
-          <RouteIcon className="size-3.5 shrink-0 text-chart-1" aria-hidden />
+          <RouteIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
           Building it up
         </span>
         <span className="font-mono text-meta text-dim tabular-nums">

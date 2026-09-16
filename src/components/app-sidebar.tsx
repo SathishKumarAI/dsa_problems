@@ -98,7 +98,7 @@ function JourneyItem({
         tooltip={title}
         className="pr-12"
       >
-        <RouteIcon className={`size-3.5 shrink-0 text-chart-1 ${WIDE}`} />
+        <RouteIcon className={`size-3.5 shrink-0 text-dim ${WIDE}`} />
         <RailToken label={title} done={earned.earned} total={earned.total} />
         <span className={`truncate ${WIDE}`}>{title}</span>
       </SidebarMenuButton>
@@ -433,7 +433,7 @@ export function AppSidebar({ view }: { view: string }) {
                   isActive={view === "algorithms"}
                   tooltip="Algorithm visualizer"
                 >
-                  <SlidersHorizontalIcon className="size-3.5 shrink-0 text-chart-2" />
+                  <SlidersHorizontalIcon className="size-3.5 shrink-0 text-dim" />
                   <span className="truncate">Algorithm visualizer</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -171,7 +171,7 @@ export function ApproachLadder({
             className="flex scroll-mt-4 flex-col gap-3"
           >
             {r.whyNow && (
-              <p className="max-w-measure border-l-2 border-chart-1/60 pl-4 prose-set text-body text-chart-1">
+              <p className="max-w-measure border-l-2 border-border pl-4 prose-set text-body text-muted-foreground">
                 {r.whyNow}
               </p>
             )}
@@ -202,7 +202,7 @@ export function ApproachLadder({
                   learner should be able to tell which rungs they were walked
                   through and which are being handed over as reading. */}
               {r.aside && (
-                <span className="rounded-sm border border-chart-4/45 bg-chart-4/10 px-1.5 font-mono text-meta text-chart-4">
+                <span className="rounded-sm border px-1.5 font-mono text-meta text-muted-foreground">
                   reading only
                 </span>
               )}
@@ -229,7 +229,7 @@ export function ApproachLadder({
                 className="rounded-lg border px-4 py-3"
               >
                 <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
-                  <span className="font-mono text-meta text-chart-2">
+                  <span className="font-mono text-meta text-muted-foreground">
                     {r.cost}
                   </span>{" "}
                   — how that was counted
@@ -305,7 +305,7 @@ export function ApproachLadder({
                 className="rounded-lg border px-4 py-3"
               >
                 <summary className="min-h-11 cursor-pointer list-none text-ui marker:content-none lg:min-h-7">
-                  <span className="mr-2 rounded-sm border border-chart-4/45 bg-chart-4/10 px-1.5 font-mono text-meta text-chart-4">
+                  <span className="mr-2 rounded-sm border px-1.5 font-mono text-meta text-muted-foreground">
                     reading only
                   </span>
                   {sec.title.replace(/\s*\*\(.*$/, "")}
@@ -369,7 +369,7 @@ export function ApproachLadder({
             still ahead of you.{" "}
             <a
               href={href(`/journey/${journey.slug}`)}
-              className="group inline-flex items-center gap-1 text-chart-1 underline-offset-2 hover:underline"
+              className="group inline-flex items-center gap-1 text-foreground underline-offset-2 hover:underline"
             >
               Continue the journey
               <ArrowRightIcon aria-hidden className="size-3.5 shrink-0" />

@@ -55,7 +55,7 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
               onClick={() => setPicked(i)}
               className={cn(
                 "flex min-h-11 items-center gap-2 rounded-md border px-3 text-left text-ui transition-colors lg:min-h-9",
-                !answered && "hover:border-chart-1/60 hover:bg-accent/40",
+                !answered && "hover:border-edge/60 hover:bg-accent/40",
                 // once answered the right one is always marked, so a wrong
                 // pick teaches rather than just failing
                 answered && isAnswer && "border-chart-3/60 bg-chart-3/10",
@@ -85,7 +85,7 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
       </div>
       {answered && (
         <p
-          className="max-w-measure animate-edge-in-y border-l-2 border-chart-1/50 pl-4 prose-set text-body text-muted-foreground"
+          className="max-w-measure animate-edge-in-y border-l-2 border-border pl-4 prose-set text-body text-muted-foreground"
           aria-live="polite"
         >
           <span

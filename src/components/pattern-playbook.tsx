@@ -46,9 +46,9 @@ function Part({
       <p
         className={
           accent === "tell"
-            ? "max-w-measure border-l-2 border-chart-2/60 pl-3 text-body text-chart-2"
+            ? "max-w-measure border-l-2 border-border pl-3 text-body text-muted-foreground"
             : accent === "mistake"
-              ? "max-w-measure border-l-2 border-chart-5/60 pl-3 text-body text-muted-foreground"
+              ? "max-w-measure border-l-2 border-border pl-3 text-body text-muted-foreground"
               : "max-w-measure text-body text-muted-foreground"
         }
       >
@@ -90,7 +90,7 @@ function MoveRow({ move, n }: { move: Move; n: number }) {
           <a
             key={id}
             href={href(routeOf(id))}
-            className="inline-flex min-h-11 items-center rounded-md border px-2 font-mono text-meta text-muted-foreground transition-colors hover:border-chart-1/60 hover:text-foreground lg:min-h-7"
+            className="inline-flex min-h-11 items-center rounded-md border px-2 font-mono text-meta text-muted-foreground transition-colors hover:border-edge/60 hover:text-foreground lg:min-h-7"
           >
             {titleOf(id)}
           </a>
