@@ -405,3 +405,37 @@ that the note and the fence survive.
 
 Measured after: **zero overlapping sentences** between "the problem" and the
 long read, at a threshold of 0.4 — down from two at 1.00 and 0.50.
+
+---
+
+## 11. Duplication by MEANING, which a string comparison cannot see
+
+Asked to check for duplicates "from the context and the meaning", not by text.
+That is a different audit, and it found something four string-based passes had
+missed.
+
+**Two arcs.** The ladder ends on `Problem.arc`; the document's shared half ended
+on `## The Overall Arc`. Same three rungs, same trade, same closing principle,
+about two hundred words apart — and they **share almost no phrasing**, which is
+exactly why an exact-match pass, an 8-word shingle pass and a 5-word shingle
+pass all reported clean.
+
+Neither is redundant: the record's arc is the one a reader always gets, the
+document's is the full treatment. So the long one FOLDS UNDER the short one,
+which is what a rung's own account already does on its rung. The gate asserts
+that every block leaving `shared` arrives in `arc` — moved, never deleted.
+
+### The three I judged and did NOT change
+
+| Pair | Why it stays |
+|---|---|
+| The document's "Understanding" opening vs the statement and the pre-solve check | It restates the question, then keeps going into why the naive approach is slow. The restatement is the on-ramp to an argument, not a second copy |
+| "Comparison" table vs the ladder | The same facts in a genuinely different affordance: the ladder is sequential and argues one rung at a time, the table is scanned side by side |
+| "Interview Priority" vs the arc's "good to say out loud in an interview" | One clause of overlap against a section that scripts the actual sentences |
+
+### Across the other routes
+
+Swept home, a pattern list, two problem pages, the visualizer, SQL and
+flashcards: **one** cross-page repeat, and it is a UI label that every problem
+page carries ("Step through the approaches in build order…"). Chrome, not
+content.

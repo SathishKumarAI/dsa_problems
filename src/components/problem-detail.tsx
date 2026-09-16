@@ -233,7 +233,10 @@ function ProblemPage({
           new Set(ladder.rungs.filter((r) => r.costWhy).map((r) => r.key)),
           // the page draws every bound as a card with a figure, so the
           // document's own constraints table is the same content twice
-          (problem.unlocks?.length ?? 0) > 0
+          (problem.unlocks?.length ?? 0) > 0,
+          // and the ladder closes on `arc`, so the document's own arc section
+          // is the same job in more words — it folds under that line instead
+          Boolean(problem.arc)
         )
       : null
 
@@ -577,6 +580,7 @@ function ProblemPage({
           ladder={ladder}
           onCompare={compare}
           expandAll={expandAll}
+          arcDoc={folded?.arc ?? null}
           folded={folded?.byRung ?? null}
           // opening a rung's account is a reason to fetch the document, the
           // same as opening the section below — one fetch serves every rung

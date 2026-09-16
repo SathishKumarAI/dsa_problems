@@ -71,9 +71,13 @@ export function ApproachLadder({
   ladder,
   onCompare,
   folded,
+  arcDoc,
   onWantDoc,
   expandAll = false,
 }: {
+  /** the document's own "The Overall Arc", folded under the ladder's arc line
+   *  rather than running as a second closing section — see lib/doc-sections.ts */
+  arcDoc?: Block[] | null
   /** the page's "read it all" switch — every fold on the ladder opens with it.
    *  `key`ed on the value rather than merely bound to it, so flipping the
    *  switch sets the folds and a reader can still close one afterwards
@@ -267,10 +271,33 @@ export function ApproachLadder({
         {problem.arc && !capped && (
           // a <b> here would join the rung names the UI test reads out of this
           // container — the label is a span for that reason
-          <p className="max-w-measure border-t border-border/60 pt-4 prose-set text-body text-muted-foreground">
-            <span className="font-semibold text-foreground">The arc.</span>{" "}
-            {problem.arc}
-          </p>
+          <div className="flex max-w-measure flex-col gap-3 border-t border-border/60 pt-4">
+            <p className="prose-set text-body text-muted-foreground">
+              <span className="font-semibold text-foreground">The arc.</span>{" "}
+              {problem.arc}
+            </p>
+            {/* The document's own arc, UNDER the record's. They are the same
+                job — the same three rungs, the same trade, the same closing
+                principle — and running both as sections put two closing
+                arguments 200 words apart, sharing almost no phrasing, which is
+                why no string comparison ever saw it. Neither is redundant, so
+                the long one folds under the short one, exactly as a rung's own
+                account folds under its rung. */}
+            {arcDoc && arcDoc.length > 0 && (
+              <details
+                key={`arc-${expandAll}`}
+                open={expandAll}
+                className="rounded-lg border px-4 py-3"
+              >
+                <summary className="min-h-11 cursor-pointer list-none text-ui text-muted-foreground marker:content-none hover:text-foreground lg:min-h-7">
+                  The same arc, at length — where each rung&apos;s cost goes
+                </summary>
+                <div className="pt-3">
+                  <Markdown blocks={arcDoc} problemId={problem.id} />
+                </div>
+              </details>
+            )}
+          </div>
         )}
         {capped && journey && (
           <p className="max-w-measure text-body text-muted-foreground">

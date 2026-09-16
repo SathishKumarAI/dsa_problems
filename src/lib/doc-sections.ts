@@ -32,6 +32,9 @@ const RUNG_ALREADY_SHOWS = {
 /** the one `###` inside the shared half that the PAGE renders better */
 const CONSTRAINTS_HEADING = "The constraints, and what each one unlocks"
 
+/** the `##` that says the same thing as the ladder's own arc line */
+const ARC_HEADING = /^the overall arc$/i
+
 export interface Folded {
   /** blocks to render inside a rung, by rung key */
   byRung: Record<string, Block[]>
@@ -40,6 +43,20 @@ export interface Folded {
   shared: Block[]
   /** approach sections the binding leaves unbound, by document order */
   unbound: number[]
+  /**
+   * The document's own "The Overall Arc", pulled out of the shared half.
+   *
+   * The ladder already ends on `Problem.arc` — the same three rungs, the same
+   * trade, the same closing principle, in fewer words. Two sections doing one
+   * job, 200 words apart, is duplication a string comparison cannot see: they
+   * share almost no phrasing and say the same thing.
+   *
+   * Neither is deleted, because neither is redundant: the record's arc is the
+   * one a reader always gets, and the document's is the full treatment. So the
+   * long one folds UNDER the short one, which is exactly what the per-approach
+   * halves already do on their rungs.
+   */
+  arc: Block[]
 }
 
 const isApproachHeading = (b: Block) =>
@@ -62,16 +79,23 @@ const isApproachHeading = (b: Block) =>
  *                 belong to the document. Lifting the whole `###` is a mistake
  *                 this repo has already made once, and it cost four documents
  *                 their prose.
+ * @param hasArc   the record carries `arc`, which the ladder renders under the
+ *                 rungs. The document's "The Overall Arc" is then the same job
+ *                 in more words — collected into `arc` and folded under that
+ *                 line rather than left to run as a second closing section.
  */
 export function foldDoc(
   blocks: Block[],
   binding: (string | null)[],
   hasCost: ReadonlySet<string> = new Set(),
-  hasUnlocks = false
+  hasUnlocks = false,
+  hasArc = false
 ): Folded {
   const byRung: Record<string, Block[]> = {}
   const shared: Block[] = []
   const unbound: number[] = []
+  const arc: Block[] = []
+  let inArc = false
 
   let approach = -1 // index into `binding`, -1 while outside an approach
   let key: string | null = null
@@ -98,7 +122,15 @@ export function foldDoc(
       approach = -1
       key = null
       dropping = false
+      // the arc section is collected rather than shared: the ladder renders
+      // it under its own arc line
+      inArc = hasArc && ARC_HEADING.test(b.text.trim())
+      if (inArc) continue
       shared.push(b)
+      continue
+    }
+    if (inArc) {
+      arc.push(b)
       continue
     }
 
@@ -130,5 +162,5 @@ export function foldDoc(
     byRung[key].push(b)
   }
 
-  return { byRung, shared, unbound }
+  return { byRung, shared, unbound, arc }
 }

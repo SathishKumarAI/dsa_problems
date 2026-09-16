@@ -180,3 +180,28 @@ test("…and the note and fence under that heading survive", () => {
     "the fence under it went too"
   )
 })
+
+test("the document's arc is folded onto the ladder, not left as a second ending", () => {
+  const withArc = foldDoc(blocks, binding, RUNGS, true, true)
+  const without = foldDoc(blocks, binding, RUNGS, true, false)
+  const h2s = (f: ReturnType<typeof foldDoc>) =>
+    f.shared
+      .filter((b) => b.kind === "heading" && b.level === 2)
+      .map((b) => (b as { text: string }).text)
+
+  assert.ok(
+    h2s(without).some((t) => /overall arc/i.test(t)),
+    "without a record arc the document keeps its own section"
+  )
+  assert.ok(
+    !h2s(withArc).some((t) => /overall arc/i.test(t)),
+    "with one, two closing arguments run 200 words apart"
+  )
+  assert.ok(withArc.arc.length > 0, "…and it is COLLECTED, not deleted")
+  // nothing vanished: what left `shared` arrived in `arc`, plus its heading
+  assert.equal(
+    without.shared.length - withArc.shared.length,
+    withArc.arc.length + 1,
+    "the arc blocks moved; only the heading itself was dropped"
+  )
+})
