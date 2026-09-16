@@ -13,6 +13,7 @@ import {
   PanelRightCloseIcon,
   PanelRightOpenIcon,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { setPref, usePrefs } from "@/lib/store"
 import { ProblemNotes } from "./problem-notes"
@@ -136,6 +137,39 @@ export function ContentsRail({
 }) {
   const { pageRail } = usePrefs()
 
+  // WHERE THE READER IS, tracked so the rail can say so.
+  //
+  // On a twenty-screen page a contents list that never moves is a map with no
+  // "you are here": it says what exists and nothing about where you got to. An
+  // observer is the cheap way to know — no scroll handler, no measurement every
+  // frame — and its callback is asynchronous, so nothing here is the
+  // synchronous setState in an effect that the React Compiler rules forbid.
+  const [here, setHere] = useState<string | null>(null)
+  const ids = sections.map((x) => x.id).join(",")
+  useEffect(() => {
+    const els = ids
+      .split(",")
+      .filter(Boolean)
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el)
+    if (!els.length) return
+    const ratio = new Map<string, number>()
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) ratio.set(e.target.id, e.intersectionRatio)
+        // the FIRST section with anything on screen, not the largest: a reader
+        // is in the section they are reading down into
+        const first = els.find((el) => (ratio.get(el.id) ?? 0) > 0)
+        if (first) setHere(first.id)
+      },
+      // a band across the top of the viewport, so "here" follows the eye
+      // rather than whichever section happens to be tallest
+      { rootMargin: "-80px 0px -60% 0px", threshold: [0, 0.01] }
+    )
+    for (const el of els) io.observe(el)
+    return () => io.disconnect()
+  }, [ids])
+
   // CLOSED: a thin strip holding the control that reopens it, which is the
   // pattern the left sidebar and the journey's reading column already use —
   // a rail that vanishes entirely leaves no way back, and a reader who
@@ -175,7 +209,6 @@ export function ContentsRail({
       // is what makes a short inner column feel like a trapdoor.
       className="sticky top-16 hidden max-h-[calc(100svh-5rem)] w-56 shrink-0 flex-col gap-1 overflow-y-auto overscroll-contain border-l pl-4 xl:flex"
     >
-      {aside && <div className="flex flex-col gap-4 pb-5">{aside}</div>}
       {sections.length > 0 && (
         <>
           <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
@@ -183,7 +216,7 @@ export function ContentsRail({
             On this page
           </span>
           {sections.map((entry) => (
-            <Entry key={entry.id} entry={entry} />
+            <Entry key={entry.id} entry={entry} active={entry.id === here} />
           ))}
         </>
       )}
@@ -208,6 +241,12 @@ export function ContentsRail({
         </div>
       )}
 
+      {/* ORDERED BY WHAT A READER REACHES FOR. "On this page" is used
+          continuously while reading, the notes are written as you go, and the
+          sibling problems are for when the page is behind you — so they close
+          the column rather than opening it, which is where they were. */}
+      {aside && <div className="flex flex-col gap-4 pt-5">{aside}</div>}
+
       {/* at the FOOT, like the sidebar's own collapse — the control that hides
           a column belongs at the end of it, not over its first entry */}
       <div className="flex justify-end pt-4">
@@ -228,7 +267,13 @@ export function ContentsRail({
 
 /** one row of the rail — the same row for the page's sections and the
  *  document's, because they are the same kind of destination */
-function Entry({ entry }: { entry: Outline }) {
+function Entry({
+  entry,
+  active = false,
+}: {
+  entry: Outline
+  active?: boolean
+}) {
   return (
     <a
       href={`#${entry.id}`}
@@ -256,8 +301,14 @@ function Entry({ entry }: { entry: Outline }) {
         // transition-property to the colour longhands only, so the
         // translate beside it would never animate. It is the same trap
         // that stopped home's card lift from ever running (DESIGN.md).
-        "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-chart-1 hover:text-foreground",
-        entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
+        "-ml-4 border-l-2 py-0.5 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-chart-1 hover:text-foreground",
+        entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground",
+        // Where you are, drawn on the rail's own hairline — the same 2px
+        // accent edge the sidebar uses for its active row, so "here" means
+        // one thing everywhere in the app.
+        active
+          ? "border-chart-1 font-medium text-foreground"
+          : "border-transparent"
       )}
     >
       {/* A heading's text is MARKDOWN, so it carries the author's
