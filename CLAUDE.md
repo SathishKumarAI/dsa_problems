@@ -71,6 +71,12 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## Traps
 
+- **A pipe replaces the exit code with the LAST command's.** `npm run verify:vectors | tail -4`
+  reports `tail`'s success, so a gate that exits 1 reads as green — which is how a red gate with 22
+  survivors sat unnoticed on master (G12). Read the gate's own summary line, or run it without a pipe and echo
+  `$?`. Worth knowing which gates CI covers, too: `gates.yml` runs check, build, verify-deep,
+  learn-gaps, docs:learn and verify:code — NOT vectors, run, fences or test:ui, so those four are
+  only ever as green as the last person who ran them locally said they were.
 - **A backtick inside a comment inside a template literal ends the string.** `ui-smoke.test.mjs`
   passes its page scripts as template literals; a comment I added there quoted a CSS selector in
   backticks and the whole file stopped parsing — 16 tests ran instead of 178, reported as one

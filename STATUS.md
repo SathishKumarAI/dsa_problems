@@ -236,7 +236,7 @@ was deleted.
 | Thin rungs (summary under 160 chars) | **0** — B68, closed 2026-09-13 |
 | Undisclosed approach additions | **0** |
 
-All eight gates green: `check` **823/823** · `test:ui` **178/178** · `verify:code` · `verify:run` ·
+**Seven of the eight gates green, and one RED** — `verify:vectors` exits 1 with **22 unexplained survivors across 11 problems**, all of them from the 26-problem batch of 2026-09-15 (G12, filed 2026-09-16). It hid because CI does not run this gate and a local run piped through `tail` reports the pipe's exit code. The rest: `check` **823/823** · `test:ui` **178/178** · `verify:code` · `verify:run` ·
 `verify:vectors` · `verify-deep` **82/82** · `verify:fences` **338 clean, baseline 7** ·
 `learn-gaps --strict`. `npm run build` clean.
 
