@@ -78,13 +78,23 @@ export function TheClimb({ ladder }: { ladder: Ladder }) {
           ? `the climb — ${shown} of ${total} earned`
           : `the climb — ${total} ways in, worst to best`}
       </figcaption>
-      <ol className="flex items-end gap-1.5" aria-label="approaches by cost">
+      <ol
+        className="flex items-end gap-1.5 border-b pb-px"
+        aria-label="approaches by cost"
+      >
         {Array.from({ length: total }, (_, i) => {
           const rung = ladder.rungs[i]
           // The step descends as the cost does. Rank, not the bound itself:
           // the bounds are incomparable as numbers (`O(n log n)` is not a
           // value), and rank is what the ladder's own order already asserts.
-          const height = 44 - Math.round((i / (total - 1)) * 26)
+          //
+          // MEASURED AND WIDENED. The first cut ran 44px down to 18 across
+          // steps 252px wide, and at that aspect ratio three bars read as three
+          // colour SWATCHES rather than as a descent — the shape was there and
+          // nothing about it said "staircase". 72 down to 16 is a 4.5× range
+          // instead of 2.4×, which is the difference between a chart you have
+          // to be told about and one you see.
+          const height = 72 - Math.round((i / (total - 1)) * 56)
           return (
             <li
               key={rung?.key ?? `locked-${i}`}
