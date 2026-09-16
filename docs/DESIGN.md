@@ -241,6 +241,24 @@ Rules that keep it honest:
   tint is the right affordance for a line in a list, `--shadow-lift` the right
   one for a panel.
 
+### A sticky column must bound itself
+
+`position: sticky` means it does not scroll with the page. So a sticky column
+taller than the viewport can **never show its own bottom** — there is nothing
+left to scroll. Measured on the problem page's rail: 735px of content against a
+632px viewport, with the notes box and the control that hides the rail sitting
+167px below the fold and no way to reach either.
+
+Bound it to the viewport minus its own offset and let it scroll inside itself:
+
+```
+sticky top-16 max-h-[calc(100svh-5rem)] overflow-y-auto overscroll-contain
+```
+
+`overscroll-contain` is the third of those, not a flourish: without it, reaching
+the end of the inner column hands the scroll to the document, and a short rail
+feels like a trapdoor.
+
 ## Containers
 
 Three widths, so a new page has an obvious one to pick.

@@ -163,7 +163,17 @@ export function ContentsRail({
   return (
     <nav
       aria-label="contents"
-      className="sticky top-16 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
+      // A STICKY COLUMN TALLER THAN THE VIEWPORT CAN NEVER SHOW ITS OWN BOTTOM.
+      // `h-fit` with no bound measured 735px against a 632px viewport: the
+      // notes box and the control that hides the rail sat 167px below the fold
+      // and there was no way to reach them — sticky means it does not scroll
+      // with the page, and nothing here scrolled on its own.
+      //
+      // So it is bounded by the viewport minus its own offset (`top-16`, plus
+      // room to breathe) and scrolls inside itself. `overscroll-contain` keeps
+      // that scroll from chaining to the document once it hits the end, which
+      // is what makes a short inner column feel like a trapdoor.
+      className="sticky top-16 hidden max-h-[calc(100svh-5rem)] w-56 shrink-0 flex-col gap-1 overflow-y-auto overscroll-contain border-l pl-4 xl:flex"
     >
       {aside && <div className="flex flex-col gap-4 pb-5">{aside}</div>}
       {sections.length > 0 && (
