@@ -5,11 +5,11 @@ after the pilot shipped, from the pilot, so every rule here has already been pai
 
 **This doc owns the RECIPE.** Three others own things it deliberately does not repeat:
 
-| For | Read |
-|---|---|
-| Why the pilot's asks were answered the way they were, and what is still open | `PROBLEM-PAGE.md` |
-| Which type step, colour role, measure, radius or duration to use | `DESIGN.md` |
-| The field shapes, in the language the compiler checks | `src/data/types.ts` |
+| For                                                                          | Read                |
+| ---------------------------------------------------------------------------- | ------------------- |
+| Why the pilot's asks were answered the way they were, and what is still open | `PROBLEM-PAGE.md`   |
+| Which type step, colour role, measure, radius or duration to use             | `DESIGN.md`         |
+| The field shapes, in the language the compiler checks                        | `src/data/types.ts` |
 
 The short version: **the code is done, the content is not.** Nothing below asks you to write a
 component. Every band already renders, already has its gate, and already degrades to nothing when
@@ -22,19 +22,19 @@ its field is absent — which is why 152 pages render today and look thin rather
 Top to bottom, as `problem-detail.tsx` renders it. The **Feeds it** column is the only column you
 act on: it names the field to author.
 
-| # | Band | `id` | Feeds it | Absent ⇒ |
-|---|---|---|---|---|
-| 0 | Orient bar (title, difficulty, target, `costWhy`, solved) | — | `difficulty`, `complexity`, `costWhy` | the "why?" fold disappears; the bar stays |
-| 1 | **The problem** — statement, examples, constraints | `the-problem` | `statement`, `examples`, `constraints`, `unlocks` | constraints render as a plain list: no cards, no figures |
-| 2 | **Before you solve it** | `before-you-solve-it` | `checks` | band omitted entirely |
-| 3 | Hints | `hints` | `hints` | — (100% coverage) |
-| 4 | Walkthrough **or** the embedded journey | `walkthrough` | `walkthrough` \| a journey | neither: band omitted |
-| 5 | **Reading the calculations** | `reading-the-calculations` | `costWhy` + per-rung `costWhy` | band omitted |
-| 6 | **Approaches** — the ladder | `approaches` | `approach`, `alternatives[]`, `whyNow`, `arc` | renders, but every rung is a bare bound |
-| 7 | Similar problems | — | derived from `pattern` | — |
-| 8 | **Taking it with you** — the folded document | `explanation` | `src/problems/<id>/doc.ts` or `docs/deep/<id>_explained.md` | band omitted |
-| 9 | Read further | — | `reading` + the pattern's own list | falls back to the pattern's list alone |
-| R | The contents rail (≥ `xl`) | — | the bands above, in page order | — |
+| #   | Band                                                                                                                                                 | `id`                       | Feeds it                                                                | Absent ⇒                                                                 |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 0   | **The header** — one band: back link, title, difficulty, target + `costWhy`, read-it-all, solved; then the brief, **the climb**, and the two actions | —                          | `title`, `difficulty`, `complexity`, `costWhy`, `brief`, `alternatives` | the "why?" fold disappears; the climb needs 2+ rungs or it does not draw |
+| 1   | **The problem** — statement, examples, constraints                                                                                                   | `the-problem`              | `statement`, `examples`, `constraints`, `unlocks`                       | constraints render as a plain list: no cards, no figures                 |
+| 2   | **Before you solve it**                                                                                                                              | `before-you-solve-it`      | `checks`                                                                | band omitted entirely                                                    |
+| 3   | Hints                                                                                                                                                | `hints`                    | `hints`                                                                 | — (100% coverage)                                                        |
+| 4   | Walkthrough **or** the embedded journey                                                                                                              | `walkthrough`              | `walkthrough` \| a journey                                              | neither: band omitted                                                    |
+| 5   | **Reading the calculations**                                                                                                                         | `reading-the-calculations` | `costWhy` + per-rung `costWhy`                                          | band omitted                                                             |
+| 6   | **Approaches** — the ladder                                                                                                                          | `approaches`               | `approach`, `alternatives[]`, `whyNow`, `arc`                           | renders, but every rung is a bare bound                                  |
+| 7   | Similar problems                                                                                                                                     | —                          | derived from `pattern`                                                  | —                                                                        |
+| 8   | **Taking it with you** — the folded document                                                                                                         | `explanation`              | `src/problems/<id>/doc.ts` or `docs/deep/<id>_explained.md`             | band omitted                                                             |
+| 9   | Read further                                                                                                                                         | —                          | `reading` + the pattern's own list                                      | falls back to the pattern's list alone                                   |
+| R   | The contents rail (≥ `xl`)                                                                                                                           | —                          | the bands above, in page order                                          | —                                                                        |
 
 Two structural facts that are easy to forget and expensive to rediscover:
 
@@ -42,6 +42,15 @@ Two structural facts that are easy to forget and expensive to rediscover:
   which is what makes "nothing may be said twice" enforceable rather than aspirational.
 - **The rail lists the same array the page renders** (`partsOf`), so it can never offer a section
   that is not there.
+- **The header is ONE band.** It was a sticky bar of facts and a bordered card under it, both
+  answering "what is this", with a seam between them. The title moved up to sit with its facts and
+  the card lost its border.
+- **The climb** draws the ladder before a word of it is read: one step per rung, worst on the left,
+  the step getting shorter as the cost comes down. Steps the ledger holds back are dashed outlines
+  marked `?` — a reader sees there is further to climb and cannot read what it is called. Each
+  drawn step scrolls to its rung (a button, never a bare `#id` href — see §5).
+- **The ladder's Python runs.** `RunnableCode`, editable, calling the problem's own first test
+  vector. The page still hosts no SOLVE editor; that is the product line, and a gate holds it.
 
 ---
 
@@ -55,21 +64,20 @@ npm run page-coverage           # this table
 npm run page-coverage -- --thin # the ids that carry none of the five — cut a batch from it
 ```
 
-
-| Field | Problems carrying it | |
-|---|---|---|
-| `examples` | 153 | 100% |
-| `hints` | 153 | 100% |
-| `arc` | 153 | 100% |
-| `walkthrough` | 60 | 39% |
-| keyed `alternatives` | 13 | 8% |
-| `unlocks` | **1** | 1% |
-| `unlocks` with a figure | **1** | 1% |
-| `checks` | **1** | 1% |
-| `reading` | **1** | 1% |
-| `costWhy` (page target) | **1** | 1% |
-| `costWhy` on every rung | **1** | 1% |
-| `whyNow` on **every** alternative | **0** | 0% |
+| Field                             | Problems carrying it |      |
+| --------------------------------- | -------------------- | ---- |
+| `examples`                        | 153                  | 100% |
+| `hints`                           | 153                  | 100% |
+| `arc`                             | 153                  | 100% |
+| `walkthrough`                     | 60                   | 39%  |
+| keyed `alternatives`              | 13                   | 8%   |
+| `unlocks`                         | **1**                | 1%   |
+| `unlocks` with a figure           | **1**                | 1%   |
+| `checks`                          | **1**                | 1%   |
+| `reading`                         | **1**                | 1%   |
+| `costWhy` (page target)           | **1**                | 1%   |
+| `costWhy` on every rung           | **1**                | 1%   |
+| `whyNow` on **every** alternative | **0**                | 0%   |
 
 `--thin` says it in one line today: **152 of 153 problems carry none of the five.**
 
@@ -80,10 +88,10 @@ already is the single biggest saving: the hardest paragraph on the page is writt
 `docs/deep/<id>_explained.md` for the unconverted). Two of the five fields are already written
 inside them:
 
-| Field | Already written in | For how many |
-|---|---|---|
-| `unlocks` | the document's own constraints table | 82 |
-| `costWhy` × rung | each approach's *Complexity and when to use this* | 82 |
+| Field            | Already written in                                | For how many |
+| ---------------- | ------------------------------------------------- | ------------ |
+| `unlocks`        | the document's own constraints table              | 82           |
+| `costWhy` × rung | each approach's _Complexity and when to use this_ | 82           |
 
 Copying is not cheating here — it is the point. The document is folded into the page (§4 of
 `PROBLEM-PAGE.md`), so a fact lifted into a field is REMOVED from the fold, not duplicated.
@@ -108,15 +116,15 @@ writing the same sentence twice.
 
 ### Cost per problem, measured on the pilot
 
-| Step | Time | Why |
-|---|---|---|
-| keying alternatives | 2 min | one line each — but see the trap in §7 |
-| `unlocks` | 10 min | transcription, with judgement about what to leave in the fold |
-| figures | 15 min | the only step needing a decision per bound |
-| `costWhy` | 10 min | transcription |
-| `checks` | **20 min** | the only genuinely new writing, and the only part worth reviewing |
-| `reading` | 10 min | dominated by verifying URLs |
-| gates | 5 min + run time | |
+| Step                | Time             | Why                                                               |
+| ------------------- | ---------------- | ----------------------------------------------------------------- |
+| keying alternatives | 2 min            | one line each — but see the trap in §7                            |
+| `unlocks`           | 10 min           | transcription, with judgement about what to leave in the fold     |
+| figures             | 15 min           | the only step needing a decision per bound                        |
+| `costWhy`           | 10 min           | transcription                                                     |
+| `checks`            | **20 min**       | the only genuinely new writing, and the only part worth reviewing |
+| `reading`           | 10 min           | dominated by verifying URLs                                       |
+| gates               | 5 min + run time |                                                                   |
 
 **≈ 70 minutes for a problem that already has a teaching document.** For the 71 that do not, the
 document comes first and this playbook is the second half of that job, not a substitute for it.
@@ -132,7 +140,7 @@ unlocks?: { constraint: string; what: string; figure?: ConstraintFigure }[]
 ```
 
 **The idea.** A constraint is noise until it rules something out. `1 <= nums.length <= 10^5` says
-nothing to a reader; *"this is the bound that rules brute force out"* is the same fact turned into a
+nothing to a reader; _"this is the bound that rules brute force out"_ is the same fact turned into a
 decision.
 
 **`constraint` must match a string in `constraints` EXACTLY.** `problems.test.ts` fails otherwise —
@@ -150,7 +158,7 @@ does not state.
 > is not allocatable. The lookup structure has to take arbitrary integer keys, which is a hash set's
 > job.
 
-**What bad looks like.** *"The array can have up to 100,000 elements."* That restates the constraint
+**What bad looks like.** _"The array can have up to 100,000 elements."_ That restates the constraint
 in English and buys nothing. If the `what` does not name a decision — an approach ruled in, ruled
 out, or a base case — it is not an unlock and should be left out.
 
@@ -161,11 +169,11 @@ out, or a base case — it is not an unlock and should be left out.
 Three kinds, and they are deliberately few. Each is a **shape the corpus's constraints actually
 take**, not a chart type.
 
-| Kind | Use when the bound is | Pilot example |
-|---|---|---|
-| `quantities` | two or more amounts that must be **compared** — the work at the ceiling | `every pair 5·10⁹` vs `sort then sweep 1.7·10⁶` vs `one pass 10⁵` |
-| `span` | a **range**, with the handful of values you will really see marked on it | `−10⁹ … 10⁹`, seven marks — the picture of sparsity |
-| `cells` | a literal array, small enough to **count** — the base cases | `["?", "7"]`, captioned *"index −1 is the one an off-by-one reads"* |
+| Kind         | Use when the bound is                                                    | Pilot example                                                       |
+| ------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `quantities` | two or more amounts that must be **compared** — the work at the ceiling  | `every pair 5·10⁹` vs `sort then sweep 1.7·10⁶` vs `one pass 10⁵`   |
+| `span`       | a **range**, with the handful of values you will really see marked on it | `−10⁹ … 10⁹`, seven marks — the picture of sparsity                 |
+| `cells`      | a literal array, small enough to **count** — the base cases              | `["?", "7"]`, captioned _"index −1 is the one an off-by-one reads"_ |
 
 **AUTHORED, never inferred.** `10^5` is a length and `10^9` is a value; a figure that guessed which
 would eventually draw a confident lie. That is a comment in `types.ts`, and it is the rule.
@@ -195,9 +203,9 @@ re-derive it cannot transfer it to the next problem, which is the entire product
 
 Three things that paragraph does, and all three are the standard:
 
-1. **counts** rather than naming — *"n − 1 comparisons, then n − 2, … which sums to about n²/2"*;
-2. **names the honest caveat** — *"O(1) expected, not worst case; adversarially chosen keys can
-   collide"*, *"the Python here copies with `sorted()`"*;
+1. **counts** rather than naming — _"n − 1 comparisons, then n − 2, … which sums to about n²/2"_;
+2. **names the honest caveat** — _"O(1) expected, not worst case; adversarially chosen keys can
+   collide"_, _"the Python here copies with `sorted()`"_;
 3. **says what improving the wrong half buys**, which is what makes it an argument for the next rung
    rather than a footnote.
 
@@ -207,23 +215,28 @@ reader who has not climbed yet.
 ### 4.4 `checks` — read before you solve
 
 ```ts
-interface Check { ask: string; options: string[]; answer: number; because: string }
+interface Check {
+  ask: string
+  options: string[]
+  answer: number
+  because: string
+}
 ```
 
-**The idea, and why this is the expensive field.** The ladder starts at *"brute force compares every
-pair"*. A reader who has not yet noticed the question is **whether** a repeat exists rather than
+**The idea, and why this is the expensive field.** The ladder starts at _"brute force compares every
+pair"_. A reader who has not yet noticed the question is **whether** a repeat exists rather than
 **which** value repeats reads all three rungs without that landing. These are questions about the
 **statement**, asked before the first approach, and **never about the solution**.
 
 The pilot's three, and the job each one does — this is the template:
 
-| # | Asks | Job |
-|---|---|---|
-| 1 | *"What is the question actually asking you to produce?"* | the **task**: existence, not identity — which is what licenses the early exit |
-| 2 | *"`nums = [7]`. What comes back?"* | the **base case**, as an input rather than as trivia |
-| 3 | *"Values run −10⁹…10⁹. What does that bound rule OUT?"* | a **constraint**, converted into a decision |
+| #   | Asks                                                     | Job                                                                           |
+| --- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1   | _"What is the question actually asking you to produce?"_ | the **task**: existence, not identity — which is what licenses the early exit |
+| 2   | _"`nums = [7]`. What comes back?"_                       | the **base case**, as an input rather than as trivia                          |
+| 3   | _"Values run −10⁹…10⁹. What does that bound rule OUT?"_  | a **constraint**, converted into a decision                                   |
 
-That triple — *task, base case, bound* — transfers to essentially every problem. Start there.
+That triple — _task, base case, bound_ — transfers to essentially every problem. Start there.
 
 **`because` is the whole value.** It is shown once answered, right **or** wrong, and it must cite what
 the statement or the constraints already told you:
@@ -232,13 +245,18 @@ the statement or the constraints already told you:
 > what lets an approach stop reading the moment it finds one: nothing later in the array can change
 > the answer.
 
-**Distractors must be plausible.** *"it is undefined; the input is too small"* is a real belief a
+**Distractors must be plausible.** _"it is undefined; the input is too small"_ is a real belief a
 reader holds. An option nobody would pick teaches nothing and makes the check a formality.
 
 ### 4.5 `reading` — sources for THIS problem
 
 ```ts
-interface Reference { title: string; href: string; kind: "reference"|"docs"|"course"; note: string }
+interface Reference {
+  title: string
+  href: string
+  kind: "reference" | "docs" | "course"
+  note: string
+}
 ```
 
 **The split, and it is load-bearing.** The **pattern** owns sources about the TECHNIQUE — there is an
@@ -270,17 +288,17 @@ borrowing from it.
 Learned in the pilot, each one after breaking it. Full reasoning in `DESIGN.md`; this is the list you
 check a new page against.
 
-| Rule | The failure it prevents |
-|---|---|
-| **Nothing is said twice — by MEANING, not by string** | the page carried two arcs saying the same thing in different words; a string comparison finds neither |
-| **Colour means DATA; chrome gets `--edge`** | a hovered row drawn in `--chart-1` says "focus" where nothing is focused |
-| **Ordered quantities take the ramp, never a categorical hue** | five role colours say "five kinds"; a ladder is a climb |
-| **Prose takes `max-w-measure`** — never an `em` cap, never on a padded box | `max-w-[35em]` rendered eight different widths in one column |
-| **One measure per FLOW, not per block** | a per-block cap is applied after nesting, so a callout inside a fold ends up wider than the column |
-| **Every in-page anchor needs `preventDefault()` + `scrollIntoView`** | a bare `#id` href is a ROUTE change in a hash-routed app — the page you were reading is gone |
-| **44px touch floor below `lg`** | the transport buttons shipped at 28px |
-| **`aria-label="constraints"` on the constraints region** | load-bearing for the R2 gate; dropping it fails silently |
-| **A journeyed problem's ladder is CAPPED** | naming an unearned approach is the one thing the product promises it never does |
+| Rule                                                                       | The failure it prevents                                                                               |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Nothing is said twice — by MEANING, not by string**                      | the page carried two arcs saying the same thing in different words; a string comparison finds neither |
+| **Colour means DATA; chrome gets `--edge`**                                | a hovered row drawn in `--chart-1` says "focus" where nothing is focused                              |
+| **Ordered quantities take the ramp, never a categorical hue**              | five role colours say "five kinds"; a ladder is a climb                                               |
+| **Prose takes `max-w-measure`** — never an `em` cap, never on a padded box | `max-w-[35em]` rendered eight different widths in one column                                          |
+| **One measure per FLOW, not per block**                                    | a per-block cap is applied after nesting, so a callout inside a fold ends up wider than the column    |
+| **Every in-page anchor needs `preventDefault()` + `scrollIntoView`**       | a bare `#id` href is a ROUTE change in a hash-routed app — the page you were reading is gone          |
+| **44px touch floor below `lg`**                                            | the transport buttons shipped at 28px                                                                 |
+| **`aria-label="constraints"` on the constraints region**                   | load-bearing for the R2 gate; dropping it fails silently                                              |
+| **A journeyed problem's ladder is CAPPED**                                 | naming an unearned approach is the one thing the product promises it never does                       |
 
 ---
 
@@ -288,16 +306,16 @@ check a new page against.
 
 Run them in this order; each is cheap relative to the one after it.
 
-| # | Command | Catches | In CI |
-|---|---|---|---|
-| 1 | `npm run check` | types, lint, 837 node tests — field shapes, the `constraint` match, reference shape, ladder order | ✅ |
-| 2 | `npm run build` | the production bundle | ✅ |
-| 3 | `npm run test:ui` | 178 real-Chrome checks — R1 ladder, R2 constraints, R6 motion, the panel audit | ❌ |
-| 4 | `npm run verify:code` | Java and C++ compile | ✅ |
-| 5 | `npm run verify:run` | they agree with the Python oracle | ❌ |
-| 6 | `npm run verify-deep` | all 82 teaching scripts execute | ✅ |
-| 7 | `npm run verify:vectors` | mutation-tests the cases | ❌ — and **currently RED** (G12) |
-| 8 | `npm run learn-gaps --strict` | a problem with nothing to explain | ✅ |
+| #   | Command                       | Catches                                                                                           | In CI                            |
+| --- | ----------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------- |
+| 1   | `npm run check`               | types, lint, 837 node tests — field shapes, the `constraint` match, reference shape, ladder order | ✅                               |
+| 2   | `npm run build`               | the production bundle                                                                             | ✅                               |
+| 3   | `npm run test:ui`             | 178 real-Chrome checks — R1 ladder, R2 constraints, R6 motion, the panel audit                    | ❌                               |
+| 4   | `npm run verify:code`         | Java and C++ compile                                                                              | ✅                               |
+| 5   | `npm run verify:run`          | they agree with the Python oracle                                                                 | ❌                               |
+| 6   | `npm run verify-deep`         | all 82 teaching scripts execute                                                                   | ✅                               |
+| 7   | `npm run verify:vectors`      | mutation-tests the cases                                                                          | ❌ — and **currently RED** (G12) |
+| 8   | `npm run learn-gaps --strict` | a problem with nothing to explain                                                                 | ✅                               |
 
 **Two things about that table that cost a session each.**
 

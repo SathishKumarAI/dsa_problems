@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { setPref, usePrefs } from "@/lib/store"
+import { useReadingRoom } from "@/lib/use-reading-room"
 import { ProblemNotes } from "./problem-notes"
 import { cn } from "@/lib/utils"
 import type { Pattern, Problem } from "@/data"
@@ -133,6 +134,11 @@ export function ContentsRail({
   label?: string
 }) {
   const { pageRail } = usePrefs()
+  // The rail gets out of the way while you read, on the same gesture as the
+  // app sidebar — see `lib/use-reading-room.ts`. It is layered OVER the
+  // preference and never writes it: a reader who hid the rail by hand still
+  // has it hidden when they scroll back up.
+  const { reading } = useReadingRoom()
 
   // WHERE THE READER IS, tracked so the rail can say so.
   //
@@ -204,7 +210,18 @@ export function ContentsRail({
       // room to breathe) and scrolls inside itself. `overscroll-contain` keeps
       // that scroll from chaining to the document once it hits the end, which
       // is what makes a short inner column feel like a trapdoor.
-      className="sticky top-16 hidden max-h-[calc(100svh-5rem)] w-56 shrink-0 flex-col gap-1 overflow-y-auto overscroll-contain border-l pl-4 xl:flex"
+      // `aria-hidden` rather than `hidden`, and a width rather than a display:
+      // the collapse is the point, and a box that vanishes cannot animate out
+      // of the way. The reading column is capped at `max-w-reading`, so it
+      // does not grow when the rail goes — it re-centres, which is why the
+      // width has to transition rather than snap.
+      aria-hidden={reading}
+      className={cn(
+        "sticky top-16 hidden max-h-[calc(100svh-5rem)] shrink-0 flex-col gap-1 overflow-y-auto overscroll-contain transition-[width,opacity,padding] duration-(--duration-reveal) xl:flex",
+        reading
+          ? "pointer-events-none w-0 border-l-0 pl-0 opacity-0"
+          : "w-56 border-l pl-4 opacity-100"
+      )}
     >
       {sections.length > 0 && (
         <>

@@ -16,6 +16,7 @@ import type { Ladder, Rung } from "@/lib/ladder"
 import { ArrowRightIcon } from "lucide-react"
 import { href } from "@/lib/route"
 import { CodeBlock } from "./code-block"
+import { RunnableCode } from "./runnable-code"
 import { Markdown } from "./markdown"
 import type { Block } from "@/lib/markdown"
 import { setPref, usePrefs } from "@/lib/store"
@@ -57,9 +58,47 @@ function LanguageStrip({ langs }: { langs: (keyof Code)[] }) {
   )
 }
 
-function RungCode({ code }: { code: Code }) {
+function RungCode({
+  code,
+  id,
+  problemId,
+}: {
+  code: Code
+  id: string
+  problemId: string
+}) {
   const { codeTab } = usePrefs()
   const lang = (code[codeTab as keyof Code] ? codeTab : "python") as keyof Code
+  // PYTHON RUNS HERE. The ladder is where a reader actually meets the code —
+  // the teaching document is folded shut below it — and until now these blocks
+  // were the one code surface on the page you could only LOOK at, while the
+  // fences inside the folded document were editable and executable. A reader
+  // who wanted to change a line and watch what happened had to open the long
+  // read to find a copy of the same function.
+  //
+  // `RunnableCode` also solves the half that made this worth doing: an approach
+  // is a bare `def`, which prints nothing, so it appends a call on the
+  // problem's own first test vector (`data/demos.ts`) and SHOWS the line it
+  // appended. Run is a result, not an empty exit 0.
+  //
+  // Java and C++ stay pictures. There is no runtime for them in the browser —
+  // they are verified in CI by `verify:code` and `verify:run` instead, which is
+  // what the note under the tab says.
+  //
+  // AND IT IS THE READER'S TO CHANGE, like every other block on the site. The
+  // page still hosts no SOLVE editor — "Solve on LeetCode" is a link out, and
+  // that is the product line — but a teaching block you may edit is not a solve
+  // box, and conflating the two is what the old positional gate did. See the
+  // note on `data-code-editor` in `runnable-code.tsx`.
+  if (lang === "python")
+    return (
+      <RunnableCode
+        id={id}
+        code={code.python}
+        problemId={problemId}
+        className="[&_pre]:max-h-none"
+      />
+    )
   return <CodeBlock code={code[lang] ?? code.python} />
 }
 
@@ -239,7 +278,11 @@ export function ApproachLadder({
                 </p>
               </details>
             )}
-            <RungCode code={r.code} />
+            <RungCode
+              code={r.code}
+              id={`rung-${r.key}`}
+              problemId={problem.id}
+            />
             {/* ── THE RUNG'S OWN ACCOUNT ───────────────────────────────────
                 The teaching document used to repeat this whole ladder at the
                 foot of the page — 4,222 of contains-duplicate's 7,807 words

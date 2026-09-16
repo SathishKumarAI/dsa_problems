@@ -185,9 +185,17 @@ function JourneyView({
               title={`back to ${problem.title}`}
               className="-ml-2 inline-flex items-center gap-1 rounded-md px-2 py-1 hover:text-foreground"
             >
-              {/* the trail only — the title itself belongs to the h1 below,
-                and having it in both places said the same thing twice */}
-              <ArrowLeftIcon className="size-4" /> {pattern.name}
+              {/* IT NAMES THE PROBLEM. It said the PATTERN, which is where
+                the hierarchy goes and not where the reader came from: you
+                arrive here from a problem page, from the sidebar's Continue,
+                or from a shared link, and in all three the thing you want
+                back is the problem. A trail labelled "Arrays & Hashing"
+                looked like it led sideways, so readers used the browser's
+                Back or gave up — the one navigation complaint this page
+                got. The h1 below names the JOURNEY, not the problem, so
+                this repeats nothing. */}
+              <ArrowLeftIcon className="size-4" />
+              <span className="truncate">{problem.title}</span>
             </a>
           ) : (
             <a

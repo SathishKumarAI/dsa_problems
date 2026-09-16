@@ -15,8 +15,10 @@ import { cardOf } from "@/data/manifest"
 // the MANIFEST answers "is this a route"; the journey itself arrives with the
 // route's own chunk. Asking `@/engine` this question cost 567.7 KB in the shell.
 import { cardBySlug } from "@/engine/manifest"
-import { Suspense, lazy, useEffect } from "react"
+import { Suspense, lazy, useEffect, useState } from "react"
 import { navigate, useRoute } from "@/lib/route"
+import { useReadingRoom } from "@/lib/use-reading-room"
+import { visited } from "@/lib/recent"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
 import { CircleHelpIcon, LoaderCircleIcon } from "lucide-react"
@@ -143,6 +145,24 @@ function View() {
   return <NotFound path={path} />
 }
 
+/**
+ * A route, as a human would say it.
+ *
+ * Manifest lookups only. `@/data` is the barrel that builds PROBLEMS from all
+ * ten pattern folders, and naming a page must not be the thing that drags
+ * every statement and hint ladder into the shell.
+ */
+function labelOf(parts: string[]): string {
+  if (parts[0] === "p" && parts[2])
+    return cardOf(parts[2])?.title ?? "a problem"
+  if (parts[0] === "journey" && parts[1])
+    return cardBySlug(parts[1])?.title ?? "a journey"
+  if (parts[0] === "pattern" && parts[1])
+    return PATTERNS.find((x) => x.id === parts[1])?.name ?? "a pattern"
+  if (!parts[0]) return "Home"
+  return parts[0].replace(/-/g, " ")
+}
+
 export default function App() {
   const { parts, path } = useRoute()
   const view = parts[0] === "p" ? parts[1] : (parts[0] ?? "home")
@@ -150,9 +170,42 @@ export default function App() {
   // the journey and the visualizer are panel layouts (≥ lg): the inset is
   // viewport-high and the page divides that height between its own panels
   const panels = parts[0] === "journey" || parts[0] === "algorithms"
+
+  // THE SIDEBAR GETS OUT OF THE WAY WHILE YOU READ. Scrolling down is reading
+  // and scrolling up is looking for something, so the gesture the reader is
+  // already making says which they are doing — and 256px of navigation stops
+  // being rent the document pays for its whole length.
+  //
+  // Two states, not one, and keeping them apart is the whole correctness of
+  // this. `wanted` is what the READER last asked for through the trigger and
+  // it is never written by a scroll; `reading` is the gesture and it is never
+  // written by a click. The sidebar is open when the reader wants it AND is
+  // not currently reading, so a scroll can never lose a deliberate choice —
+  // scroll back up and the sidebar you closed by hand is still closed.
+  //
+  // Not on the panel layouts: the journey and the visualizer bound their own
+  // height and the window never scrolls, so there is no gesture to read.
+  const [wanted, setWanted] = useState(true)
+  const room = useReadingRoom(!panels)
+
+  // Where you just were. Every back link in this app points UP a hierarchy,
+  // which is the right answer only when you arrived from above — see
+  // `lib/recent.ts`. Recorded here because this is the one place that sees
+  // every route, and labelled from the manifests rather than the records so
+  // the shell still pulls no problem content.
+  useEffect(() => {
+    visited(path, labelOf(parts))
+  }, [path, parts])
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <SidebarProvider
+        open={wanted && !room.reading}
+        onOpenChange={(open) => {
+          setWanted(open)
+          // asking for it back beats the gesture, or the trigger reads as broken
+          if (open) room.reveal()
+        }}
+      >
         <AppSidebar view={view} />
         <GlobalKeys />
         <AppDialogs />

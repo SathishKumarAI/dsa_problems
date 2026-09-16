@@ -12,25 +12,25 @@
 
 ## 1. The thirteen asks, and where each one stands
 
-| # | Ask | State | Where |
-|---|---|---|---|
-| 1 | The search bar overlaps the content | **shipped** | `App.tsx` |
-| 2 | Build it up / solve it / learn it, all in one place | **shipped** (mode bar already did two of three; the third is item 8) | `problem-detail.tsx` |
-| 3 | Problem content in heading format, not a flat column | **shipped** | `problem-statement.tsx` |
-| 4 | GeeksforGeeks link for the problem | **shipped** | `Problem.reading`, `problem-detail.tsx` |
-| 5 | Constraints have no animation and no highlight | **shipped** | `problem-statement.tsx` |
-| 6 | Hints / inputs / outputs need a real UI and motion | **half shipped** — inputs and outputs are watchable; hints are still an accordion | `example-viewer.tsx` |
-| 7 | Cannot see the inputs changing at runtime | **half shipped** — the example walks; the CODE still does not trace | `example-viewer.tsx` |
-| 8 | The long explanation is a second read and feels duplicated | **shipped** for the Markdown documents — 0 repeated headings across the ladder's rungs, measured | `lib/doc-sections.ts` |
-| 9 | At least three references, plus similar-pattern links at the end | **shipped** — 5 sources, 2 of them about this problem, plus 13 sibling problems | `similar-problems.tsx` |
-| 10 | Explain WHY and HOW the complexities are calculated | **shipped** | `Solution.costWhy`, `Problem.costWhy` |
-| 11 | Make the reader think before solving | **shipped** | `pre-solve-check.tsx` |
-| 12 | "Next walkthrough" | **shipped** — the walkthrough steps between approaches | `features/journey/watchable.ts` |
-| 14 | Hide the right rail, and widen the text | **shipped** — toggle, pref `pageRail`, and the `f` focus key | `problem-closing.tsx` |
-| 15 | Notes on the sidebar | **shipped** (B86) — saved as you type, never exported, never reset | `problem-notes.tsx` |
-| 16 | Search out of the top bar, into the sidebar | **shipped** — the bar is a phone shell again | `app-sidebar.tsx`, `App.tsx` |
-| 17 | Text uses the full width, set like a book | **shipped** — the measure IS the column; justified with hyphenation | `index.css`, `prose-set` |
-| 13 | Check the page for other issues and write them down | **this document**, §5 | — |
+| #   | Ask                                                              | State                                                                                            | Where                                   |
+| --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------- |
+| 1   | The search bar overlaps the content                              | **shipped**                                                                                      | `App.tsx`                               |
+| 2   | Build it up / solve it / learn it, all in one place              | **shipped** (mode bar already did two of three; the third is item 8)                             | `problem-detail.tsx`                    |
+| 3   | Problem content in heading format, not a flat column             | **shipped**                                                                                      | `problem-statement.tsx`                 |
+| 4   | GeeksforGeeks link for the problem                               | **shipped**                                                                                      | `Problem.reading`, `problem-detail.tsx` |
+| 5   | Constraints have no animation and no highlight                   | **shipped**                                                                                      | `problem-statement.tsx`                 |
+| 6   | Hints / inputs / outputs need a real UI and motion               | **half shipped** — inputs and outputs are watchable; hints are still an accordion                | `example-viewer.tsx`                    |
+| 7   | Cannot see the inputs changing at runtime                        | **half shipped** — the example walks; the CODE still does not trace                              | `example-viewer.tsx`                    |
+| 8   | The long explanation is a second read and feels duplicated       | **shipped** for the Markdown documents — 0 repeated headings across the ladder's rungs, measured | `lib/doc-sections.ts`                   |
+| 9   | At least three references, plus similar-pattern links at the end | **shipped** — 5 sources, 2 of them about this problem, plus 13 sibling problems                  | `similar-problems.tsx`                  |
+| 10  | Explain WHY and HOW the complexities are calculated              | **shipped**                                                                                      | `Solution.costWhy`, `Problem.costWhy`   |
+| 11  | Make the reader think before solving                             | **shipped**                                                                                      | `pre-solve-check.tsx`                   |
+| 12  | "Next walkthrough"                                               | **shipped** — the walkthrough steps between approaches                                           | `features/journey/watchable.ts`         |
+| 14  | Hide the right rail, and widen the text                          | **shipped** — toggle, pref `pageRail`, and the `f` focus key                                     | `problem-closing.tsx`                   |
+| 15  | Notes on the sidebar                                             | **shipped** (B86) — saved as you type, never exported, never reset                               | `problem-notes.tsx`                     |
+| 16  | Search out of the top bar, into the sidebar                      | **shipped** — the bar is a phone shell again                                                     | `app-sidebar.tsx`, `App.tsx`            |
+| 17  | Text uses the full width, set like a book                        | **shipped** — the measure IS the column; justified with hyphenation                              | `index.css`, `prose-set`                |
+| 13  | Check the page for other issues and write them down              | **this document**, §5                                                                            | —                                       |
 
 ---
 
@@ -42,13 +42,13 @@ It was `fixed top-3 right-4`. A fixed element is out of flow, so nothing reserve
 corner and it painted over whatever the page put there. Measured on the pilot page, the
 overlap with the **`solved` checkbox**:
 
-| Viewport | Overlap before | After |
-|---|---|---|
-| 1440 | none (the column is narrow enough) | none |
-| 1280 | 25 × 5 px | none |
-| 1100 | 69 × 24 px | none |
-| 1024 | 69 × 24 px | none |
-| 900 | 69 × 24 px | none |
+| Viewport | Overlap before                     | After |
+| -------- | ---------------------------------- | ----- |
+| 1440     | none (the column is narrow enough) | none  |
+| 1280     | 25 × 5 px                          | none  |
+| 1100     | 69 × 24 px                         | none  |
+| 1024     | 69 × 24 px                         | none  |
+| 900      | 69 × 24 px                         | none  |
 
 At 1100 and below the checkbox was under the button and could not be clicked at all.
 `ContentsRail` had already met this button and worked around it with a `top-16` — one
@@ -119,8 +119,8 @@ arguments, not labels:
 Binding them turned up a real hole: on a journeyed problem the ladder's rungs come from
 the ACTS, and an act has no field for ladder metadata. The alternative of the same name
 is where it lives — which needs an explicit `key:`, and keying the two alternatives on
-this problem made the repo's own gate fail the build, correctly: *"alternatives carry
-keys, so `from: 0, from: 1` is a stale positional index"*. The journey's acts name their
+this problem made the repo's own gate fail the build, correctly: _"alternatives carry
+keys, so `from: 0, from: 1` is a stale positional index"_. The journey's acts name their
 code by key now. That gate exists because an index-based `from` once showed one
 approach's code under another's name.
 
@@ -153,12 +153,12 @@ the wrong link on every other problem in the pattern.
 
 ### 2.6 The gates
 
-| Gate | Result |
-|---|---|
-| `npm run check` | **804 / 804**, 0 fail (789 before; 15 new tests) |
-| `npm run test:ui` | **178 / 178**, 0 fail, real Chrome |
-| `npm run build` | clean |
-| console on the pilot page | **no errors** |
+| Gate                      | Result                                           |
+| ------------------------- | ------------------------------------------------ |
+| `npm run check`           | **804 / 804**, 0 fail (789 before; 15 new tests) |
+| `npm run test:ui`         | **178 / 178**, 0 fail, real Chrome               |
+| `npm run build`           | clean                                            |
+| console on the pilot page | **no errors**                                    |
 
 Two of those 178 failed on the first run, both mine, both caught by gates that already
 existed: the new constraints markup dropped the `aria-label="constraints"` hook an R2
@@ -185,17 +185,17 @@ documents.
 **The duplication was real and it was measured, not felt.** `contains-duplicate`'s document
 is **7,807 words**:
 
-| | Words | Share |
-|---|---|---|
-| Per-approach (5 × idea, how to think, worked example, code, common mistake, complexity) | **4,222** | 54% |
-| About no single approach (understanding, reading the calculations, arc, comparison, interview, fluency, script) | **3,585** | 46% |
+|                                                                                                                 | Words     | Share |
+| --------------------------------------------------------------------------------------------------------------- | --------- | ----- |
+| Per-approach (5 × idea, how to think, worked example, code, common mistake, complexity)                         | **4,222** | 54%   |
+| About no single approach (understanding, reading the calculations, arc, comparison, interview, fluency, script) | **3,585** | 46%   |
 
 Three of every approach's six subsections were the same content as the rung above it:
 `The idea` is the rung's summary, `Code` is the rung's code block, and `Complexity and when
 to use this` is the `costWhy` this branch added. You were reading those twice.
 
-**What shipped.** Each rung carries the half that is NOT a duplicate — *How to think about
-it*, *Worked example*, *Common mistake* — collapsed behind one line, fetched once for the
+**What shipped.** Each rung carries the half that is NOT a duplicate — _How to think about
+it_, _Worked example_, _Common mistake_ — collapsed behind one line, fetched once for the
 whole page. The section below keeps the 46% that belongs to no rung and is called **The
 rest of the story**, because at that point it is not the explanation any more.
 
@@ -207,7 +207,7 @@ duplicate of, so dropping their idea or their code would delete the only copy. P
 was previously the default reading.
 
 **Why it is not "one read".** 46% of the document is about no single approach, so it can
-never live inside a rung. A single flowing read is not reachable; *no sentence twice* is,
+never live inside a rung. A single flowing read is not reachable; _no sentence twice_ is,
 and that is what this does.
 
 **The one judgement a machine must not make** is which rung a `## Approach` heading means —
@@ -237,16 +237,16 @@ ladder does not carry that approach, and its section stays whole.
 
 ## 5. Other issues on this page, found while measuring
 
-| # | Finding | Evidence | State |
-|---|---|---|---|
-| **P1** | `problem-detail.tsx` was **843 lines** against the repo's 500-line ceiling, holding six unrelated things. | `wc -l` | **fixed** — split into `problem-detail.tsx` 508, `approach-ladder.tsx` 225, `problem-closing.tsx` 148. Nothing rendered changed; the blocks moved verbatim |
-| **P2** | A path that is not a route still served the app: `/spiral-matrix-ii.md#/p/arrays-hashing/contains-duplicate` rendered the problem page normally, so a mistyped or stale URL looked like it worked and the address bar lied about where you were. | the URL this session was given | **fixed** — `lib/route.ts` rewrites anything but the base with `replaceState`, keeping hash and query. Verified: `pathname` `/`, hash intact, page renders, no history entry |
-| **P3** | The page is **6.6 screens closed**, up from 4.0. Three sections were added and none removed. | `scrollHeight / innerHeight` | open — B100 removes the duplicate twenty |
-| **P4** | `docs.txt` is an empty untracked file in the repo root, not gitignored and referenced by nothing. | `git status`, `ls -la` (0 bytes) | **left alone deliberately** — deleting needs a word from the owner (`CLAUDE.md`: never delete without asking) |
-| **P5** | `FEATURES.md` listed the **Command palette** as `backlog #B12`. B12 shipped. | `docs/FEATURES.md:32` | **fixed** — the row now describes the palette and where its trigger lives |
-| **P6** | The hint accordion allowed one hint open at a time, so reading hint 3 closed hint 2 — a ladder meant to be read in order could only ever show one rung of itself. | `problem-detail.tsx` | **fixed** — `<Accordion multiple>` |
-| **P7** | `reading`, `unlocks`, `checks` and `costWhy` exist on **1 of 153** problems. The gates check coherence, not presence, on purpose. | `problems.test.ts` | informational |
-| **P8** | **The page had five different left edges** — 459 (the column), 460 and 472 (three different box paddings), 484 (the H1, inside the raised card, starting 25px right of every heading below it) and 581 (a centred caption). Three paragraphs were centred in a document of 56 left-aligned ones. That is what reads as "not justified". | content-box lefts of all 59 text blocks, 1440 × 1000 | **fixed** — see §6 |
+| #      | Finding                                                                                                                                                                                                                                                                                                                                 | Evidence                                             | State                                                                                                                                                                        |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P1** | `problem-detail.tsx` was **843 lines** against the repo's 500-line ceiling, holding six unrelated things.                                                                                                                                                                                                                               | `wc -l`                                              | **fixed** — split into `problem-detail.tsx` 508, `approach-ladder.tsx` 225, `problem-closing.tsx` 148. Nothing rendered changed; the blocks moved verbatim                   |
+| **P2** | A path that is not a route still served the app: `/spiral-matrix-ii.md#/p/arrays-hashing/contains-duplicate` rendered the problem page normally, so a mistyped or stale URL looked like it worked and the address bar lied about where you were.                                                                                        | the URL this session was given                       | **fixed** — `lib/route.ts` rewrites anything but the base with `replaceState`, keeping hash and query. Verified: `pathname` `/`, hash intact, page renders, no history entry |
+| **P3** | The page is **6.6 screens closed**, up from 4.0. Three sections were added and none removed.                                                                                                                                                                                                                                            | `scrollHeight / innerHeight`                         | open — B100 removes the duplicate twenty                                                                                                                                     |
+| **P4** | `docs.txt` is an empty untracked file in the repo root, not gitignored and referenced by nothing.                                                                                                                                                                                                                                       | `git status`, `ls -la` (0 bytes)                     | **left alone deliberately** — deleting needs a word from the owner (`CLAUDE.md`: never delete without asking)                                                                |
+| **P5** | `FEATURES.md` listed the **Command palette** as `backlog #B12`. B12 shipped.                                                                                                                                                                                                                                                            | `docs/FEATURES.md:32`                                | **fixed** — the row now describes the palette and where its trigger lives                                                                                                    |
+| **P6** | The hint accordion allowed one hint open at a time, so reading hint 3 closed hint 2 — a ladder meant to be read in order could only ever show one rung of itself.                                                                                                                                                                       | `problem-detail.tsx`                                 | **fixed** — `<Accordion multiple>`                                                                                                                                           |
+| **P7** | `reading`, `unlocks`, `checks` and `costWhy` exist on **1 of 153** problems. The gates check coherence, not presence, on purpose.                                                                                                                                                                                                       | `problems.test.ts`                                   | informational                                                                                                                                                                |
+| **P8** | **The page had five different left edges** — 459 (the column), 460 and 472 (three different box paddings), 484 (the H1, inside the raised card, starting 25px right of every heading below it) and 581 (a centred caption). Three paragraphs were centred in a document of 56 left-aligned ones. That is what reads as "not justified". | content-box lefts of all 59 text blocks, 1440 × 1000 | **fixed** — see §6                                                                                                                                                           |
 
 ---
 
@@ -259,11 +259,11 @@ were centred inside a left-aligned document.
 **The rule now: two edges and no third.** Text is either at the page column's edge, or
 inset by one box inset — `p-4` — and there is no other option.
 
-| Measure (1440 × 1000, content-box left of every text block) | Before | After |
-|---|---|---|
-| Distinct left edges | **5** — 459, 460, 472, 476, 484 | **2** — 459 and 476 (each ±1px of sub-pixel layout) |
-| The H1's edge vs the headings below it | 484 vs 459 — **25px out** | both on the column |
-| Centred paragraphs | 3 of 59 | **1** of 59 |
+| Measure (1440 × 1000, content-box left of every text block) | Before                          | After                                               |
+| ----------------------------------------------------------- | ------------------------------- | --------------------------------------------------- |
+| Distinct left edges                                         | **5** — 459, 460, 472, 476, 484 | **2** — 459 and 476 (each ±1px of sub-pixel layout) |
+| The H1's edge vs the headings below it                      | 484 vs 459 — **25px out**       | both on the column                                  |
+| Centred paragraphs                                          | 3 of 59                         | **1** of 59                                         |
 
 What moved:
 
@@ -293,12 +293,12 @@ The ragged right edge is the type scale doing its job, not a defect.
 
 Per problem, all of it authoring and none of it code:
 
-| Field | What it takes |
-|---|---|
-| `unlocks` | already written in the teaching document's own constraints table — copy, for the 82 that have one |
-| `costWhy` × rungs | already written in each approach's `Complexity and when to use this` — copy |
-| `checks` | new writing, ~15 minutes for three, and the only part that needs judgement |
-| `reading` | two verified links; **check every URL with a real request** — four of the first six 404'd |
+| Field                | What it takes                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `unlocks`            | already written in the teaching document's own constraints table — copy, for the 82 that have one             |
+| `costWhy` × rungs    | already written in each approach's `Complexity and when to use this` — copy                                   |
+| `checks`             | new writing, ~15 minutes for three, and the only part that needs judgement                                    |
+| `reading`            | two verified links; **check every URL with a real request** — four of the first six 404'd                     |
 | keys on alternatives | one line each, and it may force the journey to name its acts by key in the same commit (the gate will say so) |
 
 So the expensive half of the pilot is already sitting in `docs/deep/` for 82 problems, and
@@ -312,11 +312,11 @@ Everything below shipped after §4, in the order it was asked for.
 
 ### 8.1 The type scale closed
 
-| Measure, problem page | Before | After |
-|---|---|---|
-| Text nodes off the six-step scale | **111** of 880 | **0** |
-| Font weights | 4 (a bare `<b>` renders 700) | **3** — 400/500/600 |
-| Rail entries printing raw Markdown (`*…*`) | several | **0** |
+| Measure, problem page                      | Before                       | After               |
+| ------------------------------------------ | ---------------------------- | ------------------- |
+| Text nodes off the six-step scale          | **111** of 880               | **0**               |
+| Font weights                               | 4 (a bare `<b>` renders 700) | **3** — 400/500/600 |
+| Rail entries printing raw Markdown (`*…*`) | several                      | **0**               |
 
 103 of those 111 were inline `<code>` carrying `text-[0.9em]` — a relative size is a seventh step
 that moves with context, so one span of inline code was 15.3px in body prose and 13.5px in a table
@@ -356,9 +356,9 @@ text 689 → 768 with no arithmetic.
 
 Worth recording, because both were mine and neither was visible in a diff:
 
-* A comment I added inside `ui-smoke.test.mjs` quoted a selector in **backticks**, inside a template
+- A comment I added inside `ui-smoke.test.mjs` quoted a selector in **backticks**, inside a template
   literal. The file stopped parsing: 16 tests ran instead of 178.
-* I reported a **6200px vertical hole** on this page. It did not exist —
+- I reported a **6200px vertical hole** on this page. It did not exist —
   `getBoundingClientRect` on an inline element spans every line it wraps across, and I was
   subtracting those. Closed, this page has zero vertical gaps over 40px.
 
@@ -387,13 +387,13 @@ not a coincidence — I authored `unlocks` by lifting from that exact table.
 
 Its five rows, checked one at a time before anything was deleted:
 
-| Row | Already on the page? |
-|---|---|
-| `1 <= nums.length <= 10^5` | yes — bound card, with the work drawn |
-| `-10^9 <= nums[i] <= 10^9` | yes — bound card, with the sparsity drawn |
-| a single element cannot repeat | yes — bound card |
-| unbounded in range, bounded in count | yes — bound card |
-| *(implied)* existence, not identity | yes — the **pre-solve check's** own reason says it |
+| Row                                  | Already on the page?                               |
+| ------------------------------------ | -------------------------------------------------- |
+| `1 <= nums.length <= 10^5`           | yes — bound card, with the work drawn              |
+| `-10^9 <= nums[i] <= 10^9`           | yes — bound card, with the sparsity drawn          |
+| a single element cannot repeat       | yes — bound card                                   |
+| unbounded in range, bounded in count | yes — bound card                                   |
+| _(implied)_ existence, not identity  | yes — the **pre-solve check's** own reason says it |
 
 All five. So the heading and the table go, and the page loses nothing.
 
@@ -427,11 +427,11 @@ that every block leaving `shared` arrives in `arc` — moved, never deleted.
 
 ### The three I judged and did NOT change
 
-| Pair | Why it stays |
-|---|---|
+| Pair                                                                            | Why it stays                                                                                                                                     |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | The document's "Understanding" opening vs the statement and the pre-solve check | It restates the question, then keeps going into why the naive approach is slow. The restatement is the on-ramp to an argument, not a second copy |
-| "Comparison" table vs the ladder | The same facts in a genuinely different affordance: the ladder is sequential and argues one rung at a time, the table is scanned side by side |
-| "Interview Priority" vs the arc's "good to say out loud in an interview" | One clause of overlap against a section that scripts the actual sentences |
+| "Comparison" table vs the ladder                                                | The same facts in a genuinely different affordance: the ladder is sequential and argues one rung at a time, the table is scanned side by side    |
+| "Interview Priority" vs the arc's "good to say out loud in an interview"        | One clause of overlap against a section that scripts the actual sentences                                                                        |
 
 ### Across the other routes
 
@@ -439,3 +439,83 @@ Swept home, a pattern list, two problem pages, the visualizer, SQL and
 flashcards: **one** cross-page repeat, and it is a UI label that every problem
 page carries ("Step through the approaches in build order…"). Chrome, not
 content.
+
+---
+
+## 12. The header, the chrome and the code — one page, finally
+
+Five asks, all of them versions of "give me the page".
+
+### 12.1 One header, not two boxes
+
+The title sat in a bordered card and its four facts sat in a sticky bar above it: two stacked
+surfaces both answering _what is this_, with a seam between them, and the NAME scrolled away while
+the facts stayed. The title moved up to join its facts and the card lost its border, so the brief
+now reads as the line under the title — which is what it always was.
+
+### 12.2 The climb — because that block taught nothing
+
+What was left in the card was a one-line brief and two buttons. Nothing on it could be looked at:
+a reader arriving could not see how many ways in there are, how far apart they are, or where the
+one they are being taught sits among them — and the page then spends three thousand words on
+exactly that.
+
+So the top of the page draws it. One step per rung, worst on the left, and the step gets **shorter
+as the cost comes down** — the staircase descends, which is the shape of the lesson. The bound sits
+under each step in mono, so `n² → n log n → n` is a picture before it is an argument.
+
+**Progressive disclosure survives it.** `ladderOf` has already capped the rungs a started journey
+has not earned; those draw as dashed outlines marked `?`, with no name and no cost. A reader sees
+there is further to climb — motivating, and giving nothing away.
+
+Each drawn step scrolls to its rung. A **button**, not an anchor: a bare `#id` href is a route
+change in this app, and a button has no href to get that wrong.
+
+### 12.3 The reading room
+
+Sidebar 256px + rail 288px = 544px of a 1440px screen, held for the length of a document. Scrolling
+down now hides both and the orient bar; scrolling up brings them back. Full reasoning, and the six
+decisions inside it, in `DESIGN.md` §The reading room. It is **off** under `prefers-reduced-motion`,
+and the gesture never overwrites a click.
+
+### 12.4 The ladder's Python runs
+
+The ladder is where a reader actually meets code — the teaching document is folded shut below it —
+and those blocks were the one code surface on the site you could only look at. They run now, and
+they are editable, and an approach being a bare `def` is handled the way the document's fences
+already handle it: a call on the problem's own first test vector is appended and **shown**.
+
+This collided with a gate, correctly. `PRODUCT.md` says the page hosts no editor — LeetCode is the
+link out — and a UI check enforced it positionally: no textarea above the explanation. A second
+check enforced the opposite pedagogy: every block is the reader's to change. Both counted
+textareas; a count cannot tell a teaching block from a solve box. The fix is the one the notes
+field already took — mark the role (`data-code-editor`) and let each gate ask its own question. The
+rewritten check is **stronger** than the one it replaced: it holds over the whole page rather than
+only above the explanation.
+
+### 12.5 Getting back
+
+The journey's trail said the **pattern** name. That is where the hierarchy goes, not where the
+reader came from — you arrive from a problem page, from the sidebar's Continue, or from a shared
+link, and in all three the thing you want back is the problem. It names the problem now.
+
+And because every back affordance in this app points _up_ a hierarchy, the sidebar gained the one
+control that actually knows: **where you just were**, labelled with the page's name, from a
+`sessionStorage` trail (`lib/recent.ts`). Plus **Home** as a row, since the wordmark being a link
+home is a convention, not an affordance. The back row is hidden on the first page of a sitting — a
+back button with nothing behind it teaches distrust.
+
+### 12.6 What the gates caught
+
+| Caught                                            | By                                                                                                 |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| an editor above the explanation                   | R1 — and it was right; see §12.4                                                                   |
+| every block editable, 4 ≠ 7                       | the opposite gate, one run later                                                                   |
+| a backtick in a comment inside a template literal | `node --check`, in one line, exactly as the trap says                                              |
+| the patch landed on the wrong `<OrientBar>`       | the new reading-room gate, which printed the bar's className with none of the classes just "added" |
+
+Two new checks lock the new behaviour: _chrome gets out of the way while you read, and comes back_
+and _the climb draws every rung, and masks the ones not earned_ — the second also proving a step
+scrolls rather than navigating.
+
+**Verified:** `npm run check` 837/837 · `npm run test:ui` **180/180** · build clean.
