@@ -1,7 +1,10 @@
-// Navigation in four sections — Continue (journeys actually in play),
-// Reference (the algorithm visualizer), Problems by pattern, then
-// SQL and Data science — every entry a hash link so back/forward and
-// middle-click work.
+// Navigation in five sections — Continue (journeys actually in play),
+// Problems by pattern, then SQL, Data science and Reference (the algorithm
+// visualizer) — every entry a hash link so back/forward and middle-click work.
+//
+// REFERENCE IS LAST on purpose. It sat second, one row above the catalogue,
+// which put a tool for watching sorts run ahead of the 153 problems this site
+// is for. Order is a claim about what matters; the visualizer is a side door.
 //
 // ONE CATALOGUE, and that is the point. This used to open with a list of
 // JOURNEYS and carry a separate list of patterns below it, so 93 of the 127
@@ -295,28 +298,6 @@ export function AppSidebar({ view }: { view: string }) {
           </SidebarGroup>
         )}
         <SidebarGroup>
-          <SidebarGroupLabel>Reference</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<a href={href("/algorithms")} />}
-                  isActive={view === "algorithms"}
-                  tooltip="Algorithm visualizer"
-                >
-                  <SlidersHorizontalIcon className="size-3.5 shrink-0 text-chart-2" />
-                  <span className="truncate">Algorithm visualizer</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              {/* B85's Resources entry is gone with the page. It was one
-                  surface about all ten patterns, sitting beside a group that
-                  lists the same ten — so a pattern's playbook and its problems
-                  were two clicks apart under two headings. Both are on the
-                  pattern's own page now, and the group below is the way in. */}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
           <SidebarGroupLabel>Problems · by pattern</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -439,6 +420,28 @@ export function AppSidebar({ view }: { view: string }) {
                   <span className="truncate">Stats Flashcards</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Reference</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<a href={href("/algorithms")} />}
+                  isActive={view === "algorithms"}
+                  tooltip="Algorithm visualizer"
+                >
+                  <SlidersHorizontalIcon className="size-3.5 shrink-0 text-chart-2" />
+                  <span className="truncate">Algorithm visualizer</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* B85's Resources entry is gone with the page. It was one
+                  surface about all ten patterns, sitting beside a group that
+                  lists the same ten — so a pattern's playbook and its problems
+                  were two clicks apart under two headings. Both are on the
+                  pattern's own page now, and the group above is the way in. */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
