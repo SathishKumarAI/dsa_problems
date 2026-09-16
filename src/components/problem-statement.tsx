@@ -18,6 +18,7 @@
 // that is `example-viewer.tsx` — and it decides nothing about the ladder.
 import { ExampleViewer } from "./example-viewer"
 import { runsOf } from "@/lib/notation"
+import { ConstraintFigureView } from "./constraint-figure"
 import { cn } from "@/lib/utils"
 import type { Problem } from "@/data"
 
@@ -49,8 +50,9 @@ function Part({
 }
 
 function Constraints({ problem }: { problem: Problem }) {
+  // the whole unlock, not just its sentence: the card renders its FIGURE too
   const buys = new Map(
-    (problem.unlocks ?? []).map((u) => [u.constraint, u.what])
+    (problem.unlocks ?? []).map((u) => [u.constraint, u] as const)
   )
   return (
     // `aria-label="constraints"` is load-bearing: a UI check reads this list
@@ -68,7 +70,8 @@ function Constraints({ problem }: { problem: Problem }) {
     // so every line in the section starts and ends on the column's own edges.
     <ul aria-label="constraints" className="grid gap-3 sm:grid-cols-2">
       {problem.constraints.map((c, i) => {
-        const what = buys.get(c)
+        const unlock = buys.get(c)
+        const what = unlock?.what
         return (
           <li
             key={c}
@@ -107,6 +110,17 @@ function Constraints({ problem }: { problem: Problem }) {
                 )
               )}
             </p>
+            {/* The bound, DRAWN. A number in a sentence is something a reader
+                nods at; three bars on a log scale is something they feel. The
+                figure is authored per constraint — never inferred from the
+                string, because 10^5 is a length and 10^9 is a value, and a
+                chart that guessed which would eventually draw a confident
+                lie. See `constraint-figure.tsx`. */}
+            {unlock?.figure && (
+              <div className="border-t pt-3">
+                <ConstraintFigureView figure={unlock.figure} />
+              </div>
+            )}
             {what && (
               // NO `prose-set` here, and that is why the utility is opt-in.
               // Justification works at the column's ~90 characters because the
@@ -114,7 +128,12 @@ function Constraints({ problem }: { problem: Problem }) {
               // ~40 characters a line, where the same setting opens exactly the
               // rivers justification gets blamed for — visible in a screenshot
               // two cards deep. A narrow measure is set ragged.
-              <p className="border-t pt-2 text-body text-muted-foreground">
+              <p
+                className={cn(
+                  "text-body text-muted-foreground",
+                  unlock?.figure ? "pt-1" : "border-t pt-2"
+                )}
+              >
                 {what}
               </p>
             )}

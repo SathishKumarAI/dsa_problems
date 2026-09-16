@@ -27,20 +27,56 @@ export const problem: Problem = {
     {
       constraint: "1 <= nums.length <= 10^5",
       what: "A hundred thousand elements makes O(n²) about 5·10⁹ comparisons. This is the bound that rules brute force out — it demands O(n log n) or better.",
+      // The work at the ceiling, which is what the bound actually decides.
+      // Log scale: on a linear one the single pass is 0.002% of the row — an
+      // invisible sliver, which draws the opposite of the lesson.
+      figure: {
+        kind: "quantities",
+        items: [
+          { label: "every pair", value: 5e9, tone: "bad" },
+          { label: "sort, then sweep", value: 1.7e6, tone: "plain" },
+          { label: "one pass", value: 1e5, tone: "good" },
+        ],
+      },
     },
     {
       constraint: "-10^9 <= nums[i] <= 10^9",
       what: "Values may be negative and span four billion possibilities, so an array with one slot per value is not allocatable. The lookup structure has to take arbitrary integer keys, which is a hash set's job.",
+      // Sparsity, drawn. The range is the line; the dots are everything you
+      // will actually hold. The empty space between them IS the argument
+      // against giving every possible value a slot.
+      figure: {
+        kind: "span",
+        from: "−10⁹",
+        to: "10⁹",
+        marks: [4, 27, 33, 51, 68, 71, 92],
+        note: "a handful of values, anywhere in four billion — the gaps are what you would be paying for",
+      },
     },
     {
       constraint:
         "a single element cannot repeat, so a one-element array is always false",
       what: "The base case — and the one an off-by-one gets wrong: a sweep written as nums[i] == nums[i - 1] starting at i = 0 reads position -1.",
+      // One cell, and the empty place a neighbour comparison reaches for.
+      figure: {
+        kind: "cells",
+        values: ["?", "7"],
+        caption: "a repeat needs two positions; index −1 is the one an off-by-one reads",
+      },
     },
     {
       constraint:
         "values are unbounded in range but bounded in count — there is no room to index by value",
       what: "At most 10⁵ elements against 2·10⁹ possible values: a structure sized by the DATA is affordable, one sized by the value RANGE is not.",
+      // The whole trade in one comparison: what you could see against what you
+      // will. Four orders of magnitude, which is why the set is affordable.
+      figure: {
+        kind: "quantities",
+        items: [
+          { label: "values you could see", value: 2e9, tone: "bad" },
+          { label: "values you will hold", value: 1e5, tone: "good" },
+        ],
+      },
     },
   ],
   // Read before you solve. Every answer is in the statement or the bounds

@@ -100,6 +100,28 @@ export interface Check {
   because: string
 }
 
+/**
+ * A bound, drawn — see `components/constraint-figure.tsx`.
+ *
+ * AUTHORED, never inferred. A number that appears in a constraint string is not
+ * a number a chart may assume it understands: `10^5` is a length, `10^9` is a
+ * value, and a figure that guessed which would eventually draw a confident lie.
+ * Three kinds, each a shape the corpus's constraints actually take.
+ */
+export type ConstraintFigure =
+  /** amounts that must be COMPARED — the work at the input's ceiling, or what
+   *  you could hold against what you will. Drawn on a log scale. */
+  | {
+      kind: "quantities"
+      items: { label: string; value: number; tone?: "bad" | "good" | "plain" }[]
+    }
+  /** a range with the values you will actually see marked on it: the picture of
+   *  sparsity, which is the argument against indexing by value. `marks` are
+   *  percentages along the span. */
+  | { kind: "span"; from: string; to: string; marks: number[]; note?: string }
+  /** a literal array, small enough to count — the base cases */
+  | { kind: "cells"; values: string[]; caption?: string }
+
 export interface Problem extends Code {
   id: string
   title: string
@@ -130,12 +152,13 @@ export interface Problem extends Code {
   // so is the difference between a label and a skill. Rendered under the
   // target in the orient zone, and per rung on the ladder (`Solution.costWhy`).
   costWhy?: string
+
   // What each bound BUYS — the constraint line, and the decision it permits or
   // forbids. Same shape as a teaching document's `unlocks` table, because it is
   // the same content: a corner case is trivia until a constraint makes it a
   // decision (R2), and a bound is noise until it rules something out.
   // `constraint` must match one of `constraints` exactly (problems.test.ts).
-  unlocks?: { constraint: string; what: string }[]
+  unlocks?: { constraint: string; what: string; figure?: ConstraintFigure }[]
   // Read-before-you-solve. See `Check` — comprehension of the statement, asked
   // before the first approach and never about the solution.
   checks?: Check[]
