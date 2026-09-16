@@ -696,7 +696,12 @@ describe(
         return {
           runs: [...document.querySelectorAll('button')]
             .filter(b => b.innerText.trim() === 'Run').length,
-          editors: document.querySelectorAll('textarea').length,
+          // :not([data-notes]) — the problem page's rail carries a NOTEPAD,
+          // and this count is about code editors. Without it a notes field
+          // would read as a fifth runnable block that has no Run button.
+          // (No backticks in this comment: it lives inside a template literal,
+          // and one would end the string.)
+          editors: document.querySelectorAll('textarea:not([data-notes])').length,
         };
       `)
       assert.ok(shape.runs >= 3, `only ${shape.runs} Run buttons`)
@@ -1405,7 +1410,7 @@ describe(
           // the document's own full runnable script at the foot IS editable
           // (B83), and it moved onto this page when the two routes merged. So
           // the question is where the textarea is, not whether one exists.
-          editor: [...document.querySelectorAll('textarea')].some(
+          editor: [...document.querySelectorAll('textarea:not([data-notes])')].some(
             t => !t.closest('#explanation')
           ),
         };

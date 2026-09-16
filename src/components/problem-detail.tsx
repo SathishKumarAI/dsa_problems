@@ -600,6 +600,7 @@ function ProblemPage({
       <ContentsRail
         sections={sections}
         outline={outline}
+        problemId={problem.id}
         label={binding ? "The rest of the story" : "The explanation"}
       />
     </div>

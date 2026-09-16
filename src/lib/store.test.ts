@@ -184,3 +184,40 @@ test("reset clears progress and keeps preferences", () => {
   assert.deepEqual(getStored(K.solved, []), [])
   assert.deepEqual(getStored(K.prefs, null), { speed: 90 })
 })
+
+// ---------- notes are the learner's writing, not their progress (B86) ----------
+
+test("a note never travels in the progress export", () => {
+  setStored(K.xp, 10)
+  setStored(K.notes("contains-duplicate"), "early exit is the whole trick")
+  const out = exportProgress()
+  assert.equal(out[K.xp], 10)
+  assert.equal(
+    out[K.notes("contains-duplicate")],
+    undefined,
+    "a progress file records what you did; a note is not that"
+  )
+})
+
+test("an import cannot overwrite a note, even when the file carries one", () => {
+  setStored(K.notes("pair-sum"), "mine")
+  const n = importProgress({ xp: 5, "notes:pair-sum": "theirs" })
+  assert.equal(n, 1, "the note should not be counted as written")
+  assert.equal(getStored(K.notes("pair-sum"), ""), "mine")
+})
+
+test("resetting progress leaves notes alone", () => {
+  // the rule and its reason: notes are excluded from the export, so a reset
+  // that erased them would destroy the only copy of something the learner
+  // wrote — and "erase progress" is not a phrase anybody reads as "and your
+  // notes"
+  setStored(K.xp, 99)
+  setStored(K.notes("valid-anagram"), "count letters, do not sort")
+  resetProgress()
+  assert.equal(getStored(K.xp, 0), 0, "progress should be gone")
+  assert.equal(
+    getStored(K.notes("valid-anagram"), ""),
+    "count letters, do not sort",
+    "a reset must not destroy writing that nothing can back up"
+  )
+})

@@ -177,9 +177,12 @@ export default function App() {
         <SidebarInset
           className={cn("min-w-0", panels && "h-svh overflow-hidden")}
         >
-          {/* ONE bar, at every width. On a phone it is the whole shell —
-              there is no rail — and above `md` it carries the search control
-              alone, right-aligned.
+          {/* A PHONE SHELL, and nothing above `md`. On a phone there is no
+              rail, so this bar is the only way to reach navigation and it
+              stays. Above `md` the page starts at the top of the window: the
+              search control moved into the sidebar, which is where navigation
+              already lives, and a band of chrome over every page bought
+              nothing once it was the only thing in it.
 
               It used to be two things: this bar below `md`, and a `fixed
               top-3 right-4` Search button above it. A fixed button is OUT of
@@ -195,19 +198,14 @@ export default function App() {
               corner, so above `md` they keep the keyboard-only palette and
               this bar is hidden — exactly what the fixed button did for
               them. */}
-          <div
-            className={cn(
-              "sticky top-0 z-20 flex items-center gap-2 border-b bg-background/70 px-4 py-2 backdrop-blur-md",
-              panels && "md:hidden"
-            )}
-          >
-            <SidebarTrigger className="md:hidden" />
-            <span className="font-mono text-ui md:hidden">Patternsmith</span>
+          <div className="sticky top-0 z-20 flex items-center gap-2 border-b bg-background/70 px-4 py-2 backdrop-blur-md md:hidden">
+            <SidebarTrigger />
+            <span className="font-mono text-ui">Patternsmith</span>
             <SearchTrigger className="ml-auto" />
             <Button
               size="icon-sm"
               variant="ghost"
-              className="size-11 text-muted-foreground md:hidden"
+              className="size-11 text-muted-foreground"
               aria-label="how to use this app"
               onClick={() => openDialog("help")}
             >

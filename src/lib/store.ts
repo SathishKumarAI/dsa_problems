@@ -103,7 +103,7 @@ const ownKeys = () => {
 export function exportProgress(): Record<string, unknown> {
   return Object.fromEntries(
     ownKeys()
-      .filter((k) => k !== K.prefs) // preferences are per device
+      .filter((k) => k !== K.prefs && !NOT_PROGRESS(k)) // prefs are per device
       .map((k) => [k, read(k, null)])
   )
 }
@@ -114,7 +114,7 @@ export function importProgress(obj: Record<string, unknown>): number {
     throw new Error("bad")
   let n = 0
   for (const [k, v] of Object.entries(obj)) {
-    if (k === K.prefs) continue
+    if (k === K.prefs || NOT_PROGRESS(k)) continue
     setStored(k, v)
     n++
   }
@@ -122,7 +122,8 @@ export function importProgress(obj: Record<string, unknown>): number {
 }
 
 export function resetProgress() {
-  for (const k of ownKeys()) if (k !== K.prefs) removeStored(k)
+  for (const k of ownKeys())
+    if (k !== K.prefs && !NOT_PROGRESS(k)) removeStored(k)
 }
 
 export function useStored<T>(key: string, fallback: T): T {
@@ -149,7 +150,22 @@ export const K = {
   scorecard: (slug: string) => `scorecard:${slug}`,
   prefs: "prefs",
   spoilers: "spoilers",
+  /** what the learner wrote about one problem. See NOT_PROGRESS below. */
+  notes: (problemId: string) => `notes:${problemId}`,
 } as const
+
+/**
+ * Keys that are the learner's own WRITING, not their progress.
+ *
+ * They are excluded from the export, because a progress file is a record of
+ * what you have done and notes are not that (B86). And because they are
+ * excluded from the export they are also excluded from the RESET: a key that
+ * cannot be backed up must not be destroyed by a button labelled "erase
+ * progress". Erasing a page of your own notes with no copy anywhere is the
+ * kind of data loss a settings dialog should never be able to cause by
+ * accident, and "progress" is not a word anybody reads as "and your notes".
+ */
+const NOT_PROGRESS = (key: string) => key.startsWith("notes:")
 
 export interface Prefs {
   speed: number // slider 1..100
@@ -160,6 +176,10 @@ export interface Prefs {
   // class on <body> that index.css reads.
   reduceMotion: boolean
   reading: boolean // journey page: reading column open (false = icon rail)
+  // problem page: the right rail ("On this page" + notes) open. Its own pref
+  // rather than `reading`, because the two are different columns on different
+  // pages and one switch for both means closing your notes to focus a journey.
+  pageRail: boolean
   // journey page: which sections of the problem panel are open. null = the
   // learner has never touched it, so the act decides (R3).
   problemSections: string[] | null
@@ -180,6 +200,7 @@ export const DEFAULT_PREFS: Prefs = {
   motion: "normal",
   reduceMotion: false,
   reading: true,
+  pageRail: true,
   problemSections: null,
   drawer: false,
   filterQuery: "",

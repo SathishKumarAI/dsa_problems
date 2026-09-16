@@ -24,7 +24,9 @@ import {
   SigmaIcon,
   SlidersHorizontalIcon,
 } from "lucide-react"
+import { SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { KEYHINT, openPalette } from "@/features/search/palette-state"
 import { ProgressRing } from "@/components/ui/progress-ring"
 import { RailToken } from "@/components/ui/rail-token"
 import { cn } from "@/lib/utils"
@@ -205,10 +207,8 @@ export function AppSidebar({ view }: { view: string }) {
   // PATTERNS when the journey catalogue went: ten rows, and no way to reach a
   // problem from it at all. A catalogue whose leaves are unreachable is a table
   // of contents with no page numbers.
-  const openPattern =
-    route.parts[0] === "p" ? route.parts[1] : undefined
-  const openProblem =
-    route.parts[0] === "p" ? route.parts[2] : undefined
+  const openPattern = route.parts[0] === "p" ? route.parts[1] : undefined
+  const openProblem = route.parts[0] === "p" ? route.parts[2] : undefined
   const resume = continuing(
     route.parts[0] === "journey" ? route.parts[1] : undefined
   )
@@ -239,6 +239,29 @@ export function AppSidebar({ view }: { view: string }) {
             <CircleHelpIcon />
           </Button>
         </div>
+        {/* SEARCH LIVES HERE. It was a bar across the top of every page, which
+            is a band of chrome above the thing you came to read — and on the
+            problem page it is the only chrome left. Navigation belongs with
+            navigation. On the icon rail it is the magnifier alone, and the
+            keyboard route (Ctrl/⌘ K) is unchanged and unaffected. */}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={openPalette}
+              tooltip="Search — Ctrl/⌘ K"
+              className="text-muted-foreground"
+            >
+              <SearchIcon className="size-4 shrink-0" />
+              <span className={`truncate ${WIDE}`}>Search</span>
+              <span
+                className={`ml-auto font-mono text-meta text-dim ${WIDE}`}
+                aria-hidden
+              >
+                {KEYHINT}
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent
         // collapsed, the primitive sets overflow-hidden, so "show all 46

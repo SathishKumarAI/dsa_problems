@@ -10,7 +10,12 @@ import {
   FileCodeIcon,
   GraduationCapIcon,
   ListTreeIcon,
+  PanelRightCloseIcon,
+  PanelRightOpenIcon,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { setPref, usePrefs } from "@/lib/store"
+import { ProblemNotes } from "./problem-notes"
 import { cn } from "@/lib/utils"
 import type { Pattern, Problem } from "@/data"
 import type { Outline } from "@/lib/markdown"
@@ -107,8 +112,11 @@ export function ReadFurther({
 export function ContentsRail({
   outline,
   sections = [],
+  problemId,
   label = "The explanation",
 }: {
+  /** whose notes the rail carries */
+  problemId?: string
   /** the PAGE's own sections, always known — the document's outline needs a
    *  fetch, so a rail that waited for it left the right column empty on
    *  arrival and filled it only once the reader opened the long read. At 1283
@@ -120,6 +128,32 @@ export function ContentsRail({
    *  headed "The explanation" is indexing something the page no longer has. */
   label?: string
 }) {
+  const { pageRail } = usePrefs()
+
+  // CLOSED: a thin strip holding the control that reopens it, which is the
+  // pattern the left sidebar and the journey's reading column already use —
+  // a rail that vanishes entirely leaves no way back, and a reader who
+  // closed it is exactly the reader who will not go looking in settings.
+  //
+  // The reading column takes the freed width by itself: it is
+  // `max-w-reading` inside a flex row, so removing 224px of rail and its gap
+  // widens the text from 689 to 768 with no arithmetic here.
+  if (!pageRail)
+    return (
+      <div className="sticky top-16 hidden h-fit shrink-0 xl:block">
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="show the page rail"
+          title="show the page rail — notes and contents (f)"
+          className="text-muted-foreground"
+          onClick={() => setPref("pageRail", true)}
+        >
+          <PanelRightOpenIcon />
+        </Button>
+      </div>
+    )
+
   return (
     <nav
       aria-label="contents"
@@ -150,6 +184,27 @@ export function ContentsRail({
       {outline.map((entry) => (
         <Entry key={entry.id} entry={entry} />
       ))}
+
+      {problemId && (
+        <div className="pt-5">
+          <ProblemNotes problemId={problemId} />
+        </div>
+      )}
+
+      {/* at the FOOT, like the sidebar's own collapse — the control that hides
+          a column belongs at the end of it, not over its first entry */}
+      <div className="flex justify-end pt-4">
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          aria-label="hide the page rail"
+          title="hide the page rail — wider text to read (f)"
+          className="text-muted-foreground"
+          onClick={() => setPref("pageRail", false)}
+        >
+          <PanelRightCloseIcon />
+        </Button>
+      </div>
     </nav>
   )
 }
