@@ -38,7 +38,9 @@ import type { Pattern, Problem } from "@/data"
 import { earnedOf, toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
+import { useReadingRoom } from "@/lib/use-reading-room"
 import { ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
+import { TheClimb } from "./the-climb"
 import { K, useStored } from "@/lib/store"
 // `href` went with the journey link: the primary action is a button now
 import { navigate, useRoute } from "@/lib/route"
@@ -109,6 +111,8 @@ function ProblemPage({
     1
   )
   const ladder = ladderOf(problem, journey, unlocked)
+  // the page's own chrome answers to the same gesture as the shell's
+  const room = useReadingRoom()
   // the ledger, as the mode bar reads it: how many acts this learner has earned
   const earned = earnedOf(unlocked, journey?.acts.length ?? 0)
   // The explanation, fetched on arrival and never with the bundle: a typed
@@ -196,7 +200,15 @@ function ProblemPage({
   if (pair)
     return (
       <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
-        <OrientBar>
+        {/* hides while reading, same as the page's own bar below */}
+        <OrientBar
+          className={cn(
+            "transition-[transform,opacity] duration-(--duration-reveal)",
+            room.reading
+              ? "pointer-events-none invisible -translate-y-full opacity-0"
+              : "translate-y-0 opacity-100"
+          )}
+        >
           <Button
             variant="ghost"
             size="sm"
@@ -350,7 +362,20 @@ function ProblemPage({
           The glyph is gone — it restated the pattern the back link already
           names and spent the accent doing it. The mask still holds: the back
           link is what renders `· · ·` while a journey is mid-flight (B45). */}
-        <OrientBar>
+        {/* THE BAR GETS OUT OF THE WAY WHILE YOU READ, on the gesture the two
+          sidebars use — see `lib/use-reading-room.ts`. It SLIDES rather than
+          disappearing: a sticky bar that vanishes reads as a rendering fault,
+          and one that moves reads as making room. `invisible` lands only at
+          the end of the travel, so it cannot be tabbed into while it is off
+          screen but is still animating on the way there. */}
+        <OrientBar
+          className={cn(
+            "transition-[transform,opacity] duration-(--duration-reveal)",
+            room.reading
+              ? "pointer-events-none invisible -translate-y-full opacity-0"
+              : "translate-y-0 opacity-100"
+          )}
+        >
           <Button
             variant="ghost"
             size="sm"
@@ -360,6 +385,17 @@ function ProblemPage({
             <ArrowLeftIcon data-icon="inline-start" />
             {hidden ? MASKED_NAME : pattern.name}
           </Button>
+          {/* THE NAME SITS WITH ITS FACTS. It used to head the raised card
+            below, which put "Contains Duplicate" in one box and the four
+            things you want to know about it in another — two bands answering
+            "what is this", stacked, and the name scrolled away while the
+            facts stayed. One row now, and the card below opens on the brief.
+
+            Still the page's h1 and still the first heading in the document:
+            this moved the element, not the outline. */}
+          <h1 className="font-heading text-title font-semibold">
+            {problem.title}
+          </h1>
           <Fact label="difficulty">
             <DifficultyMeter difficulty={problem.difficulty} />
             <span
@@ -438,17 +474,24 @@ function ProblemPage({
           mid-journey. */}
         <div
           data-surface="raised"
-          // `px-4` is the page's one box inset: the H1 used to start 25px right
-          // of every heading below it, which is the misalignment a reader sees
-          // first. Vertical padding stays generous — this is the raised surface.
-          className="flex flex-col gap-3 rounded-xl border bg-card px-4 py-5 md:py-6"
+          // ONE HEADER, NOT TWO BOXES. The title and its four facts were in a
+          // sticky bar and the brief and the actions were in a bordered card
+          // under it — two stacked surfaces both answering "what is this", with
+          // a seam between them. The bar above is the top of this region now
+          // and the border is gone: the brief reads as the line under the
+          // title, which is what it is.
+          //
+          // `-mt-2` closes the gap the flex column would otherwise leave, so
+          // the two halves read as one block rather than as siblings.
+          className="-mt-4 flex flex-col gap-4"
         >
-          <h1 className="font-heading text-title font-semibold">
-            {problem.title}
-          </h1>
           <p className="max-w-measure text-body text-muted-foreground">
             {problem.brief}
           </p>
+          {/* THE CLIMB. What replaced a sentence and two buttons with something
+            a reader can look AT: how many ways in there are, how far apart they
+            are, and which ones the ledger is still holding. */}
+          <TheClimb ladder={ladder} />
           <div className="flex flex-wrap items-center gap-3 pt-1">
             {/* The journey is the PRIMARY action where one exists: it is the way
               this app teaches, and everything else on the page is what you

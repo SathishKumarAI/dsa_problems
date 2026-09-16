@@ -27,7 +27,7 @@ import {
   SigmaIcon,
   SlidersHorizontalIcon,
 } from "lucide-react"
-import { SearchIcon } from "lucide-react"
+import { CornerUpLeftIcon, HomeIcon, SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { KEYHINT, openPalette } from "@/features/search/palette-state"
 import { ProgressRing } from "@/components/ui/progress-ring"
@@ -67,6 +67,8 @@ import {
 // Measured before: `engine-*.js` was 568 KB gzipped of the 747 KB first load.
 import { JOURNEY_CARDS as JOURNEYS } from "@/engine/manifest"
 import { openDialog } from "@/lib/dialogs"
+import { navigate } from "@/lib/route"
+import { usePrevious } from "@/lib/recent"
 import { MASKED_GLYPH, MASKED_NAME, usePatternMask } from "@/lib/disclosure"
 import type { Mask } from "@/lib/disclosure"
 import { earnedOf, useEarned, useSolved } from "@/lib/progress"
@@ -200,6 +202,7 @@ function continuing(open: string | undefined) {
 }
 
 export function AppSidebar({ view }: { view: string }) {
+  const back = usePrevious()
   useStoreVersion()
   const solved = useSolved()
   const mask = usePatternMask()
@@ -264,6 +267,40 @@ export function AppSidebar({ view }: { view: string }) {
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          {/* HOME, as a control rather than as a logo. The wordmark above has
+              always been a link home, which is a convention and not an
+              affordance: nothing about it says so, and on the icon rail it is
+              a monogram. This row says it. */}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => navigate("/")}
+              tooltip="Home"
+              className="text-muted-foreground"
+            >
+              <HomeIcon className="size-4 shrink-0" />
+              <span className={`truncate ${WIDE}`}>Home</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          {/* WHERE YOU JUST WERE. Every other back affordance in this app
+              points UP a hierarchy — a journey trails to its problem, a
+              problem to its pattern — which is only where you came from if
+              you arrived from above. Arrive from search or a shared link and
+              those all send you somewhere new. This is the one control that
+              knows, and it names the page so it is a destination rather than
+              a direction. Hidden on the first page of a sitting, because a
+              back button with nothing behind it teaches distrust. */}
+          {back && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate(back.path)}
+                tooltip={`Back to ${back.label}`}
+                className="text-muted-foreground"
+              >
+                <CornerUpLeftIcon className="size-4 shrink-0" />
+                <span className={`truncate ${WIDE}`}>{back.label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent

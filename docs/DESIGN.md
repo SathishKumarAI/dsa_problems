@@ -13,14 +13,14 @@ how the sixteen steps happened.
 
 Six steps. Line heights ship with them, so `text-body` is a full type setting, not a size.
 
-| Token | px / line-height | Use it for |
-|---|---|---|
-| `text-meta` | 13 / 18 | labels, counts, act keys, eyebrow captions, legend entries |
-| `text-ui` | 15 / 22 | buttons, controls, table cells, breadcrumbs, subtitles |
-| `text-body` | **17 / 28** | anything a learner reads as a sentence: the reading column, dialog prose, quiz and predict questions, corner cases, problem statements, hints |
-| `text-narration` | **20 / 31** | the narration line under the stage (`lg` and up; `text-body` below) |
-| `text-title` | 28 / 34 | page and act titles |
-| `text-display` | 40 / 44 | the equation and the answer on the stage |
+| Token            | px / line-height | Use it for                                                                                                                                    |
+| ---------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text-meta`      | 13 / 18          | labels, counts, act keys, eyebrow captions, legend entries                                                                                    |
+| `text-ui`        | 15 / 22          | buttons, controls, table cells, breadcrumbs, subtitles                                                                                        |
+| `text-body`      | **17 / 28**      | anything a learner reads as a sentence: the reading column, dialog prose, quiz and predict questions, corner cases, problem statements, hints |
+| `text-narration` | **20 / 31**      | the narration line under the stage (`lg` and up; `text-body` below)                                                                           |
+| `text-title`     | 28 / 34          | page and act titles                                                                                                                           |
+| `text-display`   | 40 / 44          | the equation and the answer on the stage                                                                                                      |
 
 **Raised one step on 2026-09-12, and the reason is a measurement rather than a
 taste.** Every text node on four routes was read out of a real browser with its
@@ -74,9 +74,9 @@ an HTML comment at the top of `index.html`'s body and must survive the productio
 Catppuccin Mocha is gone. What replaced it is not a colour scheme but two working systems, both
 **colour-vision-safe by construction rather than by luck**:
 
-| System | Used for | Why that one |
-|---|---|---|
-| **Viridis** (`--ramp-0…4`) | anything ORDERED — the ladder's rungs, the cost bars | Equal steps in the data are equal steps in PERCEIVED lightness. Five arbitrary colours say "five kinds"; a perceptually uniform ramp says "a climb" |
+| System                        | Used for                                                           | Why that one                                                                                                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viridis** (`--ramp-0…4`)    | anything ORDERED — the ladder's rungs, the cost bars               | Equal steps in the data are equal steps in PERCEIVED lightness. Five arbitrary colours say "five kinds"; a perceptually uniform ramp says "a climb"                              |
 | **Okabe–Ito** (`--chart-1…5`) | the categorical chip roles — focus, window, settled, anchor, wrong | The canonical colour-blind-safe qualitative set of scientific figures. One hue per ROLE, and the role keeps its hue across both themes so a screenshot of one reads as the other |
 
 **The rule the whole world rests on: colour means DATA, and chrome never borrows it.** The primary
@@ -94,7 +94,7 @@ not miss (copied, saved, pass/fail, complete) and the **chip grammar** on a stag
 Three findings only the mechanical gate would have produced, all of them the same mistake wearing
 different clothes:
 
-- the **Run / Stop** button was painted in `--chart-3` and `--chart-5` — *settled* and *wrong*, the
+- the **Run / Stop** button was painted in `--chart-3` and `--chart-5` — _settled_ and _wrong_, the
   two colours a learner is taught to read on the stage as "this cell is done" and "this cell is the
   bug". Its label already says which it is;
 - the copy button restated its outcome hue under `group-hover:` for one reason: the idle rule below
@@ -144,18 +144,18 @@ decoration, and it should be drawn rather than typed.
 
 The palette did not change on 2026-09-12; the light in the room did.
 
-| Layer | What it is | Why |
-|---|---|---|
-| Page ground | `crust`, with a mauve wash top-left and a blue one bottom-right | A flat fill reads as a document. The two hues are the ones the chip grammar already uses for *focus* and *window*, so the room is lit by the product's own colours |
-| Grid | 64px hairlines at 7% of the foreground, masked out below 62% | Depth and scale without competing for attention — felt more than seen |
-| Resting surfaces | `--shadow-panel`: a 1px highlight along the top edge, and a shadow with both an offset and a blur | A panel a millimetre above the page. A zero-offset halo would be decoration |
-| The one primary surface | `--shadow-raised` on `[data-surface="raised"]`: a tight contact shadow under the near edge PLUS a long soft cast | Two shadows is what separates *lifted* from *outlined*. **One per screen** — home's dock. A second one is a page with no primary |
-| Floating surfaces | `backdrop-filter: blur(14px)` — sidebar, dialogs, hover-peek rails, the test-case drawer | These sit ON TOP of a stage that is usually mid-animation: opaque would hide it, transparent would be unreadable |
-| Where you are | A 2px accent edge on the active rail row plus a 22px glow | The rail is the only place that needs a persistent "you are here" |
-| The rail | A hairline of light down its inner edge, and a shadow cast ACROSS the page | The border alone drew a seam; this draws an edge, and the content column reads as sitting in FRONT of the navigation |
-| Hover | A 1px lift and a deeper shadow — never a colour change (`--shadow-lift`) | Colour is load-bearing here (the chip roles); it cannot be spent on hover |
-| Arrival | `main` settles in from a 6px blur over 320ms, exponential ease-out | One authored moment, from an already-visible default, so a reader who lands mid-animation still sees the page |
-| Per surface | ONE more each: `animate-edge-in-y` (home's dock draws its accent edge) and `animate-edge-in-x` (the pattern page draws a rule under its title) | The same idea both times — an edge drawing itself along a thing that is ALREADY at full opacity. Nothing fades in, so nothing is missed by arriving late |
+| Layer                   | What it is                                                                                                                                     | Why                                                                                                                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Page ground             | `crust`, with a mauve wash top-left and a blue one bottom-right                                                                                | A flat fill reads as a document. The two hues are the ones the chip grammar already uses for _focus_ and _window_, so the room is lit by the product's own colours |
+| Grid                    | 64px hairlines at 7% of the foreground, masked out below 62%                                                                                   | Depth and scale without competing for attention — felt more than seen                                                                                              |
+| Resting surfaces        | `--shadow-panel`: a 1px highlight along the top edge, and a shadow with both an offset and a blur                                              | A panel a millimetre above the page. A zero-offset halo would be decoration                                                                                        |
+| The one primary surface | `--shadow-raised` on `[data-surface="raised"]`: a tight contact shadow under the near edge PLUS a long soft cast                               | Two shadows is what separates _lifted_ from _outlined_. **One per screen** — home's dock. A second one is a page with no primary                                   |
+| Floating surfaces       | `backdrop-filter: blur(14px)` — sidebar, dialogs, hover-peek rails, the test-case drawer                                                       | These sit ON TOP of a stage that is usually mid-animation: opaque would hide it, transparent would be unreadable                                                   |
+| Where you are           | A 2px accent edge on the active rail row plus a 22px glow                                                                                      | The rail is the only place that needs a persistent "you are here"                                                                                                  |
+| The rail                | A hairline of light down its inner edge, and a shadow cast ACROSS the page                                                                     | The border alone drew a seam; this draws an edge, and the content column reads as sitting in FRONT of the navigation                                               |
+| Hover                   | A 1px lift and a deeper shadow — never a colour change (`--shadow-lift`)                                                                       | Colour is load-bearing here (the chip roles); it cannot be spent on hover                                                                                          |
+| Arrival                 | `main` settles in from a 6px blur over 320ms, exponential ease-out                                                                             | One authored moment, from an already-visible default, so a reader who lands mid-animation still sees the page                                                      |
+| Per surface             | ONE more each: `animate-edge-in-y` (home's dock draws its accent edge) and `animate-edge-in-x` (the pattern page draws a rule under its title) | The same idea both times — an edge drawing itself along a thing that is ALREADY at full opacity. Nothing fades in, so nothing is missed by arriving late           |
 
 **Write a transition as longhands, not the `transition:` shorthand.** The
 shorthand repeats the duration once per property, so `getComputedStyle` reports
@@ -178,10 +178,10 @@ carry `tabular-nums slashed-zero` — every number on the stage is measurement.
 
 ## The two faces
 
-| Role | Face | Where |
-|---|---|---|
-| prose | **Manrope Variable** (`--font-sans`, and `--font-heading` follows it) | anything read as a sentence, every heading, every control label |
-| data | **JetBrains Mono Variable** (`--font-mono`) | values, indices, counts, act keys, code blocks, the chip row, notation glyphs |
+| Role  | Face                                                                  | Where                                                                         |
+| ----- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| prose | **Manrope Variable** (`--font-sans`, and `--font-heading` follows it) | anything read as a sentence, every heading, every control label               |
+| data  | **JetBrains Mono Variable** (`--font-mono`)                           | values, indices, counts, act keys, code blocks, the chip row, notation glyphs |
 
 Both are **self-hosted** through `@fontsource-variable/*`, imported at the top of `src/index.css` —
 not a Google Fonts `<link>`. An external stylesheet on the critical path is a render-blocking
@@ -213,11 +213,11 @@ the edge is just the column's now, and it is a straight edge rather than a rag.
 characters a line, against the 45–75 the typographic literature recommends. A line that long set
 ragged-right leaves a very uneven right margin, which is why the setting is justified:
 
-| Setting | Why |
-|---|---|
-| `text-align: justify` | Both edges flush. At 90 characters there is enough room in a line for the word spaces to absorb the difference |
-| `hyphens: auto` | **Not optional.** Justification without a hyphen dictionary is what opens rivers of white space between words — the failure everyone blames justification for. It needs a language to pick a dictionary; `index.html` sets `lang="en"`, and without that this silently does nothing |
-| `text-wrap: pretty` | The last line of a paragraph is set ragged, so it still cannot end on a single short word |
+| Setting               | Why                                                                                                                                                                                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text-align: justify` | Both edges flush. At 90 characters there is enough room in a line for the word spaces to absorb the difference                                                                                                                                                                      |
+| `hyphens: auto`       | **Not optional.** Justification without a hyphen dictionary is what opens rivers of white space between words — the failure everyone blames justification for. It needs a language to pick a dictionary; `index.html` sets `lang="en"`, and without that this silently does nothing |
+| `text-wrap: pretty`   | The last line of a paragraph is set ragged, so it still cannot end on a single short word                                                                                                                                                                                           |
 
 It is the `prose-set` utility, applied to RUNNING TEXT only — never to labels, controls, code, or
 a term in a definition list, none of which are read as sentences.
@@ -245,11 +245,11 @@ the U7 gate allows at every step.
 
 Two rules keep a column to one edge:
 
-| Rule | Why |
-|---|---|
-| **One cap per FLOW, not one per block** | A per-block cap is applied after the nesting, so a callout inside a fold got its own 576 on top of two levels of left inset and ended 35px PAST the column — 611 against 576. On the flow container it is a ceiling that nesting can only move inwards from |
-| **Padding-RIGHT comes out of the measure; padding-left does not** | A `<p class="max-w-measure pl-4">` still ends at 576 — the inset eats the left. `px-4` on the same element ends at 560, and a `<details px-4>` holding a callout with `pr-3` ended at 547. Only the right side moves the edge |
-| **A decorative glyph is not structure** | A `·` before a bound and a `→` before its explanation cost 16px of measure each and bought nothing that position and voice could not say. The constraint list is a definition list now: term, then definition beneath it, both on the column's own edges |
+| Rule                                                              | Why                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **One cap per FLOW, not one per block**                           | A per-block cap is applied after the nesting, so a callout inside a fold got its own 576 on top of two levels of left inset and ended 35px PAST the column — 611 against 576. On the flow container it is a ceiling that nesting can only move inwards from |
+| **Padding-RIGHT comes out of the measure; padding-left does not** | A `<p class="max-w-measure pl-4">` still ends at 576 — the inset eats the left. `px-4` on the same element ends at 560, and a `<details px-4>` holding a callout with `pr-3` ended at 547. Only the right side moves the edge                               |
+| **A decorative glyph is not structure**                           | A `·` before a bound and a `→` before its explanation cost 16px of measure each and bought nothing that position and voice could not say. The constraint list is a definition list now: term, then definition beneath it, both on the column's own edges    |
 
 And sentences take `text-body`. `text-ui` is for buttons and labels; a sentence set at the control
 step wraps to a different width than the prose beside it, which is the same defect from the other
@@ -278,18 +278,18 @@ sub-heading.
 
 ## Shape — how a surface is built
 
-The audit's word for the old home was *the lazy container*: four stacks of
+The audit's word for the old home was _the lazy container_: four stacks of
 same-size cards, where a journey you were halfway through and a pattern you had
 never opened had the same weight, the same width and the same shadow. 1738 px of
-page at 1440, and nothing on it said *here*.
+page at 1440, and nothing on it said _here_.
 
 Three tiers, and an element picks exactly one:
 
-| Tier | What it is | On home |
-|---|---|---|
+| Tier         | What it is                                                                    | On home                                                                                                                                                                            |
+| ------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **the dock** | ONE raised surface, `[data-surface="raised"]` — the thing you came back to do | resume the started journey, or, when nothing is started, start one. It is never absent: a page whose most important element is conditional has no shape on the day it matters most |
-| **rows** | a bordered panel, `divide-y`, one line each, scannable | the journeys in play; the catalogue |
-| **a strip** | a single bordered line, its own thing | the algorithm visualizer |
+| **rows**     | a bordered panel, `divide-y`, one line each, scannable                        | the journeys in play; the catalogue                                                                                                                                                |
+| **a strip**  | a single bordered line, its own thing                                         | the algorithm visualizer                                                                                                                                                           |
 
 Rules that keep it honest:
 
@@ -324,11 +324,11 @@ feels like a trapdoor.
 
 Three widths, so a new page has an obvious one to pick.
 
-| Token | Width | For |
-|---|---|---|
-| `max-w-reading` | 768 px | a single document: a problem, a drill, a flashcard deck |
-| `max-w-page` | 1120 px | an index or an overview: home, **a pattern's problem list** |
-| `max-w-stage` | 1760 px | the journey and the visualizer, which earn the width |
+| Token           | Width   | For                                                         |
+| --------------- | ------- | ----------------------------------------------------------- |
+| `max-w-reading` | 768 px  | a single document: a problem, a drill, a flashcard deck     |
+| `max-w-page`    | 1120 px | an index or an overview: home, **a pattern's problem list** |
+| `max-w-stage`   | 1760 px | the journey and the visualizer, which earn the width        |
 
 ## Spacing
 
@@ -340,12 +340,12 @@ a chip's inner padding — and nowhere else. `0.5` (2 px) is a hairline, not a g
 
 Four, all derived from `--radius: 0.625rem`, and nothing arbitrary:
 
-| Token | px | For |
-|---|---|---|
-| `rounded-sm` | 6 | chips, pills, inline marks |
-| `rounded-md` | 8 | buttons, inputs, small controls |
-| `rounded-lg` | 10 | panels inside a card, code blocks |
-| `rounded-xl` | 14 | cards and the stage |
+| Token        | px  | For                               |
+| ------------ | --- | --------------------------------- |
+| `rounded-sm` | 6   | chips, pills, inline marks        |
+| `rounded-md` | 8   | buttons, inputs, small controls   |
+| `rounded-lg` | 10  | panels inside a card, code blocks |
+| `rounded-xl` | 14  | cards and the stage               |
 
 ## Colour
 
@@ -353,16 +353,55 @@ The palette is Catppuccin Mocha, mapped to roles in `src/index.css`; components 
 a hex. `chart-1` mauve is the accent — insight, the current act, links inside the stage. Semantic
 colour is separate from the accent and means one thing each:
 
-| Role | Token | Means |
-|---|---|---|
-| answer, pass, "in final place" | `chart-3` green | this is correct |
-| warning, broken promise, swap | `chart-5` red | this is wrong, or it moved |
-| held, pivot, anchor | `chart-4` peach | the thing being held |
-| current, comparing | `yellow` | the thing being looked at |
-| corner case | `teal` | a case you were told to bring |
+| Role                           | Token           | Means                         |
+| ------------------------------ | --------------- | ----------------------------- |
+| answer, pass, "in final place" | `chart-3` green | this is correct               |
+| warning, broken promise, swap  | `chart-5` red   | this is wrong, or it moved    |
+| held, pivot, anchor            | `chart-4` peach | the thing being held          |
+| current, comparing             | `yellow`        | the thing being looked at     |
+| corner case                    | `teal`          | a case you were told to bring |
 
 **Colour is never the only channel.** Every state on the stage also carries a marker (▲), a ring, an
 icon (✓) or a fade. Check a change in greyscale before shipping it.
+
+## The reading room — chrome that leaves
+
+The app sidebar is 256px and the contents rail is 288px: 544px of a 1440px screen, held for
+the whole length of a document, and the only way to reclaim it was two deliberate clicks the
+reader then had to undo.
+
+**The gesture already says it.** Scrolling DOWN is reading; scrolling UP is looking for
+something. So down hides the sidebar, the rail and the page's own orient bar, and up brings
+all three back — the controls arrive exactly when a hand is already moving toward them.
+`lib/use-reading-room.ts` owns it, and three callers share the one rule.
+
+| Decision                                | Why                                                                                                                                                                                                                                                                              |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| direction, never position               | position says where you are, which says nothing about what you want                                                                                                                                                                                                              |
+| an 8px threshold                        | a trackpad settling or a rubber-band is not a gesture                                                                                                                                                                                                                            |
+| a 120px top zone always shows chrome    | arriving mid-gesture — a restored scroll, an anchor jump — must not land you at the top with the chrome gone                                                                                                                                                                     |
+| rAF, passive listener                   | a trackpad fires scroll faster than the screen refreshes, and this reads layout                                                                                                                                                                                                  |
+| **OFF under `prefers-reduced-motion`**  | both columns animate their width, and the reduced-motion override zeroes every duration — so with it on this is not a calm slide but the reading column teleporting sideways. A motion feature whose whole value is the animation is switched off rather than shipped without it |
+| the gesture never writes the preference | `wanted` is what the reader last asked for and only a click sets it; scroll back up and a sidebar you closed by hand is still closed                                                                                                                                             |
+
+The bar SLIDES rather than disappearing — a sticky bar that vanishes reads as a rendering
+fault, one that moves reads as making room — and takes `invisible` only at the end of the
+travel, so it cannot be tabbed into off screen.
+
+## Depth — `lift-3d`
+
+A tilt is a claim that a surface is physical, so it is spent only where the claim is true:
+something the pointer is over and can press. Everything a reader merely READS stays flat —
+a tilting paragraph is decoration over the algorithm.
+
+3° of rotation, 2px of rise, from a deliberately distant 700px vantage so it reads as depth
+rather than as a fisheye; `translateZ(0)` at rest promotes the layer up front instead of on
+first hover, which is the compositor jump that makes a tilt feel cheap. A press answers the
+hover by going flat again, the way a real key does.
+
+It borrows the default duration and curve, so the R6 audit still sees one curve and two
+durations. Under `prefers-reduced-motion` the **transform** goes, not just its duration: a
+tilt that arrives in 0.01ms is not a calmer tilt, it is a jump.
 
 ## Motion
 
@@ -371,9 +410,9 @@ and `--default-transition-duration` is 150 ms, both set in a plain `@theme` bloc
 transition on the site — including the ones inside shadcn components — takes them without being
 asked. A class names a duration only when it differs.
 
-| Token | Value | For |
-|---|---|---|
-| default | 150 ms | hover, press, focus, any colour change |
+| Token                          | Value  | For                                                                                                       |
+| ------------------------------ | ------ | --------------------------------------------------------------------------------------------------------- |
+| default                        | 150 ms | hover, press, focus, any colour change                                                                    |
 | `duration-(--duration-reveal)` | 320 ms | something appearing, resizing or sliding: the drawer, a chip changing role, a bar growing, a revealed act |
 
 A UI check fails the build if any element under `main` on the journey, the visualizer or home uses a
@@ -392,9 +431,9 @@ are `h-11 w-11` and a range track is 12 px with a 20 px thumb.
 
 ## What this replaced
 
-| Was | Now |
-|---|---|
-| 16 size/weight pairs on the journey page; 12 px the most common size | six named steps; `text-body` is 16 |
-| `text-[15px]`, `text-[11px]`, `text-xs` used as roles | `text-body`, `text-meta`, `text-ui` |
-| five container widths (768, 896, 1136, 1280, 1760) | three tokens |
-| `max-w-prose` / `68ch` (which renders ~90 characters) | `35em` |
+| Was                                                                  | Now                                 |
+| -------------------------------------------------------------------- | ----------------------------------- |
+| 16 size/weight pairs on the journey page; 12 px the most common size | six named steps; `text-body` is 16  |
+| `text-[15px]`, `text-[11px]`, `text-xs` used as roles                | `text-body`, `text-meta`, `text-ui` |
+| five container widths (768, 896, 1136, 1280, 1760)                   | three tokens                        |
+| `max-w-prose` / `68ch` (which renders ~90 characters)                | `35em`                              |

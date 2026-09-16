@@ -90,6 +90,16 @@ export function RunnableCode({
       {editable ? (
         <div className="overflow-hidden rounded-lg border bg-card">
           <textarea
+            // WHAT KIND OF TEXTAREA THIS IS. Two UI gates used to count bare
+            // textareas and mean different things by the number: one proving
+            // the page hosts no solve editor, one proving every teaching block
+            // is the reader's to change. A count cannot tell those apart, so
+            // the first was written positionally — "no textarea above the
+            // explanation" — and that proxy broke the moment the approach
+            // ladder's Python became runnable, which is a teaching block in
+            // the one place the proxy forbade. Same fix the notes field took:
+            // mark the ROLE, and let each gate assert what it actually means.
+            data-code-editor=""
             value={draft}
             spellCheck={false}
             onChange={(e) => setDraft(e.target.value)}

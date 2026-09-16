@@ -587,6 +587,44 @@
 
    `text-wrap: pretty` stays on for the last line, so a paragraph still cannot
    end on a single short word. */
+/* DEPTH, ON THE THINGS YOU CAN ACT ON.
+   
+   A tilt is a claim that a surface is physical, so it is spent only where the
+   claim is true: something the pointer is over and can press. Everything on
+   this site that a reader merely READS stays flat — a tilting paragraph is
+   decoration over the algorithm, which is the one thing this world is not for.
+
+   Restrained on purpose. 3° of rotation and 2px of rise, from a deliberately
+   distant 700px vantage so the perspective reads as depth rather than as a
+   fisheye. `translateZ(0)` at rest promotes the layer once, up front, instead
+   of on first hover — the compositor jump at the start of the animation is the
+   thing that makes a tilt feel cheap.
+
+   It borrows the default duration and curve, so the R6 audit still sees one
+   curve and two durations. `transform-box`/`will-change` are deliberately not
+   set: on a bordered card they cost a permanent layer for a hover state most
+   readers never trigger. */
+@utility lift-3d {
+  transform: perspective(700px) translateZ(0);
+  transition-property: transform, box-shadow, border-color, background-color;
+  transition-duration: var(--default-transition-duration);
+  transition-timing-function: var(--default-transition-timing-function);
+
+  &:hover {
+    transform: perspective(700px) translateY(-2px) rotateX(3deg);
+    box-shadow:
+      0 1px 2px -1px oklch(0 0 0 / 0.12),
+      0 12px 24px -12px oklch(0 0 0 / 0.28);
+  }
+
+  /* A press has to answer the hover or the surface reads as stuck to the
+     pointer. Down, and flat again — the way a real key behaves. */
+  &:active {
+    transform: perspective(700px) translateY(0) rotateX(0deg);
+    box-shadow: none;
+  }
+}
+
 @utility prose-set {
   text-align: justify;
   hyphens: auto;
@@ -704,6 +742,13 @@
     *::after {
       animation-duration: 0.01ms !important;
       transition-duration: 0.01ms !important;
+    }
+    /* Zeroing the DURATION of a tilt does not remove the tilt — it makes it
+       instant, which is the one thing a reader who asked for less motion
+       asked not to get. The displacement itself goes. */
+    .lift-3d:hover,
+    .lift-3d:active {
+      transform: none !important;
     }
   }
 

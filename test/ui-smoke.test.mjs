@@ -1062,6 +1062,114 @@ describe(
     // since B8; the problem page named it twice anyway — in the back link and
     // in the glyph strip. Measured 2026-09-09: sorted-pair-sum and
     // container-water both read "Two Pointers" with the journey unfinished.
+    test("chrome gets out of the way while you read, and comes back", async () => {
+      await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
+      // Reduced motion switches this feature OFF by design - a slide whose
+      // duration is zeroed is a teleport - so the reading room is only
+      // measurable with motion on. Assert the premise rather than the feature
+      // if the browser is asking for less motion.
+      const calm = await page.eval(
+        "matchMedia('(prefers-reduced-motion: reduce)').matches"
+      )
+      if (calm) return
+
+      const read = `
+        const bar = document.querySelector('[data-slot="orient-bar"]');
+        const rail = document.querySelector('nav[aria-label="contents"]');
+        return {
+          bar: getComputedStyle(bar).opacity,
+          rail: rail ? rail.getBoundingClientRect().width : -1,
+          sidebar: document.querySelector('[data-slot="sidebar"]') ? 1 : 0,
+        };
+      `
+      const atTop = await page.run(read)
+      assert.equal(atTop.bar, "1", "the bar was already hidden at the top")
+
+      // DOWN is reading. Past the top zone, and far enough that the threshold
+      // cannot call it noise.
+      await page.run("window.scrollTo(0, 1400); return 1;")
+      await page.run(
+        "return new Promise(r => requestAnimationFrame(() => setTimeout(() => r(1), 420)));"
+      )
+      const reading = await page.run(read)
+      assert.equal(reading.bar, "0", "the bar did not get out of the way")
+      if (atTop.rail > 0)
+        assert.equal(reading.rail, 0, "the contents rail stayed put")
+
+      // UP is looking for something, so the controls come back.
+      await page.run("window.scrollTo(0, 700); return 1;")
+      await page.run(
+        "return new Promise(r => requestAnimationFrame(() => setTimeout(() => r(1), 420)));"
+      )
+      const looking = await page.run(read)
+      assert.equal(looking.bar, "1", "scrolling up did not bring the bar back")
+      assert.deepEqual(page.errors(), [], "the reading room logged errors")
+    })
+
+    test("the climb draws every rung, and masks the ones not earned", async () => {
+      // Unmasked: one step per rung, each naming its bound.
+      await page.goto(`${server.base}/#/`)
+      await page.run("localStorage.clear(); return 1;")
+      await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
+      const read = `
+        const ol = document.querySelector('ol[aria-label="approaches by cost"]');
+        if (!ol) return { steps: 0 };
+        const li = [...ol.children];
+        return {
+          steps: li.length,
+          unknown: li.filter(x => x.innerText.trim().startsWith('?')).length,
+          jumps: li.filter(x => x.querySelector('button')).length,
+          text: ol.innerText,
+        };
+      `
+      const open = await page.run(read)
+      assert.ok(open.steps >= 2, `the climb drew ${open.steps} steps`)
+      assert.equal(open.unknown, 0, "nothing is held back before starting")
+      assert.ok(/O\(/.test(open.text), "no bound is drawn on the climb")
+
+      // A STEP SCROLLS, it does not navigate. A bare `#id` href would set the
+      // hash ROUTE and render home - the trap this repo has hit before.
+      const before = await page.eval("location.hash")
+      await page.run(`
+        document.querySelector('ol[aria-label="approaches by cost"] button').click();
+        return 1;
+      `)
+      await page.run(
+        "return new Promise(r => setTimeout(() => r(1), 500));"
+      )
+      assert.equal(
+        await page.eval("location.hash"),
+        before,
+        "a step changed the route instead of scrolling"
+      )
+      assert.ok(
+        await page.eval("window.scrollY > 0"),
+        "a step did not scroll anywhere"
+      )
+
+      // Mid-flight, the ledger holds the rest and the climb says so without
+      // naming them - the same promise the stepper and the URL keep (B45).
+      await page.goto(`${server.base}/#/`)
+      await page.run(`
+        localStorage.setItem('dsa:unlocked:sorted-pair-sum', '2');
+        return 1;
+      `)
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const capped = await page.run(read)
+      if (capped.steps > 0) {
+        assert.ok(
+          capped.unknown > 0,
+          "a capped journey drew no held-back steps"
+        )
+        assert.equal(
+          capped.jumps,
+          capped.steps - capped.unknown,
+          "a held-back step was clickable"
+        )
+      }
+      assert.deepEqual(page.errors(), [], "the climb logged errors")
+    })
+
     test("the problem page masks a pattern its journey has not revealed (B45)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(`
@@ -1407,12 +1515,22 @@ describe(
           cta: cta ? cta.href : null,
           // No editor ABOVE the explanation. The page explains and hosts no
           // editor — that is why the primary action leaves for LeetCode — but
-          // the document's own full runnable script at the foot IS editable
-          // (B83), and it moved onto this page when the two routes merged. So
-          // the question is where the textarea is, not whether one exists.
-          editor: [...document.querySelectorAll('textarea:not([data-notes])')].some(
-            t => !t.closest('#explanation')
-          ),
+          // THE CLAIM IS "NO SOLVE EDITOR", NOT "NO TEXTAREA". This used to
+          // ask WHERE the textarea was - none outside the explanation - which
+          // was a proxy for the real rule, and it only held while the only
+          // editable code was the document's own. The approach ladder's Python
+          // is runnable and editable now, and it is a teaching block sitting
+          // exactly where the proxy forbade one.
+          //
+          // So it asks the question the product actually makes: is there a
+          // textarea here that is neither the notes field nor a teaching code
+          // block? That is what a solve box would be, and it is a STRONGER
+          // check than the old one - it holds over the whole page rather than
+          // only over the part above the explanation.
+          // (No backticks in here: this comment is inside a template literal.)
+          editor: document.querySelector(
+            'textarea:not([data-notes]):not([data-code-editor])'
+          ) !== null,
         };
       `
       // never opened the journey: the whole ladder, ending on the best rung
