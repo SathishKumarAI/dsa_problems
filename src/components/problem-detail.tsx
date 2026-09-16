@@ -219,6 +219,47 @@ function ProblemPage({
         )
       : null
 
+  // The page's OWN sections, in the order it renders them — the same
+  // conditions, so the rail can never offer a section the page did not draw.
+  // It used to list only the document's headings, which need a fetch, so the
+  // right column stood empty on arrival and filled only once the reader opened
+  // the long read: 317px of dead width on the page's most common state.
+  const sections = [
+    { id: "the-problem", text: "The problem", level: 2 as const },
+    ...(problem.checks?.length
+      ? [
+          {
+            id: "before-you-solve-it",
+            text: "Before you solve it",
+            level: 2 as const,
+          },
+        ]
+      : []),
+    { id: "hints", text: "Hints", level: 2 as const },
+    ...(journey || problem.walkthrough
+      ? [{ id: "walkthrough", text: "Walkthrough", level: 2 as const }]
+      : []),
+    { id: "approaches", text: "Approaches", level: 2 as const },
+    ...(!hidden
+      ? [
+          {
+            id: "the-same-move-elsewhere",
+            text: "The same move, elsewhere",
+            level: 2 as const,
+          },
+        ]
+      : []),
+    ...(explanation.present
+      ? [
+          {
+            id: "explanation",
+            text: binding ? "The rest of the story" : "The long explanation",
+            level: 2 as const,
+          },
+        ]
+      : []),
+  ]
+
   // the rail lists what the SECTION renders, which is now the shared half
   const outline = folded
     ? outlineOf(folded.shared)
@@ -371,10 +412,14 @@ function ProblemPage({
                 className="group inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
               >
                 <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
+                {/* The three actions are ONE ROW. Measured at 1440: they need
+                    745.4px against 735 available and wrapped by 10.4px, and
+                    the whole overflow was this suffix — 376 of those 745 were
+                    this one button. It was also stale: the section it opens is
+                    called "the rest of the story" now, because the per-approach
+                    half of the document lives on the rungs. The heading below
+                    says what it is; the button only has to name the action. */}
                 Learn this problem
-                <span className="hidden font-normal text-muted-foreground sm:inline">
-                  — the long explanation
-                </span>
                 <RowNudge />
               </button>
             )}
@@ -404,7 +449,7 @@ function ProblemPage({
         {/* Three `h3` sections, not one column of three kinds of thing — and
           the examples are watchable rather than printed. See
           `problem-statement.tsx`, which owns all three. */}
-        <Band label="the problem">
+        <Band id="the-problem" label="the problem">
           <ProblemStatement problem={problem} />
         </Band>
 
@@ -416,6 +461,7 @@ function ProblemPage({
         ) : null}
 
         <Band
+          id="hints"
           label="hints"
           count={`${problem.hints.length}, each one further in`}
         >
@@ -437,6 +483,7 @@ function ProblemPage({
 
         {(journey || problem.walkthrough) && (
           <Band
+            id="walkthrough"
             label="walkthrough"
             count={
               steps
@@ -502,7 +549,7 @@ function ProblemPage({
                 writing it out here again is how the two drift apart. */}
             <div className="flex flex-col gap-1">
               <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
-                {folded ? "the rest of the story" : "the long explanation"}
+                {binding ? "the rest of the story" : "the long explanation"}
                 <span
                   aria-hidden
                   className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
@@ -514,7 +561,7 @@ function ProblemPage({
                 </span>
               </h2>
               <p className="max-w-measure text-body text-muted-foreground">
-                {folded
+                {binding
                   ? "What is not about any single approach: how to read the problem, where the cost actually goes, the comparison, what to say in an interview, and a script you can run."
                   : "Every approach in full: the idea, the mental model, a worked trace, the bug you are about to write, and a script you can run."}
               </p>
@@ -550,12 +597,11 @@ function ProblemPage({
           below xl, where there is no second column to put it in. It lists the
           SAME array the page renders (`partsOf`), so it cannot offer a section
           that is not there. */}
-      {outline.length > 0 && (
-        <ContentsRail
-          outline={outline}
-          label={folded ? "The rest of the story" : "The explanation"}
-        />
-      )}
+      <ContentsRail
+        sections={sections}
+        outline={outline}
+        label={binding ? "The rest of the story" : "The explanation"}
+      />
     </div>
   )
 }

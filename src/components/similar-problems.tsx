@@ -43,6 +43,7 @@ export function SimilarProblems({
 
   return (
     <Band
+      id="the-same-move-elsewhere"
       label="the same move, elsewhere"
       count={`${siblings.length} more in ${pattern.name}`}
     >

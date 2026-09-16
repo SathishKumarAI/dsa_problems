@@ -107,6 +107,7 @@ export function PreSolveCheck({ checks }: { checks: Check[] }) {
   if (checks.length === 0) return null
   return (
     <Band
+      id="before-you-solve-it"
       label="before you solve it"
       count="answerable from the statement alone"
     >

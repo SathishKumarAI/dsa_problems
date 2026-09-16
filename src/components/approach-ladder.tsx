@@ -96,6 +96,7 @@ export function ApproachLadder({
 
   return (
     <Band
+      id="approaches"
       label="approaches"
       // "worst to best" promised a monotone climb the data does not always make:
       // on island-count the middle rung is a generalisation the prose then argues

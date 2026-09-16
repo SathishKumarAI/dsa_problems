@@ -106,8 +106,14 @@ export function ReadFurther({
  *  1280 the button was measured painting over the rail's first entries. */
 export function ContentsRail({
   outline,
+  sections = [],
   label = "The explanation",
 }: {
+  /** the PAGE's own sections, always known — the document's outline needs a
+   *  fetch, so a rail that waited for it left the right column empty on
+   *  arrival and filled it only once the reader opened the long read. At 1283
+   *  that was 317px of dead width on the most-used state of the page. */
+  sections?: Outline[]
   outline: Outline[]
   /** what the section this rail indexes is CALLED. Once the per-approach half
    *  folds into the rungs, that section is "The rest of the story" and a rail
@@ -119,44 +125,69 @@ export function ContentsRail({
       aria-label="contents"
       className="sticky top-16 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
     >
-      <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
-        <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
-        {label}
-      </span>
-      {outline.map((entry) => (
-        <a
-          key={entry.id}
-          href={`#${entry.id}`}
-          onClick={(e) => {
-            // a bare `#id` href would replace the hash ROUTE and navigate the
-            // app home; scroll to the heading instead (CLAUDE.md, the trap)
-            e.preventDefault()
-            document
-              .getElementById(entry.id)
-              ?.scrollIntoView({ behavior: "smooth", block: "start" })
-          }}
-          // `-ml-4 border-l-2 border-transparent pl-4` puts each entry's own
-          // indicator exactly on the rail's border, so the hovered section
-          // lights that hairline instead of adding a second line beside it.
-          // Border and colour only — the row never moves, which is what would
-          // make a 30-entry rail jitter.
+      {sections.length > 0 && (
+        <>
+          <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
+            <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
+            On this page
+          </span>
+          {sections.map((entry) => (
+            <Entry key={entry.id} entry={entry} />
+          ))}
+        </>
+      )}
+      {outline.length > 0 && (
+        <span
           className={cn(
-            // `text-ui`, not `text-meta`: several section labels run past 55
-            // characters, which is the threshold this repo's own audit uses to
-            // call something a SENTENCE rather than a label — and a sentence is
-            // never set below the ui step.
-            "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-colors hover:border-chart-1 hover:text-foreground",
-            entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
+            "flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground",
+            sections.length > 0 && "pt-4"
           )}
         >
-          {/* A heading's text is MARKDOWN, so it carries the author's
+          <ListTreeIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
+          {label}
+        </span>
+      )}
+      {outline.map((entry) => (
+        <Entry key={entry.id} entry={entry} />
+      ))}
+    </nav>
+  )
+}
+
+/** one row of the rail — the same row for the page's sections and the
+ *  document's, because they are the same kind of destination */
+function Entry({ entry }: { entry: Outline }) {
+  return (
+    <a
+      href={`#${entry.id}`}
+      onClick={(e) => {
+        // a bare `#id` href would replace the hash ROUTE and navigate the
+        // app home; scroll to the heading instead (CLAUDE.md, the trap)
+        e.preventDefault()
+        document
+          .getElementById(entry.id)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+      }}
+      // `-ml-4 border-l-2 border-transparent pl-4` puts each entry's own
+      // indicator exactly on the rail's border, so the hovered section
+      // lights that hairline instead of adding a second line beside it.
+      // Border and colour only — the row never moves, which is what would
+      // make a 30-entry rail jitter.
+      className={cn(
+        // `text-ui`, not `text-meta`: several section labels run past 55
+        // characters, which is the threshold this repo's own audit uses to
+        // call something a SENTENCE rather than a label — and a sentence is
+        // never set below the ui step.
+        "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-colors hover:border-chart-1 hover:text-foreground",
+        entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
+      )}
+    >
+      {/* A heading's text is MARKDOWN, so it carries the author's
               emphasis markers. Backticks were already stripped; asterisks and
               underscores were not, so the rail printed
               `*(an addition — not in the data file's ladder)*` with the stars
               showing, three lines deep. Strip the marks, keep the words. */}
-          {entry.text.replace(/[`*_]/g, "")}
-        </a>
-      ))}
-    </nav>
+      {entry.text.replace(/[`*_]/g, "")}
+    </a>
   )
 }
