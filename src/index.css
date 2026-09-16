@@ -113,6 +113,14 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  /* The ORDERED scale, exposed so a sequence can be drawn in it. Roles above
+     are categorical and answer "what is this"; the ramp answers "where in the
+     order", and the two must never be swapped. */
+  --color-ramp-0: var(--ramp-0);
+  --color-ramp-1: var(--ramp-1);
+  --color-ramp-2: var(--ramp-2);
+  --color-ramp-3: var(--ramp-3);
+  --color-ramp-4: var(--ramp-4);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -162,79 +170,103 @@
    cannot teach. Same hue for the same role in both themes, so a screenshot of
    one reads as a screenshot of the other. */
 :root {
-  --background: #eff1f5; /* base    */
-  --foreground: #4c4f69; /* text    */
-  --card: #e6e9ef; /* mantle  */
-  --card-foreground: #4c4f69;
-  --popover: #e6e9ef;
-  --popover-foreground: #4c4f69;
-  --primary: #8839ef; /* mauve   */
-  --primary-foreground: #eff1f5;
-  --secondary: #ccd0da; /* surface0 */
-  --secondary-foreground: #4c4f69;
-  --muted: #ccd0da;
-  --muted-foreground: #6c6f85; /* subtext0 */
-  --dim: #5c5f77; /* subtext1 — the quiet layer, still readable */
-  --accent: #ccd0da;
-  --accent-foreground: #4c4f69;
-  --destructive: #d20f39; /* red     */
-  --border: #bcc0cc; /* surface1 */
-  --input: #acb0be; /* surface2 */
-  --ring: #8839ef;
-  --chart-1: #8839ef; /* mauve  — focus   */
-  --chart-2: #1e66f5; /* blue   — window  */
-  --chart-3: #40a02b; /* green  — settled */
-  --chart-4: #fe640b; /* peach  — anchor  */
-  --chart-5: #d20f39; /* red    — wrong   */
-  --yellow: #df8e1d;
-  --teal: #179299;
+  /* ── THE FIGURE PALETTE ──────────────────────────────────────────────────
+     Light: a cool near-white bench, not paper. The ground is achromatic so
+     that every colour on the page is carrying information. */
+  --background: #f6f8fa;
+  --foreground: #101722;
+  --card: #eceff3;
+  --card-foreground: #101722;
+  --popover: #eceff3;
+  --popover-foreground: #101722;
+  /* CHROME IS ACHROMATIC. The primary action is the darkest neutral rather
+     than a hue, because on this page a hue is a claim about data. A button is
+     not data. */
+  --primary: #1b2534;
+  --primary-foreground: #f6f8fa;
+  --secondary: #dfe4ea;
+  --secondary-foreground: #101722;
+  --muted: #dfe4ea;
+  --muted-foreground: #4a5668; /* 6.99 : 1 on the ground */
+  --dim: #5d6a7d; /* 5.16 : 1 — the quiet layer, still text */
+  --accent: #dfe4ea;
+  --accent-foreground: #101722;
+  --destructive: #b3001b;
+  --border: #cdd4dd;
+  --input: #b9c2ce;
+  --ring: #005b8f;
+  /* Okabe–Ito, darkened for a light ground: the canonical colour-blind-safe
+     qualitative set of scientific graphics. One hue per ROLE, and the role
+     never changes hue between themes — a screenshot of one reads as the
+     other. */
+  --chart-1: #8a5a00; /* focus   */
+  --chart-2: #005b8f; /* window  */
+  --chart-3: #00674a; /* settled */
+  --chart-4: #8e3f6b; /* anchor  */
+  --chart-5: #b3001b; /* wrong   */
+  --yellow: #7a5a00;
+  --teal: #00674a;
+  /* Viridis, for anything ORDERED. Equal steps in the data are equal steps in
+     perceived lightness, which is the property the whole map exists for: a
+     ladder drawn in it is legible as a sequence, not just as five colours.
+     Light mode walks the dark half of the ramp so it stays readable on white. */
+  --ramp-0: #6ece58;
+  --ramp-1: #35b779;
+  --ramp-2: #21918c;
+  --ramp-3: #31688e;
+  --ramp-4: #443983;
   --radius: 0.625rem;
-  --sidebar: #e6e9ef;
-  --sidebar-foreground: #4c4f69;
-  --sidebar-primary: #8839ef;
-  --sidebar-primary-foreground: #eff1f5;
-  --sidebar-accent: #ccd0da;
-  --sidebar-accent-foreground: #4c4f69;
-  --sidebar-border: #bcc0cc;
-  --sidebar-ring: #8839ef;
+  --sidebar: #eceff3;
+  --sidebar-foreground: #101722;
+  --sidebar-primary: #1b2534;
+  --sidebar-primary-foreground: #f6f8fa;
+  --sidebar-accent: #dfe4ea;
+  --sidebar-accent-foreground: #101722;
+  --sidebar-border: #cdd4dd;
+  --sidebar-ring: #005b8f;
 }
 
-/* Catppuccin Mocha */
+/* The figure palette, dark: a cold near-black bench. */
 .dark {
-  --background: #1e1e2e;
-  --foreground: #cdd6f4;
-  --card: #181825;
-  --card-foreground: #cdd6f4;
-  --popover: #181825;
-  --popover-foreground: #cdd6f4;
-  --primary: #cba6f7;
-  --primary-foreground: #11111b;
-  --secondary: #313244;
-  --secondary-foreground: #cdd6f4;
-  --muted: #313244;
-  --muted-foreground: #a6adc8;
-  --dim: #9399b2; /* overlay2 — the quiet layer, still readable */
-  --accent: #313244;
-  --accent-foreground: #cdd6f4;
-  --destructive: #f38ba8;
-  --border: #313244;
-  --input: #45475a;
-  --ring: #cba6f7;
-  --chart-1: #cba6f7;
-  --chart-2: #89b4fa;
-  --chart-3: #a6e3a1;
-  --chart-4: #fab387;
-  --chart-5: #f38ba8;
-  --yellow: #f9e2af;
-  --teal: #94e2d5;
-  --sidebar: #11111b;
-  --sidebar-foreground: #cdd6f4;
-  --sidebar-primary: #cba6f7;
-  --sidebar-primary-foreground: #11111b;
-  --sidebar-accent: #313244;
-  --sidebar-accent-foreground: #cdd6f4;
-  --sidebar-border: #313244;
-  --sidebar-ring: #cba6f7;
+  --background: #0b1120;
+  --foreground: #e6ecf5;
+  --card: #121a2b;
+  --card-foreground: #e6ecf5;
+  --popover: #121a2b;
+  --popover-foreground: #e6ecf5;
+  --primary: #e6ecf5;
+  --primary-foreground: #0b1120;
+  --secondary: #1c2740;
+  --secondary-foreground: #e6ecf5;
+  --muted: #1c2740;
+  --muted-foreground: #9fb0c8; /* 8.53 : 1 */
+  --dim: #7d8ea8; /* 5.65 : 1 — the quiet layer, still text */
+  --accent: #1c2740;
+  --accent-foreground: #e6ecf5;
+  --destructive: #ff6b3d;
+  --border: #22304d;
+  --input: #2c3c5e;
+  --ring: #56b4e9;
+  --chart-1: #e69f00; /* focus   */
+  --chart-2: #56b4e9; /* window  */
+  --chart-3: #00b888; /* settled */
+  --chart-4: #cc79a7; /* anchor  */
+  --chart-5: #ff6b3d; /* wrong   */
+  --yellow: #e69f00;
+  --teal: #00b888;
+  --ramp-0: #440154;
+  --ramp-1: #3b528b;
+  --ramp-2: #21918c;
+  --ramp-3: #5ec962;
+  --ramp-4: #fde725;
+  --sidebar: #080e1a;
+  --sidebar-foreground: #e6ecf5;
+  --sidebar-primary: #e6ecf5;
+  --sidebar-primary-foreground: #0b1120;
+  --sidebar-accent: #1c2740;
+  --sidebar-accent-foreground: #e6ecf5;
+  --sidebar-border: #22304d;
+  --sidebar-ring: #56b4e9;
 }
 
 /* ---------------------------------------------------------------------------
@@ -270,15 +302,21 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
+    /* ACHROMATIC. These two washes used to be painted in `--chart-1` and
+       `--chart-2` — the FOCUS and WINDOW role hues — which is the rule this
+       world is built on being broken by the biggest surface on the page:
+       colour means data, and a decorative gradient is not data. It is a
+       lightness lift now, so depth costs no hue and the ground reads the same
+       in both themes. */
     background:
       radial-gradient(
         60rem 40rem at 12% -8%,
-        color-mix(in oklab, var(--chart-1) 26%, transparent),
+        color-mix(in oklab, var(--foreground) 5%, transparent),
         transparent 70%
       ),
       radial-gradient(
         52rem 36rem at 92% 104%,
-        color-mix(in oklab, var(--chart-2) 20%, transparent),
+        color-mix(in oklab, var(--foreground) 4%, transparent),
         transparent 72%
       ),
       var(--background);

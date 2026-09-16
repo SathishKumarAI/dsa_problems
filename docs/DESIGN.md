@@ -67,6 +67,42 @@ the runs rebuild the original character for character.
 And nothing above. A bare `<b>` renders 700, which is off this scale — write
 `font-semibold` and keep the element where a test selects on it.
 
+## The palette — two systems from scientific graphics
+
+Replaced 2026-09-16, deliberately, through the direction round (seed `634d1203`; the contract is
+an HTML comment at the top of `index.html`'s body and must survive the production build).
+Catppuccin Mocha is gone. What replaced it is not a colour scheme but two working systems, both
+**colour-vision-safe by construction rather than by luck**:
+
+| System | Used for | Why that one |
+|---|---|---|
+| **Viridis** (`--ramp-0…4`) | anything ORDERED — the ladder's rungs, the cost bars | Equal steps in the data are equal steps in PERCEIVED lightness. Five arbitrary colours say "five kinds"; a perceptually uniform ramp says "a climb" |
+| **Okabe–Ito** (`--chart-1…5`) | the categorical chip roles — focus, window, settled, anchor, wrong | The canonical colour-blind-safe qualitative set of scientific figures. One hue per ROLE, and the role keeps its hue across both themes so a screenshot of one reads as the other |
+
+**The rule the whole world rests on: colour means DATA, and chrome never borrows it.** The primary
+action is the darkest neutral in light and the lightest in dark, not a hue — a button is not data.
+The page wash was two radial gradients painted in `--chart-1` and `--chart-2`, which was the rule
+being broken by the largest surface on the page; it is a lightness lift now, so depth costs no hue.
+
+**Light walks the ramp the other way.** Dark climbs into viridis's bright end; a light ground cannot,
+because that end is invisible on white. What matters is that the direction never reverses — a ramp
+that turns round mid-scale is five colours, not a scale — and `palette.test.ts` asserts exactly that.
+
+### The gate, and why it is arithmetic rather than judgement
+
+`src/lib/palette.test.ts` reads the values **out of `index.css`**, never from a copy, and proves four
+things on both themes:
+
+1. every text role clears WCAG AA on both its grounds (worst measured: **4.76:1**);
+2. every chip role clears AA against the ground;
+3. the five roles stay apart **in OKLab**, not by contrast ratio — contrast measures luminance only,
+   so it called light-mode orange and blue identical at 1.22:1 when no reader would confuse them;
+4. the ordered ramp is monotonic in one direction.
+
+Checks 3 and 4 both failed on the first palette and caught real defects: in light mode **focus**
+`#8a5a00` and **wrong** `#9c3a06` were 0.080 apart in OKLab — two dark oranges for the two roles that
+must never be confused. `wrong` moved to `#b3001b`, 0.124 from its nearest neighbour.
+
 ## The quiet layer — `text-dim`
 
 `text-muted-foreground` at 7.4:1 is the secondary voice. Below it there was an

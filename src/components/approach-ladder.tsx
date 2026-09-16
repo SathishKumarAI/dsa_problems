@@ -176,6 +176,22 @@ export function ApproachLadder({
               </p>
             )}
             <div className="flex flex-wrap items-baseline gap-x-3">
+              {/* THE RUNG'S PLACE IN THE ORDER, drawn in the ordered scale.
+                  The ladder is the one genuinely sequential thing on the page —
+                  worst to best — so it is the one thing that earns the ramp.
+                  Equal steps along it are equal steps in perceived lightness,
+                  which is the entire reason viridis exists; five arbitrary
+                  colours here would say "five kinds", not "a climb". */}
+              <span
+                aria-hidden
+                className="inline-block h-4 w-1 shrink-0 rounded-full"
+                style={{
+                  backgroundColor: `var(--ramp-${Math.min(
+                    4,
+                    Math.round((i / Math.max(1, rungs.length - 1)) * 4)
+                  )})`,
+                }}
+              />
               <span className="font-mono text-meta text-muted-foreground">
                 {String(i + 1).padStart(2, "0")}
               </span>

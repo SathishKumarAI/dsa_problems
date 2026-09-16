@@ -23,21 +23,30 @@
 // from the left on the reveal duration and the one curve, which is what the
 // pattern page already uses for the rule under its title.
 import { compact, logWidth } from "@/lib/figure-scale"
-import { cn } from "@/lib/utils"
 import type { ConstraintFigure } from "@/data"
 
-const TONE = {
-  bad: "bg-chart-4/70",
-  good: "bg-chart-3/70",
-  plain: "bg-chart-2/60",
-} as const
+// NO CATEGORICAL HUE HERE. These bars are quantities in an ORDER — the work
+// each approach costs, largest to smallest — and the page's rule is that an
+// ordered thing is drawn in the ordered scale. Five role colours would say
+// "five kinds"; the ramp says "a climb", which is what the figure is about.
+//
+// Rank, not value, picks the step: the whole point of a perceptually uniform
+// map is that equal steps along it look equally far apart, so the rungs read
+// as evenly spaced however lopsided the numbers are.
+const rampStep = (rank: number, total: number) =>
+  `var(--ramp-${Math.min(4, Math.round((rank / Math.max(1, total - 1)) * 4))})`
 
 function Quantities({
   items,
 }: {
-  items: { label: string; value: number; tone?: keyof typeof TONE }[]
+  items: { label: string; value: number; tone?: "bad" | "good" | "plain" }[]
 }) {
   const max = Math.max(...items.map((i) => i.value))
+  // biggest first, so the ramp runs the same way the numbers do
+  const order = [...items]
+    .map((it, i) => ({ i, v: it.value }))
+    .sort((a, b) => b.v - a.v)
+    .map((x) => x.i)
   return (
     <ul className="flex flex-col gap-1.5">
       {items.map((item, i) => (
@@ -53,11 +62,9 @@ function Quantities({
             className="h-1.5 w-full overflow-hidden rounded-full bg-border/40"
           >
             <span
-              className={cn(
-                "block h-full animate-edge-in-x origin-left rounded-full",
-                TONE[item.tone ?? "plain"]
-              )}
+              className="block h-full animate-edge-in-x origin-left rounded-full"
               style={{
+                backgroundColor: rampStep(order.indexOf(i), items.length),
                 width: `${logWidth(item.value, max)}%`,
                 animationDelay: `${120 + i * 90}ms`,
                 animationFillMode: "backwards",
