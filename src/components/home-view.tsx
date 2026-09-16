@@ -151,7 +151,7 @@ function JourneyRow({
         href={href(`/journey/${slug}`)}
         className="group relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
       >
-        <RouteIcon className="size-4 shrink-0 text-chart-1" />
+        <RouteIcon className="size-4 shrink-0 text-dim" />
         <span className="min-w-0 flex-1 truncate text-ui font-medium md:w-52 md:flex-none md:shrink-0">
           {title}
         </span>
@@ -297,34 +297,34 @@ export function HomeView() {
       <Dock />
 
       {alsoInPlay.length > 0 && (
-      <section className="overflow-hidden rounded-xl border bg-card">
-        <div className="flex items-baseline gap-3 px-4 py-3">
-          <span className="text-meta tracking-wide text-muted-foreground uppercase">
-            also in play
-          </span>
-          <span className="ml-auto font-mono text-meta text-dim tabular-nums">
-            {alsoInPlay.length}
-          </span>
-        </div>
-        <ul className="divide-y border-t">
-          {alsoInPlay.map((r) => (
-            <JourneyRow
-              key={r.journey.slug}
-              slug={r.journey.slug}
-              title={r.journey.title}
-              subtitle={r.journey.subtitle}
-              acts={r.journey.acts.length}
-            />
-          ))}
-        </ul>
-      </section>
+        <section className="overflow-hidden rounded-xl border bg-card">
+          <div className="flex items-baseline gap-3 px-4 py-3">
+            <span className="text-meta tracking-wide text-muted-foreground uppercase">
+              also in play
+            </span>
+            <span className="ml-auto font-mono text-meta text-dim tabular-nums">
+              {alsoInPlay.length}
+            </span>
+          </div>
+          <ul className="divide-y border-t">
+            {alsoInPlay.map((r) => (
+              <JourneyRow
+                key={r.journey.slug}
+                slug={r.journey.slug}
+                title={r.journey.title}
+                subtitle={r.journey.subtitle}
+                acts={r.journey.acts.length}
+              />
+            ))}
+          </ul>
+        </section>
       )}
 
       <a
         href={href("/algorithms")}
         className="group flex items-center gap-3 rounded-xl border border-dashed bg-card/50 px-4 py-3 text-ui"
       >
-        <SlidersHorizontalIcon className="size-4 shrink-0 text-chart-2" />
+        <SlidersHorizontalIcon className="size-4 shrink-0 text-dim" />
         <span className="min-w-0">
           <b>Algorithm visualizer</b>{" "}
           <span className="text-muted-foreground">

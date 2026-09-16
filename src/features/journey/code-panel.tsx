@@ -28,7 +28,9 @@ export function CodePanel({ code, line }: { code: CodeTabs; line: number }) {
     (k) => code[k]?.length
   )
   type Lang = (typeof tabs)[number]
-  const mode: Lang = tabs.includes(codeTab as Lang) ? (codeTab as Lang) : "pseudo"
+  const mode: Lang = tabs.includes(codeTab as Lang)
+    ? (codeTab as Lang)
+    : "pseudo"
   const lines = code[mode] ?? code.pseudo
   const synced = !(code.unsynced ?? []).includes(mode as "java" | "cpp")
   return (

@@ -82,10 +82,7 @@ export function ReadFurther({
                 rel="noreferrer"
                 className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
               >
-                <Icon
-                  className="mt-0.5 size-4 shrink-0 text-chart-2"
-                  aria-hidden
-                />
+                <Icon className="mt-0.5 size-4 shrink-0 text-dim" aria-hidden />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="flex items-center gap-1.5 text-ui font-medium">
                     {r.title}
@@ -301,13 +298,13 @@ function Entry({
         // transition-property to the colour longhands only, so the
         // translate beside it would never animate. It is the same trap
         // that stopped home's card lift from ever running (DESIGN.md).
-        "-ml-4 border-l-2 py-0.5 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-chart-1 hover:text-foreground",
+        "-ml-4 border-l-2 py-0.5 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-edge hover:text-foreground",
         entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground",
         // Where you are, drawn on the rail's own hairline — the same 2px
         // accent edge the sidebar uses for its active row, so "here" means
         // one thing everywhere in the app.
         active
-          ? "border-chart-1 font-medium text-foreground"
+          ? "border-edge font-medium text-foreground"
           : "border-transparent"
       )}
     >

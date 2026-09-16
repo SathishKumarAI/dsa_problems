@@ -20,9 +20,7 @@ export function HashMapView({ map }: { map: HashModel }) {
       {/* above the waterline: what the code sees */}
       <div className="flex min-h-8 flex-wrap gap-1.5">
         {map.entries.length === 0 && (
-          <span className="font-mono text-meta text-dim">
-            {"{ }"} empty
-          </span>
+          <span className="font-mono text-meta text-dim">{"{ }"} empty</span>
         )}
         {map.entries.map((e) => {
           const isProbe = e.key === map.probe
@@ -78,9 +76,7 @@ export function HashMapView({ map }: { map: HashModel }) {
                 <span className="font-mono text-meta text-muted-foreground">
                   {b}
                 </span>
-                {chain.length === 0 && (
-                  <span className="text-dim">·</span>
-                )}
+                {chain.length === 0 && <span className="text-dim">·</span>}
                 {chain.map((e, k) => {
                   const mark = e.key === map.probe
                   return (

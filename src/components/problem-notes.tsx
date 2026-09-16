@@ -73,7 +73,7 @@ export function ProblemNotes({ problemId }: { problemId: string }) {
         spellCheck
         placeholder="What tripped you up? What would you say in an interview?"
         aria-label={`your notes on this problem`}
-        className="min-h-40 w-full resize-y rounded-lg border bg-card/40 px-3 py-2 text-ui leading-relaxed placeholder:text-dim focus-visible:border-chart-1/60"
+        className="min-h-40 w-full resize-y rounded-lg border bg-card/40 px-3 py-2 text-ui leading-relaxed placeholder:text-dim focus-visible:border-edge/60"
       />
       {/* under 55 characters on purpose: the prose-size gate counts anything
           longer as a SENTENCE and requires it at 14px or more, and this is a

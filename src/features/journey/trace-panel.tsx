@@ -71,7 +71,7 @@ export function TracePanel({
                   sideways (measured: 1778px of scrollWidth in a 502px
                   viewport). line-clamp gives one line and an ellipsis while
                   the text stays wrappable, so the box never forces width. */}
-                <span className="min-w-0 line-clamp-1">{f.note}</span>
+                <span className="line-clamp-1 min-w-0">{f.note}</span>
               </button>
             </li>
           )

@@ -58,7 +58,7 @@ export function SimilarProblems({
             <li key={p.id}>
               <a
                 href={href(`/p/${pattern.id}/${p.id}`)}
-                className="-ml-4 flex items-center gap-2 border-l-2 border-transparent py-1 pl-4 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-chart-1 hover:text-foreground"
+                className="-ml-4 flex items-center gap-2 border-l-2 border-transparent py-1 pl-4 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-edge hover:text-foreground"
               >
                 <DifficultyMeter difficulty={p.difficulty} />
                 <span
@@ -114,7 +114,7 @@ export function SimilarProblems({
               >
                 {p.difficulty}
               </span>
-              <ArrowRightIcon className="size-4 shrink-0 text-dim transition-colors group-hover:text-chart-1" />
+              <ArrowRightIcon className="size-4 shrink-0 text-dim transition-colors group-hover:text-foreground" />
             </a>
           </li>
         ))}

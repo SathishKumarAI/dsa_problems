@@ -47,7 +47,7 @@ function Column({
   return (
     <div className="flex min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-baseline gap-x-3">
-        <span className="rounded-sm bg-chart-1/12 px-1.5 font-mono text-meta text-chart-1">
+        <span className="rounded-sm bg-accent px-1.5 font-mono text-meta text-foreground">
           {rung.key}
         </span>
         <b className="text-body">{rung.name}</b>
@@ -62,10 +62,11 @@ function Column({
           {lines.map((line, i) => (
             <span
               key={i}
+              data-diff={marks[i] ? "" : undefined}
               className={cn(
                 "block border-l-2 px-3",
                 marks[i]
-                  ? "border-chart-1 bg-chart-1/8 text-foreground"
+                  ? "border-edge bg-accent text-foreground"
                   : "border-transparent text-muted-foreground"
               )}
             >
@@ -102,7 +103,9 @@ export function ApproachCompare({
   const shared = differingLines(
     left.code[lang] ?? left.code.python,
     right.code[lang] ?? right.code.python
-  ).filter((d, i) => !d && (left.code[lang] ?? left.code.python).split("\n")[i].trim())
+  ).filter(
+    (d, i) => !d && (left.code[lang] ?? left.code.python).split("\n")[i].trim()
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -155,14 +158,16 @@ export function ApproachCompare({
             this page exists to show, so it is repeated here rather than left
             behind on the page the reader just came from. */}
         {right.whyNow && (
-          <p className="max-w-measure border-l-2 border-chart-1/60 pl-3 text-body text-chart-1">
+          <p className="max-w-measure border-l-2 border-border pl-3 text-body text-muted-foreground">
             {right.whyNow}
           </p>
         )}
 
         {rungs.length > 2 && (
           <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
-            <span className="text-meta text-dim">compare with another rung</span>
+            <span className="text-meta text-dim">
+              compare with another rung
+            </span>
             <div className="flex flex-wrap gap-x-3 gap-y-1">
               {rungs
                 .filter((r) => r !== left && r !== right)

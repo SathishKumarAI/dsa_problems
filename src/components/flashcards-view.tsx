@@ -175,7 +175,7 @@ function Face({
         // the lit border follows the FACE you are looking at, so the answer
         // side reads as the earned one
         back
-          ? "border-primary/40 [transform:rotateY(180deg)]"
+          ? "[transform:rotateY(180deg)] border-primary/40"
           : "group-hover/card:border-primary/40"
       )}
     >

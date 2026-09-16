@@ -856,7 +856,7 @@ describe(
       )
       const cmp = await page.run(`
         const text = document.body.innerText;
-        const lit = document.querySelectorAll('pre span[class*="border-chart-1"]');
+        const lit = document.querySelectorAll('pre span[data-diff]');
         return {
           heading: /lines in common/i.test(text),
           both: /Floyd/i.test(text) && /set/i.test(text),

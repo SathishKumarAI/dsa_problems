@@ -80,7 +80,7 @@ export function DrawerTabs({
       <TabsContent value="explain" className={PANEL}>
         <Card>
           {act.insight && (
-            <p className="font-semibold text-chart-1">{act.insight}</p>
+            <p className="font-semibold text-foreground">{act.insight}</p>
           )}
           <p className="max-w-measure text-muted-foreground">{act.idea}</p>
         </Card>
@@ -131,7 +131,7 @@ export function DrawerTabs({
           <ul className="flex flex-col gap-1.5 text-muted-foreground">
             {act.takeaways.map((t, i) => (
               <li key={i} className="flex max-w-measure gap-2">
-                <span className="text-chart-1">›</span>
+                <span className="text-dim">›</span>
                 {t}
               </li>
             ))}

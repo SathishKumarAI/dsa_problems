@@ -143,9 +143,7 @@ function Terms({ p }: { p: Extract<PanelModel, { kind: "terms" }> }) {
         </div>
         <div className="flex flex-wrap gap-2" aria-label="found">
           {p.found.length === 0 && (
-            <span className="font-mono text-ui text-dim">
-              none yet
-            </span>
+            <span className="font-mono text-ui text-dim">none yet</span>
           )}
           {p.found.map((t, i) => (
             <span

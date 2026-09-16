@@ -89,7 +89,7 @@ function Constraints({ problem }: { problem: Problem }) {
             // would report three durations to the R6 audit, and a bare
             // `transition-colors` utility silently resets transition-property,
             // which is how the card lift on home never ran (DESIGN.md).
-            className="group flex animate-edge-in-y flex-col gap-2 rounded-xl border bg-card/40 p-4 transition-[box-shadow,transform,border-color] hover:-translate-y-px hover:border-chart-1/40 hover:shadow-(--shadow-lift)"
+            className="group flex animate-edge-in-y flex-col gap-2 rounded-xl border bg-card/40 p-4 transition-[box-shadow,transform,border-color] hover:-translate-y-px hover:border-edge/40 hover:shadow-(--shadow-lift)"
             style={{ animationDelay: `${i * 60}ms` }}
           >
             {/* Mono for the NOTATION and the reading face for the words.

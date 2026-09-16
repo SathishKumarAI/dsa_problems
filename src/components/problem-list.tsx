@@ -8,12 +8,7 @@
 // because it ANNOUNCES itself — a filtered list that looks like a short list
 // is the bug, so while anything is set there is a banner saying what is on,
 // how many rows it hid, and how to clear it.
-import {
-  FilterIcon,
-  RouteIcon,
-  SearchIcon,
-  SearchXIcon,
-} from "lucide-react"
+import { FilterIcon, RouteIcon, SearchIcon, SearchXIcon } from "lucide-react"
 import { href } from "@/lib/route"
 import { Fact, OrientBar } from "@/components/ui/band"
 import { PatternPlaybook } from "./pattern-playbook"
@@ -124,7 +119,7 @@ export function ProblemList({ pattern }: Props) {
           className="h-px w-full max-w-measure animate-edge-in-x bg-gradient-to-r from-primary/60 to-transparent"
         />
         {hidden ? (
-          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-chart-1/40 bg-chart-1/5 p-3 text-ui">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-accent/50 p-3 text-ui">
             <span className="text-muted-foreground">
               You are midway through <b>{mask.by.get(pattern.id)}</b>, which
               builds this idea before naming it. The problems are all here — the
@@ -150,7 +145,7 @@ export function ProblemList({ pattern }: Props) {
           <span className="font-mono">{all.length}</span>
         </Fact>
         <Fact label="with a journey">
-          <RouteIcon className="size-3.5 shrink-0 text-chart-1" aria-hidden />
+          <RouteIcon className="size-3.5 shrink-0 text-dim" aria-hidden />
           <span className="font-mono">{withJourney}</span>
         </Fact>
         <Fact label="solved">
@@ -217,10 +212,10 @@ export function ProblemList({ pattern }: Props) {
         {filtering && (
           <div
             data-testid="filter-banner"
-            className="flex flex-wrap items-center gap-2 border-t border-chart-1/40 bg-chart-1/5 px-3 py-2 text-ui"
+            className="flex flex-wrap items-center gap-2 border-t bg-accent/50 px-3 py-2 text-ui"
             aria-live="polite"
           >
-            <FilterIcon className="size-4 shrink-0 text-chart-1" />
+            <FilterIcon className="size-4 shrink-0 text-dim" />
             <span className="text-muted-foreground">
               Filtered — showing{" "}
               <b className="text-foreground tabular-nums">{problems.length}</b>{" "}
@@ -311,7 +306,7 @@ export function ProblemList({ pattern }: Props) {
                     </span>
                     {journeyForProblem(p.id) && (
                       <RouteIcon
-                        className="size-3.5 shrink-0 text-chart-1"
+                        className="size-3.5 shrink-0 text-dim"
                         aria-label="has a full journey"
                       />
                     )}
@@ -350,7 +345,10 @@ export function ProblemList({ pattern }: Props) {
           as an index" — so rendering one during a journey that has not reached
           its reveal hands over the exact word the rule exists to withhold. */}
       {!hidden && (
-        <PatternPlaybook name={pattern.name} playbook={pattern.playbook ?? []} />
+        <PatternPlaybook
+          name={pattern.name}
+          playbook={pattern.playbook ?? []}
+        />
       )}
     </div>
   )

@@ -51,9 +51,11 @@ export function CodeBlock({
         data-state={copied ? "copied" : failed ? "failed" : "idle"}
         className={cn(
           "absolute top-2 right-2 text-dim",
-          "group-hover:text-foreground group-focus-within:text-foreground",
-          copied && "text-chart-3 group-hover:text-chart-3",
-          failed && "text-destructive group-hover:text-destructive"
+          !copied &&
+            !failed &&
+            "group-focus-within:text-foreground group-hover:text-foreground",
+          copied && "text-chart-3",
+          failed && "text-destructive"
         )}
       >
         {copied ? <CheckIcon /> : failed ? <XIcon /> : <CopyIcon />}

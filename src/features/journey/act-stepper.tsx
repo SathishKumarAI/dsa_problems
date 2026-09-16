@@ -110,10 +110,7 @@ function Ribbon({
         return (
           <div key={a.key} className="flex items-stretch gap-1">
             {i > 0 && (
-              <span
-                className="self-center text-dim"
-                aria-hidden
-              >
+              <span className="self-center text-dim" aria-hidden>
                 {stacked ? "↓" : "→"}
               </span>
             )}

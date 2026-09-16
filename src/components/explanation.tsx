@@ -15,7 +15,9 @@ export function ExplanationBody({
 }) {
   if (!state.present) return null
   if (!state.ready)
-    return <p className="text-ui text-muted-foreground">loading the explanation…</p>
+    return (
+      <p className="text-ui text-muted-foreground">loading the explanation…</p>
+    )
   return state.kind === "typed" ? (
     <TeachingDocView
       parts={state.parts}

@@ -59,8 +59,8 @@ export function StepsChart({
                   className={cn(
                     "absolute inset-y-0 left-0 rounded-l-[2px] rounded-r-[4px] transition-[width] duration-(--duration-reveal)",
                     isActive
-                      ? "bg-chart-1"
-                      : "bg-chart-1/30 group-hover:bg-chart-1/50"
+                      ? "bg-ramp-2"
+                      : "bg-ramp-2/30 group-hover:bg-ramp-2/50"
                   )}
                   style={{ width: `${w}%` }}
                 />

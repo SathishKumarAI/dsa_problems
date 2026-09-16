@@ -84,20 +84,45 @@ action is the darkest neutral in light and the lightest in dark, not a hue — a
 The page wash was two radial gradients painted in `--chart-1` and `--chart-2`, which was the rule
 being broken by the largest surface on the page; it is a lightness lift now, so depth costs no hue.
 
+**Chrome has its own accent: `--edge`.** Hover, focus, selection and "you are here" are the interface
+talking about itself, so they are drawn in the ink — `#101722` in light, `#e6ecf5` in dark — and
+`--ring` is the same value. Before this token existed there was nowhere right to put an interaction
+state, so thirty-odd of them had drifted onto `--chart-1`, and a hovered row said "focus" in a place
+where nothing was focused. Two roles stay hued because they are not chrome: a **state** a reader must
+not miss (copied, saved, pass/fail, complete) and the **chip grammar** on a stage.
+
+Three findings only the mechanical gate would have produced, all of them the same mistake wearing
+different clothes:
+
+- the **Run / Stop** button was painted in `--chart-3` and `--chart-5` — *settled* and *wrong*, the
+  two colours a learner is taught to read on the stage as "this cell is done" and "this cell is the
+  bug". Its label already says which it is;
+- the copy button restated its outcome hue under `group-hover:` for one reason: the idle rule below
+  would otherwise repaint it. Gating the idle rule on idle deletes both overrides;
+- the journey's **step chart** drew an ordered quantity in a categorical hue. Bars in a series are a
+  scale, so they moved to the ramp — the same correction the constraint figures took.
+
 **Light walks the ramp the other way.** Dark climbs into viridis's bright end; a light ground cannot,
 because that end is invisible on white. What matters is that the direction never reverses — a ramp
 that turns round mid-scale is five colours, not a scale — and `palette.test.ts` asserts exactly that.
 
 ### The gate, and why it is arithmetic rather than judgement
 
-`src/lib/palette.test.ts` reads the values **out of `index.css`**, never from a copy, and proves four
+`src/lib/palette.test.ts` reads the values **out of `index.css`**, never from a copy, and proves six
 things on both themes:
 
 1. every text role clears WCAG AA on both its grounds (worst measured: **4.76:1**);
 2. every chip role clears AA against the ground;
 3. the five roles stay apart **in OKLab**, not by contrast ratio — contrast measures luminance only,
    so it called light-mode orange and blue identical at 1.22:1 when no reader would confuse them;
-4. the ordered ramp is monotonic in one direction.
+4. the ordered ramp is monotonic in one direction;
+5. **no `hover:` / `focus-visible:` / `active:` / `group-hover:` variant anywhere in `src` names a
+   chart role** — this is the mechanical half of "chrome never borrows a data colour", and the half
+   that erodes by hand. It walks every `.tsx`, and found eight a grep for the obvious spellings had
+   already missed;
+6. `--edge` and `--ring` are not equal to any chart or ramp value, and clear **3:1** against the
+   ground — WCAG 1.4.11, because a focus ring distinguished by hue alone disappears on the display it
+   was not designed on.
 
 Checks 3 and 4 both failed on the first palette and caught real defects: in light mode **focus**
 `#8a5a00` and **wrong** `#9c3a06` were 0.080 apart in OKLab — two dark oranges for the two roles that

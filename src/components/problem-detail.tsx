@@ -403,11 +403,11 @@ function ProblemPage({
             className={cn(
               "ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7",
               expandAll
-                ? "border-chart-1/50 bg-chart-1/10 text-foreground"
-                : "text-muted-foreground hover:border-chart-1/40 hover:text-foreground"
+                ? "border-edge/60 bg-accent text-foreground"
+                : "text-muted-foreground hover:border-edge/40 hover:text-foreground"
             )}
           >
-            <ScrollTextIcon className="size-3.5 shrink-0 text-chart-1" />
+            <ScrollTextIcon className="size-3.5 shrink-0 text-dim" />
             {expandAll ? "everything open" : "read it all"}
           </button>
           <label className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
@@ -487,7 +487,7 @@ function ProblemPage({
               className={cn(
                 "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-9",
                 journey
-                  ? "border hover:border-chart-1/60"
+                  ? "border hover:border-edge/60"
                   : "btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
               )}
             >
