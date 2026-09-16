@@ -161,6 +161,12 @@ ragged-right leaves a very uneven right margin, which is why the setting is just
 It is the `prose-set` utility, applied to RUNNING TEXT only — never to labels, controls, code, or
 a term in a definition list, none of which are read as sentences.
 
+**And never in a narrow column.** Justification works at the reading column's ~90 characters
+because the word spaces have room to absorb the difference. The constraint cards are 337px, about
+40 characters a line, and the same setting there opened exactly the rivers justification gets
+blamed for — visible two cards deep in a screenshot. A narrow measure is set ragged. This is why
+the utility is opt-in rather than a rule on `p`.
+
 **The gate moved with the decision rather than being deleted.** U7 asserted 80 characters; it
 asserts 96 now, and what it still catches is the bug worth catching — a paragraph that escapes its
 column and runs the page sideways. Measured after the change: the widest prose on the problem page

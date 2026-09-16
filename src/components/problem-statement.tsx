@@ -66,20 +66,28 @@ function Constraints({ problem }: { problem: Problem }) {
     // The term and its definition are distinguished by POSITION and VOICE now
     // — the bound on its own line, the sentence beneath it in the muted role —
     // so every line in the section starts and ends on the column's own edges.
-    <ul aria-label="constraints" className="flex flex-col gap-3">
+    <ul aria-label="constraints" className="grid gap-3 sm:grid-cols-2">
       {problem.constraints.map((c, i) => {
         const what = buys.get(c)
         return (
           <li
             key={c}
-            // staggered so the list reads as a sequence rather than appearing
-            // as a block — one reveal token, delayed, not a second duration.
-            // `-mx-3 px-3`: the hover highlight needs padding, and padding
-            // would push this text right of the paragraph above it. The
-            // negative margin spends it outward instead, so the text keeps the
-            // column's left edge (the contents rail does the same).
-            className="-mx-3 flex animate-edge-in-y flex-col gap-1 rounded-lg border border-transparent px-3 py-2 transition-colors hover:border-chart-1/40 hover:bg-accent/40"
-            style={{ animationDelay: `${i * 45}ms` }}
+            // Each bound is its own CARD, at the owner's request. Noting the
+            // tension rather than hiding it: DESIGN.md reserves a card for a
+            // thing with its own actions, and the U-series counted 21
+            // non-interactive bordered boxes as a defect. These rows lift on
+            // hover and nothing else — so the affordance is honest about being
+            // a highlight, not a click.
+            //
+            // The motion is ONE token. `animate-edge-in-y` on the reveal
+            // duration, staggered 60ms a card so the four land as a sequence;
+            // the hover is the shared `--shadow-lift` with a 1px rise. The
+            // transition names its properties as LONGHANDS — `transition-all`
+            // would report three durations to the R6 audit, and a bare
+            // `transition-colors` utility silently resets transition-property,
+            // which is how the card lift on home never ran (DESIGN.md).
+            className="group flex animate-edge-in-y flex-col gap-2 rounded-xl border bg-card/40 p-4 transition-[box-shadow,transform,border-color] hover:-translate-y-px hover:border-chart-1/40 hover:shadow-(--shadow-lift)"
+            style={{ animationDelay: `${i * 60}ms` }}
           >
             {/* Mono for the NOTATION and the reading face for the words.
                 Three quarters of the corpus's 668 constraint lines are English
@@ -88,13 +96,7 @@ function Constraints({ problem }: { problem: Problem }) {
                 values, indices and notation glyphs, not to prose. The hybrids
                 are why this splits per run: "1 <= nums[i] <= n — every value is
                 a legal index" is both, in one line. */}
-            {/* `font-medium` on the TERM. A bound set in mono already reads
-                as the thing being defined, but the constraints that are
-                English sentences do not — at the same weight and a smaller
-                step than the explanation beneath them, the term looked like a
-                weaker version of its own definition. Weight and colour carry
-                the distinction; the size never has to. */}
-            <p className="max-w-measure text-ui font-medium">
+            <p className="text-ui font-medium">
               {runsOf(c).map((run, j) =>
                 run.mono ? (
                   <span key={j} className="font-mono">
@@ -106,7 +108,13 @@ function Constraints({ problem }: { problem: Problem }) {
               )}
             </p>
             {what && (
-              <p className="max-w-measure prose-set text-body text-muted-foreground">
+              // NO `prose-set` here, and that is why the utility is opt-in.
+              // Justification works at the column's ~90 characters because the
+              // word spaces have room to absorb the difference; a 337px card is
+              // ~40 characters a line, where the same setting opens exactly the
+              // rivers justification gets blamed for — visible in a screenshot
+              // two cards deep. A narrow measure is set ragged.
+              <p className="border-t pt-2 text-body text-muted-foreground">
                 {what}
               </p>
             )}

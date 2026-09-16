@@ -233,7 +233,13 @@ function Entry({ entry }: { entry: Outline }) {
         // characters, which is the threshold this repo's own audit uses to
         // call something a SENTENCE rather than a label — and a sentence is
         // never set below the ui step.
-        "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-colors hover:border-chart-1 hover:text-foreground",
+        // The hover moves the row 2px toward its own text as the
+        // indicator lights — the smallest gesture that says "this one".
+        // LONGHANDS, not `transition-colors`: that utility sets
+        // transition-property to the colour longhands only, so the
+        // translate beside it would never animate. It is the same trap
+        // that stopped home's card lift from ever running (DESIGN.md).
+        "-ml-4 border-l-2 border-transparent py-0.5 text-ui transition-[color,border-color,translate] hover:translate-x-0.5 hover:border-chart-1 hover:text-foreground",
         entry.level === 3 ? "pl-7 text-dim" : "pl-4 text-muted-foreground"
       )}
     >
