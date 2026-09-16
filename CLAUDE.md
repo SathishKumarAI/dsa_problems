@@ -21,6 +21,8 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | Measured UI/UX findings and the fix list | `docs/UX-AUDIT.md` (U1–U14 chrome, V1–V10 content, P1–P4 panels) |
 | Whether a panel still fits its biggest input | `test/panel-audit.test.mjs` — runs inside `npm run test:ui`, one test per panel kind, and still prints the table |
 | Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
+| **The measure** — how wide prose is, and why it is justified | `docs/DESIGN.md` §Measure. One token, `--container-measure`, and it is the reading COLUMN: prose fills it, set with `hyphens: auto` (the `prose-set` utility). Never cap a padded box — padding-right comes out of the measure, padding-left does not |
+| What the problem page owes, what shipped, and what is still open | `docs/PROBLEM-PAGE.md` |
 | How the animations work, and how to build one in Python / for an LLM | `docs/VISUALIZING.md` |
 | Which model wrote what, and what it cost in tokens | `docs/MODELS.md` |
 | How to run subagents here — the roster, the rules, how to resume one | `docs/AGENTS.md` |
@@ -67,6 +69,28 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   never import from it. Delete it when B25 says so.
 
 ## Traps
+
+- **A backtick inside a comment inside a template literal ends the string.** `ui-smoke.test.mjs`
+  passes its page scripts as template literals; a comment I added there quoted a CSS selector in
+  backticks and the whole file stopped parsing — 16 tests ran instead of 178, reported as one
+  file-level failure rather than as a syntax error. `node --check <file>` names it in one line.
+- **`getBoundingClientRect` on an INLINE element spans every line it wraps across.** Measuring
+  vertical gaps by walking children and subtracting rects therefore reports enormous holes that do
+  not exist — I "found" a 6200px gap on a 6898px page and nearly went fixing it. Measure block
+  boxes, or use `getClientRects()` per line.
+- **`em` is relative to the element, so one "cap" is many widths.** `max-w-[35em]` rendered 595px on
+  a 17px paragraph and 525px on a 15px one; eight different sentence widths in one column is what
+  reads as text nobody set. One absolute token, on the TEXT and not on a padded box, and one cap per
+  FLOW rather than one per block — a per-block cap is applied after the nesting, so a callout inside
+  a fold ends up wider than the column.
+- **Node strips types from `.ts` and cannot load `.tsx` at all.** A rule that must fail the build
+  cannot live in a component module: `watchable.ts` and `doc-sections.ts` are plain `.ts` for that
+  reason, not for tidiness.
+- **A `<b>` renders 700**, which is off this scale (400/500/600). Keep the element where a test
+  selects on it and write `font-semibold`.
+- **Two UI gates count `textarea` to mean "a code editor".** Any other textarea on a problem page —
+  the notes field — makes them assert something they were not written to assert. Mark it
+  (`data-notes`) and exclude it, rather than loosening the count.
 
 - **A bare `#id` href is a ROUTE change, not a scroll.** This is a hash-routed app, so
   `href="#rung-brute"` sets the route to `rung-brute` and the app renders HOME — the page the

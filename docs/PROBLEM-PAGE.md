@@ -26,6 +26,10 @@
 | 10 | Explain WHY and HOW the complexities are calculated | **shipped** | `Solution.costWhy`, `Problem.costWhy` |
 | 11 | Make the reader think before solving | **shipped** | `pre-solve-check.tsx` |
 | 12 | "Next walkthrough" | **shipped** — the walkthrough steps between approaches | `features/journey/watchable.ts` |
+| 14 | Hide the right rail, and widen the text | **shipped** — toggle, pref `pageRail`, and the `f` focus key | `problem-closing.tsx` |
+| 15 | Notes on the sidebar | **shipped** (B86) — saved as you type, never exported, never reset | `problem-notes.tsx` |
+| 16 | Search out of the top bar, into the sidebar | **shipped** — the bar is a phone shell again | `app-sidebar.tsx`, `App.tsx` |
+| 17 | Text uses the full width, set like a book | **shipped** — the measure IS the column; justified with hyphenation | `index.css`, `prose-set` |
 | 13 | Check the page for other issues and write them down | **this document**, §5 | — |
 
 ---
@@ -299,3 +303,71 @@ Per problem, all of it authoring and none of it code:
 
 So the expensive half of the pilot is already sitting in `docs/deep/` for 82 problems, and
 slice 2 is what makes it reachable without being read twice.
+
+---
+
+## 8. After the fold — typography, layout and the rail
+
+Everything below shipped after §4, in the order it was asked for.
+
+### 8.1 The type scale closed
+
+| Measure, problem page | Before | After |
+|---|---|---|
+| Text nodes off the six-step scale | **111** of 880 | **0** |
+| Font weights | 4 (a bare `<b>` renders 700) | **3** — 400/500/600 |
+| Rail entries printing raw Markdown (`*…*`) | several | **0** |
+
+103 of those 111 were inline `<code>` carrying `text-[0.9em]` — a relative size is a seventh step
+that moves with context, so one span of inline code was 15.3px in body prose and 13.5px in a table
+cell. The other 8 were constraint rows with no type role at all, inheriting the root's 16px.
+
+### 8.2 Mono stopped being a costume
+
+Counted over the corpus: **668 constraint lines, 170 notation and 498 English**. Three quarters of
+the bounds on this site were prose wearing the data face. It splits per RUN now
+(`lib/notation.ts`), because the useful lines are hybrids —
+`1 <= nums[i] <= n — every value is a legal index of the array`. The em dash was the trap: no
+letters, so the first rule called it notation and every trailing clause began with a mono glyph.
+
+### 8.3 One measure, then the full width
+
+The page had **eight different sentence widths in one 768px column**. Three causes: `max-w-[35em]`
+written out fifty times (`em` is per-element); the cap sitting on padded BOXES rather than on the
+text; and sentences set at the control step. Fixed to one token, then — on the owner's call, made
+twice — the measure became the **reading column itself**, with prose justified and hyphenated
+(`prose-set`). The U7 gate moved with the decision: 80 → 96 characters, still catching a paragraph
+that escapes its column.
+
+### 8.4 A document's headings may not outrank the page's own
+
+`##` inside the long read rendered at 28px — the size of the problem title — while every section on
+the page is a 13px label. The heading ladder is one thing now: **28** the problem title · **13
+uppercase** every section · **17** a document subsection · **15** a sub-heading.
+
+### 8.5 The rail earns its column
+
+It used to wait on the document FETCH, so the right column was empty on arrival — 317px of dead
+width on the page's most common state. It lists the page's own sections from the first paint, and
+now also carries **notes**, and **hides** (pref `pageRail`, or the `f` focus key), which widens the
+text 689 → 768 with no arithmetic.
+
+### 8.6 What the gates caught, and what I got wrong
+
+Worth recording, because both were mine and neither was visible in a diff:
+
+* A comment I added inside `ui-smoke.test.mjs` quoted a selector in **backticks**, inside a template
+  literal. The file stopped parsing: 16 tests ran instead of 178.
+* I reported a **6200px vertical hole** on this page. It did not exist —
+  `getBoundingClientRect` on an inline element spans every line it wraps across, and I was
+  subtracting those. Closed, this page has zero vertical gaps over 40px.
+
+## 9. Still open
+
+- **Hints** are a plain accordion; they should be a ladder with the same disclosure vocabulary.
+- **The code does not trace** (B101). Run prints output; it never shows `seen` filling.
+- **The other 152 problems** carry none of `unlocks`, `checks`, `reading` or `costWhy` yet. The
+  mechanisms are generic; only the content is per problem, and §7 prices it.
+- **B100 is half closed**: the fold works for Markdown documents, not yet for the 49 typed ones.
+- Two of `contains-duplicate`'s four "constraints" are English sentences that arguably belong in
+  `unlocks` — a content question, not a formatting one.

@@ -11,6 +11,45 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-09-15 — the problem page pilot, on `contains-duplicate`
+
+Two branches: **#108**, the algorithm visualizer moved to the foot of the sidebar, and **#109**,
+twelve commits on one problem page. The full account is `docs/PROBLEM-PAGE.md`; this is the ledger
+entry.
+
+**What it answered.** A reader asked seventeen things of the page. Fourteen shipped, two are half
+done, one is still a question. The mechanisms are generic and the CONTENT is per problem, which is
+the whole point of piloting it on one.
+
+**The measurements that drove it**, because none of this was taste:
+
+| Finding | Number |
+|---|---|
+| The search control covered the `solved` checkbox | 69 × 24 px at 1100 and below — unclickable |
+| The document repeated the ladder | 7,807 words, **4,222 of them (54%)** per-approach |
+| Sentence widths in one 768px column | **8** — 595, 527, 525, 509, 488, 480, 707, 349 |
+| Text nodes off the six-step type scale | **111** of 880 |
+| Constraint lines in the corpus that are English, set in the data face | **498** of 668 |
+| Dead width right of the content, before the rail loads | **317px** |
+| `problem-detail.tsx` | 843 lines against a 500 ceiling |
+
+**Two things I got wrong and the gates or a second look caught:**
+
+* A comment I added inside `ui-smoke.test.mjs` quoted a selector in backticks — inside a template
+  literal. The file stopped parsing; 16 tests ran instead of 178.
+* I reported a 6200px vertical hole on the page. It did not exist: `getBoundingClientRect` on an
+  inline element spans every line it wraps across, and I was subtracting those rects. Recorded
+  rather than quietly dropped, because the correction is the useful part.
+
+**Decisions that were the owner's, not mine**, and are recorded as such in `docs/DESIGN.md`: prose
+fills the reading column (≈90 characters, against the 45–75 the literature recommends), which is
+why it is justified with automatic hyphenation; and the U7 measure gate moved from 80 to 96
+characters **with** that decision rather than being deleted around it.
+
+**Gates:** `check` 789 → **823** · `test:ui` **178** · `verify:fences` 338 clean (baseline 7) ·
+`learn-gaps --strict` clean · `build` clean.
+
+
 ## Where it started
 
 Two repositories that did not know about each other. `dsa_problems` was a Vite + React practice
