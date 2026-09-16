@@ -70,5 +70,5 @@ It outdents by two, and skips the inside of a template literal while doing it;
 catalogue's and that no code block's indentation stopped nesting.
 
 The one judgement a machine must not make is which rung each `## Approach` teaches. Record it in
-`scripts/rung-bindings.json`; anything absent is emitted blank and fails `content.test.ts` until a
+`src/data/rung-bindings.json`; anything absent is emitted blank and fails `content.test.ts` until a
 human decides.
