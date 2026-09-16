@@ -240,15 +240,10 @@ function ProblemPage({
       ? [{ id: "walkthrough", text: "Walkthrough", level: 2 as const }]
       : []),
     { id: "approaches", text: "Approaches", level: 2 as const },
-    ...(!hidden
-      ? [
-          {
-            id: "the-same-move-elsewhere",
-            text: "The same move, elsewhere",
-            level: 2 as const,
-          },
-        ]
-      : []),
+    // NOT "the same move, elsewhere". This rail only exists from xl, and from
+    // xl that section is `xl:hidden` because the rail carries the list itself —
+    // so an entry here would offer a jump to something invisible. The rail may
+    // never name a section the page did not draw.
     ...(explanation.present
       ? [
           {
@@ -521,11 +516,20 @@ function ProblemPage({
           problem is a cheaper next step than a textbook chapter, and hidden
           with everything else while a journey is still withholding the
           pattern's name. */}
+        {/* `xl:hidden` — this list lives in the RAIL from xl up, where it can
+            be looked at instead of scrolled to. Below xl there is no rail, so
+            it stays here rather than disappearing. One component and the same
+            props in both places: two lists of the same thing is how the two
+            come to disagree. */}
         {!hidden && (
-          <SimilarProblems problem={problem} pattern={pattern} all={PROBLEMS} />
+          <div className="xl:hidden">
+            <SimilarProblems
+              problem={problem}
+              pattern={pattern}
+              all={PROBLEMS}
+            />
+          </div>
         )}
-
-        {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
 
         {/* ── THE EXPLANATION ─────────────────────────────────────────────
           The long-form document, in full, at the foot of the page it belongs
@@ -590,6 +594,11 @@ function ProblemPage({
             )}
           </section>
         )}
+
+        {/* LAST. It was above the long explanation, which sent a reader
+            off-site before the page's own deepest content. Everything here
+            leaves Patternsmith, so it belongs at the end of the road. */}
+        {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
       </div>
 
       {/* The contents rail. The explanation runs to a few thousand words with
@@ -601,6 +610,23 @@ function ProblemPage({
         sections={sections}
         outline={outline}
         problemId={problem.id}
+        // NO copy of the difficulty or the target here. They are in the
+        // orient bar, and putting them in both is the duplication this page
+        // has spent the whole branch removing. The orient bar STICKS instead,
+        // so the facts stay on screen at every width — the rail does not exist
+        // below xl, so a rail-only copy would simply lose them there.
+        aside={
+          <>
+            {!hidden && (
+              <SimilarProblems
+                problem={problem}
+                pattern={pattern}
+                all={PROBLEMS}
+                compact
+              />
+            )}
+          </>
+        }
         label={binding ? "The rest of the story" : "The explanation"}
       />
     </div>

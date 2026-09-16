@@ -57,6 +57,14 @@ export function OrientBar({
         // would either overflow the page or shrink the difficulty word to an
         // ellipsis, and the whole job of this bar is to be read at a glance
         "flex flex-wrap items-center gap-x-5 gap-y-2 border-b pb-3",
+        // STICKY, and that is what lets the facts appear exactly once. The
+        // target complexity is the number you check while reading a rung three
+        // thousand words below it, so it was copied into the right rail — and
+        // a fact in two places is the duplication this page spent a branch
+        // removing. It stays on screen instead. The blur is the same treatment
+        // every floating surface here uses; the anchors clear it because
+        // `scroll-mt-20` (80px) is already deeper than this bar is tall.
+        "sticky top-0 z-10 -mt-2 bg-background/80 pt-2 backdrop-blur-md",
         className
       )}
     >
@@ -88,7 +96,10 @@ export function Band({
   className?: string
 }) {
   return (
-    <section id={id} className={cn("flex scroll-mt-20 flex-col gap-3", className)}>
+    <section
+      id={id}
+      className={cn("flex scroll-mt-20 flex-col gap-3", className)}
+    >
       <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
         {label}
         {/* the rule IS the separator. A filled divider would add a third
@@ -99,7 +110,7 @@ export function Band({
           className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
         />
         {count && (
-          <span className="font-mono text-meta normal-case text-dim">
+          <span className="font-mono text-meta text-dim normal-case">
             {count}
           </span>
         )}

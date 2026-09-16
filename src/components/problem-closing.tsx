@@ -113,10 +113,16 @@ export function ContentsRail({
   outline,
   sections = [],
   problemId,
+  aside,
   label = "The explanation",
 }: {
   /** whose notes the rail carries */
   problemId?: string
+  /** what the reader CONSULTS rather than reads: the cost to beat, and the
+   *  problems that use the same move. Both were in the flow — the target
+   *  scrolls away with the orient bar, and the siblings sat at the very foot,
+   *  which is the one place you cannot look at while working. */
+  aside?: React.ReactNode
   /** the PAGE's own sections, always known — the document's outline needs a
    *  fetch, so a rail that waited for it left the right column empty on
    *  arrival and filled it only once the reader opened the long read. At 1283
@@ -159,6 +165,7 @@ export function ContentsRail({
       aria-label="contents"
       className="sticky top-16 hidden h-fit w-56 shrink-0 flex-col gap-1 border-l pl-4 xl:flex"
     >
+      {aside && <div className="flex flex-col gap-4 pb-5">{aside}</div>}
       {sections.length > 0 && (
         <>
           <span className="flex items-center gap-1.5 pb-1 text-meta font-semibold text-foreground">
