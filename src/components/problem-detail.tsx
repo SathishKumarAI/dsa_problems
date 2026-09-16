@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/accordion"
 import { Band, Fact, OrientBar } from "@/components/ui/band"
 import { ComplexityMark, DifficultyMeter } from "@/components/ui/tick-meter"
-import { RowNudge } from "@/components/ui/row"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
@@ -47,7 +46,6 @@ import { useEffect, useState } from "react"
 import { ExplanationBody } from "./explanation"
 import { useExplanation } from "@/lib/use-explanation"
 import { foldDoc } from "@/lib/doc-sections"
-import { outlineOf } from "@/lib/markdown"
 import { Markdown } from "./markdown"
 import BINDINGS from "@/data/rung-bindings.json"
 import { MiniPlayer } from "@/features/journey/mini-player"
@@ -152,7 +150,19 @@ function ProblemPage({
   // react-hooks v7 forbids a synchronous setState in an effect, and there is
   // nothing to store here anyway — the URL already says it.
   const asked = query.get("read") === "explanation"
-  const reading = opened || asked
+  // ALWAYS reading. The document used to sit behind a door, and everything it
+  // says was one click away from the thing it says it about — the constraints
+  // argument a page above the constraints, the cost of a rung a page below the
+  // rung. It is fetched on arrival now and its sections are placed where they
+  // belong, so the page reads top to bottom with nothing to open.
+  //
+  // What that costs, stated: one fetch of ~22 KB of Markdown per problem page.
+  // The measurement that made it a door in the first place was HEIGHT, not
+  // bytes, and height is solved by placing the sections rather than stacking
+  // them.
+  const reading = true
+  void opened
+  void asked
   const explanation = useExplanation(problem.id, !ladder.capped, reading)
   // the scroll still waits for the document to arrive, because until then
   // there is nothing at that offset to scroll to
@@ -240,6 +250,36 @@ function ProblemPage({
         )
       : null
 
+  /**
+   * One section of the document, by the heading it was written under — so the
+   * page can put it beside the thing it is about.
+   *
+   * Matching on the TITLE rather than an index: a document that gains a section
+   * should not silently shift every other one into the wrong place, and one
+   * that is missing a section should render nothing rather than its neighbour.
+   */
+  const docSection = (re: RegExp) =>
+    folded?.sections.find((x) => re.test(x.title.trim()))
+  const placed = new Set<string>()
+  const take = (re: RegExp) => {
+    const hit = docSection(re)
+    if (hit) placed.add(hit.title)
+    return hit
+  }
+  const understanding = take(/^understanding the problem$/i)
+  const calculations = take(/^reading the calculations$/i)
+  const comparison = take(/^comparison$/i)
+  const extraApproaches = folded?.sections.filter((x) => {
+    const isApproach = /^approach(\s|$)/i.test(x.title.trim())
+    if (isApproach) placed.add(x.title)
+    return isApproach
+  })
+  // whatever the document carries that this page has no better home for — the
+  // interview script, the fluency drills, the runnable script
+  const closing = folded?.sections.filter(
+    (x) => x.title && !placed.has(x.title)
+  )
+
   // The page's OWN sections, in the order it renders them — the same
   // conditions, so the rail can never offer a section the page did not draw.
   // It used to list only the document's headings, which need a fetch, so the
@@ -260,25 +300,33 @@ function ProblemPage({
     ...(journey || problem.walkthrough
       ? [{ id: "walkthrough", text: "Walkthrough", level: 2 as const }]
       : []),
+    ...(calculations
+      ? [
+          {
+            id: "reading-the-calculations",
+            text: "Reading the calculations",
+            level: 2 as const,
+          },
+        ]
+      : []),
     { id: "approaches", text: "Approaches", level: 2 as const },
     // NOT "the same move, elsewhere". This rail only exists from xl, and from
     // xl that section is `xl:hidden` because the rail carries the list itself —
     // so an entry here would offer a jump to something invisible. The rail may
     // never name a section the page did not draw.
-    ...(explanation.present
-      ? [
-          {
-            id: "explanation",
-            text: binding ? "The rest of the story" : "The long explanation",
-            level: 2 as const,
-          },
-        ]
+    ...(closing?.length
+      ? [{ id: "explanation", text: "Taking it with you", level: 2 as const }]
       : []),
   ]
 
   // the rail lists what the SECTION renders, which is now the shared half
+  // NO second list. The document's sections used to be a rail group of their
+  // own because they all lived behind one door; they are placed through the
+  // page now, so `sections` above already names every heading a reader can
+  // jump to. A typed document still has its own outline, because it still
+  // renders whole.
   const outline = folded
-    ? outlineOf(folded.shared)
+    ? []
     : explanation.present && explanation.ready
       ? explanation.outline
       : []
@@ -446,35 +494,6 @@ function ProblemPage({
               Solve on LeetCode
               <ExternalLinkIcon className="size-4" />
             </a>
-            {explanation.present && (
-              <button
-                type="button"
-                aria-expanded={reading}
-                aria-controls="explanation"
-                onClick={() => {
-                  setOpened(true)
-                  // the section is below the fold and its content is FETCHED, so
-                  // the scroll waits for the render that brings it — see the
-                  // `?read=explanation` effect above, which this reuses
-                  if (reading)
-                    document
-                      .getElementById("explanation")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }}
-                className="group inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
-              >
-                <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
-                {/* The three actions are ONE ROW. Measured at 1440: they need
-                    745.4px against 735 available and wrapped by 10.4px, and
-                    the whole overflow was this suffix — 376 of those 745 were
-                    this one button. It was also stale: the section it opens is
-                    called "the rest of the story" now, because the per-approach
-                    half of the document lives on the rungs. The heading below
-                    says what it is; the button only has to name the action. */}
-                Learn this problem
-                <RowNudge />
-              </button>
-            )}
           </div>
           {/* What a journey IS — the one sentence the deleted panel carried, and
             only while it is unstarted. Once earning has begun the button's
@@ -503,6 +522,14 @@ function ProblemPage({
           `problem-statement.tsx`, which owns all three. */}
         <Band id="the-problem" label="the problem">
           <ProblemStatement problem={problem} />
+          {/* The document's own reading of the question, WITH the question. It
+              used to be the first thing behind the door — a page away from the
+              statement it restates and sharpens. */}
+          {understanding && (
+            <div className="border-t pt-4">
+              <Markdown blocks={understanding.blocks} problemId={problem.id} />
+            </div>
+          )}
         </Band>
 
         {/* Between the statement and the hints on purpose: the first thing this
@@ -574,6 +601,14 @@ function ProblemPage({
           </Band>
         )}
 
+        {/* Where the cost actually goes — immediately before the rungs whose
+            costs it explains, rather than three thousand words after them. */}
+        {calculations && (
+          <Band id="reading-the-calculations" label="reading the calculations">
+            <Markdown blocks={calculations.blocks} problemId={problem.id} />
+          </Band>
+        )}
+
         <ApproachLadder
           problem={problem}
           journey={journey}
@@ -581,6 +616,8 @@ function ProblemPage({
           onCompare={compare}
           expandAll={expandAll}
           arcDoc={folded?.arc ?? null}
+          comparison={comparison?.blocks ?? null}
+          extraApproaches={extraApproaches ?? null}
           folded={folded?.byRung ?? null}
           // opening a rung's account is a reason to fetch the document, the
           // same as opening the section below — one fetch serves every rung
@@ -611,73 +648,52 @@ function ProblemPage({
           </div>
         )}
 
-        {/* ── THE EXPLANATION ─────────────────────────────────────────────
-          The long-form document, in full, at the foot of the page it belongs
-          to. Gated by the SAME `capped` flag as the ladder and the arc: it
-          walks the whole climb, and a journey mid-flight has not earned that.
+        {/* ── WHAT IS LEFT OF THE DOCUMENT ────────────────────────────────
+            There is no door any more. "Understanding" sits with the problem,
+            "Reading the calculations" before the rungs whose costs it explains,
+            the comparison and the approaches the ladder does not carry inside
+            the approaches band, and each rung's own account on its rung. What
+            reaches here is the part that is about none of those: the interview
+            script, the fluency drills, the runnable script.
 
-          It is the last thing on the page, and CLOSED until asked for. Open,
-          it is 15 to 30 screens: pair-sum measured 33.8 with it against 4.1
-          without, which made the ladder the first twelve percent of its own
-          page. Closed it is a heading and a sentence, and the document is not
-          even fetched — `hasExplanation` answers from the glob's keys. */}
-        {explanation.present && (
-          <section
+            The section still carries `id="explanation"`, because `#/learn/<id>`
+            redirects to `?read=explanation` and something has to be at that
+            offset. */}
+        {closing && closing.length > 0 && (
+          <Band
             id="explanation"
-            className="flex min-w-0 scroll-mt-6 flex-col gap-6 border-t pt-8"
+            label="taking it with you"
+            count="the parts that belong to no single rung"
           >
-            {/* The SAME heading treatment as the other eight sections. This
-                one was a 28px title while every other section on the page is a
-                13px label with a rule — so the last section read as a second
-                page rather than as part of this one. `Band` owns that look;
-                writing it out here again is how the two drift apart. */}
-            <div className="flex flex-col gap-1">
-              <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
-                {binding ? "the rest of the story" : "the long explanation"}
-                <span
-                  aria-hidden
-                  className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
+            {closing.map((sec) => (
+              <div key={sec.title} className="flex flex-col gap-3">
+                <h3 className="font-heading text-body font-semibold">
+                  {sec.title}
+                </h3>
+                <Markdown
+                  blocks={sec.blocks}
+                  runnable
+                  problemId={problem.id}
+                  scaffold={
+                    explanation.present && explanation.ready
+                      ? explanation.scaffold
+                      : undefined
+                  }
                 />
-                <span className="font-mono text-meta text-dim normal-case">
-                  {folded
-                    ? "what belongs to no single rung"
-                    : "every approach in full"}
-                </span>
-              </h2>
-              <p className="max-w-measure prose-set text-body text-muted-foreground">
-                {binding
-                  ? "What is not about any single approach: how to read the problem, where the cost actually goes, the comparison, what to say in an interview, and a script you can run."
-                  : "Every approach in full: the idea, the mental model, a worked trace, the bug you are about to write, and a script you can run."}
-              </p>
-              {!reading && (
-                <button
-                  type="button"
-                  onClick={() => setOpened(true)}
-                  className="group mt-2 inline-flex min-h-11 w-fit items-center gap-2 rounded-lg border px-4 text-ui font-medium hover:border-chart-1/60 lg:min-h-9"
-                >
-                  <ScrollTextIcon className="size-4 shrink-0 text-chart-1" />
-                  Read it
-                  <RowNudge />
-                </button>
-              )}
-            </div>
-            {folded ? (
-              // the shared half only — each rung's own account is on the rung
-              <Markdown
-                blocks={folded.shared}
-                runnable
-                problemId={problem.id}
-                scaffold={explanation.ready ? explanation.scaffold : undefined}
-              />
-            ) : (
-              <ExplanationBody state={explanation} problemId={problem.id} />
-            )}
-          </section>
+              </div>
+            ))}
+          </Band>
         )}
 
-        {/* LAST. It was above the long explanation, which sent a reader
-            off-site before the page's own deepest content. Everything here
-            leaves Patternsmith, so it belongs at the end of the road. */}
+        {/* the Markdown path is placed section by section above; a TYPED
+            document still renders whole, and keeps its own door until it is
+            placed the same way */}
+        {!folded && explanation.present && (
+          <Band id="explanation" label="the long explanation">
+            <ExplanationBody state={explanation} problemId={problem.id} />
+          </Band>
+        )}
+
         {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
       </div>
 

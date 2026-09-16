@@ -72,12 +72,22 @@ export function ApproachLadder({
   onCompare,
   folded,
   arcDoc,
+  comparison,
+  extraApproaches,
   onWantDoc,
   expandAll = false,
 }: {
   /** the document's own "The Overall Arc", folded under the ladder's arc line
    *  rather than running as a second closing section — see lib/doc-sections.ts */
   arcDoc?: Block[] | null
+  /** the document's side-by-side table of the same rungs. Kept, and kept HERE:
+   *  it is the ladder's facts in the one affordance the ladder cannot offer —
+   *  scanned at once rather than argued one rung at a time. */
+  comparison?: Block[] | null
+  /** approaches the document teaches and this ladder does not carry. They were
+   *  stranded at the foot of the page under a heading that said so; they belong
+   *  with the approaches. */
+  extraApproaches?: { title: string; blocks: Block[] }[] | null
   /** the page's "read it all" switch — every fold on the ladder opens with it.
    *  `key`ed on the value rather than merely bound to it, so flipping the
    *  switch sets the folds and a reader can still close one afterwards
@@ -266,6 +276,44 @@ export function ApproachLadder({
             )}
           </div>
         ))}
+        {/* Approaches the document teaches that this ladder does not carry —
+            a baseline the journey skips, or a variant it argues against. They
+            were stranded at the foot of the page under a heading explaining
+            that they were extra; they belong with the approaches, marked. */}
+        {extraApproaches && extraApproaches.length > 0 && (
+          <div className="flex flex-col gap-4 border-t border-border/60 pt-4">
+            {extraApproaches.map((sec) => (
+              <details
+                key={sec.title}
+                open={expandAll}
+                className="rounded-lg border px-4 py-3"
+              >
+                <summary className="min-h-11 cursor-pointer list-none text-ui marker:content-none lg:min-h-7">
+                  <span className="mr-2 rounded-sm border border-chart-4/45 bg-chart-4/10 px-1.5 font-mono text-meta text-chart-4">
+                    reading only
+                  </span>
+                  {sec.title.replace(/\s*\*\(.*$/, "")}
+                </summary>
+                <div className="pt-3">
+                  <Markdown blocks={sec.blocks} problemId={problem.id} />
+                </div>
+              </details>
+            ))}
+          </div>
+        )}
+
+        {/* The same rungs, side by side. The ladder argues one at a time; a
+            table is the affordance it cannot offer, which is why this is not
+            duplication of it. */}
+        {comparison && comparison.length > 0 && (
+          <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
+            <h3 className="font-heading text-body font-semibold">
+              All of them, side by side
+            </h3>
+            <Markdown blocks={comparison} problemId={problem.id} />
+          </div>
+        )}
+
         {/* The idea the whole ladder shares, after the rungs that earned it.
             Never while the ladder is capped: it names where the climb ends. */}
         {problem.arc && !capped && (

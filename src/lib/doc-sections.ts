@@ -57,6 +57,14 @@ export interface Folded {
    * halves already do on their rungs.
    */
   arc: Block[]
+  /**
+   * The shared half GROUPED BY ITS `##` HEADINGS, so the page can place each
+   * part where it belongs instead of stacking all of them behind one door.
+   *
+   * `shared` is the same blocks, flat and in order, for a caller that still
+   * wants the lot.
+   */
+  sections: { title: string; blocks: Block[] }[]
 }
 
 const isApproachHeading = (b: Block) =>
@@ -162,5 +170,17 @@ export function foldDoc(
     byRung[key].push(b)
   }
 
-  return { byRung, shared, unbound, arc }
+  // Grouped by the document's own `##` headings. The page reads this rather
+  // than `shared` so that "Understanding the problem" can sit with the problem
+  // and "Reading the calculations" with the approaches, instead of every one of
+  // them queueing behind a single door labelled "read it".
+  const sections: { title: string; blocks: Block[] }[] = []
+  for (const b of shared) {
+    if (b.kind === "heading" && b.level === 2)
+      sections.push({ title: b.text, blocks: [] })
+    else if (sections.length) sections[sections.length - 1].blocks.push(b)
+    else sections.push({ title: "", blocks: [b] })
+  }
+
+  return { byRung, shared, unbound, arc, sections }
 }

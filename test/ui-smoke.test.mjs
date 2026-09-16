@@ -2440,15 +2440,23 @@ describe(
       )
       const slug = JOURNEYS.find((j) => j.problemId === journeyed.id).slug
 
-      // not started: the whole ladder shows, so the link is offered
+      // Not started: the whole ladder shows, so the document is ON the page.
+      //
+      // There is no LINK to look for any more, and that is the point of this
+      // assertion rather than a weakening of it. The document used to sit
+      // behind a door; its sections are placed through the page now —
+      // "Understanding the problem" with the problem, "Reading the
+      // calculations" before the rungs — so what proves it is reachable is its
+      // CONTENT being rendered, which is a stronger thing to check than a
+      // button that might open onto nothing.
       await page.goto(`${server.base}/#/`)
       await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
       await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
-      // a BUTTON, not a link: the explanation opens in place rather than
-      // navigating, so the door stopped being an anchor when the route merged
       const offered = await page.run(`
-        return !![...document.querySelectorAll('a,button')]
-          .find(e => /learn this problem/i.test(e.textContent || ''));
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(1500);              // the document is fetched, not inlined
+        const t = document.querySelector('main').innerText;
+        return /understanding the problem|taking it with you/i.test(t);
       `)
 
       // started and unfinished: the ladder is capped, so the link must go.
@@ -2458,10 +2466,13 @@ describe(
       await page.run(`localStorage.setItem('dsa:unlocked:${slug}', '2'); return 1`)
       await page.goto(`${server.base}/#/p/${journeyed.pattern}/${journeyed.id}`)
       const gated = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(1500);
+        const t = document.querySelector('main').innerText;
         return {
-          link: !![...document.querySelectorAll('a,button')]
-            .find(e => /learn this problem/i.test(e.textContent || '')),
-          // the section itself, not just the door to it
+          // none of the document's sections may appear, wherever they are
+          // placed — the cap is on the CONTENT, not on a door
+          link: /understanding the problem|taking it with you/i.test(t),
           section: !!document.getElementById('explanation'),
           capped: /still ahead of you/.test(document.body.innerText),
         };
@@ -2469,12 +2480,15 @@ describe(
       await page.goto(`${server.base}/#/`)
       await page.run(`localStorage.removeItem('dsa:unlocked:${slug}'); return 1`)
 
-      assert.ok(offered, `${journeyed.id}: no link on an unstarted journey`)
+      assert.ok(
+        offered,
+        `${journeyed.id}: the document did not render on an unstarted journey`
+      )
       assert.ok(gated.capped, `${journeyed.id}: unlocked=2 did not cap the ladder`)
       assert.equal(
         gated.link,
         false,
-        `${journeyed.id}: the explanation was offered mid-journey — it gives the ending away`
+        `${journeyed.id}: the document rendered mid-journey — it gives the ending away`
       )
       assert.equal(
         gated.section,
