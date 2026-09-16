@@ -23,6 +23,7 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 | Which type step / spacing / radius / width / colour role to use | `docs/DESIGN.md` |
 | **The measure** — how wide prose is, and why it is justified | `docs/DESIGN.md` §Measure. One token, `--container-measure`, and it is the reading COLUMN: prose fills it, set with `hyphens: auto` (the `prose-set` utility). Never cap a padded box — padding-right comes out of the measure, padding-left does not |
 | What the problem page owes, what shipped, and what is still open | `docs/PROBLEM-PAGE.md` |
+| **How to take one of the other 152 problems to the pilot's shape** | `docs/PROBLEM-PAGE-PLAYBOOK.md` — the anatomy band by band, the five fields to author (`unlocks`, figures, `costWhy`, `checks`, `reading`), what good and bad look like for each with the pilot verbatim, the order to write them in, ~70 min/problem measured, the gates in run order, and a copy-paste checklist. The code is done; the content is not |
 | How the animations work, and how to build one in Python / for an LLM | `docs/VISUALIZING.md` |
 | Which model wrote what, and what it cost in tokens | `docs/MODELS.md` |
 | How to run subagents here — the roster, the rules, how to resume one | `docs/AGENTS.md` |

@@ -19,6 +19,7 @@
     "test:ui": "vite build && node --test \"test/**/*.test.mjs\"",
     "docs:learn": "node scripts/gen-learn.mjs",
     "assets:pyodide": "node scripts/copy-pyodide.mjs",
+    "page-coverage": "node scripts/page-coverage.mjs",
     "verify:code": "node scripts/localsmith/verify.mjs",
     "verify:run": "node scripts/localsmith/run.mjs",
     "verify:vectors": "node scripts/localsmith/mutate.mjs",

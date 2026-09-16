@@ -16,6 +16,8 @@ into the file that owns the nearest question, never into a new file.
 | What does the HTTP API accept and return? | [`API.md`](API.md) | endpoints.md, openapi.md, server.md | P0 |
 | How are the visualisations built, and how do I do this in Python (or for an LLM)? | [`VISUALIZING.md`](VISUALIZING.md) | viz.md, animation.md, tokens.md | P1 |
 | How do I add a journey / act / render kind without regressing the pedagogy? | [`AUTHORING.md`](AUTHORING.md) | contributing.md, content-guide.md | P0 |
+| How do I take a problem page to the pilot's shape — the five fields, in order | [`PROBLEM-PAGE-PLAYBOOK.md`](PROBLEM-PAGE-PLAYBOOK.md) | page-guide.md, content-recipe.md | P0 |
+| What the problem page owes, what shipped on the pilot, what is still open | [`PROBLEM-PAGE.md`](PROBLEM-PAGE.md) | page-notes.md, pilot.md | P1 |
 | What shipped, when, in which PR? | [`WORKLOG.md`](WORKLOG.md) | changelog.md, history.md, log.md | P1 |
 | Why does each backlog item exist — which platform taught us what? | [`RESEARCH.md`](RESEARCH.md) | references.md, inspiration.md | P2 |
 | What should I read *outside* this repo, and how do I drill a pattern? | [`RESOURCES.md`](RESOURCES.md) | links.md, reading-list.md, study-guide.md | P2 |

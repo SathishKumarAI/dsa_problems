@@ -38,3 +38,4 @@ docs/learn/
 # The version is pinned in package.json; committing the bytes would be the same
 # mistake as committing docs/learn.
 public/pyodide/
+scratch/
