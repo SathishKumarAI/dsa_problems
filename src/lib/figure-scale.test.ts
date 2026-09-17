@@ -1,7 +1,7 @@
 // The check for lib/figure-scale.ts — the arithmetic a constraint figure draws.
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { compact, logWidth } from "./figure-scale.ts"
+import { compact, logWidth, ratio } from "./figure-scale.ts"
 
 test("a log scale keeps four orders of magnitude all visible", () => {
   // the real figure: comparisons at n = 10^5
@@ -45,4 +45,24 @@ test("small numbers stay themselves", () => {
   assert.equal(compact(12), "12")
   assert.equal(compact(1000), "1 000")
   assert.equal(compact(0), "0")
+})
+
+test("a ratio says the thing the bars only imply", () => {
+  // the pilot's own two figures
+  // spelled out, not in powers: this is the card's 17px headline, and a
+  // superscript there reads as a stray quote mark
+  assert.equal(ratio(5e9, 1e5), "50 000×")
+  assert.equal(ratio(2e9, 1e5), "20 000×")
+  // order must not matter — the caller should not have to sort first
+  assert.equal(ratio(1e5, 5e9), "50 000×")
+  // until the digits are the unreadable half
+  assert.equal(ratio(1e12, 1), "10¹²×")
+  // small, real gaps are still worth saying
+  assert.equal(ratio(34, 10), "3.4×")
+  // and the ones that are not
+  assert.equal(ratio(10, 10), null, "1× is not a finding")
+  assert.equal(ratio(14, 10), null, "1.4× is not a finding")
+  assert.equal(ratio(5, 0), null, "a ratio against nothing is not a quantity")
+  assert.equal(ratio(-5, 10), null)
+  assert.equal(ratio(Infinity, 10), null)
 })

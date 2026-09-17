@@ -388,6 +388,28 @@ The bar SLIDES rather than disappearing — a sticky bar that vanishes reads as 
 fault, one that moves reads as making room — and takes `invisible` only at the end of the
 travel, so it cannot be tabbed into off screen.
 
+## A figure states its own finding
+
+Three constraint figures draw a bound, and each now leads with a line **derived from its own data** —
+never authored, so it cannot drift from the picture beneath it. The rule: _if the reader has to do
+arithmetic to get the point, the figure has not made it._
+
+- **quantities** — `max / min`, e.g. **50 000× between the worst and the best**. The bars are on a
+  log scale precisely because the gap is too large to draw honestly, and the price of that honesty is
+  that two bars cannot distinguish three times from fifty thousand.
+- **span** — `marks.length`, e.g. **7 values, anywhere in the range**. Sparsity is a ratio, so the
+  count leads.
+- **cells** — the index under every slot, `−1` for a leading `?`. The base cases in this corpus are
+  off-by-ones, and "a sweep starting at `i = 0` reads position −1" is a claim about a SLOT.
+
+A ratio is **spelled out** below a million (`50 000×`) rather than set in powers. A ratio is spoken
+as a multiplier, and at the card's 17px semibold a superscript `⁴` is a small raised mark that reads
+as a stray quote. The glyph is present and correctly sized — measured — and still unreadable.
+
+The card underneath names its three parts: the bound (with an ordinal, because a heading promising
+"4 bounds" over four identical boxes does not add up to four of anything), the bound drawn, and
+**what it buys**.
+
 ## Depth — `lift-3d`
 
 A tilt is a claim that a surface is physical, so it is spent only where the claim is true:

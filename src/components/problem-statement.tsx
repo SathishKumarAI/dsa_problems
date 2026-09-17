@@ -89,7 +89,7 @@ function Constraints({ problem }: { problem: Problem }) {
             // would report three durations to the R6 audit, and a bare
             // `transition-colors` utility silently resets transition-property,
             // which is how the card lift on home never ran (DESIGN.md).
-            className="group flex animate-edge-in-y flex-col gap-2 rounded-xl border bg-card/40 p-4 transition-[box-shadow,transform,border-color] hover:-translate-y-px hover:border-edge/40 hover:shadow-(--shadow-lift)"
+            className="group flex animate-edge-in-y lift-3d flex-col gap-3 rounded-xl border bg-card/40 p-4 hover:border-edge/40"
             style={{ animationDelay: `${i * 60}ms` }}
           >
             {/* Mono for the NOTATION and the reading face for the words.
@@ -99,16 +99,29 @@ function Constraints({ problem }: { problem: Problem }) {
                 values, indices and notation glyphs, not to prose. The hybrids
                 are why this splits per run: "1 <= nums[i] <= n — every value is
                 a legal index" is both, in one line. */}
-            <p className="text-ui font-medium">
-              {runsOf(c).map((run, j) =>
-                run.mono ? (
-                  <span key={j} className="font-mono">
-                    {run.text}
-                  </span>
-                ) : (
-                  <span key={j}>{run.text}</span>
-                )
-              )}
+            {/* AN ORDINAL, because the heading above promises "4 bounds" and
+                four identical boxes do not add up to four of anything. It is
+                the cheapest way to make a set read as a set, and it gives the
+                eye somewhere to start on a card whose first line is notation.
+                Mono and dim: it is an index, not a value. */}
+            <p className="flex items-baseline gap-2.5">
+              <span
+                aria-hidden
+                className="font-mono text-meta text-dim tabular-nums"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <span className="min-w-0 flex-1 text-ui font-medium">
+                {runsOf(c).map((run, j) =>
+                  run.mono ? (
+                    <span key={j} className="font-mono">
+                      {run.text}
+                    </span>
+                  ) : (
+                    <span key={j}>{run.text}</span>
+                  )
+                )}
+              </span>
             </p>
             {/* The bound, DRAWN. A number in a sentence is something a reader
                 nods at; three bars on a log scale is something they feel. The
@@ -128,14 +141,22 @@ function Constraints({ problem }: { problem: Problem }) {
               // ~40 characters a line, where the same setting opens exactly the
               // rivers justification gets blamed for — visible in a screenshot
               // two cards deep. A narrow measure is set ragged.
-              <p
+              <div
                 className={cn(
-                  "text-body text-muted-foreground",
-                  unlock?.figure ? "pt-1" : "border-t pt-2"
+                  "flex flex-col gap-1",
+                  unlock?.figure ? "border-t pt-3" : "border-t pt-2"
                 )}
               >
-                {what}
-              </p>
+                {/* NAME THE PART. The card is three things — a bound, the
+                    bound drawn, and the decision it permits or forbids — and
+                    unlabelled they read as one undifferentiated block. This is
+                    the part the section heading is counting when it says "4
+                    say what they buy". */}
+                <span className="text-meta tracking-wide text-dim uppercase">
+                  what it buys
+                </span>
+                <p className="text-body text-muted-foreground">{what}</p>
+              </div>
             )}
           </li>
         )

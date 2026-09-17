@@ -26,6 +26,12 @@ export function logWidth(value: number, max: number, floor = 8): number {
   return Math.max(floor, Math.min(100, Math.round(pct)))
 }
 
+/** digits in threes, with thin spaces: `50 000`. Grouped by hand rather than
+ *  through `toLocaleString`, whose separator is not the plain space it looks
+ *  like — a test comparing "1 000" with "1 000" fails on two strings that
+ *  render identically. */
+const grouped = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+
 const SUPER: Record<string, string> = {
   "0": "⁰",
   "1": "¹",
@@ -58,7 +64,7 @@ export function compact(n: number): string {
   // Grouped by hand rather than through `toLocaleString`: the locale separator
   // is not the plain space it looks like, so a test comparing "1 000" with
   // "1 000" fails on two strings that render identically.
-  if (n < 10_000) return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+  if (n < 10_000) return grouped(n)
   const exp = Math.floor(Math.log10(n))
   const rounded = Math.round((n / 10 ** exp) * 10) / 10
   // `·` separates the mantissa from the power, and NOTHING touches the
@@ -67,4 +73,40 @@ export function compact(n: number): string {
   return rounded === 1
     ? `10${superscript(exp)}`
     : `${rounded}·10${superscript(exp)}`
+}
+
+/**
+ * How many times bigger the larger quantity is: `5·10⁴×`, `3.4×`, or nothing.
+ *
+ * This is the SENTENCE the figure was drawing and never said. A card showing
+ * `5·10⁹` beside `10⁵` has already made the argument geometrically, and a
+ * reader still has to do the division to know whether "a lot more work" means
+ * three times or fifty thousand. The bars are on a log scale precisely because
+ * the gap is too large to draw honestly — so the number has to be written.
+ *
+ * `null` below 1.5×, because "1×" is not a finding, and null on a zero or a
+ * negative, because a ratio against nothing is not a quantity.
+ */
+export function ratio(a: number, b: number): string | null {
+  if (!(a > 0) || !(b > 0) || !Number.isFinite(a) || !Number.isFinite(b))
+    return null
+  const hi = Math.max(a, b)
+  const lo = Math.min(a, b)
+  const r = hi / lo
+  if (r < 1.5) return null
+  // Rounded before `compact`, but not to a whole number at every size: a
+  // 3.4× gap is a real finding and `3×` throws away the half that makes it
+  // one, while 49_999.7× has no business carrying a decimal into a function
+  // whose whole job is to drop them. Ten is the hinge.
+  const shown = r >= 10 ? Math.round(r) : Math.round(r * 10) / 10
+  // A RATIO IS SPELLED OUT FURTHER THAN A QUANTITY IS. `compact` switches to
+  // powers of ten above 10 000, which is right for a value on an axis and
+  // wrong here for two reasons. A ratio is spoken as a multiplier — nobody
+  // says "five times ten to the fourth times as much work" — and this one is
+  // set at 17px semibold as the card's headline, where a superscript ⁴ is a
+  // small raised mark that reads as a stray quote. Measured on the pilot: the
+  // glyph is present and correctly sized, and it still could not be read.
+  //
+  // A million is the hinge. Past it the digits are the unreadable half.
+  return shown < 1_000_000 ? `${grouped(shown)}×` : `${compact(shown)}×`
 }
