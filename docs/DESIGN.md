@@ -378,7 +378,8 @@ all three back — the controls arrive exactly when a hand is already moving tow
 | Decision                                | Why                                                                                                                                                                                                                                                                              |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | direction, never position               | position says where you are, which says nothing about what you want                                                                                                                                                                                                              |
-| an 8px threshold                        | a trackpad settling or a rubber-band is not a gesture                                                                                                                                                                                                                            |
+| **a sustained run, not a movement**     | 140px down to commit to reading, 90px up to ask for the controls back; travel accumulates in one direction and resets on a turn, so a re-read nudge does nothing                                                                                                                 |
+| **the app sidebar does not take part**  | its collapse widens the inset, which moves the reading column — see below                                                                                                                                                                                                        |
 | a 120px top zone always shows chrome    | arriving mid-gesture — a restored scroll, an anchor jump — must not land you at the top with the chrome gone                                                                                                                                                                     |
 | rAF, passive listener                   | a trackpad fires scroll faster than the screen refreshes, and this reads layout                                                                                                                                                                                                  |
 | **OFF under `prefers-reduced-motion`**  | both columns animate their width, and the reduced-motion override zeroes every duration — so with it on this is not a calm slide but the reading column teleporting sideways. A motion feature whose whole value is the animation is switched off rather than shipped without it |
@@ -387,6 +388,26 @@ all three back — the controls arrive exactly when a hand is already moving tow
 The bar SLIDES rather than disappearing — a sticky bar that vanishes reads as a rendering
 fault, one that moves reads as making room — and takes `invisible` only at the end of the
 travel, so it cannot be tabbed into off screen.
+
+### The rule this feature nearly broke: the text does not move
+
+The first cut collapsed the app sidebar too, and flipped on any 8px of scroll. Measured on the
+pilot: **the reading column moved 32px sideways and rewrapped on every toggle** — and because the
+small nudge UP that a reader makes to re-read a line counted as a gesture, it did that repeatedly
+while someone was trying to concentrate. A feature meant to help a reader focus was picking up the
+line they were on and putting it somewhere else. It was worse than the clutter it removed.
+
+Three corrections, all load-bearing:
+
+1. **The app sidebar no longer takes part.** What moved was the inset's own left edge, and no rule
+   inside the inset can undo that.
+2. **The reading column is anchored and fixed at `xl`** — `xl:mx-0 xl:w-(--container-reading)
+xl:flex-none`. Anchoring stops it moving; the fixed basis stops it GROWING into the space the
+   rail vacates (305px → 345), which is the same interruption by another route.
+3. **The gesture is a sustained run**, not a movement.
+
+A UI gate asserts the column's `left` and `width` are **identical** with the chrome shown and
+hidden, and that scrolling never changes the sidebar's state.
 
 ## A figure states its own finding
 
