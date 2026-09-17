@@ -96,6 +96,20 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   reason, not for tidiness.
 - **A `<b>` renders 700**, which is off this scale (400/500/600). Keep the element where a test
   selects on it and write `font-semibold`.
+- **Hiding chrome on scroll is a FEEDBACK LOOP unless you break it.** Hiding widens the
+  column, which shortens the document, which near the foot makes the browser clamp `scrollY`
+  DOWNWARD — read as scrolling up, so the chrome comes back, so the page lengthens again.
+  A run to the bottom ended with the chrome open and the position oscillating. Two guards:
+  a settle window after each flip (the page moving is not a gesture), and a top zone that is
+  ENTERED rather than occupied (the reflow can legitimately land a reader near the top).
+
+- **`overflow-anchor` already keeps the reader's place** when content above the viewport
+  changes size, and it is on by default. A hand-written version fought the user's own
+  scrolling, double-corrected against the native one still running underneath, and its
+  `scrollBy` re-entered the scroll listener — position jumped 6000px on a scroll that asked
+  for 600. Reach for the platform feature first; the only thing it cannot do is tell your own
+  code that the movement was not a gesture.
+
 - **A component used TWICE in one file will take your edit on the wrong copy.**
   `problem-detail.tsx` renders `OrientBar` in the comparison view and again on the page
   itself. A scripted replace of the first match patched the comparison view, the page's own

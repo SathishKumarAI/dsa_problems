@@ -348,21 +348,29 @@ function ProblemPage({
       {/* min-w-0: a flex item's default `min-width: auto` is its content's
           min-content width, and the widest comparison table would push this
           column open and take the whole document sideways with it. */}
-      {/* `xl:mx-0` — THE TEXT MUST NOT MOVE. Centred inside the flex row,
-            this column re-centres itself the moment the contents rail
-            collapses, so hiding the rail slid the paragraph the reader was on
-            32px to the left and rewrapped it. Anchored at `xl`, where the rail
-            exists, the rail's 224px simply vacates to the right and not one
-            line of text changes position. Below `xl` there is no rail, so
-            centring is still the right answer there.
+      {/* THE COLUMN OPENS BY WHAT THE CHROME GAVE UP. `max-w-reading` is
+            768; reading, it takes the page width, which is the rail's 224 plus
+            the sidebar's 208 back again.
 
-            `xl:flex-none` with an explicit width is the other half. Anchoring
-            stopped the column MOVING; without a fixed basis it still GREW into
-            the space the rail vacated — 305px to 345 — and a paragraph that
-            rewraps mid-read is the same interruption by another route. At `xl`
-            the column is exactly the reading measure and the rail's 224px
-            simply becomes empty margin. */}
-      <div className="mx-auto flex w-full max-w-reading min-w-0 flex-col gap-8 xl:mx-0 xl:w-(--container-reading) xl:flex-none">
+            Prose carries its own cap (`max-w-measure`, once per flow), so it
+            stops at 768 rather than running to 1080 — but it is honest to say
+            it DOES change: the 689 column was clamping the measure below its
+            designed width, so opening the column lets prose reach 768. The
+            wide content — code, tables, the constraint grid, the climb — takes
+            the rest. The reader's vertical place is held across the reflow by
+            `use-reading-room.ts`; measured drift beyond the scroll, zero.
+
+            Two earlier attempts are why the comment is this long. Letting the
+            column re-centre moved the text 32px sideways on every toggle;
+            pinning it to 768 instead left a 414px dead gutter and scrolled the
+            page sideways at exactly `xl`. Both were symptoms of chrome changing
+            width without the column answering. */}
+      <div
+        className={cn(
+          "mx-auto flex w-full min-w-0 flex-col gap-8 transition-[max-width] duration-(--duration-reveal)",
+          room.reading ? "max-w-(--container-page)" : "max-w-reading"
+        )}
+      >
         {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
           Four facts, one row: where am I, how hard is it, what do I have to
           beat, have I done it. Each changes what you do in the next thirty

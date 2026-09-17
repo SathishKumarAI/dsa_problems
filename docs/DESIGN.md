@@ -389,47 +389,46 @@ The bar SLIDES rather than disappearing — a sticky bar that vanishes reads as 
 fault, one that moves reads as making room — and takes `invisible` only at the end of the
 travel, so it cannot be tabbed into off screen.
 
-### The rule this feature nearly broke: the text does not move
+### Three attempts, and what each one taught
 
-The first cut collapsed the app sidebar too, and flipped on any 8px of scroll. Measured on the
-pilot: **the reading column moved 32px sideways and rewrapped on every toggle** — and because the
-small nudge UP that a reader makes to re-read a line counted as a gesture, it did that repeatedly
-while someone was trying to concentrate. A feature meant to help a reader focus was picking up the
-line they were on and putting it somewhere else. It was worse than the clutter it removed.
+This feature took four passes to get right, and the wrong ones are worth keeping because each
+failed in a way that looked like success.
 
-Three corrections, all load-bearing:
+**1. Hide everything, react to any movement.** Flipped on 8px. Measured at 1440: the reading column
+moved 32px sideways and rewrapped **on every toggle** — and the small nudge UP a reader makes to
+re-read a line counted as a gesture, so it did that constantly. Worse than the clutter it removed.
 
-1. **The app sidebar no longer takes part.** What moved was the inset's own left edge, and no rule
-   inside the inset can undo that.
-2. **The reading column is anchored and fixed at `xl`** — `xl:mx-0 xl:w-(--container-reading)
-xl:flex-none`. Anchoring stops it moving; the fixed basis stops it GROWING into the space the
-   rail vacates (305px → 345), which is the same interruption by another route.
-3. **The gesture is a sustained run**, not a movement.
+**2. Pin the column so it cannot move.** It stopped moving, and the 224px the rail vacated became a
+**414px dead gutter** with the text jammed left. At exactly `xl`, 768 + 40 + 224 exceeds the 1024
+available and the page scrolled sideways.
 
-A UI gate asserts the column's `left` and `width` are **identical** with the chrome shown and
-hidden, and that scrolling never changes the sidebar's state.
+**3. Reserve the rail's column and only fade it.** Layout frozen, nothing moved — and the document
+never got the width, which was the point.
 
-## A figure states its own finding
+**4. What shipped.** Both sidebars leave and **the column opens by what they gave up** — 689 → 1080
+at 1440, which is 432px of a 1440 screen returned to the document. Prose keeps its own
+`max-w-measure` cap, so it reaches its designed 768 rather than running to 1080; code, tables, the
+constraint grid and the climb take the rest.
 
-Three constraint figures draw a bound, and each now leads with a line **derived from its own data** —
-never authored, so it cannot drift from the picture beneath it. The rule: _if the reader has to do
-arithmetic to get the point, the figure has not made it._
+Two guards make that a transition rather than an interruption:
 
-- **quantities** — `max / min`, e.g. **50 000× between the worst and the best**. The bars are on a
-  log scale precisely because the gap is too large to draw honestly, and the price of that honesty is
-  that two bars cannot distinguish three times from fifty thousand.
-- **span** — `marks.length`, e.g. **7 values, anywhere in the range**. Sparsity is a ratio, so the
-  count leads.
-- **cells** — the index under every slot, `−1` for a leading `?`. The base cases in this corpus are
-  off-by-ones, and "a sweep starting at `i = 0` reads position −1" is a claim about a SLOT.
+| Guard                                                                      | Why                                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **a sustained run** — 140px down, 90px up, accumulated and reset on a turn | a re-read nudge does nothing at all; the flip is rare and deliberate                                                                                                                                                                                                                                       |
+| **a 500ms settle window** after each flip                                  | hiding the chrome makes the document SHORTER, so near the foot the browser clamps `scrollY` downward — which reads as scrolling up, which restores the chrome, which lengthens the page again. Measured before the guard: a run to the bottom ended with the chrome back open and the position oscillating |
 
-A ratio is **spelled out** below a million (`50 000×`) rather than set in powers. A ratio is spoken
-as a multiplier, and at the card's 17px semibold a superscript `⁴` is a small raised mark that reads
-as a stray quote. The glyph is present and correctly sized — measured — and still unreadable.
+And the top zone is **entered, not occupied**: scrolling up into the first screen restores the
+chrome, but merely being there does not. The reflow can legitimately land a reader near the top, and
+forcing the chrome back there re-lengthened the page — the same oscillation by another route.
 
-The card underneath names its three parts: the bound (with an ordinal, because a heading promising
-"4 bounds" over four identical boxes does not add up to four of anything), the bound drawn, and
-**what it buys**.
+**Keeping the reader's place is the browser's job.** CSS scroll anchoring (`overflow-anchor`, on by
+default) already adjusts the offset when content above the viewport changes size. A manual version —
+record a probe, correct the drift across the transition — fought a reader who kept scrolling,
+double-corrected against the native one still running underneath, and its own `scrollBy` re-entered
+the scroll listener: driving the page showed the position jumping 6000px on a scroll that asked for 600. Deleted. What the platform cannot give is the settle guard above, and that is all that remains.
+
+Measured after: scroll positions `600, 1200, 1800 … 8400` — monotonic, worst jump exactly the 600
+requested.
 
 ## Depth — `lift-3d`
 

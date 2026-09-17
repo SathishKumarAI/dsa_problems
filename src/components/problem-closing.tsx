@@ -210,11 +210,17 @@ export function ContentsRail({
       // room to breathe) and scrolls inside itself. `overscroll-contain` keeps
       // that scroll from chaining to the document once it hits the end, which
       // is what makes a short inner column feel like a trapdoor.
-      // `aria-hidden` rather than `hidden`, and a width rather than a display:
-      // the collapse is the point, and a box that vanishes cannot animate out
-      // of the way. The reading column is capped at `max-w-reading`, so it
-      // does not grow when the rail goes — it re-centres, which is why the
-      // width has to transition rather than snap.
+      // IT GIVES ITS COLUMN BACK while the reader is reading, so the document
+      // gets the 224px — with the sidebar's 208 that is 432 of a 1440 screen
+      // returned to the thing they came to read.
+      //
+      // It cost two bugs to learn where the danger actually was. Collapsing
+      // this re-centred the reading column and moved the text 32px sideways
+      // mid-read; pinning the column against that opened a 414px dead gutter
+      // and, at exactly `xl`, scrolled the page sideways. The fix is neither —
+      // it is that the column's max-width OPENS by the same amount this gives
+      // up (`problem-detail.tsx`), so the row stays balanced and the left edge
+      // of the text never moves.
       aria-hidden={reading}
       className={cn(
         "sticky top-16 hidden max-h-[calc(100svh-5rem)] shrink-0 flex-col gap-1 overflow-y-auto overscroll-contain transition-[width,opacity,padding] duration-(--duration-reveal) xl:flex",

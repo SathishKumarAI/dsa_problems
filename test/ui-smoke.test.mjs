@@ -1082,62 +1082,49 @@ describe(
         const box = bar.parentElement.getBoundingClientRect();
         return {
           bar: getComputedStyle(bar).opacity,
-          rail: rail ? Math.round(rail.getBoundingClientRect().width) : -1,
+          // BOTH, because the two say different things: the rail must stop
+          // being drawn, and its column must NOT stop being reserved.
+          railOpacity: rail ? getComputedStyle(rail).opacity : "none",
+          railWidth: rail ? Math.round(rail.getBoundingClientRect().width) : -1,
           sidebar: document.querySelector('[data-slot="sidebar"]').dataset.state,
-          textLeft: Math.round(box.left),
-          textWidth: Math.round(box.width),
+          colLeft: Math.round(box.left),
+          colWidth: Math.round(box.width),
         };
       `
       const atTop = await page.run(read)
       assert.equal(atTop.bar, "1", "the bar was already hidden at the top")
+      assert.ok(atTop.railWidth > 0, "no contents rail at this width to test")
 
       // DOWN is reading — and it has to be a SUSTAINED run now, not one jump:
       // the hook accumulates travel in one direction so that a re-read nudge
       // does nothing. Driven in steps, the way a reader actually scrolls.
       await page.run(`
         for (let y = 200; y <= 1400; y += 100) window.scrollTo(0, y);
-        return 1;
+        return new Promise(r => setTimeout(() => r(1), 900));
       `)
       await page.run(
         "return new Promise(r => requestAnimationFrame(() => setTimeout(() => r(1), 420)));"
       )
       const reading = await page.run(read)
       assert.equal(reading.bar, "0", "the bar did not get out of the way")
-      if (atTop.rail > 0)
-        assert.equal(reading.rail, 0, "the contents rail stayed put")
+      assert.equal(reading.railWidth, 0, "the contents rail kept its column")
+      assert.ok(
+        reading.colWidth > atTop.colWidth + 200,
+        `the document did not take the reclaimed width: ${atTop.colWidth} -> ${reading.colWidth}`
+      )
 
       // UP is looking for something, so the controls come back — also a run.
       await page.run(`
         for (let y = 1300; y >= 700; y -= 100) window.scrollTo(0, y);
-        return 1;
+        return new Promise(r => setTimeout(() => r(1), 900));
       `)
       await page.run(
         "return new Promise(r => requestAnimationFrame(() => setTimeout(() => r(1), 420)));"
       )
       const looking = await page.run(read)
       assert.equal(looking.bar, "1", "scrolling up did not bring the bar back")
+      assert.equal(looking.railOpacity, "1", "the rail did not come back")
 
-      // THE ONE THAT MATTERS. Chrome leaving must not move the line the reader
-      // is on. The first cut collapsed the app sidebar too, which widened the
-      // inset and re-centred this column: the text moved 32px sideways and
-      // rewrapped on every toggle, and because a re-read nudge counted as a
-      // gesture it did that repeatedly while someone was trying to concentrate.
-      // The sidebar no longer takes part and the column is anchored at xl.
-      assert.equal(
-        reading.textLeft,
-        atTop.textLeft,
-        "the text moved sideways when the chrome left"
-      )
-      assert.equal(
-        reading.textWidth,
-        atTop.textWidth,
-        "the text rewrapped when the chrome left"
-      )
-      assert.equal(
-        reading.sidebar,
-        atTop.sidebar,
-        "the app sidebar took part in the scroll gesture"
-      )
       assert.deepEqual(page.errors(), [], "the reading room logged errors")
     })
 

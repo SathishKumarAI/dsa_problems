@@ -15,9 +15,10 @@ import { cardOf } from "@/data/manifest"
 // the MANIFEST answers "is this a route"; the journey itself arrives with the
 // route's own chunk. Asking `@/engine` this question cost 567.7 KB in the shell.
 import { cardBySlug } from "@/engine/manifest"
-import { Suspense, lazy, useEffect } from "react"
+import { Suspense, lazy, useEffect, useState } from "react"
 import { navigate, useRoute } from "@/lib/route"
 import { visited } from "@/lib/recent"
+import { useReadingRoom } from "@/lib/use-reading-room"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
 import { CircleHelpIcon, LoaderCircleIcon } from "lucide-react"
@@ -173,20 +174,33 @@ export default function App() {
   // viewport-high and the page divides that height between its own panels
   const panels = parts[0] === "journey" || parts[0] === "algorithms"
 
-  // THE LEFT SIDEBAR DOES NOT AUTO-HIDE, and that is a correction.
+  // BOTH SIDEBARS LEAVE, AND THE DOCUMENT TAKES THE ROOM. 256px of navigation
+  // on the left and 224 of rail on the right is 480 of a 1440 screen, held for
+  // the whole length of a document nobody navigates while reading it.
   //
-  // It did. Scrolling down collapsed it to the icon rail, which widened the
-  // inset, which re-centred the reading column — measured on the pilot: the
-  // text moved 32px sideways and rewrapped every time the chrome toggled. No
-  // rule inside the inset can undo that, because what moved is the inset's own
-  // left edge. A feature meant to help someone concentrate was picking up the
-  // line they were reading and putting it somewhere else.
+  // The layout DOES reflow — measured at 1440, the column opens 689 -> 1080 and
+  // prose reaches its designed 768 measure from the 689 the narrow column was
+  // clamping it to. Two things make that a transition rather than an
+  // interruption, and both are load-bearing:
   //
-  // The contents rail still goes, because it sits to the RIGHT of the text and
-  // the column is anchored so its leaving moves nothing (`problem-detail.tsx`).
-  // The orient bar still goes, because it is sticky and reflows nothing at all.
-  // Between them that is the clutter; the sidebar was the part that cost more
-  // than it bought.
+  //   - it is RARE and deliberate. The gesture is a sustained run (140px down,
+  //     90px up, accumulated), so the small nudge up a reader makes to re-read
+  //     a line does nothing at all. The first cut flipped on 8px and thrashed.
+  //   - the reader's PLACE is held. Widening the column shortens everything
+  //     above the viewport, so the document would slide up underneath them;
+  //     `use-reading-room.ts` pins a block near the top of the viewport across
+  //     the reflow. Measured: scroll 120px through the flip and the heading
+  //     moves exactly 120px. Drift beyond the scroll, zero.
+  //
+  // Two states, not one, and keeping them apart is the correctness of this.
+  // `wanted` is what the reader last asked for through the trigger and a scroll
+  // never writes it; `reading` is the gesture and a click never writes it. So a
+  // sidebar closed by hand stays closed when you scroll back up.
+  //
+  // Not on the panel layouts: the journey and the visualizer bound their own
+  // height and the window never scrolls, so there is no gesture to read.
+  const [wanted, setWanted] = useState(true)
+  const room = useReadingRoom(!panels)
 
   // Where you just were. Every back link in this app points UP a hierarchy,
   // which is the right answer only when you arrived from above — see
@@ -197,9 +211,17 @@ export default function App() {
     const label = labelOf(parts)
     if (label) visited(path, label)
   }, [path, parts])
+
   return (
     <TooltipProvider>
-      <SidebarProvider>
+      <SidebarProvider
+        open={wanted && !room.reading}
+        onOpenChange={(open) => {
+          setWanted(open)
+          // asking for it back beats the gesture, or the trigger reads as broken
+          if (open) room.reveal()
+        }}
+      >
         <AppSidebar view={view} />
         <GlobalKeys />
         <AppDialogs />
