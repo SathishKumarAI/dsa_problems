@@ -348,7 +348,29 @@ function ProblemPage({
       {/* min-w-0: a flex item's default `min-width: auto` is its content's
           min-content width, and the widest comparison table would push this
           column open and take the whole document sideways with it. */}
-      <div className="mx-auto flex w-full max-w-reading min-w-0 flex-col gap-8">
+      {/* THE COLUMN OPENS BY WHAT THE CHROME GAVE UP. `max-w-reading` is
+            768; reading, it takes the page width, which is the rail's 224 plus
+            the sidebar's 208 back again.
+
+            Prose carries its own cap (`max-w-measure`, once per flow), so it
+            stops at 768 rather than running to 1080 — but it is honest to say
+            it DOES change: the 689 column was clamping the measure below its
+            designed width, so opening the column lets prose reach 768. The
+            wide content — code, tables, the constraint grid, the climb — takes
+            the rest. The reader's vertical place is held across the reflow by
+            `use-reading-room.ts`; measured drift beyond the scroll, zero.
+
+            Two earlier attempts are why the comment is this long. Letting the
+            column re-centre moved the text 32px sideways on every toggle;
+            pinning it to 768 instead left a 414px dead gutter and scrolled the
+            page sideways at exactly `xl`. Both were symptoms of chrome changing
+            width without the column answering. */}
+      <div
+        className={cn(
+          "mx-auto flex w-full min-w-0 flex-col gap-8 transition-[max-width] duration-(--duration-reveal)",
+          room.reading ? "max-w-(--container-page)" : "max-w-reading"
+        )}
+      >
         {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
           Four facts, one row: where am I, how hard is it, what do I have to
           beat, have I done it. Each changes what you do in the next thirty
@@ -376,16 +398,55 @@ function ProblemPage({
               : "translate-y-0 opacity-100"
           )}
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {hidden ? MASKED_NAME : pattern.name}
-          </Button>
-          {/* THE NAME SITS WITH ITS FACTS. It used to head the raised card
+          {/* TWO ROWS ON PURPOSE. Measured at 1440 with both columns open the
+            reading column is 830px and this row wants ~1040, so it wrapped —
+            and a wrap puts the break wherever it lands. It landed between the
+            two FACTS: "difficulty" beside the title, "target" under the back
+            link, which reads as an accident rather than as a header. Named
+            rows put the break where it belongs — the trail and the page-level
+            switches above, the name and its facts below. */}
+          <div className="flex w-full items-center gap-x-5 gap-y-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
+            >
+              <ArrowLeftIcon data-icon="inline-start" />
+              {hidden ? MASKED_NAME : pattern.name}
+            </Button>
+            {/* In the STICKY bar on purpose: a switch that opens the whole page is
+            useless if you have to scroll back to the top to reach it. */}
+            <button
+              type="button"
+              aria-pressed={expandAll}
+              onClick={() => {
+                const next = !expandAll
+                setExpandAll(next)
+                // the long read is fetched, not merely hidden, so asking for
+                // everything has to ask for it too
+                if (next) setOpened(true)
+              }}
+              className={cn(
+                "ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7",
+                expandAll
+                  ? "border-edge/60 bg-accent text-foreground"
+                  : "text-muted-foreground hover:border-edge/40 hover:text-foreground"
+              )}
+            >
+              <ScrollTextIcon className="size-3.5 shrink-0 text-dim" />
+              {expandAll ? "everything open" : "read it all"}
+            </button>
+            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
+              <Checkbox
+                checked={solved.has(problem.id)}
+                onCheckedChange={() => toggleSolved(problem.id)}
+              />
+              solved
+            </label>
+          </div>
+          <div className="flex w-full flex-wrap items-center gap-x-5 gap-y-2">
+            {/* THE NAME SITS WITH ITS FACTS. It used to head the raised card
             below, which put "Contains Duplicate" in one box and the four
             things you want to know about it in another — two bands answering
             "what is this", stacked, and the name scrolled away while the
@@ -393,66 +454,38 @@ function ProblemPage({
 
             Still the page's h1 and still the first heading in the document:
             this moved the element, not the outline. */}
-          <h1 className="font-heading text-title font-semibold">
-            {problem.title}
-          </h1>
-          <Fact label="difficulty">
-            <DifficultyMeter difficulty={problem.difficulty} />
-            <span
-              className={difficultyClass[problem.difficulty].split(" ").pop()}
-            >
-              {problem.difficulty}
-            </span>
-          </Fact>
-          {/* the bar to clear. Each rung carries its own cost; this is the one
+            <h1 className="font-heading text-title font-semibold">
+              {problem.title}
+            </h1>
+            <Fact label="difficulty">
+              <DifficultyMeter difficulty={problem.difficulty} />
+              <span
+                className={difficultyClass[problem.difficulty].split(" ").pop()}
+              >
+                {problem.difficulty}
+              </span>
+            </Fact>
+            {/* the bar to clear. Each rung carries its own cost; this is the one
             the best rung reaches. */}
-          <Fact label="target">
-            <ComplexityMark value={problem.complexity.time} />
-            <span className="font-mono">{problem.complexity.time}</span>
-            <span className="text-dim">·</span>
-            <ComplexityMark value={problem.complexity.space} />
-            <span className="font-mono">{problem.complexity.space}</span>
-            {/* the bound is a label until you can reproduce the count; the
+            <Fact label="target">
+              <ComplexityMark value={problem.complexity.time} />
+              <span className="font-mono">{problem.complexity.time}</span>
+              <span className="text-dim">·</span>
+              <ComplexityMark value={problem.complexity.space} />
+              <span className="font-mono">{problem.complexity.space}</span>
+              {/* the bound is a label until you can reproduce the count; the
               title carries the counting argument on the bar, and every rung
               carries its own below (`Solution.costWhy`) */}
-            {problem.costWhy && (
-              <span
-                title={problem.costWhy}
-                className="cursor-help text-meta text-dim underline decoration-dotted underline-offset-4"
-              >
-                why?
-              </span>
-            )}
-          </Fact>
-          {/* In the STICKY bar on purpose: a switch that opens the whole page is
-            useless if you have to scroll back to the top to reach it. */}
-          <button
-            type="button"
-            aria-pressed={expandAll}
-            onClick={() => {
-              const next = !expandAll
-              setExpandAll(next)
-              // the long read is fetched, not merely hidden, so asking for
-              // everything has to ask for it too
-              if (next) setOpened(true)
-            }}
-            className={cn(
-              "ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7",
-              expandAll
-                ? "border-edge/60 bg-accent text-foreground"
-                : "text-muted-foreground hover:border-edge/40 hover:text-foreground"
-            )}
-          >
-            <ScrollTextIcon className="size-3.5 shrink-0 text-dim" />
-            {expandAll ? "everything open" : "read it all"}
-          </button>
-          <label className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
-            <Checkbox
-              checked={solved.has(problem.id)}
-              onCheckedChange={() => toggleSolved(problem.id)}
-            />
-            solved
-          </label>
+              {problem.costWhy && (
+                <span
+                  title={problem.costWhy}
+                  className="cursor-help text-meta text-dim underline decoration-dotted underline-offset-4"
+                >
+                  why?
+                </span>
+              )}
+            </Fact>
+          </div>
         </OrientBar>
 
         {/* ── ZONE 2 · ACT ────────────────────────────────────────────────

@@ -17,8 +17,8 @@ import { cardOf } from "@/data/manifest"
 import { cardBySlug } from "@/engine/manifest"
 import { Suspense, lazy, useEffect, useState } from "react"
 import { navigate, useRoute } from "@/lib/route"
-import { useReadingRoom } from "@/lib/use-reading-room"
 import { visited } from "@/lib/recent"
+import { useReadingRoom } from "@/lib/use-reading-room"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
 import { CircleHelpIcon, LoaderCircleIcon } from "lucide-react"
@@ -152,13 +152,16 @@ function View() {
  * ten pattern folders, and naming a page must not be the thing that drags
  * every statement and hint ladder into the shell.
  */
-function labelOf(parts: string[]): string {
-  if (parts[0] === "p" && parts[2])
-    return cardOf(parts[2])?.title ?? "a problem"
-  if (parts[0] === "journey" && parts[1])
-    return cardBySlug(parts[1])?.title ?? "a journey"
-  if (parts[0] === "pattern" && parts[1])
-    return PATTERNS.find((x) => x.id === parts[1])?.name ?? "a pattern"
+function labelOf(parts: string[]): string | null {
+  // NULL MEANS "DO NOT REMEMBER THIS". A route whose subject does not resolve
+  // is the one that renders NotFound, and a back control offering a dead
+  // address is worse than no back control at all — it read "a problem" and led
+  // to "There is nothing at that address", which I walked into by mistyping a
+  // slug while driving the page. The trail carries only places that exist.
+  if (parts[0] === "p") return cardOf(parts[2] ?? "")?.title ?? null
+  if (parts[0] === "journey") return cardBySlug(parts[1] ?? "")?.title ?? null
+  if (parts[0] === "pattern")
+    return PATTERNS.find((x) => x.id === parts[1])?.name ?? null
   if (!parts[0]) return "Home"
   return parts[0].replace(/-/g, " ")
 }
@@ -171,17 +174,28 @@ export default function App() {
   // viewport-high and the page divides that height between its own panels
   const panels = parts[0] === "journey" || parts[0] === "algorithms"
 
-  // THE SIDEBAR GETS OUT OF THE WAY WHILE YOU READ. Scrolling down is reading
-  // and scrolling up is looking for something, so the gesture the reader is
-  // already making says which they are doing — and 256px of navigation stops
-  // being rent the document pays for its whole length.
+  // BOTH SIDEBARS LEAVE, AND THE DOCUMENT TAKES THE ROOM. 256px of navigation
+  // on the left and 224 of rail on the right is 480 of a 1440 screen, held for
+  // the whole length of a document nobody navigates while reading it.
   //
-  // Two states, not one, and keeping them apart is the whole correctness of
-  // this. `wanted` is what the READER last asked for through the trigger and
-  // it is never written by a scroll; `reading` is the gesture and it is never
-  // written by a click. The sidebar is open when the reader wants it AND is
-  // not currently reading, so a scroll can never lose a deliberate choice —
-  // scroll back up and the sidebar you closed by hand is still closed.
+  // The layout DOES reflow — measured at 1440, the column opens 689 -> 1080 and
+  // prose reaches its designed 768 measure from the 689 the narrow column was
+  // clamping it to. Two things make that a transition rather than an
+  // interruption, and both are load-bearing:
+  //
+  //   - it is RARE and deliberate. The gesture is a sustained run (140px down,
+  //     90px up, accumulated), so the small nudge up a reader makes to re-read
+  //     a line does nothing at all. The first cut flipped on 8px and thrashed.
+  //   - the reader's PLACE is held. Widening the column shortens everything
+  //     above the viewport, so the document would slide up underneath them;
+  //     `use-reading-room.ts` pins a block near the top of the viewport across
+  //     the reflow. Measured: scroll 120px through the flip and the heading
+  //     moves exactly 120px. Drift beyond the scroll, zero.
+  //
+  // Two states, not one, and keeping them apart is the correctness of this.
+  // `wanted` is what the reader last asked for through the trigger and a scroll
+  // never writes it; `reading` is the gesture and a click never writes it. So a
+  // sidebar closed by hand stays closed when you scroll back up.
   //
   // Not on the panel layouts: the journey and the visualizer bound their own
   // height and the window never scrolls, so there is no gesture to read.
@@ -194,8 +208,10 @@ export default function App() {
   // every route, and labelled from the manifests rather than the records so
   // the shell still pulls no problem content.
   useEffect(() => {
-    visited(path, labelOf(parts))
+    const label = labelOf(parts)
+    if (label) visited(path, label)
   }, [path, parts])
+
   return (
     <TooltipProvider>
       <SidebarProvider

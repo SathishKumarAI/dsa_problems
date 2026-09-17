@@ -178,6 +178,20 @@ take**, not a chart type.
 **AUTHORED, never inferred.** `10^5` is a length and `10^9` is a value; a figure that guessed which
 would eventually draw a confident lie. That is a comment in `types.ts`, and it is the rule.
 
+**Every figure leads with a derived headline** — nothing you author, nothing you can get wrong:
+
+| Kind         | Headline                                           | Derived from             |
+| ------------ | -------------------------------------------------- | ------------------------ |
+| `quantities` | **50 000×** _between the worst and the best_       | `max / min` of the items |
+| `span`       | **7** _values, anywhere in the range_              | `marks.length`           |
+| `cells`      | the index under every slot, `−1` for a leading `?` | position                 |
+
+The ratio is the sentence the bars were already making. A log scale is honest about a gap too large
+to draw, and the cost of that honesty is that a reader cannot tell three times from fifty thousand —
+so it is written. It is **spelled out** below a million rather than set in powers: a ratio is spoken
+as a multiplier, and at 17px semibold a superscript `⁴` reads as a stray quote mark (measured on the
+pilot — the glyph is present and correctly sized, and still could not be read).
+
 **Bars are on a LOG scale** (`lib/figure-scale.ts`). Linear, `10^5` against `5·10^9` renders at
 0.002% — an invisible sliver saying "nothing here" when the point is "this is the affordable one".
 Bars are coloured **by rank on the ordered ramp**, never by a categorical role; see §5.
