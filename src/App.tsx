@@ -15,9 +15,8 @@ import { cardOf } from "@/data/manifest"
 // the MANIFEST answers "is this a route"; the journey itself arrives with the
 // route's own chunk. Asking `@/engine` this question cost 567.7 KB in the shell.
 import { cardBySlug } from "@/engine/manifest"
-import { Suspense, lazy, useEffect, useState } from "react"
+import { Suspense, lazy, useEffect } from "react"
 import { navigate, useRoute } from "@/lib/route"
-import { useReadingRoom } from "@/lib/use-reading-room"
 import { visited } from "@/lib/recent"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
@@ -152,13 +151,16 @@ function View() {
  * ten pattern folders, and naming a page must not be the thing that drags
  * every statement and hint ladder into the shell.
  */
-function labelOf(parts: string[]): string {
-  if (parts[0] === "p" && parts[2])
-    return cardOf(parts[2])?.title ?? "a problem"
-  if (parts[0] === "journey" && parts[1])
-    return cardBySlug(parts[1])?.title ?? "a journey"
-  if (parts[0] === "pattern" && parts[1])
-    return PATTERNS.find((x) => x.id === parts[1])?.name ?? "a pattern"
+function labelOf(parts: string[]): string | null {
+  // NULL MEANS "DO NOT REMEMBER THIS". A route whose subject does not resolve
+  // is the one that renders NotFound, and a back control offering a dead
+  // address is worse than no back control at all — it read "a problem" and led
+  // to "There is nothing at that address", which I walked into by mistyping a
+  // slug while driving the page. The trail carries only places that exist.
+  if (parts[0] === "p") return cardOf(parts[2] ?? "")?.title ?? null
+  if (parts[0] === "journey") return cardBySlug(parts[1] ?? "")?.title ?? null
+  if (parts[0] === "pattern")
+    return PATTERNS.find((x) => x.id === parts[1])?.name ?? null
   if (!parts[0]) return "Home"
   return parts[0].replace(/-/g, " ")
 }
@@ -171,22 +173,20 @@ export default function App() {
   // viewport-high and the page divides that height between its own panels
   const panels = parts[0] === "journey" || parts[0] === "algorithms"
 
-  // THE SIDEBAR GETS OUT OF THE WAY WHILE YOU READ. Scrolling down is reading
-  // and scrolling up is looking for something, so the gesture the reader is
-  // already making says which they are doing — and 256px of navigation stops
-  // being rent the document pays for its whole length.
+  // THE LEFT SIDEBAR DOES NOT AUTO-HIDE, and that is a correction.
   //
-  // Two states, not one, and keeping them apart is the whole correctness of
-  // this. `wanted` is what the READER last asked for through the trigger and
-  // it is never written by a scroll; `reading` is the gesture and it is never
-  // written by a click. The sidebar is open when the reader wants it AND is
-  // not currently reading, so a scroll can never lose a deliberate choice —
-  // scroll back up and the sidebar you closed by hand is still closed.
+  // It did. Scrolling down collapsed it to the icon rail, which widened the
+  // inset, which re-centred the reading column — measured on the pilot: the
+  // text moved 32px sideways and rewrapped every time the chrome toggled. No
+  // rule inside the inset can undo that, because what moved is the inset's own
+  // left edge. A feature meant to help someone concentrate was picking up the
+  // line they were reading and putting it somewhere else.
   //
-  // Not on the panel layouts: the journey and the visualizer bound their own
-  // height and the window never scrolls, so there is no gesture to read.
-  const [wanted, setWanted] = useState(true)
-  const room = useReadingRoom(!panels)
+  // The contents rail still goes, because it sits to the RIGHT of the text and
+  // the column is anchored so its leaving moves nothing (`problem-detail.tsx`).
+  // The orient bar still goes, because it is sticky and reflows nothing at all.
+  // Between them that is the clutter; the sidebar was the part that cost more
+  // than it bought.
 
   // Where you just were. Every back link in this app points UP a hierarchy,
   // which is the right answer only when you arrived from above — see
@@ -194,18 +194,12 @@ export default function App() {
   // every route, and labelled from the manifests rather than the records so
   // the shell still pulls no problem content.
   useEffect(() => {
-    visited(path, labelOf(parts))
+    const label = labelOf(parts)
+    if (label) visited(path, label)
   }, [path, parts])
   return (
     <TooltipProvider>
-      <SidebarProvider
-        open={wanted && !room.reading}
-        onOpenChange={(open) => {
-          setWanted(open)
-          // asking for it back beats the gesture, or the trigger reads as broken
-          if (open) room.reveal()
-        }}
-      >
+      <SidebarProvider>
         <AppSidebar view={view} />
         <GlobalKeys />
         <AppDialogs />

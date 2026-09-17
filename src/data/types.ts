@@ -114,6 +114,11 @@ export type ConstraintFigure =
   | {
       kind: "quantities"
       items: { label: string; value: number; tone?: "bad" | "good" | "plain" }[]
+      /** these quantities are OPERATIONS, so the figure may say what they feel
+       *  like in seconds. Absent, they are counts of something else — "two
+       *  billion values" is not two seconds of anything — and no time is
+       *  shown. See `feelsLike` in `lib/figure-scale.ts`. */
+      unit?: "ops"
     }
   /** a range with the values you will actually see marked on it: the picture of
    *  sparsity, which is the argument against indexing by value. `marks` are

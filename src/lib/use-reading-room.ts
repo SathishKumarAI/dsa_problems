@@ -24,8 +24,23 @@ import { useEffect, useRef, useState } from "react"
 /** below this, chrome is always shown: the top of a page is where you orient */
 const TOP_ZONE = 120
 
-/** a flick smaller than this is noise — a trackpad settling, or a rubber band */
-const THRESHOLD = 8
+// HYSTERESIS, AND IT IS THE WHOLE DIFFERENCE BETWEEN THIS HELPING AND HURTING.
+//
+// The first cut flipped on any 8px movement, which is not a gesture — it is a
+// trackpad settling, or the small nudge UP that a reader makes to re-read the
+// line they just finished. Reading a hard paragraph is down, up, down, up, and
+// every one of those flips brought the chrome back and sent it away again.
+// Measured on the pilot: each flip moved the text 32px sideways and rewrapped
+// it. The feature was moving the line the reader was looking at, which is a
+// worse crime than the clutter it was removing.
+//
+// So direction is not read per event. Movement ACCUMULATES in one direction and
+// only a sustained run counts — a good half-screen down to commit to reading,
+// and a shorter but still deliberate run up to ask for the controls back.
+// Asymmetric on purpose: getting chrome back must feel immediate, losing it
+// must feel earned. A re-read nudge now does exactly nothing.
+const COMMIT_DOWN = 140
+const COMMIT_UP = 90
 
 export interface ReadingRoom {
   /** true while the reader is moving DOWN through the document */
@@ -53,20 +68,37 @@ export function useReadingRoom(enabled = true): ReadingRoom {
 
     last.current = window.scrollY
     let queued = false
+    // how far the reader has travelled in the CURRENT direction, reset the
+    // moment they turn round
+    let run = 0
 
     const measure = () => {
       queued = false
       const y = window.scrollY
       const dy = y - last.current
-      if (Math.abs(dy) < THRESHOLD) return
       last.current = y
-      // The top zone wins over direction. Without it, arriving at a page
+      if (dy === 0) return
+
+      // The top zone wins over everything. Without it, arriving at a page
       // mid-gesture — a browser restoring a scroll position, an anchor jump —
       // can leave the chrome hidden at the very top, where the only thing a
       // reader wants IS the chrome.
-      const next = y > TOP_ZONE && dy > 0
-      if (next !== now.current) {
+      if (y <= TOP_ZONE) {
+        run = 0
+        if (now.current) {
+          now.current = false
+          setReading(false)
+        }
+        return
+      }
+
+      // turning round starts the run over, so a nudge never adds to the
+      // travel that came before it
+      run = Math.sign(run) === Math.sign(dy) ? run + dy : dy
+      const next = run > COMMIT_DOWN ? true : run < -COMMIT_UP ? false : null
+      if (next !== null && next !== now.current) {
         now.current = next
+        run = 0
         setReading(next)
       }
     }

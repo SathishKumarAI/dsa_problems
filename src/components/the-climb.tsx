@@ -5,18 +5,23 @@
 // there are, how far apart they are, or where the one they are being taught
 // sits among them. The page then spends three thousand words on exactly that.
 //
-// So the top of the page draws it. One step per rung, worst on the left, and
-// the step gets SHORTER as the cost comes down — the staircase descends, which
-// is the shape of the lesson: every rung after the first exists because the one
-// before it cost too much. Under each step, the bound in mono, so "n² → n log n
-// → n" is a picture before it is an argument.
+// A CURVE, NOT BARS, and the reason is two-sum. Bars placed each rung by its
+// POSITION in the ladder, which is right exactly while no two rungs cost the
+// same — and two-sum's "Two-Pass Hash" and "One-Pass Hash" are both O(n). Four
+// evenly spaced bars drew the second one lower, which says it is cheaper. It is
+// not: it is the same bound reached in one sweep instead of two. A curve whose
+// height comes from the BOUND runs FLAT between them, and that flat segment is
+// the lesson — the cost has stopped falling, and the last step buys something
+// other than speed. See `lib/cost-curve.ts`.
 //
 // PROGRESSIVE DISCLOSURE SURVIVES IT. `ladderOf` has already capped the rungs a
-// started journey has not earned; those are drawn as blank steps with a "?" and
-// no name and no cost. A reader can see that there is further to climb — which
-// is motivating and gives nothing away — and cannot read what it is called.
-// This is the same rule the stepper, the chart and the URL obey (B45).
+// started journey has not earned. The curve simply STOPS at the last earned
+// rung and continues as a dashed rule at that same height: a reader sees there
+// is further to go, and the drawing claims nothing about how much further,
+// because that would leak the thing the ledger is holding. Same rule the
+// stepper, the chart and the URL obey (B45).
 import { ComplexityMark } from "@/components/ui/tick-meter"
+import { levels, smoothPath } from "@/lib/cost-curve"
 import type { Ladder } from "@/lib/ladder"
 import { cn } from "@/lib/utils"
 
@@ -28,6 +33,149 @@ const rampStep = (rank: number, total: number) =>
 
 /** just the time bound out of "O(n) time · O(1) space" */
 const timeOf = (cost: string) => cost.split(" time")[0]
+
+// The drawing box. Coordinates are 0–100 in both axes and the SVG is stretched
+// to whatever width the card has, so the STROKE would stretch with it —
+// `vector-effect: non-scaling-stroke` is what keeps a 2px line 2px at 340px and
+// at 900. The dots are HTML positioned by percentage rather than SVG circles
+// for the same reason: a circle in a stretched viewBox is an ellipse.
+const TOP = 14
+const BOTTOM = 86
+
+export function TheClimb({ ladder }: { ladder: Ladder }) {
+  const shown = ladder.rungs.length
+  const total = shown + ladder.hidden
+  // one rung is not a climb, it is a fact — and the orient bar already has it
+  if (total < 2) return null
+
+  const ys = levels(ladder.rungs.map((r) => timeOf(r.cost)))
+  // x is the centre of each column, so a dot sits over its own label
+  const xOf = (i: number) => ((i + 0.5) / total) * 100
+  const yOf = (i: number) => TOP + ys[i] * (BOTTOM - TOP)
+  const points = ladder.rungs.map((_, i): [number, number] => [xOf(i), yOf(i)])
+  const path = smoothPath(points)
+  const lastX = points.length ? points[points.length - 1][0] : 0
+  const lastY = points.length ? points[points.length - 1][1] : BOTTOM
+
+  return (
+    <figure className="flex flex-col gap-2">
+      <figcaption className="text-meta text-dim">
+        {ladder.capped
+          ? `the climb — ${shown} of ${total} earned`
+          : `the climb — ${total} ways in, worst to best`}
+      </figcaption>
+
+      <div className="relative h-24 w-full">
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full"
+          aria-hidden
+        >
+          <defs>
+            <linearGradient id="climb-ramp" x1="0" y1="0" x2="1" y2="0">
+              {[0, 1, 2, 3, 4].map((k) => (
+                <stop
+                  key={k}
+                  offset={`${(k / 4) * 100}%`}
+                  stopColor={`var(--ramp-${k})`}
+                />
+              ))}
+            </linearGradient>
+          </defs>
+          {/* the ground the curve descends toward — without it the eye has
+              nothing to read the fall against */}
+          <line
+            x1="0"
+            y1={BOTTOM}
+            x2="100"
+            y2={BOTTOM}
+            stroke="var(--border)"
+            strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
+          />
+          {path && (
+            <>
+              {/* the area, so the descent has weight rather than being a wire */}
+              <path
+                d={`${path} L ${lastX} ${BOTTOM} L ${points[0][0]} ${BOTTOM} Z`}
+                fill="url(#climb-ramp)"
+                opacity="0.14"
+              />
+              <path
+                d={path}
+                fill="none"
+                stroke="url(#climb-ramp)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </>
+          )}
+          {/* IT CONTINUES, AND THAT IS ALL IT SAYS. A dashed rule held at the
+              last earned height — drawing where the locked rungs land would
+              leak how much further the ladder goes. */}
+          {ladder.hidden > 0 && (
+            <line
+              x1={lastX}
+              y1={lastY}
+              x2="100"
+              y2={lastY}
+              stroke="var(--border)"
+              strokeWidth="2"
+              strokeDasharray="3 4"
+              vectorEffect="non-scaling-stroke"
+            />
+          )}
+        </svg>
+
+        {/* the rungs themselves: HTML, so a dot is round at every width */}
+        {ladder.rungs.map((r, i) => (
+          <span
+            key={r.key}
+            aria-hidden
+            className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background"
+            style={{
+              left: `${xOf(i)}%`,
+              top: `${yOf(i)}%`,
+              backgroundColor: rampStep(i, total),
+              animation: `edge-in-y var(--duration-reveal) cubic-bezier(0.16,1,0.3,1) ${120 + i * 90}ms backwards`,
+            }}
+          />
+        ))}
+      </div>
+
+      <ol className="flex items-start gap-1.5" aria-label="approaches by cost">
+        {Array.from({ length: total }, (_, i) => {
+          const rung = ladder.rungs[i]
+          return (
+            <li
+              key={rung?.key ?? `locked-${i}`}
+              className="flex min-w-0 flex-1"
+            >
+              <Step
+                rungKey={rung?.key}
+                className="flex min-w-0 flex-1 flex-col gap-1 rounded-md px-1 py-1 text-left"
+              >
+                <span className="truncate text-meta text-muted-foreground">
+                  {rung ? rung.name : "?"}
+                </span>
+                {rung ? (
+                  <span className="flex items-center gap-1 font-mono text-meta text-foreground tabular-nums">
+                    <ComplexityMark value={timeOf(rung.cost)} />
+                    <span className="truncate">{timeOf(rung.cost)}</span>
+                  </span>
+                ) : (
+                  <span className="font-mono text-meta text-dim">—</span>
+                )}
+              </Step>
+            </li>
+          )
+        })}
+      </ol>
+    </figure>
+  )
+}
 
 /**
  * One step: a button when there is a rung under it, a plain span when the
@@ -62,79 +210,5 @@ function Step({
     >
       {children}
     </button>
-  )
-}
-
-export function TheClimb({ ladder }: { ladder: Ladder }) {
-  const shown = ladder.rungs.length
-  const total = shown + ladder.hidden
-  // one rung is not a climb, it is a fact — and the orient bar already has it
-  if (total < 2) return null
-
-  return (
-    <figure className="flex flex-col gap-2">
-      <figcaption className="text-meta text-dim">
-        {ladder.capped
-          ? `the climb — ${shown} of ${total} earned`
-          : `the climb — ${total} ways in, worst to best`}
-      </figcaption>
-      <ol
-        className="flex items-end gap-1.5 border-b pb-px"
-        aria-label="approaches by cost"
-      >
-        {Array.from({ length: total }, (_, i) => {
-          const rung = ladder.rungs[i]
-          // The step descends as the cost does. Rank, not the bound itself:
-          // the bounds are incomparable as numbers (`O(n log n)` is not a
-          // value), and rank is what the ladder's own order already asserts.
-          //
-          // MEASURED AND WIDENED. The first cut ran 44px down to 18 across
-          // steps 252px wide, and at that aspect ratio three bars read as three
-          // colour SWATCHES rather than as a descent — the shape was there and
-          // nothing about it said "staircase". 72 down to 16 is a 4.5× range
-          // instead of 2.4×, which is the difference between a chart you have
-          // to be told about and one you see.
-          const height = 72 - Math.round((i / (total - 1)) * 56)
-          return (
-            <li
-              key={rung?.key ?? `locked-${i}`}
-              className="flex min-w-0 flex-1"
-            >
-              <Step
-                rungKey={rung?.key}
-                className="flex min-w-0 flex-1 flex-col gap-1 rounded-md text-left"
-              >
-                <span
-                  aria-hidden
-                  style={{
-                    height,
-                    backgroundColor: rung ? rampStep(i, total) : undefined,
-                    animationDelay: `${80 + i * 70}ms`,
-                    animationFillMode: "backwards",
-                  }}
-                  className={cn(
-                    "block w-full animate-edge-in-y rounded-t-sm",
-                    // a rung the ledger is holding back is an OUTLINE: there is
-                    // something here, and it is not yours yet
-                    !rung && "border border-b-0 border-dashed border-border"
-                  )}
-                />
-                <span className="truncate text-meta text-muted-foreground">
-                  {rung ? rung.name : "?"}
-                </span>
-                {rung ? (
-                  <span className="flex items-center gap-1 font-mono text-meta text-foreground tabular-nums">
-                    <ComplexityMark value={timeOf(rung.cost)} />
-                    <span className="truncate">{timeOf(rung.cost)}</span>
-                  </span>
-                ) : (
-                  <span className="font-mono text-meta text-dim">—</span>
-                )}
-              </Step>
-            </li>
-          )
-        })}
-      </ol>
-    </figure>
   )
 }

@@ -22,7 +22,7 @@
 // Motion is the house's, not new: `animate-edge-in-x` is the bar drawing itself
 // from the left on the reveal duration and the one curve, which is what the
 // pattern page already uses for the rule under its title.
-import { compact, logWidth, ratio } from "@/lib/figure-scale"
+import { compact, feelsLike, logWidth, ratio } from "@/lib/figure-scale"
 import { cn } from "@/lib/utils"
 import type { ConstraintFigure } from "@/data"
 
@@ -37,10 +37,21 @@ import type { ConstraintFigure } from "@/data"
 const rampStep = (rank: number, total: number) =>
   `var(--ramp-${Math.min(4, Math.round((rank / Math.max(1, total - 1)) * 4))})`
 
+/** the verdict already authored on every item, and never once drawn. A GLYPH
+ *  and not a colour: the bars are on the ordered ramp because they are a
+ *  sequence, and painting one of them in the "wrong" role would be chrome
+ *  borrowing a data hue — the rule the whole palette rests on. */
+const TONE: Record<string, { mark: string; says: string }> = {
+  bad: { mark: "✗", says: "too much work" },
+  good: { mark: "✓", says: "affordable" },
+}
+
 function Quantities({
   items,
+  unit,
 }: {
   items: { label: string; value: number; tone?: "bad" | "good" | "plain" }[]
+  unit?: "ops"
 }) {
   const values = items.map((i) => i.value)
   const max = Math.max(...values)
@@ -70,11 +81,33 @@ function Quantities({
       <ul className="flex flex-col gap-2">
         {items.map((item, i) => (
           <li key={item.label} className="grid grid-cols-[1fr_auto] gap-x-2">
-            <span className="truncate text-meta text-muted-foreground">
-              {item.label}
+            <span className="flex min-w-0 items-baseline gap-1.5">
+              {item.tone && TONE[item.tone] && (
+                <span
+                  className="text-meta text-dim"
+                  title={TONE[item.tone].says}
+                  aria-label={TONE[item.tone].says}
+                >
+                  {TONE[item.tone].mark}
+                </span>
+              )}
+              <span className="truncate text-meta text-muted-foreground">
+                {item.label}
+              </span>
             </span>
-            <span className="font-mono text-meta text-foreground tabular-nums">
-              {compact(item.value)}
+            <span className="flex items-baseline gap-2">
+              {/* WHAT THE NUMBER FEELS LIKE. `5·10⁹ comparisons` is a quantity
+                  a reader can say and cannot feel; five seconds is a wait they
+                  have sat through, and it settles "too slow" without a
+                  sentence. Only where the items really are operations. */}
+              {unit === "ops" && feelsLike(item.value) && (
+                <span className="text-meta text-dim">
+                  {feelsLike(item.value)}
+                </span>
+              )}
+              <span className="font-mono text-meta text-foreground tabular-nums">
+                {compact(item.value)}
+              </span>
             </span>
             {/* The bar spans BOTH columns, so its length is the card's width
                 and not the label column's — the value used to sit in a column
@@ -97,7 +130,10 @@ function Quantities({
           </li>
         ))}
       </ul>
-      <p className="text-meta text-dim">log scale — each step is ×10</p>
+      <p className="text-meta text-dim">
+        log scale — each step is ×10
+        {unit === "ops" && " · time at ~10⁹ operations a second"}
+      </p>
     </div>
   )
 }
@@ -114,6 +150,19 @@ function Span({
   marks: number[]
   note?: string
 }) {
+  // The runs between one mark and the next, as [start, end] percentages. A
+  // mark is a value you WILL hold; everything between two of them is range you
+  // would be paying for and never touch. Sorted because `marks` is authored
+  // and nothing promises it is in order.
+  const sorted = [...marks].sort((a, b) => a - b)
+  const gaps: [number, number][] = []
+  let cursor = 0
+  for (const m of sorted) {
+    if (m - cursor > 2) gaps.push([cursor, m])
+    cursor = m
+  }
+  if (100 - cursor > 2) gaps.push([cursor, 100])
+
   return (
     <div className="flex flex-col gap-2">
       {/* THE COUNT IS THE POINT. This figure exists to show sparsity, and
@@ -153,6 +202,20 @@ function Span({
             aria-hidden
             className="absolute top-1 right-0 h-3 w-px bg-border"
           />
+          {/* THE GAPS, DRAWN. The note under this figure says "the gaps are
+              what you would be paying for", and until now that was a sentence
+              over a picture that did not show them — the argument against
+              indexing by value IS the empty space between the marks, so the
+              empty space is hatched and the reader can see how much of the
+              range they would be allocating for nothing. */}
+          {gaps.map(([from, to], i) => (
+            <span
+              key={`gap-${i}`}
+              aria-hidden
+              className="absolute top-1 h-3 bg-[repeating-linear-gradient(135deg,var(--border)_0_1px,transparent_1px_4px)]"
+              style={{ left: `${from}%`, width: `${to - from}%` }}
+            />
+          ))}
           {marks.map((pct, i) => (
             <span
               key={i}
@@ -225,7 +288,7 @@ function Cells({ values, caption }: { values: string[]; caption?: string }) {
 export function ConstraintFigureView({ figure }: { figure: ConstraintFigure }) {
   switch (figure.kind) {
     case "quantities":
-      return <Quantities items={figure.items} />
+      return <Quantities items={figure.items} unit={figure.unit} />
     case "span":
       return (
         <Span

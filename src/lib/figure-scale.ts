@@ -110,3 +110,37 @@ export function ratio(a: number, b: number): string | null {
   // A million is the hinge. Past it the digits are the unreadable half.
   return shown < 1_000_000 ? `${grouped(shown)}×` : `${compact(shown)}×`
 }
+
+/**
+ * What a count of operations FEELS like: `≈5 s`, `≈2 ms`, `under a ms`.
+ *
+ * The gap this closes is the one every CS student has. `5·10⁹ comparisons` is
+ * a number a reader can say and cannot feel, and "too slow" is a claim they
+ * have to take on trust — but *five seconds* is a wait they have sat through,
+ * and it settles the argument without a sentence.
+ *
+ * The rate is a TEACHING CONSTANT, not a measurement: roughly 10⁹ simple
+ * operations a second is the order of magnitude a modern machine manages, and
+ * the caller prints it beside the answer so nobody mistakes this for a
+ * benchmark. It is an order of magnitude, which is all a bound ever claimed.
+ *
+ * Only ever applied where the quantity really is WORK — `ConstraintFigure`
+ * carries `unit: "ops"` to say so. The same figure kind also draws counts of
+ * VALUES, and "two billion values" is not two seconds of anything.
+ */
+export const OPS_PER_SECOND = 1e9
+
+export function feelsLike(ops: number): string | null {
+  if (!(ops > 0) || !Number.isFinite(ops)) return null
+  const seconds = ops / OPS_PER_SECOND
+  if (seconds < 1e-3) return "under a ms"
+  if (seconds < 1) return `≈${Math.round(seconds * 1000)} ms`
+  // Each hinge is TWO of the next unit, not one. At a hinge of 90s, ninety
+  // seconds rounds to "≈2 min" — which is both wrong and less useful than the
+  // number it replaced. Switching a unit only once there are at least two of
+  // them keeps every rounded answer inside 25% of the truth.
+  if (seconds < 120) return `≈${Math.round(seconds)} s`
+  const minutes = seconds / 60
+  if (minutes < 120) return `≈${Math.round(minutes)} min`
+  return `≈${Math.round(minutes / 60)} hours`
+}

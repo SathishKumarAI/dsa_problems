@@ -348,7 +348,21 @@ function ProblemPage({
       {/* min-w-0: a flex item's default `min-width: auto` is its content's
           min-content width, and the widest comparison table would push this
           column open and take the whole document sideways with it. */}
-      <div className="mx-auto flex w-full max-w-reading min-w-0 flex-col gap-8">
+      {/* `xl:mx-0` — THE TEXT MUST NOT MOVE. Centred inside the flex row,
+            this column re-centres itself the moment the contents rail
+            collapses, so hiding the rail slid the paragraph the reader was on
+            32px to the left and rewrapped it. Anchored at `xl`, where the rail
+            exists, the rail's 224px simply vacates to the right and not one
+            line of text changes position. Below `xl` there is no rail, so
+            centring is still the right answer there.
+
+            `xl:flex-none` with an explicit width is the other half. Anchoring
+            stopped the column MOVING; without a fixed basis it still GREW into
+            the space the rail vacated — 305px to 345 — and a paragraph that
+            rewraps mid-read is the same interruption by another route. At `xl`
+            the column is exactly the reading measure and the rail's 224px
+            simply becomes empty margin. */}
+      <div className="mx-auto flex w-full max-w-reading min-w-0 flex-col gap-8 xl:mx-0 xl:w-(--container-reading) xl:flex-none">
         {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
           Four facts, one row: where am I, how hard is it, what do I have to
           beat, have I done it. Each changes what you do in the next thirty

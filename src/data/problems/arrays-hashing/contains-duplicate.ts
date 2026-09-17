@@ -32,6 +32,8 @@ export const problem: Problem = {
       // invisible sliver, which draws the opposite of the lesson.
       figure: {
         kind: "quantities",
+        // these are COMPARISONS, so the figure may price them in seconds
+        unit: "ops",
         items: [
           { label: "every pair", value: 5e9, tone: "bad" },
           { label: "sort, then sweep", value: 1.7e6, tone: "plain" },
@@ -61,7 +63,8 @@ export const problem: Problem = {
       figure: {
         kind: "cells",
         values: ["?", "7"],
-        caption: "a repeat needs two positions; index −1 is the one an off-by-one reads",
+        caption:
+          "a repeat needs two positions; index −1 is the one an off-by-one reads",
       },
     },
     {
