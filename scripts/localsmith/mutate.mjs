@@ -265,6 +265,8 @@ function main() {
   const dir = mkdtempSync(join(tmpdir(), "dsa-mutate-"))
   const survivors = []
   let holes = 0 // notes printed under a survivor are not themselves survivors
+  let starved = 0 // baselines that TIMED OUT — a claim about the machine
+  let considered = 0 // problems that HAD a spec and an entry point
   let checked = 0
   let killed = 0
   let seq = 0
@@ -289,31 +291,46 @@ function main() {
           ? pythonClassDriver(src, spec, over)
           : pythonDriver(src, fn, over, spec.params)
       )
-      return caseLines(
+      const { lines, err } = caseLines(
         () =>
           execFileSync(python, [f], {
             stdio: "pipe",
             timeout: timeout + 20 * over.length,
           }),
         over.length
-      ).lines
+      )
+      return { lines, err }
     }
 
-    const baseline = run(p.python)
-    if (baseline.some((l) => l.startsWith("!ERROR"))) {
+    // A BASELINE FAILURE IS TWO DIFFERENT FINDINGS AND THIS USED TO REPORT
+    // ONE. "The unmutated python already errors" means the content is wrong
+    // and someone must fix it. A TIMEOUT means this process did not get the
+    // CPU — run this gate beside `npm run test:ui` and the Python children are
+    // starved, which on 2026-09-21 turned 22 real survivors into 92, sixty-nine
+    // of them phantom "already errors" lines against problems whose python
+    // runs clean in isolation. A gate that cannot tell its own starvation from
+    // the corpus being broken sends you fixing content that was never wrong.
+    considered++
+    const base = run(p.python)
+    if (base.lines.some((l) => l.startsWith("!ERROR"))) {
+      const timedOut = /ETIMEDOUT|timed? ?out|SIGTERM/i.test(base.err ?? "")
       holes++
       survivors.push(
-        `${p.id}: the UNMUTATED python already errors — fix that first`
+        timedOut
+          ? `${p.id}: the unmutated python TIMED OUT — this machine is loaded, not the content. Re-run this gate alone (it must not share a machine with test:ui)`
+          : `${p.id}: the UNMUTATED python already errors — fix that first`
       )
+      if (timedOut) starved++
       continue
     }
+    const baseline = base.lines
 
     for (const m of mutants(p.python)) {
       checked++
       const key = `${p.id}/${m.rule}`
       let lines
       try {
-        lines = run(m.code)
+        lines = run(m.code).lines
       } catch {
         killed++ // a mutant that will not even run is caught
         continue
@@ -337,8 +354,8 @@ function main() {
         const tries = perturb(cases, spec.params)
         let found = null
         try {
-          const a = run(p.python, tries)
-          const b = run(m.code, tries)
+          const a = run(p.python, tries).lines
+          const b = run(m.code, tries).lines
           const at = a.findIndex((l, i) => l !== b[i])
           if (at >= 0) found = { args: tries[at], want: a[at], got: b[at] }
         } catch {
@@ -373,6 +390,45 @@ function main() {
     )
     for (const s of survivors) console.log(`  ✗ ${s}`)
   }
+  // SAY IT ONCE MORE, LOUDLY. A starved run reports a number that looks like
+  // a content regression and is not one; the reader of this output has to be
+  // told which kind of red they are looking at before they go fixing anything.
+  if (starved) {
+    console.log(
+      `
+  ${starved} of those are TIMEOUTS, not content: this run did not get the CPU.
+` +
+        `  Re-run it alone — nothing else heavy on the machine — before believing the count.
+`
+    )
+  }
+  // THE EXIT CODE, AND WHY IT IS WORTH READING. A pipe replaces it with the
+  // last command's, which is how a red gate with 22 survivors sat unnoticed on
+  // master (G12). `npm run verify:vectors | tail -4` reports tail's success.
+  console.log(
+    holes
+      ? `
+  RED — ${holes} survivor(s). Exit 1.
+`
+      : checked
+        ? `
+  GREEN — all ${checked} mutants caught. Exit 0.
+`
+        : // A run that checked NOTHING is not green, and it says WHICH kind of
+          // nothing: no problem matched at all, or a problem matched and its
+          // python has no site any rule can mutate (`contains-duplicate` is
+          // exactly that — a set membership loop with no operator to flip).
+          // Reporting either as "GREEN" is the defect this repo already paid
+          // for once, in a gate that printed a ratio whose halves counted
+          // different things.
+          considered
+            ? `
+  NOTHING CHECKED — ${considered} problem(s) ran, none had a mutable site. Not a pass, not a failure.
+`
+            : `
+  NOTHING CHECKED — no problem matched a vector spec. This is not a pass.
+`
+  )
   process.exitCode = holes ? 1 : 0
 }
 

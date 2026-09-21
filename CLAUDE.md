@@ -72,6 +72,14 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
 
 ## Traps
 
+- **`verify:vectors` starved reads as `verify:vectors` broken.** Run it beside `npm run test:ui`
+  and its Python children lose the CPU: 22 real survivors became **92**, sixty-nine of them the
+  line _"the UNMUTATED python already errors — fix that first"_ against problems whose python runs
+  clean in isolation (probed one, it printed the right answers in under a second). The gate says
+  which kind of red it is now — a timed-out baseline is reported as a claim about the MACHINE — but
+  the rule stands: this gate gets the machine to itself, and a count from a loaded run is not
+  evidence. Same family as the pipe trap below: the number looked like content and was not.
+
 - **A pipe replaces the exit code with the LAST command's.** `npm run verify:vectors | tail -4`
   reports `tail`'s success, so a gate that exits 1 reads as green — which is how a red gate with 22
   survivors sat unnoticed on master (G12). Read the gate's own summary line, or run it without a pipe and echo
