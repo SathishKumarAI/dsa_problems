@@ -8,9 +8,32 @@
 // chunk of its own (B95).
 
 import type { Problem } from "../../data/types.ts"
-import { id, title, pattern, difficulty, leetcode, brief, statement, constraints, examples } from "./problem.ts"
+import {
+  id,
+  title,
+  pattern,
+  difficulty,
+  leetcode,
+  brief,
+  statement,
+  constraints,
+  examples,
+  unlocks,
+  checks,
+  reading,
+} from "./problem.ts"
 import { hints } from "./hints.ts"
-import { approach, whyNow, arc, complexity, python, java, cpp, alternatives } from "./solutions.ts"
+import {
+  approach,
+  whyNow,
+  arc,
+  complexity,
+  python,
+  java,
+  cpp,
+  alternatives,
+  costWhy,
+} from "./solutions.ts"
 
 export const problem: Problem = {
   id,
@@ -22,6 +45,12 @@ export const problem: Problem = {
   statement,
   constraints,
   examples,
+  // the five playbook fields: what each bound buys, the questions to answer
+  // before solving, how the target bound was counted, and where to read on
+  unlocks,
+  checks,
+  reading,
+  costWhy,
   hints,
   approach,
   whyNow,

@@ -130,7 +130,10 @@ function Quantities({
           </li>
         ))}
       </ul>
-      <p className="text-meta text-dim">
+      {/* `text-ui`, not `text-meta`: this is a SENTENCE about how to read the
+          chart, and U6 refuses prose below the ui step. The numbers and labels
+          above stay at the meta step because they are labels. */}
+      <p className="text-ui text-dim">
         log scale — each step is ×10
         {unit === "ops" && " · time at ~10⁹ operations a second"}
       </p>
@@ -233,7 +236,8 @@ function Span({
           <span>{to}</span>
         </div>
       </div>
-      {note && <p className="text-meta text-muted-foreground">{note}</p>}
+      {/* a note is prose, so it is set at the ui step (U6) */}
+      {note && <p className="text-ui text-muted-foreground">{note}</p>}
     </div>
   )
 }
@@ -280,7 +284,8 @@ function Cells({ values, caption }: { values: string[]; caption?: string }) {
           )
         })}
       </div>
-      {caption && <p className="text-meta text-muted-foreground">{caption}</p>}
+      {/* a caption is prose, so it is set at the ui step (U6) */}
+      {caption && <p className="text-ui text-muted-foreground">{caption}</p>}
     </div>
   )
 }
