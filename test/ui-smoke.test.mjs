@@ -2789,6 +2789,72 @@ describe(
 
     // ---------- 10. a broken page beats a broken site (B96) ----------
 
+    // The glossary is the reference half of the site: a reader arrives from a
+    // word in a sentence, reads one screen, goes back. Three things have to
+    // hold for that to work at all — the index lists the entries, an entry
+    // renders its definition, and a [[link]] inside an entry navigates to the
+    // entry it names rather than to a 404.
+    test("the glossary lists its entries, and a term links to another term", async () => {
+      await page.goto(`${server.base}/#/g`)
+      const index = await page.run(`
+        const cards = [...document.querySelectorAll('a[href^="#/g/"]')];
+        return {
+          entries: cards.length,
+          first: cards[0]?.getAttribute('href') ?? '',
+          // MAIN, not body: the first 400 characters of the page are the
+          // sidebar's nineteen pattern rows, so a body-text match here was
+          // asserting something about the navigation.
+          heading: document.querySelector('main h1')?.innerText ?? '',
+        };
+      `)
+      assert.ok(
+        index.entries >= 20,
+        `the glossary index drew ${index.entries} entries`
+      )
+      assert.match(index.heading, /Glossary/i, "the index has no heading")
+
+      await page.goto(`${server.base}/#/g/hash-map`)
+      const entry = await page.run(`
+        const links = [...document.querySelectorAll('a[data-term]')];
+        return {
+          heading: document.querySelector('main h1')?.innerText ?? '',
+          costs: !!document.querySelector('main table'),
+          termLinks: links.length,
+          // "what links here" is COMPUTED, so it must actually list something
+          backlinks: /what links here/i.test(document.body.innerText),
+          firstTarget: links[0]?.getAttribute('href') ?? '',
+        };
+      `)
+      assert.match(entry.heading, /hash map/i, "the entry has the wrong title")
+      assert.equal(entry.costs, true, "the entry drew no cost table")
+      assert.ok(entry.termLinks > 0, "the entry links to no other entry")
+      assert.equal(entry.backlinks, true, "no what-links-here section")
+
+      // A DEFINED WORD NAVIGATES. This is a hash-routed app, so an in-page
+      // anchor and a route change look identical in the markup and are not.
+      await page.run(
+        `document.querySelector('a[data-term]').click(); return 1;`
+      )
+      await page.run("return new Promise(r => setTimeout(() => r(1), 400));")
+      const landed = await page.run(`
+        return {
+          hash: location.hash,
+          heading: document.querySelector('main h1')?.innerText ?? '',
+        };
+      `)
+      assert.match(
+        landed.hash,
+        /^#\/g\/[a-z-]+$/,
+        `a term link landed on ${landed.hash}`
+      )
+      assert.ok(
+        landed.heading.length > 0 &&
+          !/nothing at that address/i.test(landed.heading),
+        `a term link landed on "${landed.heading}"`
+      )
+      assert.deepEqual(page.errors(), [], "the glossary logged errors")
+    })
+
     test("a route that names nothing renders not-found, not home", async () => {
       // Both shapes: a real pattern with a dead problem under it, and a root
       // that names nothing at all. Before B96 both rendered HOME — a working

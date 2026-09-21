@@ -178,3 +178,32 @@ test("a table cell may hold an escaped pipe", () => {
   assert.deepEqual(table.head, ["a", "`|s − 1|`", "b"])
   assert.deepEqual(table.rows, [["1", "`|2 − 1|`", "3"]])
 })
+
+// `[[term]]` is a glossary link, and it has to survive being next to every
+// other inline marker — a definition link inside a bold sentence, or beside
+// code, is how the teaching documents will actually write it.
+test("a wiki link is a term span, with an optional display text", () => {
+  const spans = inlineSpans("a [[hash map]] and [[big-o|its bound]] and `x`")
+  assert.deepEqual(
+    spans.filter((s) => s.kind === "term"),
+    [
+      { kind: "term", target: "hash map", text: "hash map" },
+      { kind: "term", target: "big-o", text: "its bound" },
+    ]
+  )
+  // the rest of the grammar is untouched by it
+  assert.ok(spans.some((s) => s.kind === "code" && s.text === "x"))
+})
+
+// A markdown link is `[text](href)`; a term link is `[[target]]`. The two
+// share an opening bracket, so the order they are matched in is load-bearing.
+test("a markdown link beside a wiki link still parses as a link", () => {
+  const spans = inlineSpans("[docs](https://example.com) and [[set]]")
+  assert.deepEqual(
+    spans.filter((s) => s.kind !== "text"),
+    [
+      { kind: "link", text: "docs", href: "https://example.com" },
+      { kind: "term", target: "set", text: "set" },
+    ]
+  )
+})

@@ -16,6 +16,7 @@
 // Collapses to a 3 rem icon rail that peeks open on hover (ui/sidebar.tsx).
 import {
   CheckIcon,
+  BookAIcon,
   CircleHelpIcon,
   DatabaseIcon,
   KeyboardIcon,
@@ -128,6 +129,7 @@ function whereAmI(parts: string[], mask: Mask): string {
     return j ? `DSA · journey · ${j.title}` : "DSA · journey"
   }
   if (root === "algorithms") return "DSA · algorithm visualizer"
+  if (root === "g") return "DSA · glossary"
   if (root === "p") {
     const pattern = PATTERNS.find((p) => p.id === a)
     const name = pattern
@@ -464,6 +466,16 @@ export function AppSidebar({ view }: { view: string }) {
           <SidebarGroupLabel>Reference</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={<a href={href("/g")} />}
+                  isActive={view === "g"}
+                  tooltip="Glossary"
+                >
+                  <BookAIcon className="size-3.5 shrink-0 text-dim" />
+                  <span className="truncate">Glossary</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={<a href={href("/algorithms")} />}
