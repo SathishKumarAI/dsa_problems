@@ -7,19 +7,19 @@ The rules are the ones the READER is shown at the foot of each page
 (`src/lib/page-debt.ts` → `components/problem-debt.tsx`), so this ledger and
 the site cannot disagree about what is missing.
 
-**1 of 153 pages owe nothing.**
+**6 of 153 pages owe nothing.**
 
 | Missing | Pages |
 |---|---|
 | `journey` | 60 |
 | `explanation` | 71 |
-| `unlocks` | 152 |
+| `unlocks` | 147 |
 | `figures` | 0 |
-| `checks` | 152 |
-| `cost-why` | 152 |
+| `checks` | 147 |
+| `cost-why` | 147 |
 | `rung-cost-why` | 0 |
 | `arc` | 0 |
-| `reading` | 152 |
+| `reading` | 147 |
 
 ## Per problem
 
@@ -126,58 +126,58 @@ the site cannot disagree about what is missing.
 | 97 | [Single Buy/Sell Profit](../src/problems/best-trade/) | Greedy |   |   | · |   | · | · |   |   | · | 4 |
 | 98 | [Longest Run After k Rewrites](../src/problems/char-replacement/) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
 | 99 | [Find a Target in Sorted Array](../src/problems/classic-binary-search/) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 100 | [Widest Container](../src/problems/container-water/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 101 | [Detect a Cycle](../src/problems/cycle-detect/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 102 | [Days Until Warmer](../src/problems/daily-warmer/) | Stack |   |   | · |   | · | · |   |   | · | 4 |
-| 103 | [Expand a Nested Encoding](../src/data/problems/stack/decode-string.ts) | Stack |   |   | · |   | · | · |   |   | · | 4 |
-| 104 | [First and Last Position of a Value](../src/data/problems/binary-search/first-last-position.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 105 | [Every Well-Formed Bracket String](../src/problems/generate-parens/) | Backtracking |   |   | · |   | · | · |   |   | · | 4 |
-| 106 | [Group the Anagrams Together](../src/problems/group-anagrams/) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 107 | [Mirror a Binary Tree](../src/data/problems/trees/invert-tree.ts) | Trees |   |   | · |   | · | · |   |   | · | 4 |
-| 108 | [Is One String Hidden in the Other?](../src/problems/is-subsequence/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 109 | [Same Shape, Different Letters](../src/data/problems/arrays-hashing/isomorphic-strings.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 110 | [Largest Rectangle in Histogram](../src/problems/largest-rectangle/) | Stack |   |   | · |   | · | · |   |   | · | 4 |
-| 111 | [Level Order Traversal](../src/data/problems/trees/level-order.ts) | Trees |   |   | · |   | · | · |   |   | · | 4 |
-| 112 | [Prefix Shared by Every String](../src/data/problems/arrays-hashing/longest-common-prefix.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 113 | [Longest Consecutive Sequence](../src/data/problems/arrays-hashing/longest-consecutive-run.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 114 | [Longest Substring Without Repeats](../src/data/problems/sliding-window/longest-unique-substring.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
-| 115 | [The Value That Owns the Majority](../src/data/problems/arrays-hashing/majority-element.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 116 | [Maximum Depth of Binary Tree](../src/problems/max-depth/) | Trees |   |   | · |   | · | · |   |   | · | 4 |
-| 117 | [Longest Run of 1s With k Flips](../src/data/problems/sliding-window/max-ones-after-flips.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
-| 118 | [Merge Two Sorted Lists](../src/problems/merge-two-sorted/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 119 | [The Middle of a Linked List](../src/data/problems/linked-list/middle-of-list.ts) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 120 | [Smallest Covering Window](../src/data/problems/sliding-window/min-cover-substring.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
-| 121 | [Shortest Subarray That Reaches the Target](../src/data/problems/sliding-window/min-subarray-sum.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
-| 122 | [Push the Zeroes to the End](../src/problems/move-zeroes/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 123 | [Pair With Target Sum](../src/data/problems/arrays-hashing/pair-sum.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 124 | [Is the Linked List a Palindrome?](../src/data/problems/linked-list/palindrome-list.ts) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 125 | [Does One String Hide the Other's Letters?](../src/problems/permutation-in-string/) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
-| 126 | [Product of Everything Else](../src/problems/product-except-self/) | Prefix Sums |   |   | · |   | · | · |   |   | · | 4 |
-| 127 | [Squeeze Out the Duplicates](../src/problems/remove-duplicates-sorted/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 128 | [Smallest Number After Removing k Digits](../src/data/problems/stack/remove-k-digits.ts) | Stack |   |   | · |   | · | · |   |   | · | 4 |
-| 129 | [Delete Every Node Holding a Value](../src/problems/remove-list-elements/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 130 | [Remove the nth Node From the End](../src/data/problems/linked-list/remove-nth-from-end.ts) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 131 | [Reverse a Linked List](../src/problems/reverse-list/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 132 | [Minimum in Rotated Sorted Array](../src/data/problems/binary-search/rotated-minimum.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 133 | [Search a Rotated Sorted Array](../src/data/problems/binary-search/rotated-search.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 134 | [Evaluate Reverse Polish Notation](../src/problems/rpn-eval/) | Stack |   |   | · |   | · | · |   |   | · | 4 |
-| 135 | [Are Two Trees Identical?](../src/problems/same-tree/) | Trees |   |   | · |   | · | · |   |   | · | 4 |
-| 136 | [Search a Fully Sorted Matrix](../src/data/problems/binary-search/search-2d-matrix.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 137 | [Where Would This Value Go?](../src/data/problems/binary-search/search-insert-position.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 138 | [The Lone Value Among Pairs](../src/data/problems/binary-search/single-in-sorted.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
-| 139 | [Single Number](../src/problems/single-number/) | Bit Manipulation |   |   | · |   | · | · |   |   | · | 4 |
-| 140 | [Sort Three Colours In Place](../src/problems/sort-colors/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 141 | [Pair Sum in Sorted Array](../src/problems/sorted-pair-sum/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 142 | [Squares of a Sorted Array](../src/problems/sorted-squares/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 143 | [How Many Subarrays Sum to k?](../src/problems/subarray-sum-k/) | Prefix Sums |   |   | · |   | · | · |   |   | · | 4 |
-| 144 | [Swap Every Adjacent Pair](../src/problems/swap-pairs/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
-| 145 | [Triplets Summing to Zero](../src/problems/three-sum-zero/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 146 | [Top K Frequent Elements](../src/data/problems/arrays-hashing/top-k-frequent.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 147 | [Water Held by an Elevation Map](../src/problems/trap-rain-water/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 148 | [Same Letters, Different Order](../src/data/problems/arrays-hashing/valid-anagram.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
-| 149 | [Palindrome, Ignoring the Noise](../src/problems/valid-palindrome/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
-| 150 | [Brackets With a Wildcard](../src/data/problems/stack/valid-parenthesis-string.ts) | Stack |   |   | · |   | · | · |   |   | · | 4 |
-| 151 | [Validate a Binary Search Tree](../src/data/problems/trees/validate-bst.ts) | Trees |   |   | · |   | · | · |   |   | · | 4 |
-| 152 | [Maximum of Every Window](../src/problems/window-maximum/) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
-| 153 | [Any Repeat in the Array?](../src/data/problems/arrays-hashing/contains-duplicate.ts) | Arrays & Hashing |   |   |   |   |   |   |   |   |   | 0 |
+| 100 | [Detect a Cycle](../src/problems/cycle-detect/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 101 | [Days Until Warmer](../src/problems/daily-warmer/) | Stack |   |   | · |   | · | · |   |   | · | 4 |
+| 102 | [Expand a Nested Encoding](../src/data/problems/stack/decode-string.ts) | Stack |   |   | · |   | · | · |   |   | · | 4 |
+| 103 | [First and Last Position of a Value](../src/data/problems/binary-search/first-last-position.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
+| 104 | [Every Well-Formed Bracket String](../src/problems/generate-parens/) | Backtracking |   |   | · |   | · | · |   |   | · | 4 |
+| 105 | [Mirror a Binary Tree](../src/data/problems/trees/invert-tree.ts) | Trees |   |   | · |   | · | · |   |   | · | 4 |
+| 106 | [Is One String Hidden in the Other?](../src/problems/is-subsequence/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 107 | [Same Shape, Different Letters](../src/data/problems/arrays-hashing/isomorphic-strings.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
+| 108 | [Largest Rectangle in Histogram](../src/problems/largest-rectangle/) | Stack |   |   | · |   | · | · |   |   | · | 4 |
+| 109 | [Level Order Traversal](../src/data/problems/trees/level-order.ts) | Trees |   |   | · |   | · | · |   |   | · | 4 |
+| 110 | [Prefix Shared by Every String](../src/data/problems/arrays-hashing/longest-common-prefix.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
+| 111 | [Longest Consecutive Sequence](../src/data/problems/arrays-hashing/longest-consecutive-run.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
+| 112 | [Longest Substring Without Repeats](../src/data/problems/sliding-window/longest-unique-substring.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
+| 113 | [The Value That Owns the Majority](../src/data/problems/arrays-hashing/majority-element.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
+| 114 | [Maximum Depth of Binary Tree](../src/problems/max-depth/) | Trees |   |   | · |   | · | · |   |   | · | 4 |
+| 115 | [Longest Run of 1s With k Flips](../src/data/problems/sliding-window/max-ones-after-flips.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
+| 116 | [Merge Two Sorted Lists](../src/problems/merge-two-sorted/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 117 | [The Middle of a Linked List](../src/data/problems/linked-list/middle-of-list.ts) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 118 | [Smallest Covering Window](../src/data/problems/sliding-window/min-cover-substring.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
+| 119 | [Shortest Subarray That Reaches the Target](../src/data/problems/sliding-window/min-subarray-sum.ts) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
+| 120 | [Push the Zeroes to the End](../src/problems/move-zeroes/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 121 | [Is the Linked List a Palindrome?](../src/data/problems/linked-list/palindrome-list.ts) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 122 | [Does One String Hide the Other's Letters?](../src/problems/permutation-in-string/) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
+| 123 | [Product of Everything Else](../src/problems/product-except-self/) | Prefix Sums |   |   | · |   | · | · |   |   | · | 4 |
+| 124 | [Squeeze Out the Duplicates](../src/problems/remove-duplicates-sorted/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 125 | [Smallest Number After Removing k Digits](../src/data/problems/stack/remove-k-digits.ts) | Stack |   |   | · |   | · | · |   |   | · | 4 |
+| 126 | [Delete Every Node Holding a Value](../src/problems/remove-list-elements/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 127 | [Remove the nth Node From the End](../src/data/problems/linked-list/remove-nth-from-end.ts) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 128 | [Reverse a Linked List](../src/problems/reverse-list/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 129 | [Minimum in Rotated Sorted Array](../src/data/problems/binary-search/rotated-minimum.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
+| 130 | [Search a Rotated Sorted Array](../src/data/problems/binary-search/rotated-search.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
+| 131 | [Evaluate Reverse Polish Notation](../src/problems/rpn-eval/) | Stack |   |   | · |   | · | · |   |   | · | 4 |
+| 132 | [Are Two Trees Identical?](../src/problems/same-tree/) | Trees |   |   | · |   | · | · |   |   | · | 4 |
+| 133 | [Search a Fully Sorted Matrix](../src/data/problems/binary-search/search-2d-matrix.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
+| 134 | [Where Would This Value Go?](../src/data/problems/binary-search/search-insert-position.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
+| 135 | [The Lone Value Among Pairs](../src/data/problems/binary-search/single-in-sorted.ts) | Binary Search |   |   | · |   | · | · |   |   | · | 4 |
+| 136 | [Single Number](../src/problems/single-number/) | Bit Manipulation |   |   | · |   | · | · |   |   | · | 4 |
+| 137 | [Sort Three Colours In Place](../src/problems/sort-colors/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 138 | [Squares of a Sorted Array](../src/problems/sorted-squares/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 139 | [How Many Subarrays Sum to k?](../src/problems/subarray-sum-k/) | Prefix Sums |   |   | · |   | · | · |   |   | · | 4 |
+| 140 | [Swap Every Adjacent Pair](../src/problems/swap-pairs/) | Linked List |   |   | · |   | · | · |   |   | · | 4 |
+| 141 | [Triplets Summing to Zero](../src/problems/three-sum-zero/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 142 | [Top K Frequent Elements](../src/data/problems/arrays-hashing/top-k-frequent.ts) | Arrays & Hashing |   |   | · |   | · | · |   |   | · | 4 |
+| 143 | [Water Held by an Elevation Map](../src/problems/trap-rain-water/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 144 | [Palindrome, Ignoring the Noise](../src/problems/valid-palindrome/) | Two Pointers |   |   | · |   | · | · |   |   | · | 4 |
+| 145 | [Brackets With a Wildcard](../src/data/problems/stack/valid-parenthesis-string.ts) | Stack |   |   | · |   | · | · |   |   | · | 4 |
+| 146 | [Validate a Binary Search Tree](../src/data/problems/trees/validate-bst.ts) | Trees |   |   | · |   | · | · |   |   | · | 4 |
+| 147 | [Maximum of Every Window](../src/problems/window-maximum/) | Sliding Window |   |   | · |   | · | · |   |   | · | 4 |
+| 148 | [Widest Container](../src/problems/container-water/) | Two Pointers |   |   |   |   |   |   |   |   |   | 0 |
+| 149 | [Any Repeat in the Array?](../src/data/problems/arrays-hashing/contains-duplicate.ts) | Arrays & Hashing |   |   |   |   |   |   |   |   |   | 0 |
+| 150 | [Group the Anagrams Together](../src/problems/group-anagrams/) | Arrays & Hashing |   |   |   |   |   |   |   |   |   | 0 |
+| 151 | [Pair With Target Sum](../src/data/problems/arrays-hashing/pair-sum.ts) | Arrays & Hashing |   |   |   |   |   |   |   |   |   | 0 |
+| 152 | [Pair Sum in Sorted Array](../src/problems/sorted-pair-sum/) | Two Pointers |   |   |   |   |   |   |   |   |   | 0 |
+| 153 | [Same Letters, Different Order](../src/data/problems/arrays-hashing/valid-anagram.ts) | Arrays & Hashing |   |   |   |   |   |   |   |   |   | 0 |
 

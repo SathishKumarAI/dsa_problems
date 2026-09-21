@@ -11,11 +11,14 @@
 
 import type { Solution } from "../../data/types.ts"
 
-export const approach = "Give every word a canonical key that is invariant under rearrangement, then let a hash map collect words by that key. The key here is the letter tally rendered as text: twenty-six counts joined by commas, which two anagrams always agree on and two non-anagrams never do. The separator matters — without it, counts of 1,11 and 11,1 would collide. Finally sort inside each group and between groups so the answer has one shape rather than many."
+export const approach =
+  "Give every word a canonical key that is invariant under rearrangement, then let a hash map collect words by that key. The key here is the letter tally rendered as text: twenty-six counts joined by commas, which two anagrams always agree on and two non-anagrams never do. The separator matters — without it, counts of 1,11 and 11,1 would collide. Finally sort inside each group and between groups so the answer has one shape rather than many."
 
-export const whyNow = "Sorting each word costs k log k just to make a label, and the label throws away nothing the counts do not already capture. A 26-slot tally is built in one pass over the word — linear in its length instead of linearithmic — and two anagrams produce the same tally by definition."
+export const whyNow =
+  "Sorting each word costs k log k just to make a label, and the label throws away nothing the counts do not already capture. A 26-slot tally is built in one pass over the word — linear in its length instead of linearithmic — and two anagrams produce the same tally by definition."
 
-export const arc = "One question drives every rung: what is the KEY that makes two words the same? Comparing pairs avoids choosing a key and pays quadratically for it. Sorted letters are a valid key and cost k log k per word. A 26-slot count signature is the same key without sorting, built in k steps. Once the key exists, grouping is a hash map with a list per bucket — the part nobody argues about. The transferable habit is to look for a canonical form: anagram grouping, isomorphic strings, and 'group by shape' problems are all the same shape once the key is chosen. In an interview, name both keys and the trade — sorted strings are shorter to write, count signatures are faster and immune to long words."
+export const arc =
+  "One question drives every rung: what is the KEY that makes two words the same? Comparing pairs avoids choosing a key and pays quadratically for it. Sorted letters are a valid key and cost k log k per word. A 26-slot count signature is the same key without sorting, built in k steps. Once the key exists, grouping is a hash map with a list per bucket — the part nobody argues about. The transferable habit is to look for a canonical form: anagram grouping, isomorphic strings, and 'group by shape' problems are all the same shape once the key is chosen. In an interview, name both keys and the trade — sorted strings are shorter to write, count signatures are faster and immune to long words."
 
 export const complexity = { time: "O(n · k)", space: "O(n · k)" }
 
@@ -84,6 +87,8 @@ export const alternatives: Solution[] = [
     summary:
       "For each word, scan the groups built so far for one whose first member is an anagram of it. Correct, and quadratic in the number of words with an anagram test inside every comparison — it asks whether two words match, over and over, instead of asking each word once what it IS.",
     complexity: { time: "O(n² · k)", space: "O(n · k)" },
+    costWhy:
+      "O(n\u00b2 \u00b7 k), and both halves are worth reading. The n\u00b2 is the pairs: each of n words is tested against every group representative seen so far, which in the worst case \u2014 every word its own group \u2014 is n(n \u2212 1)/2 tests. The \u00b7k is the part people drop: a single test is itself an anagram check over two words of length k, so this is not n\u00b2 operations but n\u00b2 passes over a word. At 10\u2074 words of 100 characters that is roughly 5\u00b710\u2079 character reads for a grouping the next rung does in 10\u2076.",
     python: `def group_anagrams(words: list[str]) -> list[list[str]]:
     groups: list[list[str]] = []
     for w in words:
@@ -159,6 +164,8 @@ export const alternatives: Solution[] = [
     summary:
       "Use the word's own letters, sorted, as a map key, so every anagram lands on the same string. The pairwise scan collapses to one pass, and the only remaining cost is the sort inside each key — k log k per word, paid to produce a label that a 26-slot count could produce in k.",
     complexity: { time: "O(n · k log k)", space: "O(n · k)" },
+    costWhy:
+      "One key per word instead of one comparison per pair \u2014 that is the whole win, and it is a change of SHAPE rather than a constant. Each key costs a sort of the word\u2019s characters, k log k, done n times. The map lookups are O(1) on average and disappear into it. So the only thing left to improve is the key itself, which is what the rung above does: a 26-slot tally is a canonical form in O(k), because the alphabet is fixed and counting does not need order.",
     python: `def group_anagrams(words: list[str]) -> list[list[str]]:
     groups: dict[str, list[str]] = {}
     for w in words:
@@ -203,3 +210,7 @@ export const alternatives: Solution[] = [
 }`,
   },
 ]
+
+// HOW THE BOUND WAS COUNTED. The page target; each rung carries its own.
+export const costWhy =
+  "n words of length at most k. Building one key is a pass over the word, O(k), and inserting it into the map is O(1) on average \u2014 so the grouping is O(n\u00b7k), which is simply the size of the input: this rung reads every character once and does nothing else. The space is the same O(n\u00b7k), because every word is stored in some group and every key is stored beside it. Two things the bound hides, and they are the reason it is written out: comparing two words for equality is itself O(k), so the quadratic rung is really O(n\u00b2\u00b7k) rather than O(n\u00b2); and the final sort that pins the output order costs O(n log n \u00b7 k) comparisons, which is dominated here only because k is capped at 100."
