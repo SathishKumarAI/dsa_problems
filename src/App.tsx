@@ -87,6 +87,19 @@ const ProblemDetail = lazy(() =>
     default: m.ProblemDetail,
   }))
 )
+// The glossary is a REFERENCE surface: entered from a word in a sentence, and
+// carrying the whole term corpus. Lazy, so a reader who never clicks a defined
+// word never downloads it.
+const GlossaryIndex = lazy(() =>
+  import("./components/glossary/glossary-view").then((m) => ({
+    default: m.GlossaryIndex,
+  }))
+)
+const GlossaryTerm = lazy(() =>
+  import("./components/glossary/glossary-view").then((m) => ({
+    default: m.GlossaryTerm,
+  }))
+)
 import { ProblemList } from "./components/problem-list"
 // lazy too: it carries every pattern's playbook prose
 import { SqlView } from "./components/sql-view"
@@ -121,6 +134,10 @@ function View() {
     const target = PATTERNS.find((p) => p.id === named)
     return <Redirect to={target ? `/p/${target.id}` : "/"} />
   }
+  // `#/g` the glossary, `#/g/<slug>` one entry. A short root on purpose: it is
+  // written into prose as `[[hash map]]` hundreds of times and every one of
+  // those resolves to this route.
+  if (root === "g") return a ? <GlossaryTerm key={a} slug={a} /> : <GlossaryIndex />
   if (root === "sql") return <SqlView />
   if (root === "flashcards") return <FlashcardsView />
   if (root === "p") {

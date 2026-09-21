@@ -39,3 +39,4 @@ docs/learn/
 # mistake as committing docs/learn.
 public/pyodide/
 scratch/
+.cache/

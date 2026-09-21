@@ -132,6 +132,10 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 |---|---|
 | Theme colours, type scale, container widths (all tokens) | `src/index.css` (the decisions: `docs/DESIGN.md`) |
 | Routes (`#/journey/…`, `#/algorithms`, `#/p/…`) | `src/lib/route.ts`, `src/App.tsx` |
+| Add / edit a **glossary entry**, or the rules a `[[link]]` follows | `src/glossary/terms/<topic>.ts` — map and the five authoring rules: `src/glossary/README.md`. Gate: `src/glossary/glossary.test.ts` |
+| How a defined word LOOKS in prose, and what its popover says | `src/components/glossary/term-link.tsx` |
+| How much room a **figure** takes while reading, and opening it full size | `src/components/figure/frame.tsx` — the cap is `--figure-inline` in `src/index.css` |
+| Whether every outbound reading link still answers | `npm run check:links` (`scripts/check-links.mjs`) — hits each URL, caches for 30 days |
 | Add / edit a **journey** (acts, generators, presets, quiz, challenge) | `src/data/journeys/<slug>.ts` → register in `src/engine/index.ts`. **Five early journeys still live in `src/engine/journeys/`** (`two-sum`, `three-sum`, `single-number`, `sorted-pair-sum`, `container-water`); everything since is in `src/data/journeys/` — 90 files there against 5 — so look in `src/engine/index.ts` for the import path rather than guessing |
 | Frame / act / journey / stage-model contracts (incl. `EdgeCase`, frame `corner`) | `src/engine/types.ts` |
 | The hash-map bucket arithmetic | `src/engine/hashmap.ts` |

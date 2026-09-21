@@ -31,6 +31,10 @@ export type Span =
   | { kind: "bold"; text: string }
   | { kind: "italic"; text: string }
   | { kind: "link"; text: string; href: string }
+  // `[[hash map]]` / `[[hash-map|the table]]` — a glossary link. The TARGET is
+  // resolved by `src/glossary`, not here: this module stays DOM-free and
+  // data-free so `markdown.test.ts` can run it with nothing loaded.
+  | { kind: "term"; text: string; target: string }
 
 export type Block =
   | { kind: "heading"; level: 1 | 2 | 3; text: string }
@@ -45,15 +49,26 @@ export type Block =
 // Code first of all, so nothing inside a span is re-parsed; then links, whose
 // brackets would otherwise survive as literal text; then `**bold**` before
 // `*italic*`, so the longer marker wins.
-const INLINE = /(`[^`]+`|\[[^\]\n]+\]\([^)\s]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*)/g
+const INLINE =
+  /(`[^`]+`|\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\([^)\s]+\)|\*\*[^*]+\*\*|\*[^*\n]+\*)/g
 
 export function inlineSpans(text: string): Span[] {
   const out: Span[] = []
   for (const piece of text.split(INLINE)) {
     if (!piece) continue
     const link = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(piece)
+    // A WIKI LINK, matched before the markdown one. `[[target]]`, or
+    // `[[target|what to show]]` when the sentence needs a different word
+    // than the entry's own name.
+    const term = /^\[\[([^\]|]+)(?:\|([^\]]+))?\]\]$/.exec(piece)
     if (piece.length > 1 && piece.startsWith("`") && piece.endsWith("`")) {
       out.push({ kind: "code", text: piece.slice(1, -1) })
+    } else if (term) {
+      out.push({
+        kind: "term",
+        target: term[1].trim(),
+        text: (term[2] ?? term[1]).trim(),
+      })
     } else if (link) {
       out.push({ kind: "link", text: link[1], href: link[2] })
     } else if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
