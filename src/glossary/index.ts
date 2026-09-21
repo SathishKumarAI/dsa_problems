@@ -23,27 +23,31 @@ export const TERMS: Term[] = [
 ]
 
 /** the topics, for the index page. A topic is a FILE, so this cannot drift. */
-export const TOPICS: { id: string; title: string; blurb: string; terms: Term[] }[] =
-  [
-    {
-      id: "structures",
-      title: "Structures",
-      blurb: "What holds the data, and what each hold costs.",
-      terms: STRUCTURE_TERMS,
-    },
-    {
-      id: "techniques",
-      title: "Techniques",
-      blurb: "The moves — what each one is for, and its tell in a statement.",
-      terms: TECHNIQUE_TERMS,
-    },
-    {
-      id: "complexity",
-      title: "Cost",
-      blurb: "How work is counted, and what the counting hides.",
-      terms: COMPLEXITY_TERMS,
-    },
-  ]
+export const TOPICS: {
+  id: string
+  title: string
+  blurb: string
+  terms: Term[]
+}[] = [
+  {
+    id: "structures",
+    title: "Structures",
+    blurb: "What holds the data, and what each hold costs.",
+    terms: STRUCTURE_TERMS,
+  },
+  {
+    id: "techniques",
+    title: "Techniques",
+    blurb: "The moves — what each one is for, and its tell in a statement.",
+    terms: TECHNIQUE_TERMS,
+  },
+  {
+    id: "complexity",
+    title: "Cost",
+    blurb: "How work is counted, and what the counting hides.",
+    terms: COMPLEXITY_TERMS,
+  },
+]
 
 /**
  * slug and alias → entry.

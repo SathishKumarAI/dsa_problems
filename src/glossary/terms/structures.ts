@@ -25,19 +25,56 @@ export const STRUCTURE_TERMS: Term[] = [
       "What it is NOT is a free lunch on iteration. Walking a hash map is O(capacity), not O(size), and the order you get back is an implementation detail — insertion order in CPython since 3.7 as a language guarantee, arbitrary in Java, arbitrary in C++'s `unordered_map`.",
     ],
     costs: [
-      { op: "lookup, insert, delete", bound: "O(1)", unless: "average case — adversarial or badly distributed keys degrade to O(n)" },
-      { op: "iterate every key", bound: "O(capacity)", unless: "never O(size): a table emptied of a million keys still walks a million slots" },
-      { op: "smallest / sorted keys", bound: "O(n log n)", unless: "you sort them yourself; the structure cannot answer this" },
+      {
+        op: "lookup, insert, delete",
+        bound: "O(1)",
+        unless:
+          "average case — adversarial or badly distributed keys degrade to O(n)",
+      },
+      {
+        op: "iterate every key",
+        bound: "O(capacity)",
+        unless:
+          "never O(size): a table emptied of a million keys still walks a million slots",
+      },
+      {
+        op: "smallest / sorted keys",
+        bound: "O(n log n)",
+        unless: "you sort them yourself; the structure cannot answer this",
+      },
     ],
     trap: "Insert-then-look-up pairs an element with itself. A one-pass two-sum that stores `3` and then asks for `6 − 3` finds its own index; look up first, then insert.",
-    seeAlso: ["hash-function", "collision", "set", "big-o", "amortized-analysis"],
-    reading: [
-      { title: "CPython: how dictionaries are implemented", url: "https://docs.python.org/3/faq/design.html#how-are-dictionaries-implemented-in-cpython", note: "open addressing, from the people who wrote it" },
-      { title: "Python: time complexity of the built-in containers", url: "https://wiki.python.org/moin/TimeComplexity", note: "the amortised table this page's bounds come from" },
-      { title: "Abseil: Swiss tables", url: "https://abseil.io/about/design/swisstables", note: "Google's open-addressing design, and why probing beats chaining on modern hardware" },
-      { title: "Meta engineering: F14, a 14-way probing hash table", url: "https://engineering.fb.com/2019/04/25/developer-tools/f14/", note: "the same trade measured at production scale" },
+    seeAlso: [
+      "hash-function",
+      "collision",
+      "set",
+      "big-o",
+      "amortized-analysis",
     ],
-    source: "Xu & Gunawardane, Coding Interview Patterns (2024), ch. hash maps & sets",
+    reading: [
+      {
+        title: "CPython: how dictionaries are implemented",
+        url: "https://docs.python.org/3/faq/design.html#how-are-dictionaries-implemented-in-cpython",
+        note: "open addressing, from the people who wrote it",
+      },
+      {
+        title: "Python: time complexity of the built-in containers",
+        url: "https://wiki.python.org/moin/TimeComplexity",
+        note: "the amortised table this page's bounds come from",
+      },
+      {
+        title: "Abseil: Swiss tables",
+        url: "https://abseil.io/about/design/swisstables",
+        note: "Google's open-addressing design, and why probing beats chaining on modern hardware",
+      },
+      {
+        title: "Meta engineering: F14, a 14-way probing hash table",
+        url: "https://engineering.fb.com/2019/04/25/developer-tools/f14/",
+        note: "the same trade measured at production scale",
+      },
+    ],
+    source:
+      "Xu & Gunawardane, Coding Interview Patterns (2024), ch. hash maps & sets",
   },
   {
     slug: "hash-function",
@@ -52,8 +89,15 @@ export const STRUCTURE_TERMS: Term[] = [
     trap: "`hash(x)` is not stable across processes for strings in Python — hash randomisation is on by default. Never persist it, never use it as an id.",
     seeAlso: ["hash-map", "collision"],
     reading: [
-      { title: "Hash table (Wikipedia)", url: "https://en.wikipedia.org/wiki/Hash_table" },
-      { title: "Sedgewick & Wayne, Algorithms 4: hash tables", url: "https://algs4.cs.princeton.edu/34hash/", note: "the uniform-hashing assumption stated properly, with the maths" },
+      {
+        title: "Hash table (Wikipedia)",
+        url: "https://en.wikipedia.org/wiki/Hash_table",
+      },
+      {
+        title: "Sedgewick & Wayne, Algorithms 4: hash tables",
+        url: "https://algs4.cs.princeton.edu/34hash/",
+        note: "the uniform-hashing assumption stated properly, with the maths",
+      },
     ],
   },
   {
@@ -69,8 +113,15 @@ export const STRUCTURE_TERMS: Term[] = [
     trap: "Deleting from an open-addressed table by clearing the slot silently breaks every key whose probe ran through it. This is why tombstones exist, and why a table full of tombstones needs a rebuild.",
     seeAlso: ["hash-map", "hash-function"],
     reading: [
-      { title: "Open addressing (Wikipedia)", url: "https://en.wikipedia.org/wiki/Open_addressing" },
-      { title: "java.util.HashMap", url: "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html", note: "states the load factor and the bucket-to-tree threshold in the contract" },
+      {
+        title: "Open addressing (Wikipedia)",
+        url: "https://en.wikipedia.org/wiki/Open_addressing",
+      },
+      {
+        title: "java.util.HashMap",
+        url: "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html",
+        note: "states the load factor and the bucket-to-tree threshold in the contract",
+      },
     ],
   },
   {
@@ -78,14 +129,17 @@ export const STRUCTURE_TERMS: Term[] = [
     term: "set",
     aliases: ["hash set", "seen set"],
     short:
-      "A [[hash map]] with keys and no values: it answers \"have I seen this\" in O(1) and nothing else.",
+      'A [[hash map]] with keys and no values: it answers "have I seen this" in O(1) and nothing else.',
     body: [
-      "Almost every \"is there a duplicate\", \"is this a member\", \"how many distinct\" problem is a set. Reaching for a map when you never read the values costs memory and says the wrong thing to a reader: a set in the code is a claim that only membership matters.",
+      'Almost every "is there a duplicate", "is this a member", "how many distinct" problem is a set. Reaching for a map when you never read the values costs memory and says the wrong thing to a reader: a set in the code is a claim that only membership matters.',
       "The cost profile is the map's, including the parts people forget — no order, O(capacity) iteration, and a worst case that is linear under adversarial keys. A sorted alternative (`SortedSet`, a balanced tree, or just sorting first) trades O(1) membership for the ability to ask for neighbours, which is exactly the trade `longest-consecutive-run` makes on its page.",
     ],
     seeAlso: ["hash-map", "big-o"],
     reading: [
-      { title: "Python: time complexity of set operations", url: "https://wiki.python.org/moin/TimeComplexity" },
+      {
+        title: "Python: time complexity of set operations",
+        url: "https://wiki.python.org/moin/TimeComplexity",
+      },
     ],
   },
   {
@@ -100,15 +154,36 @@ export const STRUCTURE_TERMS: Term[] = [
     ],
     costs: [
       { op: "read or write a[i]", bound: "O(1)" },
-      { op: "append", bound: "O(1)", unless: "amortised — the resize copy is O(n) and lands on one push in n" },
+      {
+        op: "append",
+        bound: "O(1)",
+        unless:
+          "amortised — the resize copy is O(n) and lands on one push in n",
+      },
       { op: "insert or delete in the middle", bound: "O(n)" },
-      { op: "search for a value", bound: "O(n)", unless: "sorted, where [[binary search]] makes it O(log n)" },
+      {
+        op: "search for a value",
+        bound: "O(n)",
+        unless: "sorted, where [[binary search]] makes it O(log n)",
+      },
     ],
     trap: "Deleting while iterating forwards skips elements: removing index i shifts i+1 down into i, and the loop then steps past it. Iterate backwards, or write to a second index.",
-    seeAlso: ["amortized-analysis", "cache-locality", "linked-list", "binary-search"],
+    seeAlso: [
+      "amortized-analysis",
+      "cache-locality",
+      "linked-list",
+      "binary-search",
+    ],
     reading: [
-      { title: "CPython list implementation", url: "https://github.com/python/cpython/blob/main/Objects/listobject.c", note: "the over-allocation growth pattern, in the source" },
-      { title: "Python: time complexity of list operations", url: "https://wiki.python.org/moin/TimeComplexity" },
+      {
+        title: "CPython list implementation",
+        url: "https://github.com/python/cpython/blob/main/Objects/listobject.c",
+        note: "the over-allocation growth pattern, in the source",
+      },
+      {
+        title: "Python: time complexity of list operations",
+        url: "https://wiki.python.org/moin/TimeComplexity",
+      },
     ],
   },
   {
@@ -123,13 +198,27 @@ export const STRUCTURE_TERMS: Term[] = [
     ],
     costs: [
       { op: "insert or delete, given the node before", bound: "O(1)" },
-      { op: "reach position i", bound: "O(i)", unless: "there is no arithmetic that finds the i-th node — this is the cost an array does not pay" },
-      { op: "find a value", bound: "O(n)", unless: "and each step is a pointer hop, so the constant is far worse than an array's O(n) — see [[cache locality]]" },
+      {
+        op: "reach position i",
+        bound: "O(i)",
+        unless:
+          "there is no arithmetic that finds the i-th node — this is the cost an array does not pay",
+      },
+      {
+        op: "find a value",
+        bound: "O(n)",
+        unless:
+          "and each step is a pointer hop, so the constant is far worse than an array's O(n) — see [[cache locality]]",
+      },
     ],
     trap: "Returning `head` after a splice. If the first node can change, the answer is `dummy.next` — `head` went stale the moment anything moved.",
     seeAlso: ["dynamic-array", "two-pointers", "cache-locality"],
     reading: [
-      { title: "Linked list (Wikipedia)", url: "https://en.wikipedia.org/wiki/Linked_list", note: "the variants; the moves this repo teaches are in `docs/RESOURCES.md`" },
+      {
+        title: "Linked list (Wikipedia)",
+        url: "https://en.wikipedia.org/wiki/Linked_list",
+        note: "the variants; the moves this repo teaches are in `docs/RESOURCES.md`",
+      },
     ],
     source: "Khamies, How to Solve Algorithm Problems (2023), ch. 6",
   },
@@ -144,9 +233,18 @@ export const STRUCTURE_TERMS: Term[] = [
       "Python uses a [[dynamic array]] for this (`list.append` / `list.pop`), which is why both ends are not equal: popping the LAST element is O(1), popping the first is O(n) because everything shifts. A `deque` gives you both ends in O(1) and is what a [[queue]] should use.",
     ],
     trap: "Recursion IS a stack, with a limit you did not choose. CPython's default recursion limit is 1000 frames; a DFS over a 10⁵-node path overflows it and the iterative version is the fix, not a bigger limit.",
-    seeAlso: ["queue", "depth-first-search", "monotonic-stack", "dynamic-array"],
+    seeAlso: [
+      "queue",
+      "depth-first-search",
+      "monotonic-stack",
+      "dynamic-array",
+    ],
     reading: [
-      { title: "collections.deque", url: "https://docs.python.org/3/library/collections.html#collections.deque", note: "O(1) at both ends, unlike a list" },
+      {
+        title: "collections.deque",
+        url: "https://docs.python.org/3/library/collections.html#collections.deque",
+        note: "O(1) at both ends, unlike a list",
+      },
     ],
   },
   {
@@ -161,11 +259,18 @@ export const STRUCTURE_TERMS: Term[] = [
     ],
     costs: [
       { op: "enqueue / dequeue on a deque", bound: "O(1)" },
-      { op: "dequeue with `list.pop(0)`", bound: "O(n)", unless: "never use it; this is the classic accidental quadratic" },
+      {
+        op: "dequeue with `list.pop(0)`",
+        bound: "O(n)",
+        unless: "never use it; this is the classic accidental quadratic",
+      },
     ],
     seeAlso: ["stack", "breadth-first-search", "heap"],
     reading: [
-      { title: "collections.deque", url: "https://docs.python.org/3/library/collections.html#collections.deque" },
+      {
+        title: "collections.deque",
+        url: "https://docs.python.org/3/library/collections.html#collections.deque",
+      },
     ],
   },
   {
@@ -181,13 +286,25 @@ export const STRUCTURE_TERMS: Term[] = [
     costs: [
       { op: "read the best element", bound: "O(1)" },
       { op: "push / pop", bound: "O(log n)" },
-      { op: "build from an existing array", bound: "O(n)", unless: "pushing one at a time instead, which is O(n log n)" },
-      { op: "find an arbitrary element", bound: "O(n)", unless: "you kept an external index; a heap cannot search" },
+      {
+        op: "build from an existing array",
+        bound: "O(n)",
+        unless: "pushing one at a time instead, which is O(n log n)",
+      },
+      {
+        op: "find an arbitrary element",
+        bound: "O(n)",
+        unless: "you kept an external index; a heap cannot search",
+      },
     ],
     trap: "Python's `heapq` is a MIN-heap only. For a max-heap, push negated values — and remember to negate them back, including inside comparisons on tuples.",
     seeAlso: ["queue", "big-o", "binary-search-tree"],
     reading: [
-      { title: "heapq — the heap invariant, and `nlargest`", url: "https://docs.python.org/3/library/heapq.html", note: "the docs state the O(n) heapify and when nlargest beats sorting" },
+      {
+        title: "heapq — the heap invariant, and `nlargest`",
+        url: "https://docs.python.org/3/library/heapq.html",
+        note: "the docs state the O(n) heapify and when nlargest beats sorting",
+      },
     ],
   },
   {
@@ -201,12 +318,26 @@ export const STRUCTURE_TERMS: Term[] = [
       "O(height) is O(log n) only if the tree is balanced. Insert sorted data into a plain BST and it degenerates into a [[linked list]] with O(n) operations — the reason real libraries ship red-black or AVL trees, and the reason a [[hash map]] is usually the better answer unless you need ordered traversal, ranges, or the nearest key.",
     ],
     costs: [
-      { op: "search / insert / delete", bound: "O(log n)", unless: "unbalanced, where it is O(n) — sorted input is the usual cause" },
-      { op: "in-order traversal", bound: "O(n)", unless: "and it yields the keys in sorted order, which is the thing a hash map cannot do" },
+      {
+        op: "search / insert / delete",
+        bound: "O(log n)",
+        unless:
+          "unbalanced, where it is O(n) — sorted input is the usual cause",
+      },
+      {
+        op: "in-order traversal",
+        bound: "O(n)",
+        unless:
+          "and it yields the keys in sorted order, which is the thing a hash map cannot do",
+      },
     ],
     seeAlso: ["hash-map", "depth-first-search", "linked-list"],
     reading: [
-      { title: "Binary search tree (Wikipedia)", url: "https://en.wikipedia.org/wiki/Binary_search_tree", note: "the invariant stated globally, which is the half people drop" },
+      {
+        title: "Binary search tree (Wikipedia)",
+        url: "https://en.wikipedia.org/wiki/Binary_search_tree",
+        note: "the invariant stated globally, which is the half people drop",
+      },
     ],
   },
   {
@@ -216,13 +347,21 @@ export const STRUCTURE_TERMS: Term[] = [
     short:
       "A tree keyed by the characters of a string, so every node IS a prefix and finding all words starting with one is a walk down the path that spells it.",
     body: [
-      "A [[hash map]] answers \"is this exact word present\" faster. A trie answers a question the map cannot: \"which words start with this\", and it answers it without scanning the dictionary. Autocomplete, IP routing tables and wildcard matching are all this shape. The cost of a lookup is O(length of the key) and — this is the part that matters — independent of how many words are stored.",
+      'A [[hash map]] answers "is this exact word present" faster. A trie answers a question the map cannot: "which words start with this", and it answers it without scanning the dictionary. Autocomplete, IP routing tables and wildcard matching are all this shape. The cost of a lookup is O(length of the key) and — this is the part that matters — independent of how many words are stored.',
       "The space cost is real: a node per character per distinct prefix, each with a child map. For 10⁵ words of length 10 that is millions of pointers, and the usual answer is either a compressed trie (a radix tree, collapsing single-child chains) or admitting a hash map was enough.",
     ],
     costs: [
-      { op: "insert / search a key of length L", bound: "O(L)", unless: "independent of the number of keys stored" },
+      {
+        op: "insert / search a key of length L",
+        bound: "O(L)",
+        unless: "independent of the number of keys stored",
+      },
       { op: "all keys with a prefix", bound: "O(L + size of the subtree)" },
-      { op: "space", bound: "O(total characters)", unless: "compressed, which collapses single-child chains" },
+      {
+        op: "space",
+        bound: "O(total characters)",
+        unless: "compressed, which collapses single-child chains",
+      },
     ],
     seeAlso: ["hash-map", "depth-first-search"],
     reading: [
@@ -234,19 +373,35 @@ export const STRUCTURE_TERMS: Term[] = [
     term: "union-find",
     aliases: ["disjoint set union", "dsu", "disjoint-set"],
     short:
-      "A structure that answers \"are these two in the same group\" and \"merge these two groups\" in near-constant time, without ever building the groups.",
+      'A structure that answers "are these two in the same group" and "merge these two groups" in near-constant time, without ever building the groups.',
     body: [
       "Each element points at a parent; the root names the group. Two optimisations are what make it fast, and both are required: path compression (every node touched by a find is re-pointed straight at the root) and union by rank or size (the smaller tree is hung under the larger). With both, m operations on n elements cost O(m·α(n)), where α is the inverse Ackermann function and is below 5 for any n that fits in this universe.",
       "Reach for it when connectivity is built up incrementally — counting provinces, detecting the edge that creates a cycle, Kruskal's minimum spanning tree. It cannot do the thing a [[graph]] traversal does: it knows WHETHER two nodes are connected, never the path between them, and it cannot un-merge.",
     ],
     costs: [
-      { op: "find / union, with both optimisations", bound: "O(α(n))", unless: "effectively constant; without path compression it is O(log n), without either O(n)" },
-      { op: "the path between two nodes", bound: "—", unless: "it cannot answer this at all; use [[breadth-first search]]" },
+      {
+        op: "find / union, with both optimisations",
+        bound: "O(α(n))",
+        unless:
+          "effectively constant; without path compression it is O(log n), without either O(n)",
+      },
+      {
+        op: "the path between two nodes",
+        bound: "—",
+        unless: "it cannot answer this at all; use [[breadth-first search]]",
+      },
     ],
     seeAlso: ["graph", "breadth-first-search"],
     reading: [
-      { title: "Disjoint-set data structure (Wikipedia)", url: "https://en.wikipedia.org/wiki/Disjoint-set_data_structure" },
-      { title: "Sedgewick & Wayne: union-find", url: "https://algs4.cs.princeton.edu/15uf/", note: "the cost of each variant measured, not asserted" },
+      {
+        title: "Disjoint-set data structure (Wikipedia)",
+        url: "https://en.wikipedia.org/wiki/Disjoint-set_data_structure",
+      },
+      {
+        title: "Sedgewick & Wayne: union-find",
+        url: "https://algs4.cs.princeton.edu/15uf/",
+        note: "the cost of each variant measured, not asserted",
+      },
     ],
   },
   {
@@ -257,16 +412,28 @@ export const STRUCTURE_TERMS: Term[] = [
       "Nodes and the edges between them — the shape of anything relational, and the structure a grid, a dependency list and a social network all secretly are.",
     body: [
       "Most problems that look like graph problems never say the word. A grid is a graph whose neighbours are the four cells around a cell; a course-prerequisite list is a directed graph; a word ladder is a graph whose edges are one-letter changes. Recognising the shape is most of the work, and it is what makes [[breadth-first search]] and [[depth-first search]] apply.",
-      "Representation decides cost. An adjacency list (a map from node to its neighbours) is O(V + E) space and is right for the sparse graphs interviews use. An adjacency matrix is O(V²) and only pays when the graph is dense or you need \"is there an edge between exactly these two\" in O(1).",
+      'Representation decides cost. An adjacency list (a map from node to its neighbours) is O(V + E) space and is right for the sparse graphs interviews use. An adjacency matrix is O(V²) and only pays when the graph is dense or you need "is there an edge between exactly these two" in O(1).',
     ],
     costs: [
       { op: "visit everything, adjacency list", bound: "O(V + E)" },
-      { op: "visit everything, adjacency matrix", bound: "O(V²)", unless: "the graph is dense, where the two coincide" },
+      {
+        op: "visit everything, adjacency matrix",
+        bound: "O(V²)",
+        unless: "the graph is dense, where the two coincide",
+      },
     ],
     trap: "A visited set is not optional and it must be marked on ENQUEUE, not on dequeue — marking on dequeue lets the same node enter the queue many times and turns a linear BFS quadratic.",
-    seeAlso: ["breadth-first-search", "depth-first-search", "union-find", "topological-sort"],
+    seeAlso: [
+      "breadth-first-search",
+      "depth-first-search",
+      "union-find",
+      "topological-sort",
+    ],
     reading: [
-      { title: "Breadth-first search (Wikipedia)", url: "https://en.wikipedia.org/wiki/Breadth-first_search" },
+      {
+        title: "Breadth-first search (Wikipedia)",
+        url: "https://en.wikipedia.org/wiki/Breadth-first_search",
+      },
     ],
   },
 ]

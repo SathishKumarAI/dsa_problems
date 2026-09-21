@@ -14,8 +14,12 @@ import assert from "node:assert/strict"
 import { describe, test } from "node:test"
 import { TERMS, TOPICS, backlinksOf, termLinksIn, termOf } from "./index.ts"
 
-const ALL_PROSE = (t: (typeof TERMS)[number]) =>
-  [t.short, ...t.body, t.trap ?? "", ...(t.costs ?? []).map((c) => `${c.op} ${c.unless ?? ""}`)]
+const ALL_PROSE = (t: (typeof TERMS)[number]) => [
+  t.short,
+  ...t.body,
+  t.trap ?? "",
+  ...(t.costs ?? []).map((c) => `${c.op} ${c.unless ?? ""}`),
+]
 
 describe("glossary", () => {
   test("every slug is unique, and so is every alias", () => {
@@ -67,7 +71,10 @@ describe("glossary", () => {
   test("every see-also names an entry that exists", () => {
     for (const t of TERMS) {
       for (const s of t.seeAlso ?? []) {
-        assert.ok(termOf(s), `${t.slug} sees also "${s}", which is not an entry`)
+        assert.ok(
+          termOf(s),
+          `${t.slug} sees also "${s}", which is not an entry`
+        )
       }
     }
   })

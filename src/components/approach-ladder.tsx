@@ -9,6 +9,7 @@
 import { ComplexityMark } from "@/components/ui/tick-meter"
 import { Band } from "@/components/ui/band"
 import { cn } from "@/lib/utils"
+import { TermProse } from "./glossary/term-prose"
 import type { Code, Problem } from "@/data"
 import type { AnyJourney } from "@/engine"
 import { compareHref } from "@/lib/ladder"
@@ -274,7 +275,11 @@ export function ApproachLadder({
                   — how that was counted
                 </summary>
                 <p className="max-w-measure pt-2 prose-set text-body text-muted-foreground">
-                  {r.costWhy}
+                  {/* THROUGH THE INLINE RENDERER, so `[[hash map]]` is a link
+                      to its definition. Safe here and nowhere above: this sits
+                      inside a rung the ledger has already handed over, so a
+                      technique name cannot spoil a journey in flight. */}
+                  <TermProse.Inline text={r.costWhy} />
                 </p>
               </details>
             )}
@@ -381,7 +386,9 @@ export function ApproachLadder({
           <div className="flex max-w-measure flex-col gap-3 border-t border-border/60 pt-4">
             <p className="prose-set text-body text-muted-foreground">
               <span className="font-semibold text-foreground">The arc.</span>{" "}
-              {problem.arc}
+              {/* the arc renders only when the ladder is NOT capped, which is
+                  what makes a glossary link safe here */}
+              <TermProse.Inline text={problem.arc} />
             </p>
             {/* The document's own arc, UNDER the record's. They are the same
                 job — the same three rungs, the same trade, the same closing

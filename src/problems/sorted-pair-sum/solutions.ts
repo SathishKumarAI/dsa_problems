@@ -93,7 +93,7 @@ export const alternatives: Solution[] = [
       "The unsorted-array solution still works: remember each value's index and look up the complement. Linear, and it spends O(n) memory to ignore the one thing this input hands you free. Sortedness means a comparison tells you about everything you have not looked at, and a map throws that away.",
     complexity: { time: "O(n)", space: "O(n)" },
     costWhy:
-      "One pass, one lookup and one insert per element, both O(1) on average \u2014 the same count as the unsorted sibling problem, because this is literally that solution. The O(n) space is the map, and on this page that is disqualifying rather than merely unfortunate: the statement requires O(1) extra space. Worth keeping on the ladder anyway, as the rung that shows what the sortedness is WORTH \u2014 the same time, none of the memory.",
+      "One pass, one lookup and one insert per element, both O(1) on average \u2014 the same count as the unsorted sibling problem, because this is literally that solution. The O(n) space is [[hash map|the map]], and on this page that is disqualifying rather than merely unfortunate: the statement requires O(1) extra space. Worth keeping on the ladder anyway, as the rung that shows what the sortedness is WORTH \u2014 the same time, none of the memory.",
     python: `def sorted_pair_sum(nums: list[int], target: int) -> list[int]:
     seen: dict[int, int] = {}
     for i, x in enumerate(nums):
