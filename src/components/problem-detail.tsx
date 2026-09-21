@@ -268,6 +268,7 @@ function ProblemPage({
             if (next) setOpened(true)
           }}
           onBack={onBack}
+          sections={sections}
         />
 
         {/* ZONE 2 · ACT — the brief, the climb, and the three things you can
