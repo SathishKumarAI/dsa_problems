@@ -101,7 +101,7 @@ export interface Check {
 }
 
 /**
- * A bound, drawn — see `components/constraint-figure.tsx`.
+ * A bound, drawn — see `components/figure/constraint-figure.tsx`.
  *
  * AUTHORED, never inferred. A number that appears in a constraint string is not
  * a number a chart may assume it understands: `10^5` is a length, `10^9` is a

@@ -101,6 +101,18 @@
      page sideways). */
   --container-measure: 48rem; /* 768 — the reading column; prose fills it */
 
+  /* THE FIGURE CAP, and why it is a cap and not a size.
+     A drawing inside a reading flow has one job: to be looked at without
+     losing the sentence that sent you to it. Giving every figure a fixed box
+     pads the short ones and squashes the tall ones — both read as a template
+     rather than as a drawing of this bound. So the figure takes the height its
+     own content asks for, and only the ones taller than this get cut off, with
+     a way to open them at full size. One token, so the ceiling moves in one
+     edit; `--figure-inline-tall` is the same rule on a wide viewport, where a
+     reader can spare the screen. */
+  --figure-inline: 14rem; /* 224 — a figure inside the reading flow */
+  --figure-inline-tall: 20rem; /* 320 — the same, from `lg` up          */
+
   /* three container widths, so a new page has an obvious one to pick */
   --container-reading: 48rem; /* 768 — a single document              */
   --container-page: 70rem; /* 1120 — an index or an overview       */

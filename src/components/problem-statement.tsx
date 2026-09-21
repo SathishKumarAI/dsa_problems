@@ -18,7 +18,7 @@
 // that is `example-viewer.tsx` — and it decides nothing about the ladder.
 import { ExampleViewer } from "./example-viewer"
 import { runsOf } from "@/lib/notation"
-import { ConstraintFigureView } from "./constraint-figure"
+import { ConstraintFigureView, FigureFrame } from "@/components/figure"
 import { cn } from "@/lib/utils"
 import type { Problem } from "@/data"
 
@@ -128,10 +128,19 @@ function Constraints({ problem }: { problem: Problem }) {
                 figure is authored per constraint — never inferred from the
                 string, because 10^5 is a length and 10^9 is a value, and a
                 chart that guessed which would eventually draw a confident
-                lie. See `constraint-figure.tsx`. */}
+                lie. See `figure/constraint-figure.tsx`. */}
             {unlock?.figure && (
               <div className="border-t pt-3">
-                <ConstraintFigureView figure={unlock.figure} />
+                {/* FRAMED, so a drawing cannot cost more of the screen than
+                    the sentence it is illustrating. The frame caps the height
+                    and offers the figure at full size; it does not decide
+                    what the figure IS. See `figure/README.md`. */}
+                <FigureFrame
+                  label="the bound, drawn"
+                  caption={what ?? runsOf(c).map((r) => r.text).join("")}
+                >
+                  <ConstraintFigureView figure={unlock.figure} />
+                </FigureFrame>
               </div>
             )}
             {what && (
