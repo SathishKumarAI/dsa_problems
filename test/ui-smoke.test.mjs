@@ -1192,6 +1192,67 @@ describe(
       assert.deepEqual(page.errors(), [], "the climb logged errors")
     })
 
+    // A drawing inside a reading flow costs screen, and the screen it costs
+    // is the sentence that sent the reader to it. The frame caps the height
+    // and offers the figure at full size; this asserts BOTH halves, because
+    // a cap with no way out is content hidden and a way out with no cap is
+    // the old behaviour with a button on it.
+    test("a figure is capped while reading and opens at full size", async () => {
+      await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
+      const read = `
+        const fig = document.querySelector('[data-figure]');
+        if (!fig) return { figures: 0 };
+        const body = fig.querySelector('[data-figure-body]');
+        const cap = parseFloat(getComputedStyle(body).maxHeight);
+        return {
+          figures: document.querySelectorAll('[data-figure]').length,
+          cap,
+          height: Math.round(body.getBoundingClientRect().height),
+          content: body.scrollHeight,
+          button: !!fig.querySelector('button'),
+        };
+      `
+      const inline = await page.run(read)
+      assert.ok(inline.figures > 0, "no figure on the page that owns figures")
+      assert.ok(
+        Number.isFinite(inline.cap),
+        "the figure body has no cap at all"
+      )
+      assert.ok(
+        inline.height <= inline.cap + 1,
+        `a figure escaped its cap: ${inline.height} > ${inline.cap}`
+      )
+      // THE CAP IS A MAXIMUM, NOT A SIZE. A figure whose content is shorter
+      // than the cap must keep its own height - a box everything is padded to
+      // is the template look this frame exists to avoid.
+      if (inline.content < inline.cap - 1) {
+        assert.ok(
+          Math.abs(inline.height - inline.content) <= 1,
+          `a short figure was padded to the cap: ${inline.content} -> ${inline.height}`
+        )
+      }
+      assert.ok(inline.button, "no way to open the figure at full size")
+
+      const full = await page.run(`
+        document.querySelector('[data-figure] button').click();
+        return new Promise(r => setTimeout(() => r((() => {
+          const shown = document.querySelector('[data-figure-full]');
+          if (!shown) return { open: false };
+          const box = shown.getBoundingClientRect();
+          return {
+            open: true,
+            width: Math.round(box.width),
+            height: Math.round(box.height),
+            capped: getComputedStyle(shown).maxHeight,
+          };
+        })()), 400));
+      `)
+      assert.equal(full.open, true, "full size did not open")
+      assert.equal(full.capped, "none", "the full-size figure is capped too")
+      assert.ok(full.height > 0, "the full-size figure drew nothing")
+      assert.deepEqual(page.errors(), [], "the figure frame logged errors")
+    })
+
     test("the problem page masks a pattern its journey has not revealed (B45)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(`
