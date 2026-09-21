@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils"
 import { difficultyClass } from "@/lib/difficulty"
 import { MASKED_NAME } from "@/lib/disclosure"
 import type { Pattern, Problem } from "@/data"
+import { SectionsMenu } from "./sections-menu"
+import type { SectionEntry } from "./sections-menu"
 
 export function OrientZone({
   problem,
@@ -27,6 +29,7 @@ export function OrientZone({
   expandAll,
   onExpandAll,
   onBack,
+  sections,
 }: {
   problem: Problem
   pattern: Pattern
@@ -39,6 +42,8 @@ export function OrientZone({
   expandAll: boolean
   onExpandAll: (next: boolean) => void
   onBack: () => void
+  /** the page's own bands, for the widths where there is no contents rail */
+  sections: SectionEntry[]
 }) {
   return (
     <>
@@ -86,6 +91,12 @@ export function OrientZone({
             <ArrowLeftIcon data-icon="inline-start" />
             {hidden ? MASKED_NAME : pattern.name}
           </Button>
+          {/* NAVIGATION, for the widths that have none. The contents rail
+            is `xl` and up; below that a thirty-screen page offered no way
+            to reach the approaches except scrolling past everything above
+            them. Same array as the rail, so it cannot offer a section the
+            page did not draw. */}
+          <SectionsMenu sections={sections} className="ml-auto xl:hidden" />
           {/* In the STICKY bar on purpose: a switch that opens the whole page is
       useless if you have to scroll back to the top to reach it. */}
           <button
@@ -96,7 +107,7 @@ export function OrientZone({
             // only reports the press (`onExpandAll` in `problem-detail.tsx`)
             onClick={() => onExpandAll(!expandAll)}
             className={cn(
-              "ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7",
+              "inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7 xl:ml-auto",
               expandAll
                 ? "border-edge/60 bg-accent text-foreground"
                 : "text-muted-foreground hover:border-edge/40 hover:text-foreground"

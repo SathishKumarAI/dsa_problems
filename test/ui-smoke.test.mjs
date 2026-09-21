@@ -2835,6 +2835,76 @@ describe(
       assert.deepEqual(page.errors(), [], "the debt band logged errors")
     })
 
+    // The contents rail is xl and up. Below that a problem page runs to about
+    // thirty screens with no navigation at all, so the approaches are only
+    // reachable by scrolling past everything above them. This asserts the menu
+    // exists exactly where the rail does not, and that pressing an entry
+    // SCROLLS rather than navigating - a bare `#id` href is a route change in
+    // a hash-routed app, which is the trap this repo has paid for before.
+    test("a phone gets the page's sections, and a jump scrolls", async () => {
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
+      const small = await page.run(`
+        const btn = document.querySelector('[data-sections-menu]');
+        return {
+          present: !!btn,
+          height: btn ? Math.round(btn.getBoundingClientRect().height) : 0,
+        };
+      `)
+      assert.equal(small.present, true, "no sections menu at 390px")
+      assert.ok(
+        small.height >= 44,
+        `the sections menu is ${small.height}px, under the touch floor`
+      )
+
+      const jumped = await page.run(`
+        document.querySelector('[data-sections-menu]').click();
+        await new Promise(r => setTimeout(r, 400));
+        const links = [...document.querySelectorAll('nav[aria-label="sections"] a')];
+        const before = { hash: location.hash, y: window.scrollY, count: links.length };
+        const target = links.find(a => a.getAttribute('href') === '#approaches') || links.at(-1);
+        const id = target.getAttribute('href').slice(1);
+        target.click();
+        await new Promise(r => setTimeout(r, 900));
+        return {
+          ...before,
+          after: location.hash,
+          movedTo: Math.round(window.scrollY),
+          // it must land BELOW the sticky bar, not under it
+          top: Math.round(document.getElementById(id).getBoundingClientRect().top),
+        };
+      `)
+      assert.ok(jumped.count >= 3, `the menu listed ${jumped.count} sections`)
+      assert.equal(
+        jumped.after,
+        jumped.hash,
+        "a section jump changed the route instead of scrolling"
+      )
+      assert.ok(jumped.movedTo > 0, "a section jump did not scroll anywhere")
+      assert.ok(
+        jumped.top >= 0,
+        `the section landed ${jumped.top}px above the viewport, under the bar`
+      )
+
+      // and it is ABSENT at xl, where the rail carries the same list
+      await page.resize(1440, 1000)
+      await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
+      const wide = await page.run(`
+        const btn = document.querySelector('[data-sections-menu]');
+        return {
+          drawn: !!btn && btn.getBoundingClientRect().height > 0,
+          rail: !!document.querySelector('nav[aria-label="contents"]'),
+        };
+      `)
+      assert.equal(wide.rail, true, "no contents rail at 1440")
+      assert.equal(
+        wide.drawn,
+        false,
+        "the phone menu is drawn at xl, where the rail already lists the same sections"
+      )
+      assert.deepEqual(page.errors(), [], "the sections menu logged errors")
+    })
+
     // The glossary is the reference half of the site: a reader arrives from a
     // word in a sentence, reads one screen, goes back. Three things have to
     // hold for that to work at all — the index lists the entries, an entry
