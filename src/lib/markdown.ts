@@ -60,7 +60,13 @@ export function inlineSpans(text: string): Span[] {
     // A WIKI LINK, matched before the markdown one. `[[target]]`, or
     // `[[target|what to show]]` when the sentence needs a different word
     // than the entry's own name.
-    const term = /^\[\[([^\]|]+)(?:\|([^\]]+))?\]\]$/.exec(piece)
+    // A TERM STARTS WITH A LETTER. The corpus is full of nested array
+    // literals — `[[1, 5]]`, `[[0]]`, `[[-5]]` in 16 record fields today —
+    // and a rule that takes any `[[…]]` turns one of those into a link whose
+    // text is the inner value, silently dropping the brackets. None of those
+    // fields renders through this parser YET, which is exactly why the guard
+    // goes in now rather than after someone routes one through it.
+    const term = /^\[\[([A-Za-z][^\][|]*)(?:\|([^\]]+))?\]\]$/.exec(piece)
     if (piece.length > 1 && piece.startsWith("`") && piece.endsWith("`")) {
       out.push({ kind: "code", text: piece.slice(1, -1) })
     } else if (term) {
