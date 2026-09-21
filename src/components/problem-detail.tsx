@@ -17,43 +17,34 @@
 // caps the walkthrough the same way. Hints stay collapsed because that gate
 // belongs to the learner, not to the page.
 import {
-  ArrowLeftIcon,
-  ExternalLinkIcon,
-  RouteIcon,
-  ScrollTextIcon,
-} from "lucide-react"
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Band, Fact, OrientBar } from "@/components/ui/band"
-import { ComplexityMark, DifficultyMeter } from "@/components/ui/tick-meter"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Band } from "@/components/ui/band"
 import { cn } from "@/lib/utils"
 import { PROBLEMS } from "@/data"
 import type { Pattern, Problem } from "@/data"
 import { earnedOf, toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
-import { MASKED_NAME, usePatternMask } from "@/lib/disclosure"
+import { usePatternMask } from "@/lib/disclosure"
 import { useReadingRoom } from "@/lib/use-reading-room"
-import { ladderOf, leetcodeUrl, parseCompare } from "@/lib/ladder"
-import { TheClimb } from "./the-climb"
+import { ladderOf, parseCompare } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 // `href` went with the journey link: the primary action is a button now
 import { navigate, useRoute } from "@/lib/route"
 import { useEffect, useState } from "react"
-import { ExplanationBody } from "./explanation"
 import { useExplanation } from "@/lib/use-explanation"
-import { foldDoc } from "@/lib/doc-sections"
 import { Markdown } from "./markdown"
 import BINDINGS from "@/data/rung-bindings.json"
+import { pageShapeOf } from "./problem/page-sections"
+import { OrientZone } from "./problem/orient-zone"
+import { ActZone } from "./problem/act-zone"
+import { CompareView } from "./problem/compare-view"
+import { ClosingBands } from "./problem/closing-bands"
 import { MiniPlayer } from "@/features/journey/mini-player"
 import { JourneyEmbed } from "./journey-embed"
-import { ApproachCompare } from "./approach-compare"
-import { difficultyClass } from "@/lib/difficulty"
 import { StepPlayer } from "./step-player"
 import { ApproachLadder } from "./approach-ladder"
 import { ContentsRail, ReadFurther } from "./problem-closing"
@@ -200,149 +191,36 @@ function ProblemPage({
   // page. Everything else on this page is the context they just came from.
   if (pair)
     return (
-      <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
-        {/* hides while reading, same as the page's own bar below */}
-        <OrientBar
-          className={cn(
-            "transition-[transform,opacity] duration-(--duration-reveal)",
-            room.reading
-              ? "pointer-events-none invisible -translate-y-full opacity-0"
-              : "translate-y-0 opacity-100"
-          )}
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => compare("")}
-            className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
-          >
-            <ArrowLeftIcon data-icon="inline-start" />
-            {problem.title}
-          </Button>
-          <Fact label="comparing">
-            <span className="font-mono">
-              {pair[0].key} · {pair[1].key}
-            </span>
-          </Fact>
-        </OrientBar>
-        <ApproachCompare
-          pair={pair}
-          rungs={ladder.rungs}
-          onPick={compare}
-          onBack={() => compare("")}
-        />
-      </div>
+      <CompareView
+        problem={problem}
+        pair={pair}
+        rungs={ladder.rungs}
+        reading={room.reading}
+        onPick={compare}
+      />
     )
 
-  // ── THE FOLD ──────────────────────────────────────────────────────────
-  // The document's per-approach half belongs to the rungs, not to a second
-  // pass over the same ladder at the foot of the page. `foldDoc` splits it;
-  // the ladder renders `byRung`, and the section below renders what is left.
-  //
-  // Only the Markdown documents for now. The typed half already stores one
-  // file per rung (`src/problems/<id>/approaches/<rung>.ts`), so folding that
-  // is a field read rather than a parse — a different branch.
-  const binding = (BINDINGS as Record<string, (string | null)[]>)[problem.id]
-  const folded =
-    explanation.present &&
-    explanation.ready &&
-    explanation.kind === "markdown" &&
-    binding
-      ? foldDoc(
-          explanation.blocks,
-          binding,
-          // a rung whose costWhy is authored already says where its bound comes
-          // from; one without it must keep the document's own account
-          new Set(ladder.rungs.filter((r) => r.costWhy).map((r) => r.key)),
-          // the page draws every bound as a card with a figure, so the
-          // document's own constraints table is the same content twice
-          (problem.unlocks?.length ?? 0) > 0,
-          // and the ladder closes on `arc`, so the document's own arc section
-          // is the same job in more words — it folds under that line instead
-          Boolean(problem.arc)
-        )
-      : null
-
-  /**
-   * One section of the document, by the heading it was written under — so the
-   * page can put it beside the thing it is about.
-   *
-   * Matching on the TITLE rather than an index: a document that gains a section
-   * should not silently shift every other one into the wrong place, and one
-   * that is missing a section should render nothing rather than its neighbour.
-   */
-  const docSection = (re: RegExp) =>
-    folded?.sections.find((x) => re.test(x.title.trim()))
-  const placed = new Set<string>()
-  const take = (re: RegExp) => {
-    const hit = docSection(re)
-    if (hit) placed.add(hit.title)
-    return hit
-  }
-  const understanding = take(/^understanding the problem$/i)
-  const calculations = take(/^reading the calculations$/i)
-  const comparison = take(/^comparison$/i)
-  const extraApproaches = folded?.sections.filter((x) => {
-    const isApproach = /^approach(\s|$)/i.test(x.title.trim())
-    if (isApproach) placed.add(x.title)
-    return isApproach
+  // THE PAGE'S SHAPE — which sections exist, where each half of the document
+  // goes, and therefore what the rail may offer. Extracted whole into a plain
+  // `.ts` so a node test can hold the rail invariant: this component cannot be
+  // loaded by `node --test`, and a rule that must fail the build cannot live
+  // somewhere the build's tests cannot reach it (`problem/page-sections.ts`).
+  const {
+    folded,
+    understanding,
+    calculations,
+    comparison,
+    extraApproaches,
+    closing,
+    sections,
+    outline,
+  } = pageShapeOf({
+    problem,
+    rungs: ladder.rungs,
+    hasJourney: !!journey,
+    explanation,
   })
-  // whatever the document carries that this page has no better home for — the
-  // interview script, the fluency drills, the runnable script
-  const closing = folded?.sections.filter(
-    (x) => x.title && !placed.has(x.title)
-  )
-
-  // The page's OWN sections, in the order it renders them — the same
-  // conditions, so the rail can never offer a section the page did not draw.
-  // It used to list only the document's headings, which need a fetch, so the
-  // right column stood empty on arrival and filled only once the reader opened
-  // the long read: 317px of dead width on the page's most common state.
-  const sections = [
-    { id: "the-problem", text: "The problem", level: 2 as const },
-    ...(problem.checks?.length
-      ? [
-          {
-            id: "before-you-solve-it",
-            text: "Before you solve it",
-            level: 2 as const,
-          },
-        ]
-      : []),
-    { id: "hints", text: "Hints", level: 2 as const },
-    ...(journey || problem.walkthrough
-      ? [{ id: "walkthrough", text: "Walkthrough", level: 2 as const }]
-      : []),
-    ...(calculations
-      ? [
-          {
-            id: "reading-the-calculations",
-            text: "Reading the calculations",
-            level: 2 as const,
-          },
-        ]
-      : []),
-    { id: "approaches", text: "Approaches", level: 2 as const },
-    // NOT "the same move, elsewhere". This rail only exists from xl, and from
-    // xl that section is `xl:hidden` because the rail carries the list itself —
-    // so an entry here would offer a jump to something invisible. The rail may
-    // never name a section the page did not draw.
-    ...(closing?.length
-      ? [{ id: "explanation", text: "Taking it with you", level: 2 as const }]
-      : []),
-  ]
-
-  // the rail lists what the SECTION renders, which is now the shared half
-  // NO second list. The document's sections used to be a rail group of their
-  // own because they all lived behind one door; they are placed through the
-  // page now, so `sections` above already names every heading a reader can
-  // jump to. A typed document still has its own outline, because it still
-  // renders whole.
-  const outline = folded
-    ? []
-    : explanation.present && explanation.ready
-      ? explanation.outline
-      : []
+  const binding = (BINDINGS as Record<string, (string | null)[]>)[problem.id]
 
   return (
     <div className="mx-auto flex w-full max-w-(--container-page) gap-10">
@@ -372,216 +250,43 @@ function ProblemPage({
           room.reading ? "max-w-(--container-page)" : "max-w-reading"
         )}
       >
-        {/* ── ZONE 1 · ORIENT ─────────────────────────────────────────────
-          Four facts, one row: where am I, how hard is it, what do I have to
-          beat, have I done it. Each changes what you do in the next thirty
-          seconds; nothing else qualified.
+        {/* ZONE 1 · ORIENT — four facts in one sticky band, and the two
+          page-level switches. `problem/orient-zone.tsx` owns how they are
+          said; this page still owns what is true. */}
+        <OrientZone
+          problem={problem}
+          pattern={pattern}
+          hidden={hidden}
+          reading={room.reading}
+          solved={solved.has(problem.id)}
+          onToggleSolved={() => toggleSolved(problem.id)}
+          expandAll={expandAll}
+          onExpandAll={(next) => {
+            setExpandAll(next)
+            // the long read is fetched, not merely hidden, so asking for
+            // everything has to ask for it too
+            if (next) setOpened(true)
+          }}
+          onBack={onBack}
+        />
 
-          What was here before: a 28px back-link band, the difficulty badge up
-          in the title row, and a THIRD row under the buttons carrying the
-          glyph, the time, the space and the solved box. Three bands all
-          answering "what is this", none of them together.
-
-          The glyph is gone — it restated the pattern the back link already
-          names and spent the accent doing it. The mask still holds: the back
-          link is what renders `· · ·` while a journey is mid-flight (B45). */}
-        {/* THE BAR GETS OUT OF THE WAY WHILE YOU READ, on the gesture the two
-          sidebars use — see `lib/use-reading-room.ts`. It SLIDES rather than
-          disappearing: a sticky bar that vanishes reads as a rendering fault,
-          and one that moves reads as making room. `invisible` lands only at
-          the end of the travel, so it cannot be tabbed into while it is off
-          screen but is still animating on the way there. */}
-        <OrientBar
-          className={cn(
-            "transition-[transform,opacity] duration-(--duration-reveal)",
-            room.reading
-              ? "pointer-events-none invisible -translate-y-full opacity-0"
-              : "translate-y-0 opacity-100"
-          )}
-        >
-          {/* TWO ROWS ON PURPOSE. Measured at 1440 with both columns open the
-            reading column is 830px and this row wants ~1040, so it wrapped —
-            and a wrap puts the break wherever it lands. It landed between the
-            two FACTS: "difficulty" beside the title, "target" under the back
-            link, which reads as an accident rather than as a header. Named
-            rows put the break where it belongs — the trail and the page-level
-            switches above, the name and its facts below. */}
-          <div className="flex w-full items-center gap-x-5 gap-y-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="-ml-2 min-h-11 text-muted-foreground lg:min-h-7"
-            >
-              <ArrowLeftIcon data-icon="inline-start" />
-              {hidden ? MASKED_NAME : pattern.name}
-            </Button>
-            {/* In the STICKY bar on purpose: a switch that opens the whole page is
-            useless if you have to scroll back to the top to reach it. */}
-            <button
-              type="button"
-              aria-pressed={expandAll}
-              onClick={() => {
-                const next = !expandAll
-                setExpandAll(next)
-                // the long read is fetched, not merely hidden, so asking for
-                // everything has to ask for it too
-                if (next) setOpened(true)
-              }}
-              className={cn(
-                "ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-md border px-2.5 text-meta transition-colors lg:min-h-7",
-                expandAll
-                  ? "border-edge/60 bg-accent text-foreground"
-                  : "text-muted-foreground hover:border-edge/40 hover:text-foreground"
-              )}
-            >
-              <ScrollTextIcon className="size-3.5 shrink-0 text-dim" />
-              {expandAll ? "everything open" : "read it all"}
-            </button>
-            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-ui text-muted-foreground lg:min-h-7">
-              <Checkbox
-                checked={solved.has(problem.id)}
-                onCheckedChange={() => toggleSolved(problem.id)}
-              />
-              solved
-            </label>
-          </div>
-          <div className="flex w-full flex-wrap items-center gap-x-5 gap-y-2">
-            {/* THE NAME SITS WITH ITS FACTS. It used to head the raised card
-            below, which put "Contains Duplicate" in one box and the four
-            things you want to know about it in another — two bands answering
-            "what is this", stacked, and the name scrolled away while the
-            facts stayed. One row now, and the card below opens on the brief.
-
-            Still the page's h1 and still the first heading in the document:
-            this moved the element, not the outline. */}
-            <h1 className="font-heading text-title font-semibold">
-              {problem.title}
-            </h1>
-            <Fact label="difficulty">
-              <DifficultyMeter difficulty={problem.difficulty} />
-              <span
-                className={difficultyClass[problem.difficulty].split(" ").pop()}
-              >
-                {problem.difficulty}
-              </span>
-            </Fact>
-            {/* the bar to clear. Each rung carries its own cost; this is the one
-            the best rung reaches. */}
-            <Fact label="target">
-              <ComplexityMark value={problem.complexity.time} />
-              <span className="font-mono">{problem.complexity.time}</span>
-              <span className="text-dim">·</span>
-              <ComplexityMark value={problem.complexity.space} />
-              <span className="font-mono">{problem.complexity.space}</span>
-              {/* the bound is a label until you can reproduce the count; the
-              title carries the counting argument on the bar, and every rung
-              carries its own below (`Solution.costWhy`) */}
-              {problem.costWhy && (
-                <span
-                  title={problem.costWhy}
-                  className="cursor-help text-meta text-dim underline decoration-dotted underline-offset-4"
-                >
-                  why?
-                </span>
-              )}
-            </Fact>
-          </div>
-        </OrientBar>
-
-        {/* ── ZONE 2 · ACT ────────────────────────────────────────────────
-          The one thing this page exists to make you do, and the ONE raised
-          surface on the screen (DESIGN.md allows exactly one per page; the
-          journey invitation below is a bordered panel, not a second dock).
-
-          THE MODE BAR. A problem is one noun and these are the three things
-          you can do with it: work it up from nothing (the journey), read it in
-          full (the explanation), or go and solve it. They were three different
-          shapes in three places — a primary button here, a bordered panel
-          below, and a list in the sidebar — which is what made the app read as
-          "journeys" and "patterns" being two products.
-
-          The journey still opens full-screen, because its stage needs the
-          viewport; it is simply never reached except from here. The
-          explanation opens IN PLACE. The phrase "Learn this problem" is
-          load-bearing: a UI test reads it to prove the ledger still hides this
-          mid-journey. */}
-        <div
-          data-surface="raised"
-          // ONE HEADER, NOT TWO BOXES. The title and its four facts were in a
-          // sticky bar and the brief and the actions were in a bordered card
-          // under it — two stacked surfaces both answering "what is this", with
-          // a seam between them. The bar above is the top of this region now
-          // and the border is gone: the brief reads as the line under the
-          // title, which is what it is.
-          //
-          // `-mt-2` closes the gap the flex column would otherwise leave, so
-          // the two halves read as one block rather than as siblings.
-          className="-mt-4 flex flex-col gap-4"
-        >
-          <p className="max-w-measure text-body text-muted-foreground">
-            {problem.brief}
-          </p>
-          {/* THE CLIMB. What replaced a sentence and two buttons with something
-            a reader can look AT: how many ways in there are, how far apart they
-            are, and which ones the ledger is still holding. */}
-          <TheClimb ladder={ladder} />
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            {/* The journey is the PRIMARY action where one exists: it is the way
-              this app teaches, and everything else on the page is what you
-              read once you have. LeetCode takes the primary slot only when
-              there is no journey to offer. */}
-            {journey ? (
-              // A BUTTON, not a link. It navigated to `#/journey/<slug>`: a
-              // different page, a different scroll position, and no way back
-              // except a trail that returned you to the TOP of this one. The
-              // journey opens in place now — the route still exists for deep
-              // links and the sidebar's Continue.
-              <button
-                type="button"
-                aria-expanded={building}
-                onClick={() => {
-                  setBuilding(true)
-                  requestAnimationFrame(() =>
-                    document
-                      .getElementById("build-it-up")
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  )
-                }}
-                className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
-              >
-                <RouteIcon className="size-4 shrink-0" />
-                {earned.earned > 0 ? "Continue the journey" : "Build it up"}
-                <span className="font-mono text-meta opacity-80">
-                  {earned.earned}/{journey.acts.length}
-                </span>
-              </button>
-            ) : null}
-            <a
-              href={leetcodeUrl(problem.leetcode)}
-              target="_blank"
-              rel="noopener"
-              className={cn(
-                "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-9",
-                journey
-                  ? "border hover:border-edge/60"
-                  : "btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
-              )}
-            >
-              Solve on LeetCode
-              <ExternalLinkIcon className="size-4" />
-            </a>
-          </div>
-          {/* What a journey IS — the one sentence the deleted panel carried, and
-            only while it is unstarted. Once earning has begun the button's
-            "3/5" says everything a returning reader needs. */}
-          {journey && earned.earned === 0 && (
-            <p className="max-w-measure prose-set text-body text-muted-foreground">
-              {journey.acts.length} acts: the need, every approach earned by the
-              last one's weakness, your own code animated, then the reveal.
-            </p>
-          )}
-        </div>
+        {/* ZONE 2 · ACT — the brief, the climb, and the three things you can
+          do with this problem. `problem/act-zone.tsx`. */}
+        <ActZone
+          problem={problem}
+          ladder={ladder}
+          journey={journey}
+          earned={earned}
+          building={building}
+          onBuild={() => {
+            setBuilding(true)
+            requestAnimationFrame(() =>
+              document
+                .getElementById("build-it-up")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            )
+          }}
+        />
 
         {/* ── ZONE 3 · REVIEW — the material, as bands. A band is a heading and
           a hairline, never a card: a card says "this has its own actions" and
@@ -725,51 +430,15 @@ function ProblemPage({
           </div>
         )}
 
-        {/* ── WHAT IS LEFT OF THE DOCUMENT ────────────────────────────────
-            There is no door any more. "Understanding" sits with the problem,
-            "Reading the calculations" before the rungs whose costs it explains,
-            the comparison and the approaches the ladder does not carry inside
-            the approaches band, and each rung's own account on its rung. What
-            reaches here is the part that is about none of those: the interview
-            script, the fluency drills, the runnable script.
-
-            The section still carries `id="explanation"`, because `#/learn/<id>`
-            redirects to `?read=explanation` and something has to be at that
-            offset. */}
-        {closing && closing.length > 0 && (
-          <Band
-            id="explanation"
-            label="taking it with you"
-            count="the parts that belong to no single rung"
-          >
-            {closing.map((sec) => (
-              <div key={sec.title} className="flex flex-col gap-3">
-                <h3 className="font-heading text-body font-semibold">
-                  {sec.title}
-                </h3>
-                <Markdown
-                  blocks={sec.blocks}
-                  runnable
-                  problemId={problem.id}
-                  scaffold={
-                    explanation.present && explanation.ready
-                      ? explanation.scaffold
-                      : undefined
-                  }
-                />
-              </div>
-            ))}
-          </Band>
-        )}
-
-        {/* the Markdown path is placed section by section above; a TYPED
-            document still renders whole, and keeps its own door until it is
-            placed the same way */}
-        {!folded && explanation.present && (
-          <Band id="explanation" label="the long explanation">
-            <ExplanationBody state={explanation} problemId={problem.id} />
-          </Band>
-        )}
+        {/* What is left of the document once the page has placed the rest —
+            the interview script, the drills, the runnable script; and the
+            whole thing where the document is typed. `problem/closing-bands`. */}
+        <ClosingBands
+          problemId={problem.id}
+          closing={closing}
+          folded={folded}
+          explanation={explanation}
+        />
 
         {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
 
