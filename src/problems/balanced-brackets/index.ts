@@ -15,6 +15,7 @@ import {
   arc,
   code,
   complexity,
+  costWhy,
   whyNow,
 } from "./solutions.ts"
 
@@ -28,6 +29,11 @@ export const problem: Problem = {
   statement: p.statement,
   constraints: p.constraints,
   examples: p.examples,
+  // the five playbook fields
+  unlocks: p.unlocks,
+  checks: p.checks,
+  reading: p.reading,
+  costWhy,
   hints,
   approach,
   whyNow,

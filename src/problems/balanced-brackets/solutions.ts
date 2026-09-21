@@ -75,6 +75,8 @@ export const alternatives: Solution[] = [
   {
     key: "delete",
     name: "Repeated replace",
+    costWhy:
+      "O(n\u00b2) time and O(n) space. Each pass deletes the innermost matching pairs and starts again, and a string like ((((\u2026)))) removes only one pair per pass \u2014 so n/2 passes over a string of length n, about 5\u00b710\u2077 character reads at the ceiling. The space is the new string each pass builds. It is on the page because it is genuinely the first idea most people have, and because seeing the rescan is what motivates carrying the unclosed openers instead.",
     summary:
       'Keep deleting adjacent matched pairs ("()", "[]", "{}") until nothing changes; valid iff empty. Cute one-liner logic, quadratic runtime — good to know why it\'s worse, not to use.',
     complexity: { time: "O(n²)", space: "O(n)" },
@@ -108,8 +110,10 @@ export const alternatives: Solution[] = [
   {
     key: "counter",
     name: "Single counter",
+    costWhy:
+      "O(n) time and O(1) space \u2014 the best bounds on this page, and WRONG for this problem, which is why it is here. A counter that rises on an opener and falls on a closer validates one bracket type perfectly and cannot see type at all: ([)] keeps every count non-negative and balanced. The lesson is that a cheaper bound is not an answer unless it computes the right thing, and the constraint that kills it is the one naming the most recent unclosed opener.",
     summary:
-      "Drop the stack for one integer: an opener is one level deeper, a closer one level back up, and the string is well-formed if the depth never goes negative and ends at zero. Constant space — and correct ONLY when the alphabet is a single bracket kind, because a count stores depth but not identity, so it accepts \"(]\" and \"([)]\" without noticing.",
+      'Drop the stack for one integer: an opener is one level deeper, a closer one level back up, and the string is well-formed if the depth never goes negative and ends at zero. Constant space — and correct ONLY when the alphabet is a single bracket kind, because a count stores depth but not identity, so it accepts "(]" and "([)]" without noticing.',
     whyNow:
       "The stack holds one entry per unmatched opener, so its space is the nesting depth. Narrow the alphabet to one kind of bracket and every opener is interchangeable — you no longer need to know WHICH one is on top, only how many are open — and the whole structure collapses to a single integer. What it costs is the ability to detect a closer of the wrong kind at all.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -155,3 +159,7 @@ export const alternatives: Solution[] = [
 `,
   },
 ]
+
+// HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
+export const costWhy =
+  "One pass over n characters, O(n) time: each character is pushed at most once and popped at most once, so the total stack work is bounded by 2n however deeply the string nests. Everything inside the loop is constant \u2014 a table lookup for the matching opener and a comparison. The O(n) space is the stack, and the worst case is real rather than theoretical: a string of n opening brackets holds all n of them before anything closes. That is the honest trade against the counter rung, which uses O(1) space and cannot answer the question for more than one bracket type."
