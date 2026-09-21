@@ -207,3 +207,22 @@ test("a markdown link beside a wiki link still parses as a link", () => {
     ]
   )
 })
+
+// The corpus writes nested array literals in prose — `[[1, 5]]`, `[[0]]`,
+// `[[-5]]` — and a wiki-link rule that accepts any `[[…]]` renders those as a
+// link whose text is the inner value, dropping the brackets. A term names a
+// WORD, so it must start with a letter.
+test("an array literal is not a glossary link", () => {
+  for (const literal of ["[[1, 5]]", "[[0]]", "[[-5]]", '[[""]]', "[[0,0]]"]) {
+    const spans = inlineSpans(`the answer is ${literal} here`)
+    assert.deepEqual(
+      spans.filter((s) => s.kind === "term"),
+      [],
+      `${literal} was parsed as a glossary link`
+    )
+    assert.ok(
+      spans.map((s) => s.text).join("").includes(literal),
+      `${literal} lost its brackets`
+    )
+  }
+})
