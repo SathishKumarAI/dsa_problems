@@ -61,7 +61,7 @@ export const alternatives: Solution[] = [
     key: "copy",
     name: "Filter into a copy",
     costWhy:
-      "O(n) time and O(n) space. One pass to collect the non-zero values into a new list, one to write them back with zeroes appended \u2014 linear, and obviously correct, which is what it is for. The O(n) space is the copy, and it is disqualifying here rather than merely wasteful: the statement says in place. Keep it on the page as the thing the in-place rung must agree with, element for element.",
+      "O(n) time and O(n) space. One pass to collect the non-zero values into a new list, one to write them back with zeroes appended \u2014 linear, and obviously correct, which is what it is for. The O(n) space is the copy, and it is disqualifying here rather than merely wasteful: the statement says [[in-place|in place]]. Keep it on the page as the thing the in-place rung must agree with, element for element.",
     summary:
       "Collect the non-zero values into a new list, pad with zeroes, copy back. Linear and easy to defend, and it allocates a second array of n to perform a rearrangement the array can do to itself — the statement says in place, and this satisfies the letter of that by copying back at the end.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -104,7 +104,7 @@ export const alternatives: Solution[] = [
     key: "swap",
     name: "Swap instead of write",
     costWhy:
-      "O(n) time and O(1) space \u2014 the same bounds as the rung above it, which is exactly why this rung is about something other than cost. It swaps rather than writes, so it performs up to 2n memory writes where the write-index version performs one per surviving value, and on an array that is mostly zeroes that difference is measurable. Same bound, different clock: the asymptotic notation cannot see it, and this is one of the places worth saying so.",
+      "O(n) time and O(1) space \u2014 the same bounds as the rung above it, which is exactly why this rung is about something other than cost. It swaps rather than writes, so it performs up to 2n memory writes where the write-index version performs one per surviving value, and on an array that is mostly zeroes that difference is measurable — see [[cache locality]]. Same bound, different clock: the [[big-o|asymptotic]] notation cannot see it, and this is one of the places worth saying so.",
     whyNow:
       "The reader-and-writer version copies every kept value forward and then walks the tail a second time filling in zeroes. But the slot the kept value came from is now free, and what belongs there is known — a zero, because that is exactly what was sitting at the writer's position. Swapping puts it back in the same move, and the second pass disappears.",
     summary:

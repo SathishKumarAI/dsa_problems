@@ -103,7 +103,7 @@ export const alternatives: Solution[] = [
   {
     name: "Recursive",
     costWhy:
-      "O(n) time and O(n) space, and the space is a stack frame per node rather than an array. At the 5000-node ceiling that is 5000 frames, which CPython refuses \u2014 its default recursion limit is 1000, so this rung raises RecursionError on a legal input for this problem. That is the honest reason it is not the answer: not elegance, a crash on inputs the constraints permit.",
+      "O(n) time and O(n) space, and the space is a [[stack|stack frame]] per node rather than an array. At the 5000-node ceiling that is 5000 frames, which CPython refuses \u2014 its default recursion limit is 1000, so this rung raises RecursionError on a legal input for this problem. That is the honest reason it is not the answer: not elegance, a crash on inputs the constraints permit.",
     whyNow:
       "Rebuilding the list allocates a second one and gives up the in-place requirement. Recursion rewires the nodes that are already there.",
     summary:
@@ -137,4 +137,4 @@ export const alternatives: Solution[] = [
 
 // HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
 export const costWhy =
-  "One pass, n nodes, three pointer writes each \u2014 save the next node, rewire the current one backwards, advance both \u2014 so O(n) time with a constant of three and nothing allocated. The O(1) space is what distinguishes this rung from both alternatives: the array rung holds n values and the recursive one holds n stack frames, and neither is needed because the reversed prefix is carried in a single variable. The invariant that makes it correct, stated because the cost alone does not: at the top of every iteration prev heads the already-reversed part, curr heads the untouched part, and no node is unreachable."
+  "One pass, n nodes, three pointer writes each \u2014 save the next node, rewire the current one backwards, advance both \u2014 so O(n) time with a constant of three and nothing allocated. The O(1) space is what distinguishes this rung from both alternatives: the array rung holds n values in a [[dynamic array]] and the recursive one holds n stack frames, and neither is needed because the reversed prefix is carried in a single variable. The invariant that makes it correct, stated because the cost alone does not: at the top of every iteration prev heads the already-reversed part, curr heads the untouched part, and no node is unreachable."

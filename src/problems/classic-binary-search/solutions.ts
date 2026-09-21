@@ -89,7 +89,7 @@ export const alternatives: Solution[] = [
     key: "recurse",
     name: "Recursive",
     costWhy:
-      "O(log n) time and O(log n) SPACE \u2014 the same probes as the loop, and one stack frame per halving. About 14 frames here, which is nothing; the reason it is not the top rung is that the recursion buys no clarity over a three-line loop while making the space bound depend on the input. Worth keeping on the page because the recurrence T(n) = T(n/2) + O(1) is the cleanest place to SEE where the logarithm comes from.",
+      "O(log n) time and O(log n) SPACE \u2014 the same probes as the loop, and one [[stack|stack frame]] per halving. About 14 frames here, which is nothing; the reason it is not the top rung is that the recursion buys no clarity over a three-line loop while making the space bound depend on the input. Worth keeping on the page because the recurrence T(n) = T(n/2) + O(1) is the cleanest place to SEE where the logarithm comes from.",
     summary:
       "The same halving, written as a function that calls itself on the surviving half. Identical comparisons and arguably the clearer statement of the invariant, but it spends a call frame per level — O(log n) stack against the loop's O(1) — for no gain the problem can see.",
     complexity: { time: "O(log n)", space: "O(log n) stack" },
@@ -179,4 +179,4 @@ int binarySearch(const vector<int>& nums, int target) {
 
 // HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
 export const costWhy =
-  "Each probe eliminates half of what is left, so the range goes n, n/2, n/4 \u2026 and reaches one element after log\u2082(n) halvings \u2014 about 14 for the 10\u2074 ceiling. Every iteration does one addition, one shift-or-divide and one comparison, all constant, so the time is O(log n) with a very small constant. The O(1) space is three indices: lo, hi and mid, none of them growing. That is the whole difference from the recursive rung, which computes exactly the same probes and pays O(log n) stack frames to do it \u2014 same comparisons, different memory."
+  "Each probe of the [[binary search]] eliminates half of what is left, so the range goes n, n/2, n/4 \u2026 and reaches one element after log\u2082(n) halvings \u2014 about 14 for the 10\u2074 ceiling. Every iteration does one addition, one shift-or-divide and one comparison, all constant, so the time is O(log n) with a very small constant. The O(1) space is three indices: lo, hi and mid, none of them growing. That is the whole difference from the recursive rung, which computes exactly the same probes and pays O(log n) stack frames to do it \u2014 same comparisons, different memory."

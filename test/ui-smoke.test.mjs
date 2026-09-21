@@ -2835,6 +2835,62 @@ describe(
       assert.deepEqual(page.errors(), [], "the debt band logged errors")
     })
 
+    // A word in a sentence that carries its own definition. The reader this
+    // is for stopped mid-sentence on "amortised" and does not want to leave
+    // the page to find out - so the link has to be IN the prose, and it has to
+    // go somewhere. Checked on a rung's own count, which is below the ladder:
+    // above it, a technique name would spoil a journey in flight.
+    test("a term in the prose links to its definition", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const found = await page.run(`
+        // the counts are a <details>; open them all, which is what the
+        // page's own "read it all" switch does
+        for (const d of document.querySelectorAll('main details')) d.open = true;
+        await new Promise(r => setTimeout(r, 300));
+        const links = [...document.querySelectorAll('main a[data-term]')];
+        return {
+          count: links.length,
+          // the words must survive: a link that ate its own text is the
+          // parser bug this repo already fixed once
+          text: links.map(a => a.innerText.trim()).slice(0, 4),
+          href: links[0]?.getAttribute('href') ?? '',
+          // and it must not have eaten an array literal anywhere on the page
+          // NO REGEX: a backslash in a template literal sent to the page is
+          // consumed twice, so /\[\[/ arrives as an invalid expression
+          // (CLAUDE.md, the trap). A plain string test says the same thing.
+          literals: document.querySelector('main').innerText.includes('[' + '['),
+        };
+      `)
+      assert.ok(found.count > 0, "no glossary link in the page's prose")
+      assert.ok(
+        found.text.every((t) => t.length > 1),
+        `a term link rendered empty: ${JSON.stringify(found.text)}`
+      )
+      assert.match(found.href, /^#\/g\//, `a term link points at ${found.href}`)
+      assert.equal(
+        found.literals,
+        false,
+        "raw [[…]] is visible in the rendered page"
+      )
+
+      await page.run(`document.querySelector('main a[data-term]').click(); return 1;`)
+      await page.run("return new Promise(r => setTimeout(() => r(1), 500));")
+      const landed = await page.run(`
+        return {
+          hash: location.hash,
+          heading: document.querySelector('main h1')?.innerText ?? '',
+        };
+      `)
+      assert.match(landed.hash, /^#\/g\/[a-z-]+$/, `landed on ${landed.hash}`)
+      assert.ok(
+        !/nothing at that address/i.test(landed.heading),
+        `a term link led nowhere: "${landed.heading}"`
+      )
+      assert.deepEqual(page.errors(), [], "a term link logged errors")
+    })
+
     // The contents rail is xl and up. Below that a problem page runs to about
     // thirty screens with no navigation at all, so the approaches are only
     // reachable by scrolling past everything above them. This asserts the menu

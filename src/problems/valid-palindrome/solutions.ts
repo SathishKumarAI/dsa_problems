@@ -67,7 +67,7 @@ export const alternatives: Solution[] = [
   {
     name: "Clean, then reverse",
     costWhy:
-      "O(n) time and O(n) space, and the space is the point. Two passes over the input \u2014 one to build the cleaned string, one to reverse and compare it \u2014 so the time is linear with a constant of about three. The memory is a second string the size of the input: at the ceiling of 2\u00b710\u2075 characters that is real, and it buys nothing the two-pointer walk does not get for free. It is worth writing once because it is obviously correct, which makes it the thing the faster rung has to be checked against.",
+      "O(n) time and O(n) space, and the space is the point. Two passes over the input \u2014 one to build the cleaned string, one to reverse and compare it \u2014 so the time is linear with a constant of about three. The memory is a second string the size of the input: at the ceiling of 2\u00b710\u2075 characters that is real, and it buys nothing the [[two pointers|two-pointer]] walk does not get for free. It is worth writing once because it is obviously correct, which makes it the thing the faster rung has to be checked against.",
     summary:
       "Build a lowercase copy holding only letters and digits, then compare it with its own reverse. Clear and linear, and it allocates two full strings to answer a yes/no question — then reads both to the end even when the first and last characters already disagree.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -96,4 +96,4 @@ export const alternatives: Solution[] = [
 
 // HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
 export const costWhy =
-  "One walk of two pointers toward each other: each iteration advances i or retreats j, so together they cross the string once and the loop runs at most n times \u2014 that is the O(n). The skip loops inside do not change it, because a character skipped is a character the outer walk never revisits; the total number of pointer moves over the whole run is bounded by n, not by n per step. The O(1) space is the two indices, and that is the entire argument for this rung over the cleaned-copy one: same time, none of the memory. The comparison itself folds case per character, which costs one operation and avoids a second pass over the input."
+  "One walk of two pointers toward each other: each iteration advances i or retreats j, so together they cross the string once and the loop runs at most n times \u2014 that is the O(n). The skip loops inside do not change it, because a character skipped is a character the outer walk never revisits; the total number of pointer moves over the whole run is bounded by n, not by n per step. The O(1) space is the two indices, which is what [[in-place|in place]] means here, and that is the entire argument for this rung over the cleaned-copy one: same time, none of the memory. The comparison itself folds case per character, which costs one operation and avoids a second pass over the input."

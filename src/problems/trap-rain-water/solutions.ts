@@ -111,7 +111,7 @@ export const alternatives: Solution[] = [
   {
     name: "Prefix and suffix maxima",
     costWhy:
-      "O(n) time and O(n) space: three passes \u2014 left maxima, right maxima, then the water \u2014 each linear, and two arrays of length n to hold them. This is the rung that makes the idea obvious: the maxima are computed once instead of n times, and the water formula is then a single subtraction per column. What it spends is memory, and the two-pointer rung above it shows that memory was never necessary.",
+      "O(n) time and O(n) space: three passes \u2014 left maxima, right maxima, then the water \u2014 each linear, and two arrays of length n to hold them. This is the rung that makes the idea obvious: the maxima are computed once instead of n times, and the water formula is then a single subtraction per column. What it spends is memory, and the [[two pointers|two-pointer]] rung above it shows that memory was never necessary.",
     summary:
       "Precompute the tallest bar at or before every index and at or after it, then read both off in a third pass. The rescanning is gone and it is genuinely linear; what remains is two arrays of n, holding numbers that two travelling variables could carry instead.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -158,4 +158,4 @@ export const alternatives: Solution[] = [
 
 // HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
 export const costWhy =
-  "One pass, two pointers, O(n) time and O(1) space \u2014 and the space is what separates this rung from the one below it, which is also linear in time. Each iteration moves exactly one pointer inward, so the loop runs at most n times, doing a comparison, a maximum update and one subtraction. The reason no array of maxima is needed: the pointer on the SHORTER side is the one whose water is already determined, because the taller side guarantees a wall at least that high somewhere beyond it. So the two running maxima carry everything the three-pass version stored, in two variables instead of two arrays of length n."
+  "One pass, two pointers, O(n) time and O(1) space \u2014 and the space is what separates this rung from the one below it, which is also linear in time. Each iteration moves exactly one pointer inward, so the loop runs at most n times, doing a comparison, a maximum update and one subtraction. The reason no array of maxima is needed: the pointer on the SHORTER side is the one whose water is already determined, because the taller side guarantees a wall at least that high somewhere beyond it. So the two running maxima — a [[two pointers|two-pointer]] sweep — carry everything the three-pass version stored, in two variables instead of two arrays of length n."
