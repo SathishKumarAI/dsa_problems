@@ -94,7 +94,11 @@ export function FigureFrame({
         <Button
           variant="ghost"
           size="sm"
-          className="-my-1 h-auto gap-1.5 px-2 py-1 text-meta text-muted-foreground"
+          // 44px on a phone, back to the compact size where there is a
+          // mouse. The touch-floor gate caught this at 28px on
+          // subarray-sum-k: a control small enough to miss is a control
+          // a reader decides is broken.
+          className="-my-1 h-auto min-h-11 gap-1.5 px-2 py-1 text-meta text-muted-foreground lg:min-h-7"
           onClick={() => setOpen(true)}
           aria-label={`${label} — open at full size`}
         >

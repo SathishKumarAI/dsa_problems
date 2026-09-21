@@ -11,11 +11,14 @@
 
 import type { Solution } from "../../data/types.ts"
 
-export const approach = "Maintain an inclusive search range [lo, hi] that must contain the target if it exists. Probe the midpoint: equal means done; smaller means the answer lives strictly right of mid; larger means strictly left. Each probe halves the range, giving the logarithmic bound."
+export const approach =
+  "Maintain an inclusive search range [lo, hi] that must contain the target if it exists. Probe the midpoint: equal means done; smaller means the answer lives strictly right of mid; larger means strictly left. Each probe halves the range, giving the logarithmic bound."
 
-export const whyNow = "Recursion pays a stack frame per halving and buys nothing. The same loop written iteratively is constant space, and it is the version to write under pressure."
+export const whyNow =
+  "Recursion pays a stack frame per halving and buys nothing. The same loop written iteratively is constant space, and it is the version to write under pressure."
 
-export const arc = "The base case of a whole pattern, and worth writing until the boundaries are automatic: while low is at most high, probe the middle, and move the side that cannot contain the answer. Two habits prevent most bugs. Compute the midpoint as low plus half the gap rather than by adding the two ends, so nothing overflows in languages with fixed-width integers. And decide the loop's contract before typing — either 'low <= high' with mid plus or minus one, or 'low < high' converging on a single survivor — then keep it consistent, because mixing the two is how the off-by-one and the infinite loop both appear. Every later rung in this pattern is this loop with a different question at the probe."
+export const arc =
+  "The base case of a whole pattern, and worth writing until the boundaries are automatic: while low is at most high, probe the middle, and move the side that cannot contain the answer. Two habits prevent most bugs. Compute the midpoint as low plus half the gap rather than by adding the two ends, so nothing overflows in languages with fixed-width integers. And decide the loop's contract before typing — either 'low <= high' with mid plus or minus one, or 'low < high' converging on a single survivor — then keep it consistent, because mixing the two is how the off-by-one and the infinite loop both appear. Every later rung in this pattern is this loop with a different question at the probe."
 
 export const complexity = { time: "O(log n)", space: "O(1)" }
 
@@ -57,6 +60,8 @@ export const alternatives: Solution[] = [
   {
     key: "scan",
     name: "Linear scan",
+    costWhy:
+      "O(n) time, O(1) space: every element until the target is found, 10\u2074 comparisons at the ceiling, and it never once uses the fact that the array is sorted. That is the tell worth learning from this rung \u2014 an approach that would behave identically on shuffled input is ignoring something the problem promised, and here what it ignores is worth a factor of 700.",
     summary:
       "Look at every element until the target turns up. Correct, and immediately disqualified: the statement demands O(log n) and this is O(n). It earns its place by naming what the sortedness is FOR — a scan works on any array, which is exactly why it cannot exploit the one promise this input makes.",
     complexity: { time: "O(n)", space: "O(1)" },
@@ -83,6 +88,8 @@ export const alternatives: Solution[] = [
   {
     key: "recurse",
     name: "Recursive",
+    costWhy:
+      "O(log n) time and O(log n) SPACE \u2014 the same probes as the loop, and one stack frame per halving. About 14 frames here, which is nothing; the reason it is not the top rung is that the recursion buys no clarity over a three-line loop while making the space bound depend on the input. Worth keeping on the page because the recurrence T(n) = T(n/2) + O(1) is the cleanest place to SEE where the logarithm comes from.",
     summary:
       "The same halving, written as a function that calls itself on the surviving half. Identical comparisons and arguably the clearer statement of the invariant, but it spends a call frame per level — O(log n) stack against the loop's O(1) — for no gain the problem can see.",
     complexity: { time: "O(log n)", space: "O(log n) stack" },
@@ -129,10 +136,12 @@ int binarySearch(const vector<int>& nums, int target) {
   {
     key: "converge",
     name: "Converge on the single survivor",
+    costWhy:
+      "O(log n) time, O(1) space \u2014 the same bounds as the inclusive-range loop, and a different termination argument: the range shrinks until exactly one candidate remains, which is then tested once outside the loop. It is on the page because it generalises where the classic version does not: when duplicates exist and you want the FIRST match, this is the shape that extends without an off-by-one, and the ladder is about shapes as much as about bounds.",
     whyNow:
-      "The inclusive loop answers \"is it here?\" and stops the moment it is. That is the right shape for this question and the wrong shape for the four that follow it, which ask where a property BEGINS. A converging range answers that instead: it never discards a candidate that might be the answer, and stops when exactly one is left.",
+      'The inclusive loop answers "is it here?" and stops the moment it is. That is the right shape for this question and the wrong shape for the four that follow it, which ask where a property BEGINS. A converging range answers that instead: it never discards a candidate that might be the answer, and stops when exactly one is left.',
     summary:
-      "Shrink `[lo, hi]` while `lo < hi`, moving `lo` past a midpoint that is provably too small and moving `hi` TO a midpoint that might itself be the answer. The loop ends with one candidate and the check happens once, afterwards. Slightly slower than the inclusive version because an early hit cannot return — and the contract you want for every \"leftmost index satisfying P\" question, which is most of the rest of this pattern.",
+      'Shrink `[lo, hi]` while `lo < hi`, moving `lo` past a midpoint that is provably too small and moving `hi` TO a midpoint that might itself be the answer. The loop ends with one candidate and the check happens once, afterwards. Slightly slower than the inclusive version because an early hit cannot return — and the contract you want for every "leftmost index satisfying P" question, which is most of the rest of this pattern.',
     complexity: { time: "O(log n)", space: "O(1)" },
     python: `def binary_search(nums: list[int], target: int) -> int:
     if not nums:
@@ -167,3 +176,7 @@ int binarySearch(const vector<int>& nums, int target) {
 }`,
   },
 ]
+
+// HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
+export const costWhy =
+  "Each probe eliminates half of what is left, so the range goes n, n/2, n/4 \u2026 and reaches one element after log\u2082(n) halvings \u2014 about 14 for the 10\u2074 ceiling. Every iteration does one addition, one shift-or-divide and one comparison, all constant, so the time is O(log n) with a very small constant. The O(1) space is three indices: lo, hi and mid, none of them growing. That is the whole difference from the recursive rung, which computes exactly the same probes and pays O(log n) stack frames to do it \u2014 same comparisons, different memory."

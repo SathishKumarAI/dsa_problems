@@ -11,11 +11,14 @@
 
 import type { Solution } from "../../data/types.ts"
 
-export const approach = "Pure structural recursion. A missing node contributes 0; any real node contributes 1 plus the deeper of its two subtrees. The recursion visits every node once. (An iterative BFS counting levels gives the same answer if recursion depth is a concern.)"
+export const approach =
+  "Pure structural recursion. A missing node contributes 0; any real node contributes 1 plus the deeper of its two subtrees. The recursion visits every node once. (An iterative BFS counting levels gives the same answer if recursion depth is a concern.)"
 
-export const whyNow = "Both iterative versions manage a container by hand to do what the call stack already does. The recursion is three lines and says exactly what depth means."
+export const whyNow =
+  "Both iterative versions manage a container by hand to do what the call stack already does. The recursion is three lines and says exactly what depth means."
 
-export const arc = "Depth is defined in terms of itself — a node is one more than the deeper of its two subtrees, and a missing node is zero — so the shortest correct program is that sentence typed out. The two iterative rungs earn their place by showing what the recursion is quietly using: the call stack IS the traversal, and managing a container by hand only makes the same walk explicit. Counting BFS rounds holds a whole level at once, so its memory is the widest part of the tree; an explicit stack of node-and-depth pairs holds one root-to-leaf path, which is the height. That trade is the thing to remember, because the recursion inherits the second half of it — O(h), which on a tree degenerated into a linked list is a frame per node, and the reason to reach for the iterative version at all. Know the post-order return cold: ask both children, combine, hand one value up. It is the same shape that answers balanced-tree, tree-diameter, and every question where a node's answer is a function of its subtrees' answers."
+export const arc =
+  "Depth is defined in terms of itself — a node is one more than the deeper of its two subtrees, and a missing node is zero — so the shortest correct program is that sentence typed out. The two iterative rungs earn their place by showing what the recursion is quietly using: the call stack IS the traversal, and managing a container by hand only makes the same walk explicit. Counting BFS rounds holds a whole level at once, so its memory is the widest part of the tree; an explicit stack of node-and-depth pairs holds one root-to-leaf path, which is the height. That trade is the thing to remember, because the recursion inherits the second half of it — O(h), which on a tree degenerated into a linked list is a frame per node, and the reason to reach for the iterative version at all. Know the post-order return cold: ask both children, combine, hand one value up. It is the same shape that answers balanced-tree, tree-diameter, and every question where a node's answer is a function of its subtrees' answers."
 
 export const complexity = { time: "O(n)", space: "O(h) recursion stack" }
 
@@ -42,6 +45,8 @@ export const alternatives: Solution[] = [
   {
     key: "paths",
     name: "Build every path, then measure",
+    costWhy:
+      "O(n \u00b7 h) time and O(n \u00b7 h) space, and both factors are the same mistake: it materialises each root-to-leaf path as a list, so a tree with n/2 leaves holds n/2 paths of length up to h. The depth is a single number, and this rung computes every path to find it. Worth writing once to see that the recursion only ever needed the MAXIMUM of two numbers, never the paths themselves.",
     summary:
       "Walk to every leaf carrying the path so far, copy it out when a leaf is reached, and return the longest. It is the definition typed out, which is why it is worth seeing — and the copying is the whole problem with it: a perfect tree has n/2 leaves and paths of log n, so the copies alone are O(n log n), and a chain copies one path of length n. The rungs above it all notice the same thing, that a LENGTH is all the question ever asked for.",
     complexity: { time: "O(n · h)", space: "O(n · h)" },
@@ -110,6 +115,8 @@ int maxDepth(const TreeNode* root) {
     whyNow:
       "Building the paths answers a question nobody asked: the paths are copied out in full and then thrown away, and only their LENGTHS are ever read. Counting rounds of a level sweep produces the length directly, and never holds a path at all.",
     name: "Iterative BFS",
+    costWhy:
+      "O(n) time and O(w) space, where w is the widest level \u2014 which on a complete tree is n/2, so this rung can hold more than the recursive one. What it buys is the thing the bound does not show: no recursion, so the 10\u2074-node chain that overflows the stack walks fine here. Counting levels rather than nodes is the whole implementation: take the queue\u2019s length before the loop and that many pops are exactly one level.",
     summary:
       "Sweep the tree level by level with a queue, draining exactly the nodes present at the start of each round and adding one to the depth per round. Same linear time with no recursion at all, so a tree degenerated into a 10,000-node chain cannot blow the stack. The price is that the memory tracks the WIDEST level rather than the height.",
     complexity: { time: "O(n)", space: "O(w) widest level" },
@@ -167,6 +174,8 @@ def max_depth(root) -> int:
   {
     key: "stack",
     name: "Iterative DFS",
+    costWhy:
+      "O(n) time and O(n) space: an explicit stack holding (node, depth) pairs, which in the worst case holds every node of a level plus the path above it. Same walk as the recursion, with the frames moved onto the heap \u2014 which is exactly why it exists. When a tree can be 10\u2074 deep and the language caps recursion at 1000, this is the rung that is still correct.",
     whyNow:
       "Counting levels means holding a whole level in memory, which is the widest part of the tree. A stack of node-and-depth pairs carries one path at a time instead.",
     summary:
@@ -214,3 +223,7 @@ def max_depth(root) -> int:
 `,
   },
 ]
+
+// HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
+export const costWhy =
+  "Every node is visited exactly once and does a constant amount of work \u2014 two recursive calls, a maximum, an addition \u2014 so the time is O(n) and cannot be less: the depth is not knowable without seeing every node. The space is the call stack, which holds one frame per level on the current path: O(h), where h is the height. That is the bound worth reading carefully, because h is log n on a balanced tree and n on a chain, and the constraints allow a 10\u2074-node chain \u2014 which is past CPython\u2019s default recursion limit of 1000. Same asymptotic class as the iterative rungs, and a crash on legal input."

@@ -11,11 +11,14 @@
 
 import type { Solution } from "../../data/types.ts"
 
-export const approach = "Walk the list with prev (starts None) and curr (starts head). Each step saves curr.next, rewires curr.next to prev, then shifts both pointers forward. When curr runs off the end, prev holds the new head. The initial None terminates the reversed list without special-casing."
+export const approach =
+  "Walk the list with prev (starts None) and curr (starts head). Each step saves curr.next, rewires curr.next to prev, then shifts both pointers forward. When curr runs off the end, prev holds the new head. The initial None terminates the reversed list without special-casing."
 
-export const whyNow = "Recursion still holds a frame per node, so a long list overflows the stack. Three pointers in a loop do the same rewiring in constant space."
+export const whyNow =
+  "Recursion still holds a frame per node, so a long list overflows the stack. Three pointers in a loop do the same rewiring in constant space."
 
-export const arc = "Every rung is chasing the same thing — turning each next pointer around without the list losing its grip on the rest of itself. The array copy manages it by giving up: it reads the values out and builds a second list, which answers a different question, since not one of the original nodes was reversed. Recursion keeps the real nodes and rewires them, but it has to reach the end before it can rewire anything, so a five-thousand-node list is five thousand live frames. The loop notices that the only thing a frame was holding is the node behind you — and one variable holds that. prev, curr and the saved next are the whole algorithm, and they are worth knowing cold, because in-place reversal is a subroutine inside palindrome-list, reorder-list, rotate-list by triple reversal and every reverse-in-k-groups variant. The starting None is not a detail either: it is what terminates the reversed list without a special case."
+export const arc =
+  "Every rung is chasing the same thing — turning each next pointer around without the list losing its grip on the rest of itself. The array copy manages it by giving up: it reads the values out and builds a second list, which answers a different question, since not one of the original nodes was reversed. Recursion keeps the real nodes and rewires them, but it has to reach the end before it can rewire anything, so a five-thousand-node list is five thousand live frames. The loop notices that the only thing a frame was holding is the node behind you — and one variable holds that. prev, curr and the saved next are the whole algorithm, and they are worth knowing cold, because in-place reversal is a subroutine inside palindrome-list, reorder-list, rotate-list by triple reversal and every reverse-in-k-groups variant. The starting None is not a detail either: it is what terminates the reversed list without a special case."
 
 export const complexity = { time: "O(n)", space: "O(1)" }
 
@@ -58,6 +61,8 @@ export const cpp = `Node* reverseList(Node* head) {
 export const alternatives: Solution[] = [
   {
     name: "Copy to array",
+    costWhy:
+      "O(n) time and O(n) space: one pass to read the values into an array, one to write them back in reverse. Linear, obviously correct, and it answers a slightly different question \u2014 it moves VALUES while leaving the list\u2019s links exactly as they were. That distinction matters the moment other code holds a reference to a node: the in-place rung rearranges structure, this one rearranges contents.",
     summary:
       "Walk the list collecting every value into an array, then build a brand-new list from that array backwards. Correct and obvious, and it allocates n fresh nodes and hands back a different list from the one it was given, so every pointer the caller still holds points into the old list. That is exactly what 'reverse it in place' forbids.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -97,6 +102,8 @@ export const alternatives: Solution[] = [
   },
   {
     name: "Recursive",
+    costWhy:
+      "O(n) time and O(n) space, and the space is a stack frame per node rather than an array. At the 5000-node ceiling that is 5000 frames, which CPython refuses \u2014 its default recursion limit is 1000, so this rung raises RecursionError on a legal input for this problem. That is the honest reason it is not the answer: not elegance, a crash on inputs the constraints permit.",
     whyNow:
       "Rebuilding the list allocates a second one and gives up the in-place requirement. Recursion rewires the nodes that are already there.",
     summary:
@@ -127,3 +134,7 @@ export const alternatives: Solution[] = [
 }`,
   },
 ]
+
+// HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
+export const costWhy =
+  "One pass, n nodes, three pointer writes each \u2014 save the next node, rewire the current one backwards, advance both \u2014 so O(n) time with a constant of three and nothing allocated. The O(1) space is what distinguishes this rung from both alternatives: the array rung holds n values and the recursive one holds n stack frames, and neither is needed because the reversed prefix is carried in a single variable. The invariant that makes it correct, stated because the cost alone does not: at the top of every iteration prev heads the already-reversed part, curr heads the untouched part, and no node is unreachable."

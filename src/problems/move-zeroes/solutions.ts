@@ -11,11 +11,14 @@
 
 import type { Solution } from "../../data/types.ts"
 
-export const approach = "Walk with a reader and a writer. Every non-zero value the reader finds is written at the writer's position, and only then does the writer advance — so the writer tracks how much of the array is already correct. Order is preserved because values are written in the order they are read. When the reader finishes, the writer marks the boundary: everything from there to the end is zero. Two passes over the array, no extra memory, and no swapping that could disturb the order."
+export const approach =
+  "Walk with a reader and a writer. Every non-zero value the reader finds is written at the writer's position, and only then does the writer advance — so the writer tracks how much of the array is already correct. Order is preserved because values are written in the order they are read. When the reader finishes, the writer marks the boundary: everything from there to the end is zero. Two passes over the array, no extra memory, and no swapping that could disturb the order."
 
-export const whyNow = "Building a filtered copy and padding it is the obvious version and it is already linear, but it allocates a whole second array to hold values it immediately copies back. Two indices do the same compaction inside the original array, and the gap between them is exactly the count of zeroes — no separate bookkeeping needed."
+export const whyNow =
+  "Building a filtered copy and padding it is the obvious version and it is already linear, but it allocates a whole second array to hold values it immediately copies back. Two indices do the same compaction inside the original array, and the gap between them is exactly the count of zeroes — no separate bookkeeping needed."
 
-export const arc = "A tiny problem that teaches the reader/writer pair: one cursor reads every position, another marks where the next kept value belongs, and the gap between them is exactly the number of zeros seen. Filtering into a copy is the obvious version and the one to compare against, because it makes the in-place version look like what it is — the same filter with the output aliased onto the input. Two details are worth carrying: writing then zero-filling the tail is easier to argue than swapping, but swapping keeps the total writes down when zeros are rare; and the same skeleton, with the test changed, solves remove-element and remove-duplicates-from-sorted-array."
+export const arc =
+  "A tiny problem that teaches the reader/writer pair: one cursor reads every position, another marks where the next kept value belongs, and the gap between them is exactly the number of zeros seen. Filtering into a copy is the obvious version and the one to compare against, because it makes the in-place version look like what it is — the same filter with the output aliased onto the input. Two details are worth carrying: writing then zero-filling the tail is easier to argue than swapping, but swapping keeps the total writes down when zeros are rare; and the same skeleton, with the test changed, solves remove-element and remove-duplicates-from-sorted-array."
 
 export const complexity = { time: "O(n)", space: "O(1)" }
 
@@ -57,6 +60,8 @@ export const alternatives: Solution[] = [
   {
     key: "copy",
     name: "Filter into a copy",
+    costWhy:
+      "O(n) time and O(n) space. One pass to collect the non-zero values into a new list, one to write them back with zeroes appended \u2014 linear, and obviously correct, which is what it is for. The O(n) space is the copy, and it is disqualifying here rather than merely wasteful: the statement says in place. Keep it on the page as the thing the in-place rung must agree with, element for element.",
     summary:
       "Collect the non-zero values into a new list, pad with zeroes, copy back. Linear and easy to defend, and it allocates a second array of n to perform a rearrangement the array can do to itself — the statement says in place, and this satisfies the letter of that by copying back at the end.",
     complexity: { time: "O(n)", space: "O(n)" },
@@ -98,6 +103,8 @@ export const alternatives: Solution[] = [
   {
     key: "swap",
     name: "Swap instead of write",
+    costWhy:
+      "O(n) time and O(1) space \u2014 the same bounds as the rung above it, which is exactly why this rung is about something other than cost. It swaps rather than writes, so it performs up to 2n memory writes where the write-index version performs one per surviving value, and on an array that is mostly zeroes that difference is measurable. Same bound, different clock: the asymptotic notation cannot see it, and this is one of the places worth saying so.",
     whyNow:
       "The reader-and-writer version copies every kept value forward and then walks the tail a second time filling in zeroes. But the slot the kept value came from is now free, and what belongs there is known — a zero, because that is exactly what was sitting at the writer's position. Swapping puts it back in the same move, and the second pass disappears.",
     summary:
@@ -135,3 +142,7 @@ export const alternatives: Solution[] = [
 }`,
   },
 ]
+
+// HOW THE TARGET BOUND WAS COUNTED. Each rung carries its own.
+export const costWhy =
+  "One pass with two indices: the reader visits each of the n elements once, and the writer only ever advances behind it, so the total work is n reads plus at most n writes \u2014 O(n), with a constant near one. The second loop that fills the tail with zeroes is another at most n writes and does not change the class. The O(1) space is the two indices: nothing is allocated, which is the whole difference from the copy rung. What the bound hides and the invariant does not: a write only happens on a non-zero value, so on an array that is mostly zeroes this does far fewer writes than n \u2014 which is why it beats the swap version on memory traffic even though both are linear."
