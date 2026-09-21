@@ -59,6 +59,7 @@ import { ApproachLadder } from "./approach-ladder"
 import { ContentsRail, ReadFurther } from "./problem-closing"
 import { ProblemStatement } from "./problem-statement"
 import { PreSolveCheck } from "./pre-solve-check"
+import { ProblemDebt } from "./problem-debt"
 import { SimilarProblems } from "./similar-problems"
 
 interface Props {
@@ -771,6 +772,20 @@ function ProblemPage({
         )}
 
         {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
+
+        {/* LAST, AND QUIET. 152 of 153 pages are still thin, and a thin page
+            here does not look thin — every band degrades to nothing when its
+            field is absent, so a page missing its read-before-you-solve
+            questions reads as one designed without them. Saying the gap is
+            the difference between a site that is unfinished and a site that
+            overstates itself. Hidden with everything else mid-journey: a gap
+            is a fact about the page, and must not become a spoiler. */}
+        {!hidden && (
+          <ProblemDebt
+            problem={problem}
+            has={{ journey: !!binding, explanation: explanation.present }}
+          />
+        )}
       </div>
 
       {/* The contents rail. The explanation runs to a few thousand words with

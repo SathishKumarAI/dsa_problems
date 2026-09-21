@@ -25,7 +25,8 @@
     "verify:vectors": "node scripts/localsmith/mutate.mjs",
     "check": "npm run typecheck && npm run lint && npm test",
     "verify:fences": "node scripts/verify-fences.mjs",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "page-backlog": "node scripts/page-backlog.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

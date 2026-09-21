@@ -2789,6 +2789,52 @@ describe(
 
     // ---------- 10. a broken page beats a broken site (B96) ----------
 
+    // A thin page must LOOK thin. Every band degrades to nothing when its
+    // field is absent, so a page with no read-before-you-solve questions reads
+    // as one designed without them — the site quietly overstating itself. This
+    // asserts both directions, because a band that always draws is furniture
+    // and a band that never draws is a lie.
+    test("a thin page says what it still owes, and a finished one does not", async () => {
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+
+      // the pilot: the one page that has been taken all the way
+      await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
+      const finished = await page.run(`
+        return { band: !!document.querySelector('[data-page-debt]') };
+      `)
+      assert.equal(
+        finished.band,
+        false,
+        "the finished page still advertises debts"
+      )
+
+      // a page that carries none of the five
+      await page.goto(`${server.base}/#/p/trie/implement-trie`)
+      const thin = await page.run(`
+        const band = document.querySelector('[data-page-debt]');
+        if (!band) return { owed: 0 };
+        const items = [...band.querySelectorAll('[data-debt]')];
+        return {
+          owed: items.length,
+          kinds: items.map(li => li.dataset.debt),
+          text: band.innerText,
+          // it must be the LAST thing in the column, not spliced mid-read
+          last: band.parentElement.lastElementChild === band,
+        };
+      `)
+      assert.ok(thin.owed >= 4, `a thin page listed ${thin.owed} debts`)
+      assert.ok(thin.kinds.includes("checks"), "the checks gap went unsaid")
+      assert.equal(thin.last, true, "the band is not at the foot of the page")
+      // A gap is a fact about the PAGE. It must never name an approach — that
+      // is the disclosure rule, and this band sits under the ladder.
+      assert.ok(
+        !/hash map|two pointer|binary search/i.test(thin.text),
+        `the debt band named a technique: ${thin.text}`
+      )
+      assert.deepEqual(page.errors(), [], "the debt band logged errors")
+    })
+
     // The glossary is the reference half of the site: a reader arrives from a
     // word in a sentence, reads one screen, goes back. Three things have to
     // hold for that to work at all — the index lists the entries, an entry
