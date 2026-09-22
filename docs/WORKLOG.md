@@ -11,6 +11,115 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
+
+Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and
+`STATUS.md` at #109, so this entry also closes that gap: everything below
+shipped in one session, each as its own branch, PR and squash-merge.
+
+### What shipped, in order
+
+| PR       | What                                                            | The measurement that justified it                                                                                                                                                                      |
+| -------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **#114** | **A figure costs the screen it needs, and opens full size**     | A bound-drawn figure took whatever height its content asked for, pushing the "what it buys" sentence under the fold. Capped at `--figure-inline` (224px, 320 from `lg`), fade + **full size** when cut |
+| **#115** | **A glossary, with wiki backlinks**                             | 31 entries, `#/g/<slug>`, `[[term]]` anywhere in authored prose, and "what links here" COMPUTED from prose. `check:links` hit 72 URLs, 0 dead                                                          |
+| **#116** | **The vector gate says which failure it hit**                   | Run beside `test:ui` it reported **92** survivors; alone, **22**. Sixty-nine were phantom "the UNMUTATED python already errors" lines caused by CPU starvation                                         |
+| **#117** | **Every page says what it still owes** + `docs/PAGE-BACKLOG.md` | 152 of 153 pages were thin and none of them LOOKED thin                                                                                                                                                |
+| **#118** | **The problem page splits by zone**                             | 821 lines against a 500 ceiling — and the rail invariant had never been testable, because a `.tsx` will not load under `node --test`. 821 → 490, invariant now gated over all 153 problems             |
+| **#119** | **Five problems at the pilot's depth**                          | Coverage on the five playbook fields 1/153 → 6/153                                                                                                                                                     |
+| **#120** | **A glossary link names a word, not an array literal**          | `[[1, 5]]` would have rendered as `1, 5`. 0 live occurrences, 16 latent in record prose                                                                                                                |
+| **#121** | **Ten more problems at pilot depth**                            | 6/153 → 16/153, nine patterns                                                                                                                                                                          |
+| **#122** | **A phone gets the page's sections**                            | The contents rail is `xl`+; below it a thirty-screen page had no navigation at all                                                                                                                     |
+| **#123** | **The prose links to the glossary, and only where it may**      | 27 links, 13 distinct entries — and a gate forbidding any of them above the ladder                                                                                                                     |
+| **#124** | **The reading list reads as links, in columns**                 | 829 → 547px at 390, 591 → 335 at 1440                                                                                                                                                                  |
+
+### Where the corpus stands now
+
+|                          |                                                                                                                                                                                  |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Problems                 | 153, 19 patterns                                                                                                                                                                 |
+| The five playbook fields | **16 of 153** (was 1). `unlocks` · figures · `checks` · `costWhy` page and per rung · `reading`                                                                                  |
+| Pages that owe nothing   | **16 of 153** (`docs/PAGE-BACKLOG.md`, generated)                                                                                                                                |
+| Glossary                 | **31 entries**, 27 links from problem prose, 13 distinct entries reached                                                                                                         |
+| Journeys                 | 93; 60 problems still ship a static walkthrough                                                                                                                                  |
+| Teaching documents       | 82; **71 problems have none**                                                                                                                                                    |
+| Gates                    | `check` **875** · `test:ui` **171 in its own file** (185 with the panel audit) · `check:links` 72 URLs 0 dead · `verify:vectors` **RED, 22 survivors** (real, pre-existing, G12) |
+
+### The five ideas worth keeping
+
+**1. A gap must be visible, or the site overstates itself.** Every band on the
+problem page degrades to nothing when its field is absent. That is what lets
+152 thin pages render rather than break — and it is also why a page with no
+read-before-you-solve questions reads as a page _designed_ without them. The
+foot of a thin page now names its own gaps in the reader's language ("a journey
+— this problem is a static walkthrough, you watch it rather than earn it"), and
+the same rule module generates `docs/PAGE-BACKLOG.md`, so the site and the
+ledger cannot disagree.
+
+**2. A rung earns its place by being WRONG, if the page says why.** Three
+ladders now carry a rung with the best bound on the page and a worked
+counter-example: balanced-brackets' single counter is O(1) space and cannot see
+bracket type (`([)]`); subarray-sum-k's sliding window is O(n) and needs
+non-negative values (`[1, −1, 0]`, k = 0); product-except-self's division rung
+is O(n) and forbidden. A bound is not an answer unless the method computes the
+right thing.
+
+**3. Extracting a module is how a rule becomes testable.** The contents rail has
+carried "it lists the same array the page renders, so it can never offer a
+section that is not there" in a comment since it was built, and it had never
+been tested — because it lived in an 821-line `.tsx`. Moving the page's shape
+into a plain `.ts` was not tidiness; it is what let `page-sections.test.ts` hold
+that rule over 153 problems.
+
+**4. A gate that cannot tell its own starvation from a corpus defect sends you
+fixing correct code.** `verify:vectors` reported 92 survivors, 69 of them
+against problems whose Python runs clean in isolation — the mutation processes
+were losing the CPU to a concurrent browser suite. The message said "fix that
+first", which is a claim about the content, and it was a fact about the machine.
+
+**5. Where a link may go is pedagogy, not style.** A glossary link names a
+technique, so one in a statement, a hint or a bound hands the learner the
+approach the journey is still teaching them to earn. Two fields render terms and
+both sit below the ladder; `placement.test.ts` enforces it over the corpus,
+because a spoiler is invisible in a diff.
+
+### Traps this session paid for, all now in `CLAUDE.md` or a gate
+
+- **`verify:vectors` starved reads as `verify:vectors` broken.** 22 real
+  survivors read as 92 under load. The gate separates a timed-out baseline from
+  a failing one now, and prints its own RED/GREEN verdict so a pipe cannot hide
+  the exit code.
+- **A leading `{/* … */}` JSX comment in an extracted block is a second root
+  element**, and the error names the wrong line.
+- **Node has no path-alias resolver**, so a module a node test loads imports its
+  siblings relatively with `.ts` extensions — the convention `engine/` already
+  follows.
+- **`unlocks.constraint` must match the declared constraint character for
+  character.** Mine differed by one typographic apostrophe. No diff shows that.
+- **A problem's `reading` may not repeat a link its pattern already carries** —
+  three of mine did. Those sources are about the technique, not the instance.
+- **A backslash in a template literal sent to the page is consumed twice**, so a
+  browser check's `/\[\[/` arrived as an invalid regular expression. Paid for
+  again; a string test says the same thing.
+- **`prettier --write` on a directory reformats files the branch never touched.**
+  Two branches staged 133 unrelated files before this was caught. Format the
+  files you edited.
+- **U6 and U7 are about the RENDERED size, and they catch new prose fast.** A
+  sentence at the ui step filled 102ch of a 96ch column (the gate's ch estimate
+  scales with font size); figure captions are prose and cannot sit at 13px; the
+  figure's "full size" button measured 28px against a 44px touch floor.
+
+### What did NOT happen, and why
+
+**B71, the optimal-rung audit, is written and not run.** `scripts/time-rungs.mjs`
+and `scripts/benches.mjs` exist in draft: a bench per audited problem at its own
+constraint ceiling, best-of-N per rung, exit 1 when the page's answer is not the
+fastest. It is deliberately unrun, because a timing measurement taken while a
+browser suite is building is the same mistake #116 exists to prevent. It needs a
+quiet machine and one uninterrupted run.
+
+---
+
 ## 2026-09-15 — the problem page pilot, on `contains-duplicate`
 
 Two branches: **#108**, the algorithm visualizer moved to the foot of the sidebar, and **#109**,
@@ -23,21 +132,21 @@ the whole point of piloting it on one.
 
 **The measurements that drove it**, because none of this was taste:
 
-| Finding | Number |
-|---|---|
-| The search control covered the `solved` checkbox | 69 × 24 px at 1100 and below — unclickable |
-| The document repeated the ladder | 7,807 words, **4,222 of them (54%)** per-approach |
-| Sentence widths in one 768px column | **8** — 595, 527, 525, 509, 488, 480, 707, 349 |
-| Text nodes off the six-step type scale | **111** of 880 |
-| Constraint lines in the corpus that are English, set in the data face | **498** of 668 |
-| Dead width right of the content, before the rail loads | **317px** |
-| `problem-detail.tsx` | 843 lines against a 500 ceiling |
+| Finding                                                               | Number                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------- |
+| The search control covered the `solved` checkbox                      | 69 × 24 px at 1100 and below — unclickable        |
+| The document repeated the ladder                                      | 7,807 words, **4,222 of them (54%)** per-approach |
+| Sentence widths in one 768px column                                   | **8** — 595, 527, 525, 509, 488, 480, 707, 349    |
+| Text nodes off the six-step type scale                                | **111** of 880                                    |
+| Constraint lines in the corpus that are English, set in the data face | **498** of 668                                    |
+| Dead width right of the content, before the rail loads                | **317px**                                         |
+| `problem-detail.tsx`                                                  | 843 lines against a 500 ceiling                   |
 
 **Two things I got wrong and the gates or a second look caught:**
 
-* A comment I added inside `ui-smoke.test.mjs` quoted a selector in backticks — inside a template
+- A comment I added inside `ui-smoke.test.mjs` quoted a selector in backticks — inside a template
   literal. The file stopped parsing; 16 tests ran instead of 178.
-* I reported a 6200px vertical hole on the page. It did not exist: `getBoundingClientRect` on an
+- I reported a 6200px vertical hole on the page. It did not exist: `getBoundingClientRect` on an
   inline element spans every line it wraps across, and I was subtracting those rects. Recorded
   rather than quietly dropped, because the correction is the useful part.
 
@@ -49,12 +158,11 @@ characters **with** that decision rather than being deleted around it.
 **Gates:** `check` 789 → **823** · `test:ui` **178** · `verify:fences` 338 clean (baseline 7) ·
 `learn-gaps --strict` clean · `build` clean.
 
-
 ## Where it started
 
 Two repositories that did not know about each other. `dsa_problems` was a Vite + React practice
 site: 31 problems across 10 patterns, each with hints, a hand-written walkthrough and worked
-Python. `dsa_visualizer` was 8 200 lines of vanilla JS that built two problems *deeply* — a story
+Python. `dsa_visualizer` was 8 200 lines of vanilla JS that built two problems _deeply_ — a story
 act, approaches unlocked one at a time, the learner's own code driving the animation — plus a
 sorting and graph visualizer. The deep idea lived in the repo with the worse shell; the better
 shell had no depth.
@@ -64,20 +172,20 @@ shell had no depth.
 **1. One repo, and a port rather than an embed.** The visualizer's history was subtree-merged under
 `legacy/visualizer/` so nothing was lost, and its engine was rewritten as typed, DOM-free
 TypeScript. Embedding the old pages would have kept two shells, two theme systems and two progress
-stores forever. The port cost a day and bought a content schema whose invariants are *tests* and a
+stores forever. The port cost a day and bought a content schema whose invariants are _tests_ and a
 view model any client can draw: `view(frame, data) → StageModel` instead of `render()` writing HTML
 strings.
 
 **2. An HTTP API in front of the same engine.** One pure `route(method, path, body)` mounted three
 ways — Vite middleware, `node:http`, in-process. This is not for a backend we do not have; it is a
-forcing function. An engine that must serialise its frames over the wire *cannot* reach for the DOM,
+forcing function. An engine that must serialise its frames over the wire _cannot_ reach for the DOM,
 so the tests and the server stay possible by construction.
 
-**3. Corner cases as content, not advice.** Waleed Khamies' *How to Solve Algorithm Problems* §3.1
+**3. Corner cases as content, not advice.** Waleed Khamies' _How to Solve Algorithm Problems_ §3.1
 makes reading the problem an explicit step: restate it, formalise it as input → output, reread for
 hidden promises, and **bring three inputs** before any code. That became `Journey.edgeCases` —
 technique-neutral prose read on act 1 with a button that loads each case — plus frames tagged
-`corner:` so the same case is explained again *where it bites*. Taught twice, once to read and once
+`corner:` so the same case is explained again _where it bites_. Taught twice, once to read and once
 to watch, with a test that every case is tagged on its own preset.
 
 **4. The shell got out of the way.** Independent scroll panels, rails that collapse to a strip and
@@ -86,14 +194,14 @@ peek back on hover, `f` for focus, `?` for shortcuts, a settings dialog with exp
 
 **5. The catalogue learned to keep a secret.** "No unearned name" was tested inside a journey while
 the sidebar said **Two Pointers** in plain sight during the act that builds it. The fix follows an
-*active promise*: a pattern's name is hidden only while a journey that reveals it is started and
+_active promise_: a pattern's name is hidden only while a journey that reveals it is started and
 unfinished — never started means nothing was promised, finished means you earned it — with a
 one-click permanent opt-out for someone drilling problems who does not want to play along.
 
 **6. Gates before features.** A browser smoke test (`npm run test:ui`) drives the built app over
 CDP with no new dependency: `vite preview` plus the system Chrome. It found a real bug on its first
 run. Every later change added its own check, and five bugs were caught by gates rather than by a
-user — including one that broke *every* `for..of` solution in the code challenge, in both journeys,
+user — including one that broke _every_ `for..of` solution in the code challenge, in both journeys,
 since the day it shipped.
 
 **7. A measured UI/UX audit, then five batches of fixes.** Not opinions: contrast composited on a
@@ -102,18 +210,18 @@ computed. Verdict: the pixels were fine and the frame was not. Fourteen findings
 
 ## What it bought, in numbers
 
-| | Start of 2026-09-04 | Now |
-|---|---|---|
-| Repositories | 2 | 1 |
-| Journeys built to completion | 2 (vanilla JS) | **3** (typed, tested) |
-| Node tests | 0 | **43** |
-| Browser checks | 0 | **31** |
-| Docs | 1 README | **13 files**, cross-linked, link-checked |
-| Bugs caught by gates | — | **5**, listed in `BACKLOG.md` |
-| Phone chrome before the stage | 378 px of 844 | **170 px** |
-| Longest line of prose | 110 characters | **68** |
-| Worst text contrast | 3.64 : 1 | **7.4 : 1** |
-| Bundle | 674 kB, one chunk | 420 kB index + 263 kB shared + 34 / 10 / 1 kB lazy |
+|                               | Start of 2026-09-04 | Now                                                |
+| ----------------------------- | ------------------- | -------------------------------------------------- |
+| Repositories                  | 2                   | 1                                                  |
+| Journeys built to completion  | 2 (vanilla JS)      | **3** (typed, tested)                              |
+| Node tests                    | 0                   | **43**                                             |
+| Browser checks                | 0                   | **31**                                             |
+| Docs                          | 1 README            | **13 files**, cross-linked, link-checked           |
+| Bugs caught by gates          | —                   | **5**, listed in `BACKLOG.md`                      |
+| Phone chrome before the stage | 378 px of 844       | **170 px**                                         |
+| Longest line of prose         | 110 characters      | **68**                                             |
+| Worst text contrast           | 3.64 : 1            | **7.4 : 1**                                        |
+| Bundle                        | 674 kB, one chunk   | 420 kB index + 263 kB shared + 34 / 10 / 1 kB lazy |
 
 ## The five ideas worth keeping
 
@@ -140,49 +248,49 @@ Nine PRs: **#97–#106**. The project ends the day called **Patternsmith**.
 
 ### The complaint that started it
 
-*"why i am seeing still the ui the frondtend the smae way with dsa journety and dsa paatren instared
-fo combine in the ui with al infomation in one for a probelm"* — and it was right. The app read as
+_"why i am seeing still the ui the frondtend the smae way with dsa journety and dsa paatren instared
+fo combine in the ui with al infomation in one for a probelm"_ — and it was right. The app read as
 **two products**. Ninety-three of 127 problems appeared twice, under two headings, and four surfaces
 disagreed about what a problem even IS.
 
 A problem is one noun. Its journey is a MODE of it. Six surfaces collapsed onto that:
 
-| Surface | Was | Is |
-|---|---|---|
-| Sidebar | a catalogue of journeys above a catalogue of patterns | Continue (in play) + one catalogue, and the open pattern lists its problems |
-| Problem page | a button, a panel and a 34-screen wall | a mode bar, explanation collapsed |
-| Home | 6 journey links, 0 patterns | 1 (the dock), 19 |
-| Pattern list | 0 problem links — every row a `<button>` | every row a link |
-| Search palette | 220 rows for 127 problems | 127, marked |
-| Pattern page | a name and an 80-character blurb | orient / act / review, playbook and reading |
-| `#/resources` | a second page about a pattern | redirects |
+| Surface        | Was                                                   | Is                                                                          |
+| -------------- | ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| Sidebar        | a catalogue of journeys above a catalogue of patterns | Continue (in play) + one catalogue, and the open pattern lists its problems |
+| Problem page   | a button, a panel and a 34-screen wall                | a mode bar, explanation collapsed                                           |
+| Home           | 6 journey links, 0 patterns                           | 1 (the dock), 19                                                            |
+| Pattern list   | 0 problem links — every row a `<button>`              | every row a link                                                            |
+| Search palette | 220 rows for 127 problems                             | 127, marked                                                                 |
+| Pattern page   | a name and an 80-character blurb                      | orient / act / review, playbook and reading                                 |
+| `#/resources`  | a second page about a pattern                         | redirects                                                                   |
 
 ### Then the rest of one long request
 
-*"most oif the python code runnnig are not pringting anything … enable edit but dont sav eht eedit …
+_"most oif the python code runnnig are not pringting anything … enable edit but dont sav eht eedit …
 raedfurthter should be shown only at the priobem … make sure we have all teh problem liek 120 or
 more … are we having trhe all the pattern in the dsa that you cna think of … chekc hge justificaiton
 and padding and also they scalling of the text as the windows size moves … the sidebar is not
-showing all the tasks"*
+showing all the tasks"_
 
 Every part, with what it measured:
 
-| Ask | Shipped | Evidence |
-|---|---|---|
-| Python prints nothing | `py-preamble.ts` + `py-entry.ts` prepend the imports and node classes and synthesise the call | **45 of 184 fences raised NameError invisibly**; 338 now run clean, gated by `verify:fences` |
-| Editable, not saved | `editable` default on, nothing persisted | the edit is for thinking; resets on navigate |
-| Read further only on a problem | moved into `problem-detail.tsx` | pattern pages carry playbook + references only |
-| All the problems | 127 filed, 0 orphans, then **153** | new gate: every pattern owns at least one problem |
-| All the patterns | 10 → 18 → **19** | prefix-sums, greedy, bit-manipulation, backtracking, matrix, intervals, union-find, design, trie |
-| Padding and scaling | 6 widths × 5 routes measured | 0 sideways, 0 text under 12px, 0 justified runs; **controls under 40px on touch 37 → 0** |
-| Sidebar shows everything | the open pattern lists its problems | a masked pattern lists nothing — the titles are the idea it withholds |
+| Ask                            | Shipped                                                                                       | Evidence                                                                                         |
+| ------------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Python prints nothing          | `py-preamble.ts` + `py-entry.ts` prepend the imports and node classes and synthesise the call | **45 of 184 fences raised NameError invisibly**; 338 now run clean, gated by `verify:fences`     |
+| Editable, not saved            | `editable` default on, nothing persisted                                                      | the edit is for thinking; resets on navigate                                                     |
+| Read further only on a problem | moved into `problem-detail.tsx`                                                               | pattern pages carry playbook + references only                                                   |
+| All the problems               | 127 filed, 0 orphans, then **153**                                                            | new gate: every pattern owns at least one problem                                                |
+| All the patterns               | 10 → 18 → **19**                                                                              | prefix-sums, greedy, bit-manipulation, backtracking, matrix, intervals, union-find, design, trie |
+| Padding and scaling            | 6 widths × 5 routes measured                                                                  | 0 sideways, 0 text under 12px, 0 justified runs; **controls under 40px on touch 37 → 0**         |
+| Sidebar shows everything       | the open pattern lists its problems                                                           | a masked pattern lists nothing — the titles are the idea it withholds                            |
 
 ### Nineteen patterns, and the rule that governed the re-filing
 
 Eight patterns were added (#102) and 14 problems re-filed onto them, under one rule worth keeping:
 **a problem moves only if the approach this repo actually TEACHES for it is that pattern.**
 `jump-game` went to greedy because its top rung is the furthest-reach sweep; `coin-change-min`
-stayed in DP because greedy is *wrong* there, and the greedy playbook's fourth move is about exactly
+stayed in DP because greedy is _wrong_ there, and the greedy playbook's fourth move is about exactly
 that boundary. Otherwise the label lies.
 
 **Trie was deliberately left out** of #102 — zero problems would have made it a heading over white
@@ -234,7 +342,7 @@ A gate not proven to fail is decoration, so each was broken on purpose and watch
 `dsa.patterns` is a category label. It cannot be claimed, searched for as a product, or put on a
 profile as one's own — and the repo and the product did not even agree with each other.
 
-**Patternsmith** — *learn the idea before you learn its name.* The tagline is the thesis: the
+**Patternsmith** — _learn the idea before you learn its name._ The tagline is the thesis: the
 product withholds the pattern's name until you have already used it. `smith` was already the house
 idiom (`scripts/localsmith/`), and the name survives the project growing past DSA.
 
@@ -248,34 +356,34 @@ the header, not by reading the diff.
 
 ### Where it ended
 
-| | |
-|---|---|
-| Problems | **153**, 19 patterns, 0 orphans |
-| Journeys | 93; the other 60 ship a static walkthrough |
-| Records in `src/problems/<id>/` | **84** (58 converted + 26 new) |
-| Playbook moves · references | **83 · 57** across 19 patterns |
-| `npm run check` | **789 pass, 0 fail** |
-| `npm run test:ui` | **178 pass, 0 fail** |
-| `verify:fences` | 338 clean, 7 failed (baseline 7) |
-| `verify-deep.mjs` | **82/82** |
+|                                 |                                            |
+| ------------------------------- | ------------------------------------------ |
+| Problems                        | **153**, 19 patterns, 0 orphans            |
+| Journeys                        | 93; the other 60 ship a static walkthrough |
+| Records in `src/problems/<id>/` | **84** (58 converted + 26 new)             |
+| Playbook moves · references     | **83 · 57** across 19 patterns             |
+| `npm run check`                 | **789 pass, 0 fail**                       |
+| `npm run test:ui`               | **178 pass, 0 fail**                       |
+| `verify:fences`                 | 338 clean, 7 failed (baseline 7)           |
+| `verify-deep.mjs`               | **82/82**                                  |
 
 ---
 
 ## 2026-09-14 — a problem gets one directory and one page, and five gates earned their keep
 
 Five branches, stacked: **#90** → **#91** → **#92** → **#93** → **#94**. The through-line is one
-sentence — *everything about a problem in one place* — applied twice, once to the files and once to
+sentence — _everything about a problem in one place_ — applied twice, once to the files and once to
 the screen.
 
 ### What shipped
 
-| PR | What |
-|---|---|
+| PR  | What                                                                                                 |
+| --- | ---------------------------------------------------------------------------------------------------- |
 | #90 | `src/problems/<id>/` — one directory per problem, record and document, proved on `balanced-brackets` |
-| #91 | The explanation stops being a second route; `#/p/<pattern>/<id>` is the only page a problem has |
-| #92 | 25 more problems moved — every document whose approaches already matched its ladder |
-| #93 | The last 13 single-file documents split; every directory whole, nothing over 500 lines |
-| #94 | The first ten B79 promotions, and the ten problems they unblocked |
+| #91 | The explanation stops being a second route; `#/p/<pattern>/<id>` is the only page a problem has      |
+| #92 | 25 more problems moved — every document whose approaches already matched its ladder                  |
+| #93 | The last 13 single-file documents split; every directory whole, nothing over 500 lines               |
+| #94 | The first ten B79 promotions, and the ten problems they unblocked                                    |
 
 **49 of 127 problems** live in `src/problems/<id>/` now, both halves split into sections. **49 of 82
 documents typed**, 33 still Markdown. Largest file under `src/problems/`: 363 lines, against 928
@@ -321,7 +429,7 @@ source safe rather than hopeful.
    documents put under that heading arguing what the bound buys — fifteen more. `content-roundtrip`
    refused the batch twice; nothing else would have noticed either.
 4. **The ladder could only place an extra rung at the foot or the top.** Five of ten promotions were
-   STEPPING STONES — the rung a document reaches its answer *through*. `sorted-squares` got its
+   STEPPING STONES — the rung a document reaches its answer _through_. `sorted-squares` got its
    "merge two runs" rendered **above** the answer, the one ordering the page promises it never shows;
    `tree-diameter`'s misplacement silently moved `whyNow` above a different rung. `Solution.after`
    names the rung it follows, gated by `problems.test.ts`.
@@ -334,23 +442,23 @@ source safe rather than hopeful.
 
 ### A stale disclosure is content that becomes a lie
 
-Four documents opened a promoted approach with *"this rung is an addition — not in the data file's
-ladder"*, which the promotion made false. `content-roundtrip.mjs` reported them as **lost content**,
+Four documents opened a promoted approach with _"this rung is an addition — not in the data file's
+ladder"_, which the promotion made false. `content-roundtrip.mjs` reported them as **lost content**,
 which is how they were found. Deleted from the Markdown deliberately, so the diff shows it rather
 than letting the converter drop them in silence.
 
 ### Evidence
 
-| Gate | Result |
-|---|---|
-| `npm run check` | **780 tests, 0 fail** |
-| `npm run test:ui` | **172 / 0 fail**, real Chrome |
-| `npm run verify:code` | **778 blocks compiled, 0 failed** — 758 before the ten promotions |
-| `npm run verify:run` | **2,239 oracle runs, 4,478 translations compared, 0 disagreed**, zero launch flakes |
-| `verify-deep.mjs` | **82/82** ran clean and reported agreement |
-| `content-roundtrip.mjs --all` | every line of all 35 converted documents carried through |
-| `learn-gaps.mjs --strict` | clean; ratchet 105 → 72 |
-| First load of `#/` | **197.0 KB / 5 files → 195.3 KB / 3 files**, from the page's own resource timeline |
+| Gate                          | Result                                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------------- |
+| `npm run check`               | **780 tests, 0 fail**                                                               |
+| `npm run test:ui`             | **172 / 0 fail**, real Chrome                                                       |
+| `npm run verify:code`         | **778 blocks compiled, 0 failed** — 758 before the ten promotions                   |
+| `npm run verify:run`          | **2,239 oracle runs, 4,478 translations compared, 0 disagreed**, zero launch flakes |
+| `verify-deep.mjs`             | **82/82** ran clean and reported agreement                                          |
+| `content-roundtrip.mjs --all` | every line of all 35 converted documents carried through                            |
+| `learn-gaps.mjs --strict`     | clean; ratchet 105 → 72                                                             |
+| First load of `#/`            | **197.0 KB / 5 files → 195.3 KB / 3 files**, from the page's own resource timeline  |
 
 Pages driven in Chrome at 1440 and 390 throughout, because none of those gates looks at a page:
 zero duplicated headings, the statement exactly once, no markdown syntax on screen, no sideways
@@ -371,18 +479,19 @@ Three pieces of work, and the third changed what this project is for.
 
 ### B68 closed — thin rungs repo-wide go 50 to 0
 
-The item was filed against three patterns: *81 of 174 rungs carry a summary under 160 characters*.
+The item was filed against three patterns: _81 of 174 rungs carry a summary under 160 characters_.
 It closed wider than it was filed — all **127** problems, every rung including the optimal one,
 counted with a `node -e` over `PROBLEMS` on `summary.length < 160`. Seven passes: arrays-hashing,
 two-pointers, dp, binary-search, then linked-list (12) + sliding-window (11) + trees (8) + heaps (7)
-+ stack (6) + graphs (6) in one — 50 rungs across 42 files.
+
+- stack (6) + graphs (6) in one — 50 rungs across 42 files.
 
 The bar every rewrite meets is three things, and the third is the one that was missing: **what the
 rung does, what it costs, and the promise it ignores** — the fact the problem handed you that this
 rung throws away. `merge-two-sorted` sorting both lists is not slow because `n log n` beats `n`; it
-is slow because both inputs were **already sorted**. `cycle-detect` needs a set of node *objects*
+is slow because both inputs were **already sorted**. `cycle-detect` needs a set of node _objects_
 because duplicate values are legal and a value set reports a cycle that is not there.
-`reverse-list` rebuilding through an array returns a *different* list and leaves every caller
+`reverse-list` rebuilding through an array returns a _different_ list and leaves every caller
 pointer aimed at the old one — which is what "in place" forbids.
 
 Commit `7f90e09`. Verified: `npm run check` 758/758, `docs:learn` regenerated all 128 pages,
@@ -399,8 +508,8 @@ implicit concatenation and a TypeScript syntax error.
 
 Both were filed during the previous session and both rendered where a learner could see them.
 
-**G6, `balanced-tree`.** The naive rung is *named* "Measure the height at every node", is
-*labelled* `O(n^2)`, and did neither: it checked a node, then recursed only if that check passed.
+**G6, `balanced-tree`.** The naive rung is _named_ "Measure the height at every node", is
+_labelled_ `O(n^2)`, and did neither: it checked a node, then recursed only if that check passed.
 Reaching a deep node therefore required every ancestor to be balanced, balanced means height
 `O(log n)`, so its real worst case was `O(n log n)`. On a left spine it failed at the root and
 left — **100 / 200 / 400 / 800** `height()` entries for `n` of 50 / 100 / 200 / 400. Strictly
@@ -413,8 +522,8 @@ On a perfect tree the two versions are identical (40,962 entries at `n = 2,047`)
 `O(n log n)` the old one topped out at. 3,000 random trees, 0 disagreements, so this changed cost
 and not answers.
 
-**G7, `tree-diameter`.** The third example carried the note *"a solution that only measures through
-the root gets this wrong"*, and it did not: through-the-root returns `3` on
+**G7, `tree-diameter`.** The third example carried the note _"a solution that only measures through
+the root gets this wrong"_, and it did not: through-the-root returns `3` on
 `[1, 2, null, 3, null, 4]`, which is correct, because a chain's longest path ends at the root. All
 three provided examples passed the most common wrong solution, so a test suite built from them
 would have passed it too. The third example is now `[1, 2, null, 3, 4, 5, 6, 7]`, answer **4** along
@@ -431,33 +540,33 @@ and this one carried a note asserting that it did.
 
 ### The retrofit queue — five documents, and a pattern nobody had noticed
 
-`docs/LEARN-PLAN.md` items 2 to 4: **122** documents missing *Reading the Calculations*, *How to Get
-Fluent*, or an `Under the hood` callout carrying a measured number. Five done, in sidebar order, one
+`docs/LEARN-PLAN.md` items 2 to 4: **122** documents missing _Reading the Calculations_, _How to Get
+Fluent_, or an `Under the hood` callout carrying a measured number. Five done, in sidebar order, one
 commit each, ratchet lowered one step per document (122 to 117).
 
-| Document | Commit | What measuring showed |
-|---|---|---|
-| `top-k-frequent` | `1d7d0ed` | The **optimal** rung is the slowest real rung on the page — 13.2 ms against 5.0 ms for sort-the-counts at `n = 10^5`. `[[] for _ in range(n + 1)]` builds `n + 1` real list objects: 29 / 327 / 5,754 / 97,662 us for 1k / 10k / 100k / 1M slots, so the wall alone is 5.8 of the rung's 13.2 ms. Sizing it `max(count) + 1` beats the sort at every width measured (7,811 to 295 us at `d = 10`). **Filed as G11, not fixed** — Approach 4's own Watch out currently teaches `n + 1` as the *correct* size against the `len(nums)` crash, so a third sizing needs that callout rewritten rather than appended to |
-| `longest-consecutive-run` | `21f54b3` | The guard is a `continue` statement, so the document counts it. One unbroken run of `n`: probes without the guard 1,275 / 5,050 / 20,100 / 80,200 / 320,400, with it 100 / 200 / 400 / 800 / 1,600 — and the *ratio itself* doubles every row. The uncomfortable half: on an array with no run longer than 1 the guard **doubles** the probes and saves nothing. Both are linear there, so a test suite of scattered values **cannot tell the two rungs apart** |
-| `contains-duplicate` | `b1290c7` | `len(set(nums)) != len(nums)` — filed in the document as an *addition*, not the answer — beats the optimal early-exit rung by **60%** on the worst case (3.33 against 5.35 ms), by doing strictly more work in C rather than less work in the interpreter. The early exit's real currency is the best case (33x) and the memory it never allocates: 1 value stored against 100,000 |
-| `valid-anagram` | `9f4434e` | The `O(1)`-space rung is **3x slower** than `Counter(s) == Counter(t)` and no faster than the sort it replaced. On 50,000 identical characters the **sort wins by 8x**, because Timsort detects an ordered run. No column moves with the position of the mismatch — not one rung here can exit early |
-| `product-except-self` | `82c12cf` | The first document where the optimal rung really *is* fastest (1.8x, holding one integer against 200,000). The finding came from a measurement that **hung**: timing `n = 10^5` with values in -30..30 never finished, because that input violates the statement's own 32-bit constraint. `O(n)` counts *multiplications*, and on an array of `n` twos the same code goes quadratic — 0.1 / 0.2 / 1.2 / 9.0 ms at `n` of 500 / 1,000 / 2,000 / 4,000, the running product reaching 4,001 bits |
+| Document                  | Commit    | What measuring showed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `top-k-frequent`          | `1d7d0ed` | The **optimal** rung is the slowest real rung on the page — 13.2 ms against 5.0 ms for sort-the-counts at `n = 10^5`. `[[] for _ in range(n + 1)]` builds `n + 1` real list objects: 29 / 327 / 5,754 / 97,662 us for 1k / 10k / 100k / 1M slots, so the wall alone is 5.8 of the rung's 13.2 ms. Sizing it `max(count) + 1` beats the sort at every width measured (7,811 to 295 us at `d = 10`). **Filed as G11, not fixed** — Approach 4's own Watch out currently teaches `n + 1` as the _correct_ size against the `len(nums)` crash, so a third sizing needs that callout rewritten rather than appended to |
+| `longest-consecutive-run` | `21f54b3` | The guard is a `continue` statement, so the document counts it. One unbroken run of `n`: probes without the guard 1,275 / 5,050 / 20,100 / 80,200 / 320,400, with it 100 / 200 / 400 / 800 / 1,600 — and the _ratio itself_ doubles every row. The uncomfortable half: on an array with no run longer than 1 the guard **doubles** the probes and saves nothing. Both are linear there, so a test suite of scattered values **cannot tell the two rungs apart**                                                                                                                                                   |
+| `contains-duplicate`      | `b1290c7` | `len(set(nums)) != len(nums)` — filed in the document as an _addition_, not the answer — beats the optimal early-exit rung by **60%** on the worst case (3.33 against 5.35 ms), by doing strictly more work in C rather than less work in the interpreter. The early exit's real currency is the best case (33x) and the memory it never allocates: 1 value stored against 100,000                                                                                                                                                                                                                                |
+| `valid-anagram`           | `9f4434e` | The `O(1)`-space rung is **3x slower** than `Counter(s) == Counter(t)` and no faster than the sort it replaced. On 50,000 identical characters the **sort wins by 8x**, because Timsort detects an ordered run. No column moves with the position of the mismatch — not one rung here can exit early                                                                                                                                                                                                                                                                                                              |
+| `product-except-self`     | `82c12cf` | The first document where the optimal rung really _is_ fastest (1.8x, holding one integer against 200,000). The finding came from a measurement that **hung**: timing `n = 10^5` with values in -30..30 never finished, because that input violates the statement's own 32-bit constraint. `O(n)` counts _multiplications_, and on an array of `n` twos the same code goes quadratic — 0.1 / 0.2 / 1.2 / 9.0 ms at `n` of 500 / 1,000 / 2,000 / 4,000, the running product reaching 4,001 bits                                                                                                                     |
 
 **Three of five found the ladder's designated optimal rung losing to a rung below it on the clock.**
-That is a high enough hit rate to be worth a sweep rather than a fix, and it is now the thesis: *the
-ladder ranks algorithms, the clock ranks implementations, and in Python they come apart.* No page in
+That is a high enough hit rate to be worth a sweep rather than a fix, and it is now the thesis: _the
+ladder ranks algorithms, the clock ranks implementations, and in Python they come apart._ No page in
 this repo said that before it was measured.
 
-Also worth recording: the `product-except-self` finding means the constraint *"every answer fits in
-a 32-bit integer"* is not a note about overflow. At `n = 10^5` it forces almost every element of a
+Also worth recording: the `product-except-self` finding means the constraint _"every answer fits in
+a 32-bit integer"_ is not a note about overflow. At `n = 10^5` it forces almost every element of a
 legal input to be `1`, `-1` or `0` — a legal array of a hundred thousand elements can hold at most
 about thirty values of magnitude 2 or more. It is a description of the input.
 
 ### The repo opened for collaborators
 
 `README.md` rewritten as a front door carrying the measured findings rather than a feature list,
-plus a new `CONTRIBUTING.md`, three GitHub issue templates (the most-wanted being *a claim that does
-not survive being run* — it asks for a measurement and a location, and explicitly does **not** ask
+plus a new `CONTRIBUTING.md`, three GitHub issue templates (the most-wanted being _a claim that does
+not survive being run_ — it asks for a measurement and a location, and explicitly does **not** ask
 for a fix) and a PR template whose Verification section asks for real output rather than assertions.
 `docs/PRD.md` gained section 4b, the **evidence standard**: nine requirements E1 to E9, each with the
 counter and the ratchet behind it, and its stale header fixed — it still said 31 problems, 3 journeys
@@ -466,7 +575,7 @@ no current one. `CODE_OF_CONDUCT.md` written in our own words rather than adopti
 Covenant text, its one project-specific clause being the one that matters here: **disagree with
 evidence**, which has to run both ways.
 
-The ask is sized and counted so a contributor sees what *done* means before starting: 45 problems
+The ask is sized and counted so a contributor sees what _done_ means before starting: 45 problems
 with no teaching document, 117 missing a required section, 34 without a journey, `G11` open. Every
 one is independent, which is the actual argument for asking rather than grinding — 117 documents at
 2 to 4 hours each is 30+ working days for one person.
@@ -479,8 +588,8 @@ typecheck, lint, the 758 tests and the build; then all 82 teaching scripts throu
 drift gate with `--strict`, and a regeneration of `docs/learn` that fails if it was hand-edited or
 left stale — the mistake this session made twice before it became muscle memory. Deliberately absent:
 `test:ui` (needs Chrome), `verify:code` and `verify:run` (need a JDK and g++). The workflow file, the
-README and `CONTRIBUTING.md` all say in those words that a green tick means *nothing obviously
-broke*, not verification. A badge trusted for more than it checks is worse than no badge.
+README and `CONTRIBUTING.md` all say in those words that a green tick means _nothing obviously
+broke_, not verification. A badge trusted for more than it checks is worse than no badge.
 
 **`.gitattributes`.** Regenerating `docs/learn` on Windows left `git status` reporting 128 modified
 files whose content was byte-identical — `git diff --exit-code` returned 0 and the md5 matched the
@@ -490,7 +599,7 @@ above would have read a different signal on each platform. `text=auto eol=lf` se
 
 ### Merged to master, and pushed
 
-**76 commits, merged with `--no-ff` rather than squashed.** The commit bodies *are* the audit trail
+**76 commits, merged with `--no-ff` rather than squashed.** The commit bodies _are_ the audit trail
 on this branch — each one carries the measurement behind its claim — so a squash would have thrown
 away precisely the thing the branch is about. The house rule prefers a squash; it is written for a
 single-increment branch, and this was not one.
@@ -500,16 +609,16 @@ committed blobs.
 
 **All seven gates, re-run on the merged tree rather than trusted from the branch:**
 
-| Gate | Result |
-|---|---|
-| `npm run check` | 758 tests, 0 failed |
-| `npm run test:ui` | 166 checks, 0 failed, real Chrome |
-| `npm run verify:code` | 752 blocks, 0 failed |
-| `npm run verify:run` | 2,168 oracle runs, 4,336 translations compared, 0 disagreed |
-| `npm run verify:vectors` | 637 mutants, 583 caught (92%), **0 survived** |
-| `node scripts/verify-deep.mjs` | 82/82 ran clean and reported agreement |
-| `node scripts/learn-gaps.mjs --strict` | 0 undisclosed additions |
-| `npm run build` | clean |
+| Gate                                   | Result                                                      |
+| -------------------------------------- | ----------------------------------------------------------- |
+| `npm run check`                        | 758 tests, 0 failed                                         |
+| `npm run test:ui`                      | 166 checks, 0 failed, real Chrome                           |
+| `npm run verify:code`                  | 752 blocks, 0 failed                                        |
+| `npm run verify:run`                   | 2,168 oracle runs, 4,336 translations compared, 0 disagreed |
+| `npm run verify:vectors`               | 637 mutants, 583 caught (92%), **0 survived**               |
+| `node scripts/verify-deep.mjs`         | 82/82 ran clean and reported agreement                      |
+| `node scripts/learn-gaps.mjs --strict` | 0 undisclosed additions                                     |
+| `npm run build`                        | clean                                                       |
 
 Two things left open and worth knowing. The GitHub labels the issue templates apply —
 `false-claim`, `content`, `bug` — **do not exist yet**; GitHub drops an unknown label silently, so
@@ -531,7 +640,7 @@ already written down and already true — on the four routes a test walked, and 
 
 **1. A gate only protects what it visits.** `test:ui` audits motion under `main` on three routes.
 Everything outside that had quietly drifted: the sidebar rail ran `duration-200 ease-linear` — a
-third duration *and* a second curve, on the one surface visible from every screen — the mobile
+third duration _and_ a second curve, on the one surface visible from every screen — the mobile
 sheet `duration-200 ease-in-out`, the static step-player `duration-300`, dialogs and items
 `duration-100`. Six files, none of them broken, all of them off-token. Re-running the same audit
 **document-wide across 8 routes × 2 widths** is what found them, and it now reads: one curve, zero
@@ -548,7 +657,7 @@ hrefs exist in the codebase and only one was guarded — the sweep found the oth
 **3. A clipped element still reports a bounding rect.** The first overlap detector said the journey
 page's sticky reading toggle was covering one to three text nodes. It was not. The text sat at
 `top=624` while its own scroll container ended at `bot=623` — clipped, invisible either way, and
-nothing to do with the bar. Rebuilding the detector to intersect against *every* clipping ancestor
+nothing to do with the bar. Rebuilding the detector to intersect against _every_ clipping ancestor
 before hit-testing is what surfaced the real offenders. A confident wrong diagnosis cost about
 twenty minutes and would have cost a wrong fix.
 
@@ -566,36 +675,36 @@ to the tab that was tapped.
 
 ### What shipped
 
-| | |
-|---|---|
-| Motion, hover, focus | Cards and the dock lift on hover **and keyboard focus**, press down on `:active`; one `[data-affordance="nudge"]` rule owns the row-chevron slide; `<main key={path}>` replays the 320ms arrival on route change — it had only ever run once, at mount |
-| Two new primitives | `ui/row.tsx` (`RowNudge`, `RowProgress`), `ui/tick-meter.tsx` (`DifficultyMeter`, `ComplexityMark`) |
-| Complexity as a shape | `lib/complexity.ts` classifies any `O(…)` into six growth classes; every rung of the ladder carries the mark, so the climb is drawn. On `single-number` it reads 5·3·4·3 — which shows the ladder is *not* monotone, exactly as its own copy says |
-| A references layer | 30 attributed readings, 3 per pattern, every URL checked with a real request. Hidden while the pattern is masked — a reading list is a pattern name written five different ways |
-| The long explanation gets a door | `Learn this problem` moved from `top: 3922px` to `top: 178px` and now names which kind of page it opens (81 of 127 have an authored `docs/deep/` document) |
-| ~~Problem page, three zones~~ | **Written, not shipped.** An orient bar, one raised act surface, review bands — reported as bands 8→7, boxes 26→23, shadowed 12→10, accent 24→20, raised 0→1. It restructures a DOM that R1, R2, B45 and the learn-link gate all read, and nobody asked for it, so it is parked in `git stash` pending a decision. See G10. |
-| Phone reading bar | Stage 197px → 524px, **23% → 62%** of the viewport |
-| Flashcards actually flip | Both faces in one grid cell, so the card never changes height (measured delta: 0px) |
+|                                  |                                                                                                                                                                                                                                                                                                                             |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Motion, hover, focus             | Cards and the dock lift on hover **and keyboard focus**, press down on `:active`; one `[data-affordance="nudge"]` rule owns the row-chevron slide; `<main key={path}>` replays the 320ms arrival on route change — it had only ever run once, at mount                                                                      |
+| Two new primitives               | `ui/row.tsx` (`RowNudge`, `RowProgress`), `ui/tick-meter.tsx` (`DifficultyMeter`, `ComplexityMark`)                                                                                                                                                                                                                         |
+| Complexity as a shape            | `lib/complexity.ts` classifies any `O(…)` into six growth classes; every rung of the ladder carries the mark, so the climb is drawn. On `single-number` it reads 5·3·4·3 — which shows the ladder is _not_ monotone, exactly as its own copy says                                                                           |
+| A references layer               | 30 attributed readings, 3 per pattern, every URL checked with a real request. Hidden while the pattern is masked — a reading list is a pattern name written five different ways                                                                                                                                             |
+| The long explanation gets a door | `Learn this problem` moved from `top: 3922px` to `top: 178px` and now names which kind of page it opens (81 of 127 have an authored `docs/deep/` document)                                                                                                                                                                  |
+| ~~Problem page, three zones~~    | **Written, not shipped.** An orient bar, one raised act surface, review bands — reported as bands 8→7, boxes 26→23, shadowed 12→10, accent 24→20, raised 0→1. It restructures a DOM that R1, R2, B45 and the learn-link gate all read, and nobody asked for it, so it is parked in `git stash` pending a decision. See G10. |
+| Phone reading bar                | Stage 197px → 524px, **23% → 62%** of the viewport                                                                                                                                                                                                                                                                          |
+| Flashcards actually flip         | Both faces in one grid cell, so the card never changes height (measured delta: 0px)                                                                                                                                                                                                                                         |
 
 ### In numbers
 
-| | before | after |
-|---|---|---|
-| off-token durations (document-wide, 8 routes) | 5 distinct | **0** |
-| easing curves | 2 | **1** |
-| touch targets <44px, problem page @390 | 17 of 26 | **7** (3 are DESIGN.md's own range controls, 4 the 28px copy button, above the WCAG floor) |
-| stage share of a 390×844 phone | 23% | **62%** |
-| prose below 14px on the learn page | 4 nodes | **0** |
-| routes scrolling sideways | 2 (home @1440, flashcards @390) | **0** |
-| node tests · browser checks | 753 · 163 | **758 · 166** |
+|                                               | before                          | after                                                                                      |
+| --------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------ |
+| off-token durations (document-wide, 8 routes) | 5 distinct                      | **0**                                                                                      |
+| easing curves                                 | 2                               | **1**                                                                                      |
+| touch targets <44px, problem page @390        | 17 of 26                        | **7** (3 are DESIGN.md's own range controls, 4 the 28px copy button, above the WCAG floor) |
+| stage share of a 390×844 phone                | 23%                             | **62%**                                                                                    |
+| prose below 14px on the learn page            | 4 nodes                         | **0**                                                                                      |
+| routes scrolling sideways                     | 2 (home @1440, flashcards @390) | **0**                                                                                      |
+| node tests · browser checks                   | 753 · 163                       | **758 · 166**                                                                              |
 
 ### Three gates added, each mutation-tested
 
-Not "a test was written" — the fix was *removed* and the test confirmed to fail by name.
+Not "a test was written" — the fix was _removed_ and the test confirmed to fail by name.
 
-- *a jump to an approach scrolls, and lands clear of the sticky bar* → `AssertionError: a bare #id href hijacked the hash ROUTE — the reader was thrown off the page`
-- *on a phone the stage gets the screen, and reading is a bottom bar* → `AssertionError: the reading COLUMN is still rendered on a phone`
-- *patterns: every reference is a usable, attributed reading* → `AssertionError: arrays-hashing → Hash table: not an https URL`
+- _a jump to an approach scrolls, and lands clear of the sticky bar_ → `AssertionError: a bare #id href hijacked the hash ROUTE — the reader was thrown off the page`
+- _on a phone the stage gets the screen, and reading is a bottom bar_ → `AssertionError: the reading COLUMN is still rendered on a phone`
+- _patterns: every reference is a usable, attributed reading_ → `AssertionError: arrays-hashing → Hash table: not an https URL`
 
 ### What was refused, and why
 
@@ -608,7 +717,7 @@ narration inside `yield {}` and only 56 are algorithm. The cheapest work is the 
 and the repo had already worked that out.
 
 **"All four P0s in one go."** B65 is 373 problems × 191 lines mean ≈ **71 560 lines** of gated
-content, each needing three languages that compile *and* agree with the Python oracle. B63 is 40
+content, each needing three languages that compile _and_ agree with the Python oracle. B63 is 40
 journeys × 500 lines ≈ **20 021 lines**, each through a content gate that failed six of eight
 journeys on first run. Generating text that looks like those batches is easy; the parts that passed
 the gate would be pedagogy nobody checked, which is the one failure mode this whole session was
@@ -640,8 +749,8 @@ silently reverted that bug fix. Merge such a stash; never pop it.
 A session that started as "write the remaining trees documents" and turned into a rebuild of how a
 problem is read, because a reader said the thing the whole repo was supposed to prevent:
 
-> *in the two-pass hash map solution I am not understanding why the first element goes to the first
-> bucket, what are the calculations*
+> _in the two-pass hash map solution I am not understanding why the first element goes to the first
+> bucket, what are the calculations_
 
 They were right twice. The first element does **not** go into the first bucket, and nothing on the
 page said so.
@@ -666,7 +775,7 @@ unearned rungs.
 
 **The bucket arithmetic, on screen.** `HashModel` now carries a `mode`, so an insert gets the same
 `hash(k) = k mod buckets = bucket s` line a lookup gets, plus the sentence that answers the actual
-question — *the slot is decided by the VALUE, never by the order it arrived in* — and the table's
+question — _the slot is decided by the VALUE, never by the order it arrived in_ — and the table's
 starting size says why it is eight.
 
 ### What measuring found, and it was not flattering
@@ -684,13 +793,13 @@ An audit of where problem knowledge lives produced three findings, all verified 
 
 Then `scripts/learn-gaps.mjs` counted the authored half, and that is the real finding:
 
-| | |
-|---|---|
-| Problems with no teaching document | **46** |
-| Missing "Reading the Calculations" | **126** |
-| Missing "How to Get Fluent" | **126** |
-| No measured "Under the hood" claim | **126** |
-| Adding approaches without disclosing it | **23** |
+|                                         |         |
+| --------------------------------------- | ------- |
+| Problems with no teaching document      | **46**  |
+| Missing "Reading the Calculations"      | **126** |
+| Missing "How to Get Fluent"             | **126** |
+| No measured "Under the hood" claim      | **126** |
+| Adding approaches without disclosing it | **23**  |
 
 `verify-deep` runs each document's script and checks the approaches agree — which says nothing about
 the prose. **45 of 81 documents teach a rung the data file does not have, and 29 never said so.**
@@ -735,12 +844,12 @@ and failed.
 
 ### The gates
 
-| Gate | Command | State |
-|---|---|---|
-| Types, lint, content | `npm run check` | tsc 0 · eslint 0 · **753 tests** |
-| The interface, in a real browser | `npm run test:ui` | **163 checks**, 0 failed |
-| Every teaching document's script runs and agrees | `node scripts/verify-deep.mjs` | **81/81** |
-| The authored half does not get worse | `node scripts/learn-gaps.mjs --strict` | ratchet, baseline recorded |
+| Gate                                             | Command                                | State                            |
+| ------------------------------------------------ | -------------------------------------- | -------------------------------- |
+| Types, lint, content                             | `npm run check`                        | tsc 0 · eslint 0 · **753 tests** |
+| The interface, in a real browser                 | `npm run test:ui`                      | **163 checks**, 0 failed         |
+| Every teaching document's script runs and agrees | `node scripts/verify-deep.mjs`         | **81/81**                        |
+| The authored half does not get worse             | `node scripts/learn-gaps.mjs --strict` | ratchet, baseline recorded       |
 
 ### What was deliberately not done
 
@@ -754,7 +863,6 @@ the four readers a document has to serve at once. The first-year student who sta
 arithmetic is the one every document here had been skipping.
 
 ---
-
 
 ## 2026-09-12 — a page per problem, twenty more problems, and text you can actually read
 
@@ -793,18 +901,18 @@ stack, sliding window, binary search and arrays & hashing.
 
 **`Problem.arc`** is the new field: one paragraph naming the single idea the whole ladder applies
 and which rungs to know cold. Every one of the 127 problems carries one. The rungs could not say it
-— each only knows the rung below it — and it is the part a learner takes to the *next* problem. It
+— each only knows the rung below it — and it is the part a learner takes to the _next_ problem. It
 renders under the ladder and at the foot of every explainer page, and never while a journey's
 ladder is capped, because it names where the climb ends.
 
-| Gate | Result |
-|---|---|
-| `npm run check` | tsc 0 · eslint 0 · **680 tests** |
-| `npm run test:ui` | **154 checks**, 0 failed |
-| `npm run verify:code` | **752 blocks**, 0 failed (612 before) |
-| `npm run verify:run` | 2147 oracle runs, **4294 comparisons, 0 disagreed** |
-| `npm run verify:vectors` | **0 unexplained survivors** |
-| CPython, every rung of the 20 | all agree, except the rung built to be wrong |
+| Gate                          | Result                                              |
+| ----------------------------- | --------------------------------------------------- |
+| `npm run check`               | tsc 0 · eslint 0 · **680 tests**                    |
+| `npm run test:ui`             | **154 checks**, 0 failed                            |
+| `npm run verify:code`         | **752 blocks**, 0 failed (612 before)               |
+| `npm run verify:run`          | 2147 oracle runs, **4294 comparisons, 0 disagreed** |
+| `npm run verify:vectors`      | **0 unexplained survivors**                         |
+| CPython, every rung of the 20 | all agree, except the rung built to be wrong        |
 
 **The mutation gate was right three times, and they were real holes.** `spiral-order` could not tell
 `top <= bottom` from `top < bottom` until a 2×3 and a 4×2 were added; `mirror-tree` needed a tree
@@ -826,12 +934,12 @@ buying gates rather than reviewers (`docs/MODELS.md`).
 Reported as "I am unable to read the text". **Measured before touching anything** — every text node
 on four routes, out of a real browser, with computed size and contrast:
 
-| Route | nodes | below WCAG AA | below 13px |
-|---|---|---|---|
-| problem page | 121 | **13** | **51** |
-| home | 64 | 0 | 28 |
-| journey | 68 | 1 | 23 |
-| visualizer | 55 | 0 | 35 |
+| Route        | nodes | below WCAG AA | below 13px |
+| ------------ | ----- | ------------- | ---------- |
+| problem page | 121   | **13**        | **51**     |
+| home         | 64    | 0             | 28         |
+| journey      | 68    | 1             | 23         |
+| visualizer   | 55    | 0             | 35         |
 
 Two causes, and neither was the palette. The scale was one step low, and **154 raw Tailwind sizes
 across 39 files** never went through it. The worst offenders were not small but **invisible**:
@@ -886,11 +994,11 @@ Twenty problems across arrays-hashing, two-pointers and linked-list, each with *
 worst → best rather than the usual two or three. 100 rungs, **300 code blocks**, Python + Java + C++
 on every rung.
 
-| Pattern | Problems |
-|---|---|
+| Pattern        | Problems                                                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | arrays-hashing | rotate-array, missing-number, find-all-duplicates, plus-one, first-missing-positive, summary-ranges, intersection-of-arrays |
-| two-pointers | remove-element, reverse-string, merge-sorted-array, three-sum-closest, backspace-compare, boats-to-save, next-permutation |
-| linked-list | add-two-numbers, odd-even-list, remove-list-elements, swap-pairs, rotate-list, reorder-list |
+| two-pointers   | remove-element, reverse-string, merge-sorted-array, three-sum-closest, backspace-compare, boats-to-save, next-permutation   |
+| linked-list    | add-two-numbers, odd-even-list, remove-list-elements, swap-pairs, rotate-list, reorder-list                                 |
 
 Six agents wrote them in parallel, each kept OUT of the three shared files — the pattern barrels,
 `data/index.ts` and `vectors.mjs` — because that is precisely where six writers collide.
@@ -930,13 +1038,13 @@ each. Journeys for them are **B63**, the next content run.
 
 ### Evidence
 
-| Gate | Before | After |
-|---|---|---|
-| `npm run check` | 675 tests | 675 tests, tsc 0, eslint 0 |
-| `npm run verify:code` | 412 blocks | **612**, 0 failed |
-| `npm run verify:run` | 2128 comparisons | **3393**, 0 disagreed |
-| `npm run verify:vectors` | 404 mutants | **501**, 91% caught, 0 survived |
-| `npm run test:ui` | 152 checks | **154**, 0 failed |
+| Gate                     | Before           | After                           |
+| ------------------------ | ---------------- | ------------------------------- |
+| `npm run check`          | 675 tests        | 675 tests, tsc 0, eslint 0      |
+| `npm run verify:code`    | 412 blocks       | **612**, 0 failed               |
+| `npm run verify:run`     | 2128 comparisons | **3393**, 0 disagreed           |
+| `npm run verify:vectors` | 404 mutants      | **501**, 91% caught, 0 survived |
+| `npm run test:ui`        | 152 checks       | **154**, 0 failed               |
 
 One Windows exe-launch flake in the differential run (`remove-duplicates-sorted`); re-run per
 problem, clean.
@@ -954,19 +1062,19 @@ Eleven PRs, #71–#81. Ten backlog items closed plus one bug of my own. The patt
 them: **four of the five on-screen fixes were found by measuring, and would have been wrong if
 reasoned about.**
 
-| # | Item | What it actually was |
-|---|---|---|
-| #71 | B61 | A decision, not code: KEEP the static player. Deleting it would make "a problem without a journey" unrenderable and turn every content batch into a journey batch. |
-| #72 | B62 | `shape: "class"` in a vector set — a case is the constructor's arguments plus the stream of calls, the answer is the row of results. `NOT_YET_RUNNABLE` is empty. |
-| #73 | B58 | Five raw font sizes, and the reason they existed: `cn()` was deleting the named type steps. |
-| #74 | B59 | The test-case drawer floats now; the stage is 876px open and shut, not 862 → 574. |
-| #75 | B45 | The leak was not the ladder — it was the pattern NAME, twice on the page. |
-| #76 | B18 | 19 store tests, including storage that throws on read and on write. |
-| #77 | B19 | Restart holds its ledger for five seconds and offers it back. |
-| #78 | B60 | The panel audit asserts, and runs inside `test:ui`. |
-| #79 | B36 | 62 qualified names across 12 files, gone and gated. |
-| #80 | — | My own unsound cast, which a COLD `tsc -b` rejected and the incremental one had waved through. |
-| #81 | F5 | The Play button counts down the wait it is holding. |
+| #   | Item | What it actually was                                                                                                                                               |
+| --- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| #71 | B61  | A decision, not code: KEEP the static player. Deleting it would make "a problem without a journey" unrenderable and turn every content batch into a journey batch. |
+| #72 | B62  | `shape: "class"` in a vector set — a case is the constructor's arguments plus the stream of calls, the answer is the row of results. `NOT_YET_RUNNABLE` is empty.  |
+| #73 | B58  | Five raw font sizes, and the reason they existed: `cn()` was deleting the named type steps.                                                                        |
+| #74 | B59  | The test-case drawer floats now; the stage is 876px open and shut, not 862 → 574.                                                                                  |
+| #75 | B45  | The leak was not the ladder — it was the pattern NAME, twice on the page.                                                                                          |
+| #76 | B18  | 19 store tests, including storage that throws on read and on write.                                                                                                |
+| #77 | B19  | Restart holds its ledger for five seconds and offers it back.                                                                                                      |
+| #78 | B60  | The panel audit asserts, and runs inside `test:ui`.                                                                                                                |
+| #79 | B36  | 62 qualified names across 12 files, gone and gated.                                                                                                                |
+| #80 | —    | My own unsound cast, which a COLD `tsc -b` rejected and the incremental one had waved through.                                                                     |
+| #81 | F5   | The Play button counts down the wait it is holding.                                                                                                                |
 
 ### The one worth remembering
 
@@ -995,13 +1103,13 @@ renders wrong", suspect the machinery between them.
 
 ### Evidence
 
-| Gate | Start of session | End |
-|---|---|---|
-| `npm run check` | 646 tests | **675** tests, tsc 0, eslint 0 |
-| `npm run test:ui` | 132 checks | **151** checks, 0 failed |
-| `npm run verify:code` | 412 blocks, 0 failed | 412 blocks, 0 failed |
-| `npm run verify:run` | 1676 comparisons, 14 not marshalled | **2128** comparisons, 0 disagreed, **0** not marshalled |
-| `npm run verify:vectors` | 380 mutants, 92% | **404** mutants, 92%, 0 survived |
+| Gate                     | Start of session                    | End                                                     |
+| ------------------------ | ----------------------------------- | ------------------------------------------------------- |
+| `npm run check`          | 646 tests                           | **675** tests, tsc 0, eslint 0                          |
+| `npm run test:ui`        | 132 checks                          | **151** checks, 0 failed                                |
+| `npm run verify:code`    | 412 blocks, 0 failed                | 412 blocks, 0 failed                                    |
+| `npm run verify:run`     | 1676 comparisons, 14 not marshalled | **2128** comparisons, 0 disagreed, **0** not marshalled |
+| `npm run verify:vectors` | 380 mutants, 92%                    | **404** mutants, 92%, 0 survived                        |
 
 The panel audit is inside `test:ui` now, so those 151 checks include the fourteen panel kinds
 measured at their largest presets, every run.
@@ -1021,20 +1129,20 @@ morning rather than an audit.
 `params` in a vector set may now say `list` or `tree`, and `run.mjs` builds one in each language
 from the literal:
 
-| Shape | Written as | Built by |
-|---|---|---|
+| Shape  | Written as                                                             | Built by                                                                                 |
+| ------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `list` | `[1,2,3]`, or `{list: [3,2,0,-4], cycle: 1}` when the tail points back | `__mklist` — a template in C++, one method per class in Java, a private `__LN` in Python |
-| `tree` | level order with `null` for an absent child, the shape LeetCode prints | `__mktree`, same three |
+| `tree` | level order with `null` for an absent child, the shape LeetCode prints | `__mktree`, same three                                                                   |
 
 Three details that were not obvious from the outside:
 
 - **The node class is the block's own.** This repo's Python calls a list node `Node` and LeetCode
-  calls it `ListNode`; both are declared, and *different rungs of one problem* use different ones —
+  calls it `ListNode`; both are declared, and _different rungs of one problem_ use different ones —
   merge-two-sorted's optimal rung says `ListNode` and its array rung says `Node`. The driver reads
   the block's signature and builds what that signature asked for.
 - **Python evaluates an annotation at def time.** `def reverse_list(head: Node | None)` raises
   `NameError` before a single case runs unless `Node` already exists, so the node classes go
-  *before* the block in the driver and the canon goes after. Three rungs also CONSTRUCT a node
+  _before_ the block in the driver and the canon goes after. Three rungs also CONSTRUCT a node
   without declaring one, so the classes are declared when absent and the block's own wins when not.
 - **An absent node prints `null` in all three languages.** Python has only `None` to say it with
   and Java only `null`, so C++ had to agree rather than print `[]` for a list that is not there.
@@ -1059,13 +1167,13 @@ holding the same value, and the answer is compared as values.
 
 ### Evidence
 
-| Gate | Before | After |
-|---|---|---|
-| `verify:run` | 1676 comparisons, **14** problems not marshalled | **2084** comparisons, 0 disagreed, **1** not marshalled |
-| `verify:vectors` | 380 mutants, 92% caught | **402** mutants, 92% caught, 0 survived |
-| `verify:code` | 412 blocks, 0 failed | 412 blocks, 0 failed |
-| `npm run check` | 646 tests | **649** tests, tsc 0, eslint 0 |
-| `npm run test:ui` | 132 checks | 132 checks, 0 failed |
+| Gate              | Before                                           | After                                                   |
+| ----------------- | ------------------------------------------------ | ------------------------------------------------------- |
+| `verify:run`      | 1676 comparisons, **14** problems not marshalled | **2084** comparisons, 0 disagreed, **1** not marshalled |
+| `verify:vectors`  | 380 mutants, 92% caught                          | **402** mutants, 92% caught, 0 survived                 |
+| `verify:code`     | 412 blocks, 0 failed                             | 412 blocks, 0 failed                                    |
+| `npm run check`   | 646 tests                                        | **649** tests, tsc 0, eslint 0                          |
+| `npm run test:ui` | 132 checks                                       | 132 checks, 0 failed                                    |
 
 What is left is `kth-largest-stream`, a constructor plus a stream of `add()` calls rather than a
 function — filed as **B62**, because the driver calls one entry point and that one needs a script.
@@ -1082,14 +1190,14 @@ a journey.**
 Each one puts the STRUCTURE on the stage rather than the input, because in every case the structure
 is what the answer is about:
 
-| journey | what the stage draws | what it turns on |
-|---|---|---|
-| `count-dont-sort` | the tally | an anagram is a claim about COUNTS, so both strings are read in one order-independent pass |
-| `one-to-one-both-ways` | two maps | the backward map catches what no forward map can see |
-| `a-key-that-survives-rearranging` | the groups | three rungs about what a KEY is — none, sorted, tallied |
-| `two-letters-move-so-check-two` | need over have | a window move changes two counts, so carry the agreement count |
-| `the-two-most-recent-values` | the stack | "most recently finished" IS a stack |
-| `most-first-and-a-rule-for-ties` | the ranked counts | the tie-break is what makes the answer one answer |
+| journey                           | what the stage draws | what it turns on                                                                           |
+| --------------------------------- | -------------------- | ------------------------------------------------------------------------------------------ |
+| `count-dont-sort`                 | the tally            | an anagram is a claim about COUNTS, so both strings are read in one order-independent pass |
+| `one-to-one-both-ways`            | two maps             | the backward map catches what no forward map can see                                       |
+| `a-key-that-survives-rearranging` | the groups           | three rungs about what a KEY is — none, sorted, tallied                                    |
+| `two-letters-move-so-check-two`   | need over have       | a window move changes two counts, so carry the agreement count                             |
+| `the-two-most-recent-values`      | the stack            | "most recently finished" IS a stack                                                        |
+| `most-first-and-a-rule-for-ties`  | the ranked counts    | the tie-break is what makes the answer one answer                                          |
 
 `one-to-one-both-ways` ships a pinning test, the same shape as fewest-coins and word-search:
 `"badc"` → `"baba"` is **false**, a forward-only map says **true**, and the obvious failure
@@ -1206,24 +1314,24 @@ still measures the height at every node.
 arguments (**B30**).
 
 Those seven were added to `NOT_YET_RUNNABLE` with their reason. That matters more than it sounds: a
-problem simply *absent* from `VECTORS` is invisible to the gate, and an invisible gap reads as a
+problem simply _absent_ from `VECTORS` is invisible to the gate, and an invisible gap reads as a
 pass. The runner names **14** unrunnable problems now where it named 7.
 
 ### Eleven journeys
 
-| journey | what it turns on |
-|---|---|
-| `same-values-same-places` | the `#` for an empty child IS the shape — without it, mirrored trees serialise alike |
-| `swap-every-pair` | climbs in ROBUSTNESS, not cost: both rungs O(n), the recursion shorter |
-| `one-number-two-jobs` | −1 as a height that cannot exist, so one return carries measurement and verdict |
-| `the-tree-knows-the-way` | the general-tree rung is correct on ANY tree and therefore cannot use the ordering |
-| `twice-as-fast-is-halfway` | the loop condition is the specification |
-| `read-it-both-ways` | climbs in memory against side effects — the fast rung rewires the caller's list |
-| `a-gap-that-measures-the-end` | a maintained gap, and a dummy that deletes the head case |
-| `the-front-of-every-row` | sorted rows and columns do NOT make a sorted matrix |
-| `start-where-the-exits-are` | inverting the question removes the verdict entirely |
-| `above-plus-left` | one row, and the slot holds two rows at different moments |
-| `which-cut-points-can-you-stand-on` | store the position, never the path that reached it |
+| journey                             | what it turns on                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| `same-values-same-places`           | the `#` for an empty child IS the shape — without it, mirrored trees serialise alike |
+| `swap-every-pair`                   | climbs in ROBUSTNESS, not cost: both rungs O(n), the recursion shorter               |
+| `one-number-two-jobs`               | −1 as a height that cannot exist, so one return carries measurement and verdict      |
+| `the-tree-knows-the-way`            | the general-tree rung is correct on ANY tree and therefore cannot use the ordering   |
+| `twice-as-fast-is-halfway`          | the loop condition is the specification                                              |
+| `read-it-both-ways`                 | climbs in memory against side effects — the fast rung rewires the caller's list      |
+| `a-gap-that-measures-the-end`       | a maintained gap, and a dummy that deletes the head case                             |
+| `the-front-of-every-row`            | sorted rows and columns do NOT make a sorted matrix                                  |
+| `start-where-the-exits-are`         | inverting the question removes the verdict entirely                                  |
+| `above-plus-left`                   | one row, and the slot holds two rows at different moments                            |
+| `which-cut-points-can-you-stand-on` | store the position, never the path that reached it                                   |
 
 ### B54, closed by actually deleting something
 
@@ -1253,8 +1361,8 @@ walkthrough is.
 
 ## 2026-09-09 (chrome) — the theme that was already there, and a footer three times too tall
 
-One PR (#64), asked for directly: *"can i see the setting all themes and light mode"* and *"have all
-the three settings and keyword shortcuts and collapse in one parallel so space less space"*.
+One PR (#64), asked for directly: _"can i see the setting all themes and light mode"_ and _"have all
+the three settings and keyword shortcuts and collapse in one parallel so space less space"_.
 
 ### The theme was built and never offered
 
@@ -1297,14 +1405,14 @@ switch changes the page and keeps the chart roles distinct, and the three footer
 One PR (#63), fifteen journeys. **53 → 68**, and **every problem carrying all three languages now
 has a journey.**
 
-| shape | journeys |
-|---|---|
-| grid | max-island-area, rotting-fruit, word-search, count-provinces |
-| DP table | longest-common-subsequence, partition-equal-subset |
-| row + structure | balanced-brackets, top-k-frequent, task-cooldown, k-closest-points, min-cover-substring |
-| a range, not a row | koko-bananas |
-| tables over nodes | course-order, network-delay |
-| no input at all | generate-parens |
+| shape              | journeys                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| grid               | max-island-area, rotting-fruit, word-search, count-provinces                            |
+| DP table           | longest-common-subsequence, partition-equal-subset                                      |
+| row + structure    | balanced-brackets, top-k-frequent, task-cooldown, k-closest-points, min-cover-substring |
+| a range, not a row | koko-bananas                                                                            |
+| tables over nodes  | course-order, network-delay                                                             |
+| no input at all    | generate-parens                                                                         |
 
 ### Five shapes proved without a new view
 
@@ -1383,13 +1491,13 @@ translation pass plus their journeys closes the item completely.
 One PR (#62). **48 → 53 journeys**, and the pool they came from is the 31 problems whose
 walkthrough was ASCII art because there was nothing else to draw.
 
-| journey | problem | what it proves |
-|---|---|---|
-| `two-runners-one-track` | cycle-detect | the list view's **back-edge**, which had never rendered |
-| `one-row-at-a-time` | level-order | a tree whose answer is a shape, not a number |
-| `the-window-every-ancestor-leaves-open` | validate-bst | the wrong answer is the lesson |
-| `the-smallest-of-the-big-ones` | kth-largest-stream | **a heap is drawn by the tree view unchanged** |
-| `take-the-smaller-front` | merge-two-sorted | two structures arriving as one row |
+| journey                                 | problem            | what it proves                                          |
+| --------------------------------------- | ------------------ | ------------------------------------------------------- |
+| `two-runners-one-track`                 | cycle-detect       | the list view's **back-edge**, which had never rendered |
+| `one-row-at-a-time`                     | level-order        | a tree whose answer is a shape, not a number            |
+| `the-window-every-ancestor-leaves-open` | validate-bst       | the wrong answer is the lesson                          |
+| `the-smallest-of-the-big-ones`          | kth-largest-stream | **a heap is drawn by the tree view unchanged**          |
+| `take-the-smaller-front`                | merge-two-sorted   | two structures arriving as one row                      |
 
 ### Three shape decisions, each made once and reused
 
@@ -1456,7 +1564,7 @@ legend is not rendered at 390px"), so it is testing the fix rather than the weat
 ### V8 — the ladder promised a climb it does not always make
 
 The heading read "N ways in, worst to best". On `island-count` the rungs run BFS flood fill →
-Union-Find → DFS sink and the prose between two and three argues Union-Find was *overkill* — the
+Union-Find → DFS sink and the prose between two and three argues Union-Find was _overkill_ — the
 middle rung is a detour, not a step up. It reads **"N ways in, each answering the one before it"**
 now, which is true of every pair in every ladder because it is literally what `whyNow` carries.
 
@@ -1568,7 +1676,7 @@ Three PRs (#38, #39, #40). The theme: the practice set gained Java and C++ every
 gained the means to check code rather than trust it.
 
 **Why a local model at all.** The ask was to cut the cost of generating repetitive content. The
-honest split is by *checkability*: translating Python that is already in the repo into Java and C++
+honest split is by _checkability_: translating Python that is already in the repo into Java and C++
 is a fixed shape with a fixed algorithm, and almost everything that matters about it can be checked
 by machine. The judgement tiers — which weakness earns which act, what a corner case may say before
 a technique is earned — cannot, and stayed here.
@@ -1625,14 +1733,14 @@ Pipeline row 5, the fifth journey, and the row that said a new render kind was a
 
 **Why this problem earns its place next to two other two-pointer journeys.** On a sorted row the
 pointers move because the values are ordered — the comparison tells you which side is hopeless. Here
-nothing is sorted, and the move is justified by a proof about *width*: the shorter wall has just been
+nothing is sorted, and the move is justified by a proof about _width_: the shorter wall has just been
 paired with the furthest partner it will ever have, so every container it could still be part of is
 narrower and still capped at its own height. Same shape on screen, different reason underneath, and
 the recap says so out loud. The reason is what transfers; the shape is just what it looks like.
 
 **The `bars` kind.** One column per height, keyed by value+occurrence exactly as the visualizer keys
 its bars, so FLIP morphs a column instead of blinking it. The water between the two walls is drawn
-*inside* each column of the span — a translucent block from the floor up to the shorter wall — rather
+_inside_ each column of the span — a translucent block from the floor up to the shorter wall — rather
 than as one absolutely positioned rectangle. That needs no measuring, cannot drift from the bars it
 belongs to, and produces the physical fact the problem turns on for free: a post taller than the
 water sticks out of it.
@@ -1646,7 +1754,7 @@ Two small fixes fell out of drawing a panel that owns the whole stage:
   the `story` panel kind.
 
 **The greedy discard is checked, not trusted.** The correctness test compares both approaches against
-an exhaustive search on nine fixed rows *and 200 random ones*. A discard argument that is wrong on
+an exhaustive search on nine fixed rows _and 200 random ones_. A discard argument that is wrong on
 one row in a hundred is exactly the kind of thing prose cannot catch.
 
 **Two things the browser caught that the node tests could not:**
@@ -1669,7 +1777,7 @@ six cases plus the n = 400 set.
 Pipeline row 4, the fourth journey. Branch `feat/journey-sorted-pair-sum`.
 
 **What this problem is for.** It looks like Two Sum with one extra word in the statement, and that
-word is the whole lesson: the array arrives *sorted*, and constant extra space is *required*. So the
+word is the whole lesson: the array arrives _sorted_, and constant extra space is _required_. So the
 hash map — the correct, fast, interview-standard answer to the unsorted version — is earned in act 3
 and then given up in act 4. A journey where the best-known tool turns out to be the wrong one is a
 better lesson than a journey where each act is simply faster than the last.
@@ -1686,9 +1794,9 @@ constraint it cites is the promise the whole problem rests on.
 **Two content bugs the tests caught, both mine, both in data I had written by hand:**
 
 - the "equal prices" preset was `[1, 3, 3, 5]` with target 6 — which also holds `1 + 5`, so the
-  promise of exactly one pair was broken by the preset that was supposed to demonstrate a *different*
+  promise of exactly one pair was broken by the preset that was supposed to demonstrate a _different_
   corner case. `classifySortedPair` refused it. Now `[1, 3, 3, 8]`.
-- the `unsorted` preset was `[5, 1, 9, 3]` with target 12 — on which the squeeze *finds* the answer
+- the `unsorted` preset was `[5, 1, 9, 3]` with target 12 — on which the squeeze _finds_ the answer
   anyway, because the left pointer happens to walk straight onto it. The teaching claim was false for
   the very input chosen to demonstrate it. That is now `[9, 1, 3, 5]` with target 8, and it is
   asserted rather than asserted-in-prose: the test requires brute force and the map to find `[2, 3]`
@@ -1706,8 +1814,8 @@ plus the n = 400 set and triggers the flawless-run offer.
 ## 2026-09-05 — the reference card: constraints, then the ladder (R2, R1)
 
 The last two items in "requested, specced, not started", and the answer to the ask that started
-them: *"I want to see the solutions here — the brute force naive approach followed by others — and
-why we are moving forward to this new solution."*
+them: _"I want to see the solutions here — the brute force naive approach followed by others — and
+why we are moving forward to this new solution."_
 
 **R2, constraints** (#32). `Problem.constraints` is required, not optional, so the 31st problem
 cannot quietly skip it; all 31 are authored and render under the statement. `EdgeCase.constraint`
@@ -1718,7 +1826,7 @@ the sourcing line in PROBLEMS.md — bounds are facts, a site's prose is not.
 
 **R1, the ladder** (#33, #34). Tabs cannot make an argument: a tab strip presents four approaches as
 four equals you pick between. The ladder presents them as one argument, worst to best, where each
-rung exists because the one below it ran out of road — and the *why now* line sits **between** the
+rung exists because the one below it ran out of road — and the _why now_ line sits **between** the
 rungs, because it belongs to the step rather than to either end.
 
 One builder, two sources (the B1 rule): a journeyed problem draws its rungs from the acts, where
@@ -1765,7 +1873,7 @@ act 2 onward opens nothing. `HintList` is gone; an accordion inside an accordion
 exist once the panel owned the heading.
 
 **R4, the test case leaves the critical path** (#26). A flask in the header opens an 18 rem column
-*between* the stage and the reading column. It pushes; it does not cover — covering the data you are
+_between_ the stage and the reading column. It pushes; it does not cover — covering the data you are
 about to edit is the failure mode a drawer exists to avoid. `inert` while closed. Below `lg` there
 is no width to give up, so the same element renders in the stage footer: one element, two homes.
 Input validation needed nothing; bad input already refused and said so.
@@ -1777,7 +1885,7 @@ it and returns focus to the flask. Touch parity turned out to be two elements, n
 shadcn Button and the sidebar rows already had `active:` states.
 
 **R5, XOR pairs annihilate** (#28). The idea text said "each pair annihilates"; the chips dimmed by
-*progress*, so the row read "visited". Dimming is now computed by pair: twins fade together on the
+_progress_, so the row read "visited". Dimming is now computed by pair: twins fade together on the
 frame the second one is consumed, what stays lit is exactly what the accumulator holds, and the
 broken promise leaves two chips lit — the lie, made visible. No new frames, so the code tabs, notes,
 chart and content test were untouched. The survivor beats once when it turns green.
@@ -1883,7 +1991,7 @@ Branch `fix/ux-batch-2`.
 
 **U1 — and the fix that did not work.** The obvious move was `position: sticky; bottom: 0` on the
 narration. It pins the sentence, and it also lets the transport and the data controls scroll
-*underneath* it, which trades a readability bug for an unreachable-control bug. The real fix is
+_underneath_ it, which trades a readability bug for an unreachable-control bug. The real fix is
 structural: the stage stops being one scroll box. The act strip is fixed, a middle div takes
 `flex-1 min-h-0 overflow-y-auto` (banner, target line, stage, corner-case card), and narration,
 interruptions, transport and data controls sit below it as a footer that nothing can push away.
@@ -1933,7 +2041,7 @@ type scale, spacing, radii, line length, target sizes and layout.
 **Two of my own measurements were wrong first, and both are worth remembering.** Parsing
 `oklab()` colours as RGB produced a list of fictional contrast failures (ratios like 1.12);
 compositing on a canvas is the only honest method. And `element.focus()` does not set
-`:focus-visible`, so the first pass claimed *40 of 40 controls have no focus ring* — real Tab
+`:focus-visible`, so the first pass claimed _40 of 40 controls have no focus ring_ — real Tab
 presses show 26 of 26 do. A check that says everything is broken is usually the broken thing.
 
 **The verdict.** The stage is good and the accessibility floor is high: median contrast 8.4 : 1,
@@ -2003,7 +2111,7 @@ Single Number returns one value. `Challenge.answers?: "pair" | "value"` now sele
 `ChallengeCase.expected` widened to `number[] | number`, and the results list prints the expected
 value accordingly.
 
-**And it had a real bug (G5).** Running the XOR reference in the browser failed *all six* cases
+**And it had a real bug (G5).** Running the XOR reference in the browser failed _all six_ cases
 with `Cannot convert a Symbol value to a string`. The counting and tracing proxies test the
 property key with a regex, and `for (const x of nums)` reads `Symbol.iterator`. It has been there
 since the challenge shipped and it hit Two Sum too — any `for..of` solution. `isIndex()` now guards
@@ -2017,13 +2125,13 @@ Browser: the reference solution goes 6/6 green with `+25 XP` and the act gate op
 
 Branch `feat/disclosure-mask`.
 
-**The leak.** The pedagogy rests on *no unearned name*, and the tests enforced it inside a journey
+**The leak.** The pedagogy rests on _no unearned name_, and the tests enforced it inside a journey
 — but the sidebar said **Two Pointers** in plain sight while Two Sum act 3 was busy building that
 exact idea without naming it. The legacy repo had an uncommitted branch for the same bug.
 
 **The decision.** Masking the whole catalogue would wreck it for someone who never opened a
 journey; leaving it alone breaks the one rule. So the mask follows an **active promise**: a
-pattern is hidden only while a journey that `reveals` it is *started and unfinished*. Never
+pattern is hidden only while a journey that `reveals` it is _started and unfinished_. Never
 started, nothing promised, nothing hidden. Finished, you earned the name. And one click — "show
 names anyway", stored in `spoilers` — turns masking off forever, because the PRD's drill-runner
 persona should not have to play along.
@@ -2064,14 +2172,14 @@ from the tip, or retarget every base first.
 `npm run test:ui`: `vite preview` on an OS-assigned port + the system Chrome headless, driven over
 CDP with node's built-in WebSocket. No new dependency, no jsdom. 18 checks in ~28 s:
 
-| Group | Checks |
-|---|---|
-| Routes | home · pattern list · problem page · visualizer · SQL · flashcards · one per journey (derived from `JOURNEYS`, so a new journey is covered automatically) · unknown route falls back home — each asserting real text **and** an empty console |
-| The earn loop | fresh ledger → step the story act → answer the quiz → reveal → `unlocked=2`, `quizzes=["story"]`, `xp=15`, act switched to `brute` |
-| Deep links | honoured on load · followed on an in-app hash change · **ignored when the act is locked** (the disclosure rule, now enforced in a browser) |
-| Corner cases | the story act lists ≥ 3, and "load this input" changes the preset |
-| Shell | `f` closes both rails and reopens them · `?` opens the shortcuts dialog · a settings change survives a reload |
-| Phone | 390 px: `scrollWidth == clientWidth` |
+| Group         | Checks                                                                                                                                                                                                                                        |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Routes        | home · pattern list · problem page · visualizer · SQL · flashcards · one per journey (derived from `JOURNEYS`, so a new journey is covered automatically) · unknown route falls back home — each asserting real text **and** an empty console |
+| The earn loop | fresh ledger → step the story act → answer the quiz → reveal → `unlocked=2`, `quizzes=["story"]`, `xp=15`, act switched to `brute`                                                                                                            |
+| Deep links    | honoured on load · followed on an in-app hash change · **ignored when the act is locked** (the disclosure rule, now enforced in a browser)                                                                                                    |
+| Corner cases  | the story act lists ≥ 3, and "load this input" changes the preset                                                                                                                                                                             |
+| Shell         | `f` closes both rails and reopens them · `?` opens the shortcuts dialog · a settings change survives a reload                                                                                                                                 |
+| Phone         | 390 px: `scrollWidth == clientWidth`                                                                                                                                                                                                          |
 
 **It found a bug on its first run (G1).** A deep link pasted while the same journey was already
 open changed the hash and nothing else: `?act=` was read only in a `useState` initializer, and a
@@ -2079,7 +2187,7 @@ hash change remounts nothing. Fixed with a render-time adjust in `use-journey.ts
 `unlocked` so a link into a locked act is still ignored, plus regression tests for both halves.
 
 Two things the driver had to get right, both recorded in `browser.mjs`: `child.kill()` on Windows
-leaves the node grandchild holding the port (kill the tree), and a `location.reload()` *inside* a
+leaves the node grandchild holding the port (kill the tree), and a `location.reload()` _inside_ a
 CDP evaluate destroys the execution context so the call never resolves (clear storage on one load,
 navigate on the next).
 
@@ -2093,14 +2201,14 @@ Branch `docs/refresh-after-shell-work`. Docs only.
 Five branches shipped in one day and `ARCHITECTURE.md` had not been touched since the merge, so it
 described a shell, a frame contract and a panel union that no longer existed. Refreshed:
 
-| File | What was stale |
-|---|---|
+| File              | What was stale                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `ARCHITECTURE.md` | no shell section (sidebar, dialogs, global keys, hover-peek, scroll panels); frame contract missing `corner`; `PanelModel` missing `terms`; state section missing `prefs` merge semantics, export/import and the `sidebar_state` cookie; invariants missing the corner-case and three-language rules; layer diagram missing `lib/dialogs.ts`, `lib/shortcuts.ts` and the lazy chunks |
-| `PRD.md` | "two journeys" everywhere; non-goals still listed the settings gear, export/import and focus tiers as unbuilt; no P9 (corner cases) or P10 (three languages); §5.1 missing the act-1 cards, the callout and the layout; no payload requirement |
-| `API.md` | `GET /api/journeys` sample listed two journeys; problem payload did not mention `java` / `cpp` |
-| `FEATURES.md` | `prefs` row named two fields of four; no export/import or cookie note; test counts from before the new gates |
-| `RESEARCH.md` | no entry for the books on disk — Khamies §3.1 is where the corner-case work came from |
-| `README.md` | `src/lib` and `src/components` one-liners predate `dialogs.ts` / `shortcuts.ts` / the shell |
+| `PRD.md`          | "two journeys" everywhere; non-goals still listed the settings gear, export/import and focus tiers as unbuilt; no P9 (corner cases) or P10 (three languages); §5.1 missing the act-1 cards, the callout and the layout; no payload requirement                                                                                                                                       |
+| `API.md`          | `GET /api/journeys` sample listed two journeys; problem payload did not mention `java` / `cpp`                                                                                                                                                                                                                                                                                       |
+| `FEATURES.md`     | `prefs` row named two fields of four; no export/import or cookie note; test counts from before the new gates                                                                                                                                                                                                                                                                         |
+| `RESEARCH.md`     | no entry for the books on disk — Khamies §3.1 is where the corner-case work came from                                                                                                                                                                                                                                                                                                |
+| `README.md`       | `src/lib` and `src/components` one-liners predate `dialogs.ts` / `shortcuts.ts` / the shell                                                                                                                                                                                                                                                                                          |
 
 **Evidence.** A claim-checker script (scratchpad, not in the repo) reads the repo and asserts the
 docs agree: journeys and act counts in `API.md` and `FEATURES.md` vs `JOURNEYS`, every
@@ -2164,10 +2272,10 @@ Branch `perf/code-splitting`, stacked on `docs/problem-pipeline`.
 
 `App.tsx` lazy-loads `JourneyPage` and `AlgorithmsPage` behind one `Suspense` fallback.
 
-| `vite build` | Before | After |
-|---|---|---|
-| chunks | `index` 673.77 kB (212.25 gzip) | `index` 400.23 kB (127.11 gzip) · `store` (engine + data, shared) 203.87 kB (66.70 gzip) · `journey-page` 43.52 kB · `use-flip` 20.90 kB · `algorithms-page` 9.46 kB · runtime 0.58 kB |
-| initial JS on a content page | 673.77 kB | 604 kB (index + shared chunk) |
+| `vite build`                 | Before                          | After                                                                                                                                                                                  |
+| ---------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| chunks                       | `index` 673.77 kB (212.25 gzip) | `index` 400.23 kB (127.11 gzip) · `store` (engine + data, shared) 203.87 kB (66.70 gzip) · `journey-page` 43.52 kB · `use-flip` 20.90 kB · `algorithms-page` 9.46 kB · runtime 0.58 kB |
+| initial JS on a content page | 673.77 kB                       | 604 kB (index + shared chunk)                                                                                                                                                          |
 
 The shared chunk stays eager because `app-sidebar.tsx` imports `JOURNEYS` from `@/engine` for the
 journey rows; a registry of slug / title / act count would let the engine load lazily too (noted on
@@ -2212,16 +2320,16 @@ settings + shortcuts + collapse. Closes B3 (minus theme), B5, B26.
 
 **Evidence.** `npm run check`: tsc 0, eslint 0, node tests 31/31. CDP at 1440 × 1000:
 
-| Check | Result |
-|---|---|
-| journey page scroll | `documentElement.scrollHeight` 1000 = viewport; stage `overflow-y: auto`; aside 818 px tall / 1063 scroll |
-| sidebar groups / footer | `DSA`, `DSA · patterns`, `SQL`, `Data science`; footer `settings`, `keyboard shortcuts`, `collapse sidebar`; where = `DSA · journey · Two Sum` |
-| sidebar peek | collapsed 48/48 (container/gap) → mouseover 256/48 with `data-peek=true` → mouseout 48/48 |
-| reading peek | rail 44 px → overlay 416 px with the code tabs inside → gone on mouseout; stage stays 1072 px |
-| `f` | 256 + 384 → 48 + 44 (`prefs.reading=false`) → back to 256 + 384 |
-| `?` | dialog "Keyboard shortcuts", 9 rows |
-| settings | motion select → `prefs.motion=cinematic`; copy fell back to the textarea (headless clipboard); import `{"unlocked:single-number":4,"xp":99}` → 2 keys, store updated |
-| help | dialog "How to use dsa.patterns", 5 sections |
+| Check                   | Result                                                                                                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| journey page scroll     | `documentElement.scrollHeight` 1000 = viewport; stage `overflow-y: auto`; aside 818 px tall / 1063 scroll                                                            |
+| sidebar groups / footer | `DSA`, `DSA · patterns`, `SQL`, `Data science`; footer `settings`, `keyboard shortcuts`, `collapse sidebar`; where = `DSA · journey · Two Sum`                       |
+| sidebar peek            | collapsed 48/48 (container/gap) → mouseover 256/48 with `data-peek=true` → mouseout 48/48                                                                            |
+| reading peek            | rail 44 px → overlay 416 px with the code tabs inside → gone on mouseout; stage stays 1072 px                                                                        |
+| `f`                     | 256 + 384 → 48 + 44 (`prefs.reading=false`) → back to 256 + 384                                                                                                      |
+| `?`                     | dialog "Keyboard shortcuts", 9 rows                                                                                                                                  |
+| settings                | motion select → `prefs.motion=cinematic`; copy fell back to the textarea (headless clipboard); import `{"unlocked:single-number":4,"xp":99}` → 2 keys, store updated |
+| help                    | dialog "How to use dsa.patterns", 5 sections                                                                                                                         |
 
 0 console errors in every run. Not verified: touch devices (peek is hover-only by design), the
 erase-progress double click, Python section of the sidebar (there is no Python content yet — see
@@ -2233,15 +2341,15 @@ Branch `feat/journey-edge-cases`, stacked on `feat/journey-focus-rails`.
 
 **Why.** The ask: show hints and edge cases in the problem statement, and while solving, explain at
 least once how each edge case affects the solution and how to think about it. Inspiration: Waleed
-Khamies, *How to Solve Algorithm Problems* (2023) §3.1 — understand, formalize as input → output,
+Khamies, _How to Solve Algorithm Problems_ (2023) §3.1 — understand, formalize as input → output,
 reread for hidden promises, bring three inputs (empty-case, medium-case, corner-case: duplicates,
 negatives) before any code, brute force, analyse, optimise.
 
 **What.** `Journey.edgeCases: EdgeCase[]` (`key, name, example, why, think, preset`) — 4 per
-journey: Two Sum *tiny · duplicates · negatives · nosolution*; Single Number *single · last · zero ·
-broken*. Frames gain `corner?: string`; every generator tags the frame where the case bites and its
+journey: Two Sum _tiny · duplicates · negatives · nosolution_; Single Number _single · last · zero ·
+broken_. Frames gain `corner?: string`; every generator tags the frame where the case bites and its
 note says what this approach did about it (13 tag sites in Two Sum, 8 in Single Number). Story acts
-gain `hints` about *reading* the problem (reread · formalize · bring inputs), shown up front as an
+gain `hints` about _reading_ the problem (reread · formalize · bring inputs), shown up front as an
 accordion instead of the idle ladder. Story-act reading column gets the "bring three inputs" card
 with a **load this input** button per case; the stage shows a teal callout under the narration while
 a tagged frame is current. New presets `tiny`, `negatives` (Two Sum; `parse` now accepts −999…999)
@@ -2251,16 +2359,16 @@ and `zero` (Single Number). API meta exposes `edgeCases`.
 tagged by some act on its preset**, no frame tags an unknown key; the disclosure test now also lints
 `edgeCases` prose against later act names. Tag coverage (`edges.ts` script, not in repo):
 
-| Case | Preset | Tagged by |
-|---|---|---|
-| two-sum tiny | tiny | brute, twoptr, twopass, hash |
-| two-sum duplicates | duplicates | brute, twoptr, hash (twopass hits the later copy first) |
-| two-sum negatives | negatives | brute, twoptr, hash |
-| two-sum nosolution | nosolution | story, brute, twoptr, twopass, hash |
-| single-number single | single | brute, hash, sort, xor |
-| single-number last | max | sort (the fallback line after the loop) |
-| single-number zero | zero | brute, hash, sort, xor |
-| single-number broken | twosingles | xor |
+| Case                 | Preset     | Tagged by                                               |
+| -------------------- | ---------- | ------------------------------------------------------- |
+| two-sum tiny         | tiny       | brute, twoptr, twopass, hash                            |
+| two-sum duplicates   | duplicates | brute, twoptr, hash (twopass hits the later copy first) |
+| two-sum negatives    | negatives  | brute, twoptr, hash                                     |
+| two-sum nosolution   | nosolution | story, brute, twoptr, twopass, hash                     |
+| single-number single | single     | brute, hash, sort, xor                                  |
+| single-number last   | max        | sort (the fallback line after the loop)                 |
+| single-number zero   | zero       | brute, hash, sort, xor                                  |
+| single-number broken | twosingles | xor                                                     |
 
 **Evidence.** `npm run check`: tsc 0, eslint 0, `node --test` 31/31 (29 → 31). Headless Chrome/CDP:
 story act shows 3 accordion triggers (`reread`, `formalize`, `bring inputs`; first opens) and 4 corner
@@ -2289,11 +2397,11 @@ digits, sum 24/36 px, code 13.5 px on 28 px lines, bit cells 36 px.
 **Evidence.** `npm run check`: tsc 0, eslint 0, node tests 29/29 (unchanged from baseline). Headless
 Chrome over CDP at 1440 × 1000, `#/journey/two-sum?act=hash&step=6`:
 
-| State | stage width | right column | sidebar | console errors |
-|---|---|---|---|---|
-| both open (baseline) | 717 px | 384 px | 256 px | 0 |
-| reading closed | 1072 px | 44 px rail | 256 px | 0 |
-| both closed | 1280 px | 44 px rail | 48 px rail | 0 |
+| State                | stage width | right column | sidebar    | console errors |
+| -------------------- | ----------- | ------------ | ---------- | -------------- |
+| both open (baseline) | 717 px      | 384 px       | 256 px     | 0              |
+| reading closed       | 1072 px     | 44 px rail   | 256 px     | 0              |
+| both closed          | 1280 px     | 44 px rail   | 48 px rail | 0              |
 
 Toggles measured at the foot of each rail (left y = 960 of 1000; right sticky above the fold),
 `dsa:prefs` gained `"reading":false`, cookie `sidebar_state=false`. 390 px: `scrollWidth = 390`,
@@ -2303,13 +2411,13 @@ the collapsed rail is a 38 px bar. Not verified: keyboard focus order across the
 
 Branch `feat/merge-visualizer`, pushed to `SathishKumarAI/dsa_problems` (created this session); PR #1 against `master`.
 
-| Commit | What |
-|---|---|
-| `feat(site)` baseline | The uncommitted Vite + React + shadcn practice site committed as-is so the merge diff is readable. |
-| `chore(legacy)` | `dsa_visualizer` main subtree-merged under `legacy/visualizer/` — 47 commits of history preserved, folder excluded from build/lint. |
-| `feat(engine)` | Journey engine ported to typed, DOM-free TypeScript; `view()` returns a `StageModel` instead of HTML; hash-map bucket model; sort/search/graph generators; the whole HTTP API as one pure `route()` mounted by Vite middleware, `node:http`, and in-process. Content gate as `node --test`. |
-| `feat(ui)` | Journey page, algorithm visualizer, hash router, store. |
-| `docs` | This documentation set + README, CLAUDE.md, STATUS.md. |
+| Commit                | What                                                                                                                                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feat(site)` baseline | The uncommitted Vite + React + shadcn practice site committed as-is so the merge diff is readable.                                                                                                                                                                                          |
+| `chore(legacy)`       | `dsa_visualizer` main subtree-merged under `legacy/visualizer/` — 47 commits of history preserved, folder excluded from build/lint.                                                                                                                                                         |
+| `feat(engine)`        | Journey engine ported to typed, DOM-free TypeScript; `view()` returns a `StageModel` instead of HTML; hash-map bucket model; sort/search/graph generators; the whole HTTP API as one pure `route()` mounted by Vite middleware, `node:http`, and in-process. Content gate as `node --test`. |
+| `feat(ui)`            | Journey page, algorithm visualizer, hash router, store.                                                                                                                                                                                                                                     |
+| `docs`                | This documentation set + README, CLAUDE.md, STATUS.md.                                                                                                                                                                                                                                      |
 
 **Why the port instead of embedding the vanilla pages.** The visualizer was 8 200 lines of
 string-concatenated HTML in a 1 200-line `journey.js`; the practice site was typed React with
@@ -2321,20 +2429,20 @@ any client can draw.
 (203 kB gzip). Headless Chrome over CDP (the MCP browser was held by another session; a private
 Chrome on port 9333 was driven with a 60-line script):
 
-| Check | Result |
-|---|---|
-| `#/journey/two-sum` story act | renders on an empty stage, `🎁 → 🛒 → ❓`, 0 console errors |
-| `?act=hash&step=6` deep link | restores act + step; hash iceberg shows 3 keys / 8 buckets / load 0.38 / 1 collision |
-| `?act=twoptr&step=4` | sorted view with `#n` subscripts, ▲ on L, ring on R, `2 + 44 = 46` |
-| `single-number?act=xor&step=4` | bit rows, flipped bits ringed, chart with two bars |
-| brute act stepped to the return | predict card appears **before** the return frame renders |
-| fresh `unlocked=1`, story stepped to the end | quiz card; both answers right → reveal button → click → `unlocked=2`, `quizzes=["story"]`, `xp=15`, stepper shows 2 nodes, act switched to brute |
-| challenge act, one-pass map typed, Run tests | 6/6 green, +25 XP, scorecard 30 touches vs 30 |
-| challenge act, brute force typed, Watch my code | "traced 14 array accesses", stepping shows `access #5: your code read nums[0]`, 15 frames |
-| recap act | 5-row table, two link cards |
-| `#/algorithms?algo=quick` stepped 25× | bars with values, pivot green, 15 compares · 8 writes |
-| `#/algorithms?algo=bfs` stepped 9× | SVG graph, visited green / frontier peach / current yellow |
-| 390 px viewport | no horizontal scroll (`scrollWidth = 390`); bucket table scrolls in its own box |
+| Check                                           | Result                                                                                                                                           |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `#/journey/two-sum` story act                   | renders on an empty stage, `🎁 → 🛒 → ❓`, 0 console errors                                                                                      |
+| `?act=hash&step=6` deep link                    | restores act + step; hash iceberg shows 3 keys / 8 buckets / load 0.38 / 1 collision                                                             |
+| `?act=twoptr&step=4`                            | sorted view with `#n` subscripts, ▲ on L, ring on R, `2 + 44 = 46`                                                                               |
+| `single-number?act=xor&step=4`                  | bit rows, flipped bits ringed, chart with two bars                                                                                               |
+| brute act stepped to the return                 | predict card appears **before** the return frame renders                                                                                         |
+| fresh `unlocked=1`, story stepped to the end    | quiz card; both answers right → reveal button → click → `unlocked=2`, `quizzes=["story"]`, `xp=15`, stepper shows 2 nodes, act switched to brute |
+| challenge act, one-pass map typed, Run tests    | 6/6 green, +25 XP, scorecard 30 touches vs 30                                                                                                    |
+| challenge act, brute force typed, Watch my code | "traced 14 array accesses", stepping shows `access #5: your code read nums[0]`, 15 frames                                                        |
+| recap act                                       | 5-row table, two link cards                                                                                                                      |
+| `#/algorithms?algo=quick` stepped 25×           | bars with values, pivot green, 15 compares · 8 writes                                                                                            |
+| `#/algorithms?algo=bfs` stepped 9×              | SVG graph, visited green / frontier peach / current yellow                                                                                       |
+| 390 px viewport                                 | no horizontal scroll (`scrollWidth = 390`); bucket table scrolls in its own box                                                                  |
 
 **Not verified this session** (listed honestly): autoplay timing by eye, the 45 s hint timer, the
 n = 400 second set, the adaptive-difficulty offer, reduced-motion on a device, `npm run api` under
