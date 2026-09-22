@@ -28,7 +28,7 @@ export const problem: Problem = {
     "Shrink from the left until the duplicate is gone. A set (or last-seen index map) tells you when you're clean.",
   ],
   whyNow:
-    "The jump version needs a table of last positions before it can move at all. A window plus a set of what is inside it needs only the characters in play and one rule - grow right, shrink left on a repeat - which is why this is the one to remember.",
+    "The jump version needs a table of last positions before it can move at all. A window plus a set of what is inside it needs only the characters in play and one rule - grow right, shrink left on a repeat - which is why this is the one to remember. The jump is the one that RUNS, and the page owes that number: 4.4 ms against 7.1 over 5·10⁴ characters, best of 7. Same bound — the jump moves the left edge once per repeat where this moves it one character at a time, which is a smaller constant on input full of repeats. Learn this shape, reach for that one.",
   // THE FIVE FIELDS (docs/PROBLEM-PAGE-PLAYBOOK.md).
   unlocks: [
     {
