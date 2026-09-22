@@ -59,40 +59,91 @@ export function ReadFurther({
   problem: Problem
 }) {
   const own = problem.reading ?? []
-  const refs = [...own, ...(pattern.references ?? [])]
-  if (refs.length === 0) return null
+  const shared = pattern.references ?? []
+  if (own.length + shared.length === 0) return null
   return (
-    <section className="overflow-hidden rounded-xl border bg-card">
-      <div className="flex items-baseline gap-3 px-4 py-3">
-        <span className="text-meta tracking-wide text-muted-foreground uppercase">
+    <section className="flex flex-col gap-4">
+      <div className="flex items-baseline gap-3">
+        <h2 className="text-meta tracking-wide text-muted-foreground uppercase">
           read further
-        </span>
+        </h2>
         <span className="ml-auto font-mono text-meta text-dim tabular-nums">
           {own.length ? `${own.length} on this problem · ` : ""}
-          {refs.length} sources
+          {own.length + shared.length} sources
         </span>
       </div>
-      <ul className="divide-y border-t">
+
+      {/* THIS PROBLEM first, and in its own group. A source written about this
+          instance is worth more here than the pattern's canon, and mixing the
+          two into one list made that invisible — sixteen identical rows, no
+          way to tell which three were about the page you are on. */}
+      {own.length > 0 && (
+        <SourceGrid
+          label="on this problem"
+          refs={own}
+          className="sm:grid-cols-2"
+        />
+      )}
+      {shared.length > 0 && (
+        <SourceGrid
+          label={`on ${pattern.name.toLowerCase()}`}
+          refs={shared}
+          className="sm:grid-cols-2 lg:grid-cols-3"
+        />
+      )}
+    </section>
+  )
+}
+
+/** one group of sources, in columns */
+function SourceGrid({
+  label,
+  refs,
+  className,
+}: {
+  label: string
+  refs: {
+    title: string
+    href: string
+    kind: keyof typeof KIND_ICON
+    note: string
+  }[]
+  className?: string
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-meta text-dim">{label}</span>
+      <ul className={cn("grid gap-x-6 gap-y-3", className)}>
         {refs.map((r) => {
           const Icon = KIND_ICON[r.kind]
           return (
-            <li key={r.href + r.title}>
+            <li key={r.href + r.title} className="min-w-0">
               <a
                 href={r.href}
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-accent/40"
+                // A ROW THAT READS AS A LINK. It was a card with a hover
+                // background and no underline, which is the look of a button:
+                // the underline and the external mark are what say "this
+                // leaves the site", and the whole row is the target so the
+                // note is clickable too.
+                className="group flex min-w-0 items-start gap-2"
+                title={r.note}
               >
-                <Icon className="mt-0.5 size-4 shrink-0 text-dim" aria-hidden />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex items-center gap-1.5 text-ui font-medium">
+                <Icon className="mt-1 size-3.5 shrink-0 text-dim" aria-hidden />
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-ui font-medium text-foreground underline decoration-dim underline-offset-4 group-hover:decoration-foreground">
                     {r.title}
                     <ExternalLinkIcon
-                      className="size-3 shrink-0 text-dim"
+                      className="ml-1 inline size-3 shrink-0 align-baseline text-dim"
                       aria-hidden
                     />
                   </span>
-                  <span className="max-w-measure text-ui text-muted-foreground">
+                  {/* Two lines, then it stops. The full note is the link's
+                      title, so nothing is lost — and the note stays at the ui
+                      step because U6 refuses prose below 14px, which is the
+                      one thing a "make it smaller" cannot have here. */}
+                  <span className="line-clamp-2 text-ui text-muted-foreground">
                     {r.note}
                   </span>
                 </span>
@@ -101,7 +152,7 @@ export function ReadFurther({
           )
         })}
       </ul>
-    </section>
+    </div>
   )
 }
 

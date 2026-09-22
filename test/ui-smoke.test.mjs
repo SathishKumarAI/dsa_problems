@@ -2835,6 +2835,75 @@ describe(
       assert.deepEqual(page.errors(), [], "the debt band logged errors")
     })
 
+    // The reading list was sixteen stacked three-line blocks at the foot of a
+    // page that is already thirty screens: a wall, not a list you scan. Two
+    // groups in columns now - this problem's own sources, then the pattern's -
+    // with every row reading as a LINK. Measured, because "two columns" is a
+    // claim about resolved CSS and "reads as a link" is a claim about a
+    // computed text-decoration.
+    test("the reading list reads as links, in columns", async () => {
+      await page.resize(1440, 1000)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const read = `
+        const sec = [...document.querySelectorAll('main section')]
+          .find(s => /read further/i.test(s.innerText.slice(0, 40)));
+        if (!sec) return { found: false };
+        const grids = [...sec.querySelectorAll('ul')].map(ul =>
+          getComputedStyle(ul).gridTemplateColumns.split(' ').length);
+        const links = [...sec.querySelectorAll('a')];
+        return {
+          found: true,
+          height: Math.round(sec.getBoundingClientRect().height),
+          grids,
+          links: links.length,
+          underlined: links.filter(a =>
+            [a, ...a.querySelectorAll('span')].some(el =>
+              getComputedStyle(el).textDecorationLine.includes('underline'))).length,
+          external: links.filter(a => a.target === '_blank').length,
+          // U6 holds here too: no sentence in this section below 14px
+          small: [...sec.querySelectorAll('*')].filter(el => {
+            const own = [...el.childNodes].filter(n => n.nodeType === 3)
+              .map(n => n.textContent.trim()).join('');
+            return own.length > 55 && parseFloat(getComputedStyle(el).fontSize) < 14;
+          }).length,
+        };
+      `
+      const wide = await page.run(read)
+      assert.equal(wide.found, true, "no reading list on the page")
+      assert.ok(wide.links >= 4, `the list drew ${wide.links} sources`)
+      assert.equal(
+        wide.underlined,
+        wide.links,
+        "a source does not read as a link: no underline on its title"
+      )
+      assert.equal(wide.external, wide.links, "a source does not open away")
+      assert.equal(wide.small, 0, "a note is set below the ui step (U6)")
+      // this problem's own sources in two, the pattern's in three
+      assert.deepEqual(
+        wide.grids,
+        [2, 3],
+        `the groups resolved to ${JSON.stringify(wide.grids)} columns at 1440`
+      )
+
+      // and it collapses rather than scrolling sideways on a phone
+      await page.resize(390, 844)
+      await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
+      const phone = await page.run(read)
+      assert.deepEqual(
+        phone.grids,
+        [1, 1],
+        `a phone got ${JSON.stringify(phone.grids)} columns`
+      )
+      assert.equal(phone.small, 0, "a note is set below the ui step on a phone")
+      assert.ok(
+        !(await page.eval(
+          "document.documentElement.scrollWidth > window.innerWidth + 1"
+        )),
+        "the reading list scrolls the page sideways at 390"
+      )
+      assert.deepEqual(page.errors(), [], "the reading list logged errors")
+    })
+
     // A word in a sentence that carries its own definition. The reader this
     // is for stopped mid-sentence on "amortised" and does not want to leave
     // the page to find out - so the link has to be IN the prose, and it has to
