@@ -85,12 +85,17 @@ function time(src, entry, bench, setup) {
     return Number.isFinite(ms) ? ms : null
   } catch (e) {
     const why = String(e.stderr ?? e.message ?? e)
+    // NEVER an empty string: a blank cell in a column of milliseconds reads
+    // as "fast" and means the opposite. A killed process can leave both
+    // stderr and message empty, which is exactly what the first corpus run
+    // printed for three rungs.
+    const last = why.trim().split("\n").pop()?.slice(0, 60)
     return {
       failed: /RecursionError/.test(why)
         ? "RecursionError"
-        : /timeout|ETIMEDOUT|SIGTERM/i.test(why)
+        : /timeout|ETIMEDOUT|SIGTERM|killed/i.test(why) || !last
           ? "timed out"
-          : why.trim().split("\n").pop()?.slice(0, 60),
+          : last,
     }
   }
 }
@@ -108,6 +113,7 @@ function factor(bound, from, to) {
 
 const rows = []
 let disagreements = 0
+let acknowledged = 0
 
 for (const p of PROBLEMS) {
   if (ONLY && p.id !== ONLY) continue
@@ -127,6 +133,11 @@ for (const p of PROBLEMS) {
       src: a.python,
       bound: a.complexity.time,
       top: false,
+      // a rung the page keeps because it is WRONG: timed and reported, never
+      // crowned. product-except-self's division rung is the fastest thing on
+      // its page and is forbidden by the statement, which is the whole point
+      // the ladder is making.
+      wrong: (bench.wrong ?? []).includes(a.name),
     })),
   ]
 
@@ -154,7 +165,13 @@ for (const p of PROBLEMS) {
     })
   }
 
-  const ran = timed.filter((t) => typeof t.ms === "number")
+  // A scaled rung is timed at a smaller input: its number is not comparable
+  // with the others and it may never win. On the first corpus run
+  // `product-except-self` crowned its quadratic rung for exactly this reason,
+  // because the two rungs that beat it had failed and been filtered out.
+  const ran = timed.filter(
+    (t) => typeof t.ms === "number" && !t.scaled && !t.wrong
+  )
   const fastest = ran.reduce((a, b) => (a && a.ms <= b.ms ? a : b), null)
   const top = timed.find((t) => t.top)
   const loses =
@@ -163,21 +180,28 @@ for (const p of PROBLEMS) {
     typeof top.ms === "number" &&
     fastest !== top &&
     !fastest.scaled
-  if (loses) disagreements++
+  // A disagreement the page has ANSWERED is not a failure. The clock does not
+  // change when the prose does, so a gate that fails on the disagreement
+  // itself can never go green — and B71 asks for a sentence, not for the
+  // fastest rung to be promoted regardless of what it teaches.
+  const silent = loses && !bench.acknowledged
+  if (silent) disagreements++
+  if (loses && bench.acknowledged) acknowledged++
 
-  rows.push({ problem: p, timed, fastest, top, loses })
+  rows.push({ problem: p, timed, fastest, top, loses, silent })
 }
 
 rmSync(dir, { recursive: true, force: true })
 
-for (const { problem, timed, fastest, loses } of rows) {
+for (const { problem, timed, fastest, loses, silent } of rows) {
   console.log(`\n${problem.id}  ${BENCHES[problem.id].note ?? ""}`)
   for (const t of timed) {
     const ms =
       typeof t.ms === "number"
         ? `${t.ms.toFixed(1).padStart(9)} ms`
         : `${(t.note ?? "—").padStart(12)}`
-    const mark = t === fastest ? " ← fastest" : ""
+    const mark =
+      t === fastest ? " ← fastest" : t.wrong ? "  (wrong, by design)" : ""
     const scaled = t.scaled
       ? `  [timed at n = ${t.scaled}; ~${Math.round(
           factor(t.bound, t.scaled, 1e5)
@@ -185,18 +209,26 @@ for (const { problem, timed, fastest, loses } of rows) {
       : ""
     console.log(`  ${ms}  ${t.bound.padEnd(12)} ${t.name}${mark}${scaled}`)
   }
-  if (loses) {
+  if (silent) {
     console.log(
-      `  ⚠  THE PAGE'S ANSWER IS NOT THE FASTEST RUNG HERE — relabel it, or`
+      `  ⚠  THE PAGE'S ANSWER IS NOT THE FASTEST RUNG HERE, AND THE PAGE IS`
     )
     console.log(
-      `     add the sentence naming when the lower rung wins. Silence is the`
+      `     SILENT ABOUT IT — relabel the rung, or add the sentence naming`
     )
-    console.log(`     one unacceptable outcome (B71).`)
+    console.log(`     when the lower one wins, then record it in benches.mjs.`)
+  } else if (loses) {
+    console.log(
+      `  ✓  slower than a rung below it, and the page SAYS SO — ${BENCHES[problem.id].acknowledged}`
+    )
   }
 }
 
 console.log(
-  `\n${rows.length} problem(s) timed, best of ${ROUNDS}. ${disagreements} where the page's answer lost on the clock.\n`
+  `
+${rows.length} problem(s) timed, best of ${ROUNDS}. ` +
+    `${acknowledged} where the page's answer loses on the clock AND SAYS SO, ` +
+    `${disagreements} where it loses in silence.
+`
 )
 process.exitCode = disagreements ? 1 : 0
