@@ -6,8 +6,8 @@ update every clone and reference.
 
 ## The last session, in one line
 
-**Eleven branches, #114 → #124: the site grew a glossary, a ledger of everything it is still
-missing, and the first 16 problems at the pilot's depth.** Full account, with the measurement behind
+**Thirteen branches, #114 → #126: the site grew a glossary, a ledger of everything it is still
+missing, the first 16 problems at the pilot's depth, and a clock on every rung of them.** Full account, with the measurement behind
 each one: `docs/WORKLOG.md`, entry for 2026-09-21.
 
 |                              |                                                                                               |
@@ -46,22 +46,25 @@ from a loaded machine is still not evidence.
 
 ## The next action — the order the owner picked, with one item already half-built
 
-**1. B71 — the optimal-rung audit.** The harness is in the repo:
-`scripts/time-rungs.mjs` times every rung of a problem on a bench authored at that problem's own
-constraint ceiling (`scripts/benches.mjs`, 16 of them), best of N, and exits 1 when the rung the
-page calls the answer is not the fastest.
+**1. B71 — the optimal-rung audit. 16 of 153 done; the method is proven.**
+`npm run time-rungs` times every rung of a problem on a bench authored at that problem's own
+constraint ceiling (`scripts/benches.mjs`), best of N, and fails only on a disagreement the page is
+SILENT about — the clock does not change when the prose does, so a gate that failed on the
+disagreement itself could never go green.
 
-```
-node scripts/time-rungs.mjs              # every problem with a bench
-node scripts/time-rungs.mjs --id pair-sum --rounds 5
-```
+The first pass found **five pages whose answer loses to a rung below it**, and all five now say so:
+group-anagrams (sorted key 10.6 ms against the tally's 25.3), longest-unique-substring (the jump 4.4
+against 7.1), valid-palindrome (clean-then-reverse 8.1 against 9.4), max-depth (BFS 1.8 against the
+recursion's 2.3) and move-zeroes (0.4 against 0.5 — which refuted a sentence this repo had written
+and never measured).
+
+**What is left: benches for the other 137 problems**, and acting on whatever they say. Write the
+bench when you write the five fields — the constraint ceiling is already in your head at that point,
+and a bench that violates the problem's own constraints measures a different problem (it happened
+here: random ±30 on `product-except-self` makes the running product thousands of digits).
 
 Give it a quiet machine: a timing run beside a browser suite is the exact mistake #116 exists to
-prevent. Prior evidence says this matters — timing found the designated optimal rung LOSING in
-**3 of 5** problems measured, and `top-k-frequent`'s optimal rung is the slowest real rung on its
-page (G11). Two acceptable outcomes per problem: relabel, or add the sentence naming when the lower
-rung wins. Silence is the only unacceptable one. The remaining work is the other **137** problems'
-benches, and acting on whatever the table says.
+prevent.
 
 **2. G12 — the 22 vector survivors** across combination-sum, connect-the-network, contiguous-array,
 hamming-weight, implement-trie, insert-interval, non-overlapping-intervals, redundant-connection,
