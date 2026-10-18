@@ -472,12 +472,13 @@ there is further to climb — motivating, and giving nothing away.
 Each drawn step scrolls to its rung. A **button**, not an anchor: a bare `#id` href is a route
 change in this app, and a button has no href to get that wrong.
 
-### 12.3 The reading room
+### 12.3 The chrome stays put
 
-Sidebar 256px + rail 288px = 544px of a 1440px screen, held for the length of a document. Scrolling
-down now hides both and the orient bar; scrolling up brings them back. Full reasoning, and the six
-decisions inside it, in `DESIGN.md` §The reading room. It is **off** under `prefers-reduced-motion`,
-and the gesture never overwrites a click.
+Sidebar 256px + rail 224px, held for the length of a document — and the page used to give that width
+back on the reading gesture. **Deleted 2026-10-18**: the column opened 792 → 828px at 1440, 36px the
+prose cannot use (it carries its own measure), and the price was every paragraph on screen rewrapping
+mid-sentence. The reasoning, and the four passes of tuning that were the tell, in `DESIGN.md` §The
+chrome stays put. The sidebar is the trigger and `[`; the rail is `f`.
 
 ### 12.4 The ladder's Python runs
 

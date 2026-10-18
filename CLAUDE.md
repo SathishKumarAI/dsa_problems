@@ -109,12 +109,14 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   reason, not for tidiness.
 - **A `<b>` renders 700**, which is off this scale (400/500/600). Keep the element where a test
   selects on it and write `font-semibold`.
-- **Hiding chrome on scroll is a FEEDBACK LOOP unless you break it.** Hiding widens the
-  column, which shortens the document, which near the foot makes the browser clamp `scrollY`
-  DOWNWARD — read as scrolling up, so the chrome comes back, so the page lengthens again.
-  A run to the bottom ended with the chrome open and the position oscillating. Two guards:
-  a settle window after each flip (the page moving is not a gesture), and a top zone that is
-  ENTERED rather than occupied (the reflow can legitimately land a reader near the top).
+- **Hiding chrome on scroll was a FEEDBACK LOOP, and the feature is gone (2026-10-18).** Kept
+  because the shape recurs: hiding widens the column, which shortens the document, which near the
+  foot makes the browser clamp `scrollY` DOWNWARD — read as scrolling up, so the chrome came back,
+  so the page lengthened again. It needed a settle window after each flip and a top zone that is
+  ENTERED rather than occupied. What killed it was the measurement, not the bugs: the column opened
+  792 → **828px** at 1440, 36px the prose cannot use (it carries its own measure), paid for by
+  rewrapping every paragraph on screen. Four passes of tuning to protect a 4.5% gain was the tell.
+  Gate: _"scrolling moves the page, not the layout"_.
 
 - **`overflow-anchor` already keeps the reader's place** when content above the viewport
   changes size, and it is on by default. A hand-written version fought the user's own
@@ -147,12 +149,11 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   reader was on is gone. Every in-page anchor needs `preventDefault()` + `scrollIntoView`.
   Shipped broken on the approach ladder for months; `learn-page-view.tsx` had guarded it all
   along. Gate: _"a jump to an approach scrolls, and lands clear of the sticky bar"_.
-- **An in-page jump reflows the page it is jumping through.** The jump is the reading gesture, so
-  the reading room hides the chrome, the column widens, and the target moves UP while the browser
-  is still scrolling to where it WAS — the rail's second "Code" landed 148px above the viewport
-  at 1440. Every anchor goes through `lib/scroll-to.ts`, which re-places the target on `scrollend`
-  and tells the hook (`NOT_A_GESTURE`) that the correction is not the reader turning round —
-  without that the chrome came back and it landed at 195. Never call `scrollIntoView` directly.
+- **An in-page jump reflows the page it is jumping through**, and the target moves UP while the
+  browser is still scrolling to where it WAS — the rail's second "Code" landed 148px above the
+  viewport at 1440 (then, the chrome hiding caused the reflow; now a section opening or a code
+  block measuring itself does). Every anchor goes through `lib/scroll-to.ts`, which re-places the
+  target on `scrollend` against the layout as it now stands. Never call `scrollIntoView` directly.
 - **A hidden tab freezes smooth scrolling, and reads as "every anchor is dead".** Driving an
   occluded Chrome window over CDP, `visibilityState` was `hidden`, rAF did not tick, and every
   smooth `scrollIntoView` sat at scrollY 0 for three seconds. Check `document.visibilityState`

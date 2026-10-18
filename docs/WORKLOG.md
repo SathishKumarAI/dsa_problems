@@ -11,6 +11,41 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-18 — the reading room is deleted: 36px of column, paid for in rewraps
+
+The owner, reading a problem page: _"this text, when I scroll up, it starts scaling to the width of
+the screen and it's taking my space. There is a lot of empty space. And why do I need to scroll if I
+can just read entirely from my screen?"_ Three complaints in one sentence; this entry is the first.
+
+Measured first, on the pilot (`#/p/two-pointers/sorted-pair-sum`), headless Chrome, viewport 1000
+tall:
+
+| Viewport | `main` | reading column | prose | chars/line | page |
+| -------- | ------ | -------------- | ----- | ---------- | ---- |
+| 1440     | 1166   | 792 → **828** while reading | 792 | 92 | 12 353px = 12.4 screens |
+| 1920     | 1622   | 864 (gesture off from 1536) | 864 | 92 | 13 469px = 13.5 screens |
+
+**36px.** That is what hiding 432px of chrome gave the reader at 1440, because prose carries its own
+`max-w-measure` and that cap IS the column. The price was every paragraph on screen rewrapping and
+the text's left edge moving mid-sentence — and four passes of tuning (hysteresis, a 500ms settle
+window, a top zone that is entered rather than occupied, a 1536px bail-out shipped the same day) all
+spent making a 36px gain stop hurting. The tuning was the tell.
+
+Deleted: `lib/use-reading-room.ts`, the orient bar's slide, the rail's collapse, the column's
+`max-w` swap, and `NOT_A_GESTURE` with it. The sidebar is the trigger and `[`; the rail is `f` —
+states the reader chose, so nothing undoes them behind their back. `lib/scroll-to.ts` keeps its
+re-place on `scrollend`: a jump still reflows the page it jumps through, whatever caused the reflow.
+
+The gate was rewritten rather than removed, and it is stronger than the one it replaced — it asserts
+that **scrolling changes nothing**: bar opacity, sidebar state, rail width, column width and the
+column's left edge are all equal before, during and after a 1 400px run, and equal again on the way
+back up. _"scrolling moves the page, not the layout"_.
+
+Found on the way, pre-existing on `master` and NOT caused by this branch: `npm run test:ui` exits 1
+with four `panel-audit` failures — _"drew no cells at all on act 01"_ for list-with-a-back-edge,
+grid, DP table and DP row. `gates.yml` does not run `test:ui`, which is how it sat unnoticed. Filed,
+not fixed here.
+
 ## 2026-10-17 — one problem page, driven as a learner: two defects, one of them in every anchor
 
 Opened `#/p/two-pointers/container-water` in a real Chrome on a fresh port (5190, the ones

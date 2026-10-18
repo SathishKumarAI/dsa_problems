@@ -1106,29 +1106,23 @@ describe(
     // since B8; the problem page named it twice anyway — in the back link and
     // in the glyph strip. Measured 2026-09-09: sorted-pair-sum and
     // container-water both read "Two Pointers" with the journey unfinished.
-    test("chrome gets out of the way while you read, and comes back", async () => {
+    // THE CHROME STAYS PUT, and the column with it. The page used to hide the
+    // sidebar, the rail and the orient bar on a sustained scroll down and give
+    // the column their width — measured at 1440 the column opened 792 → 828px,
+    // 36px the prose could not use (it carries its own measure), bought by
+    // rewrapping every paragraph on screen. The owner, 2026-10-18: "when I
+    // scroll up it starts scaling to the width of the screen". This gate is
+    // the regression guard: scrolling changes no width on this page.
+    test("scrolling moves the page, not the layout", async () => {
       await page.goto(`${server.base}/#/p/arrays-hashing/contains-duplicate`)
-      // Reduced motion switches this feature OFF by design - a slide whose
-      // duration is zeroed is a teleport - so the reading room is only
-      // measurable with motion on. Assert the premise rather than the feature
-      // if the browser is asking for less motion.
-      const calm = await page.eval(
-        "matchMedia('(prefers-reduced-motion: reduce)').matches"
-      )
-      if (calm) return
-
       const read = `
         const bar = document.querySelector('[data-slot="orient-bar"]');
         const rail = document.querySelector('nav[aria-label="contents"]');
         // The reading COLUMN, not whichever paragraph happened to match: a
-        // paragraph inside a constraint card sits in a box that never resizes,
-        // so measuring one of those would pass whatever the column did.
+        // paragraph inside a constraint card sits in a box that never resizes.
         const box = bar.parentElement.getBoundingClientRect();
         return {
           bar: getComputedStyle(bar).opacity,
-          // BOTH, because the two say different things: the rail must stop
-          // being drawn, and its column must NOT stop being reserved.
-          railOpacity: rail ? getComputedStyle(rail).opacity : "none",
           railWidth: rail ? Math.round(rail.getBoundingClientRect().width) : -1,
           sidebar: document.querySelector('[data-slot="sidebar"]').dataset.state,
           colLeft: Math.round(box.left),
@@ -1136,40 +1130,34 @@ describe(
         };
       `
       const atTop = await page.run(read)
-      assert.equal(atTop.bar, "1", "the bar was already hidden at the top")
+      assert.equal(atTop.bar, "1", "the orient bar was hidden at the top")
       assert.ok(atTop.railWidth > 0, "no contents rail at this width to test")
 
-      // DOWN is reading — and it has to be a SUSTAINED run now, not one jump:
-      // the hook accumulates travel in one direction so that a re-read nudge
-      // does nothing. Driven in steps, the way a reader actually scrolls.
+      // A sustained run down, the way a reader actually scrolls — the gesture
+      // the old feature answered. Nothing may answer it now.
       await page.run(`
         for (let y = 200; y <= 1400; y += 100) window.scrollTo(0, y);
         return new Promise(r => setTimeout(() => r(1), 900));
       `)
-      await page.run(
-        "return new Promise(r => requestAnimationFrame(() => setTimeout(() => r(1), 420)));"
-      )
       const reading = await page.run(read)
-      assert.equal(reading.bar, "0", "the bar did not get out of the way")
-      assert.equal(reading.railWidth, 0, "the contents rail kept its column")
-      assert.ok(
-        reading.colWidth > atTop.colWidth + 200,
-        `the document did not take the reclaimed width: ${atTop.colWidth} -> ${reading.colWidth}`
+      assert.equal(reading.bar, "1", "the orient bar left on a scroll")
+      assert.equal(reading.sidebar, atTop.sidebar, "the sidebar changed state on a scroll")
+      assert.equal(reading.railWidth, atTop.railWidth, "the rail changed width on a scroll")
+      assert.equal(
+        reading.colWidth,
+        atTop.colWidth,
+        `the reading column changed width on a scroll: ${atTop.colWidth} -> ${reading.colWidth}`
       )
+      assert.equal(reading.colLeft, atTop.colLeft, "the reading column moved sideways on a scroll")
 
-      // UP is looking for something, so the controls come back — also a run.
+      // and back up, which used to be the gesture that brought it all back
       await page.run(`
         for (let y = 1300; y >= 700; y -= 100) window.scrollTo(0, y);
         return new Promise(r => setTimeout(() => r(1), 900));
       `)
-      await page.run(
-        "return new Promise(r => requestAnimationFrame(() => setTimeout(() => r(1), 420)));"
-      )
       const looking = await page.run(read)
-      assert.equal(looking.bar, "1", "scrolling up did not bring the bar back")
-      assert.equal(looking.railOpacity, "1", "the rail did not come back")
-
-      assert.deepEqual(page.errors(), [], "the reading room logged errors")
+      assert.deepEqual(looking, atTop, "scrolling back up changed the layout")
+      assert.deepEqual(page.errors(), [], "the page logged errors while scrolling")
     })
 
     test("the climb draws every rung, and masks the ones not earned", async () => {
@@ -2145,14 +2133,13 @@ describe(
     })
 
     // The desktop half of the same bug, found 2026-10-17 on container-water.
-    // Scrolling down is the reading gesture and the reading room answers it by
-    // hiding the chrome — which widens the column by ~208px, reflows every
-    // paragraph above the target, and moves the target UP while the browser is
-    // still animating toward where it WAS. The rail's second "Code" landed
-    // 148px above the viewport. `lib/scroll-to.ts` re-places the target once
-    // the scroll ends; this asserts the LANDING, from the far end of a long
-    // page, where the reflow above the target is largest.
-    test("a jump from the rail lands on its heading after the chrome hides", async () => {
+    // A jump reflows the page it is jumping through — anything above the target
+    // that settles, opens or measures itself moves the target while the browser
+    // is still animating toward where it WAS, and the rail's second "Code"
+    // landed 148px above the viewport. `lib/scroll-to.ts` re-places the target
+    // once the scroll ends; this asserts the LANDING, from the far end of a
+    // long page, where the reflow above the target is largest.
+    test("a jump from the rail lands on its heading", async () => {
       await page.goto(`${server.base}/#/p/two-pointers/container-water`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
