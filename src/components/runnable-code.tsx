@@ -195,8 +195,17 @@ export function RunnableCode({
         // unbounded, the output pushed the rest of the document a screen and a
         // half down, and the reader lost the code they had just run.
         <div className="rounded-lg border bg-card">
-          <div className="flex items-center gap-2 border-b px-3 py-1.5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b px-3 py-1.5">
             <span className="font-mono text-meta text-dim">output</span>
+            {/* WHAT WAS CALLED. The appended line lives in the code sent to
+                Python, not on the screen, so a reader saw `[1, 3]` and had no
+                way to know which input produced it — "the input is not
+                given", in the owner's words, 2026-10-17. Say it here. */}
+            {call && entry && (
+              <span className="font-mono text-meta text-muted-foreground">
+                {entry}({args})
+              </span>
+            )}
             {edited && (
               <span className="font-mono text-meta text-chart-4">
                 your version, not the document's

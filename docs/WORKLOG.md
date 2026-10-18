@@ -60,6 +60,29 @@ pilot for the rest.
 long explanation's per-approach sections cover the same ground on a TYPED document — that is
 B100's second half (`docs/PROBLEM-PAGE.md` §9), a renderer change, not a rewrite.
 
+### Third branch — Run runs the example, and a patterns file for the next 152 pages
+
+Pressing every Run button on sorted-pair-sum, as a learner would:
+
+| Button                             | Before                                                                                    | After                                                |
+| ---------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| the ladder's three rungs           | `SyntaxError: 'return' outside function` — the act's code is the BODY alone, no `def`     | the record's function; prints `[1, 3]`               |
+| the explanation's three approaches | `[]` — the demo argument was the vectors' first case, `[2], 4`, written to catch `i <= j` | `[1, 3]` on `[1,3,6,9], 12`, the statement's example |
+| any of them                        | no way to see which input produced the output                                             | the output header names the call                     |
+
+Measured site-wide before fixing: 19 of 238 journey acts are body-only; only 20 acts were linked to
+a record rung by `key` (the slug of "Brute force" is `brute-force`, the act is `brute`, they never
+met); 152 demos, every one the vectors' first case. After: the ladder takes the record's code for a
+body-only act when a keyed alternative or the record carries one (10 rungs gained code), the demo is
+the statement's example where the vectors carry it (**130 of 152**), and `problems.test.ts` lists
+the **nine** rungs still without a function so the list can only shrink.
+
+`docs/CONTENT-PATTERNS.md` is the reusable half: the read-through, ten writing patterns with the
+pilot's before/after, the lecture tone the owner asked for (concrete example first and never left;
+brute force said aloud; "can we do better?" before the name; dry-run as a table; cost counted; code
+last), five gated mechanics, and the checklist. Gates: `npm run check` 877/0; `test:ui` adds _"the
+ladder's Run uses the statement's example, and says so"_.
+
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 
 Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and

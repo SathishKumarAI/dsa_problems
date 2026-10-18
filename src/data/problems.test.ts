@@ -213,6 +213,42 @@ test("problems: journeyed problems carry Java and C++ for every approach", () =>
   }
 })
 
+// Every rung's Python has a Run button, and Run appends a call to the function
+// the block defines. A rung whose Python is the BODY alone — the early journeys
+// wrote their code tabs that way, line-for-line with the animation — cannot be
+// called, and raised `SyntaxError: 'return' outside function` on every rung of
+// sorted-pair-sum (2026-10-17). `ladderOf` now takes the record's code for such
+// a rung when a keyed alternative or the record itself carries one; the nine
+// below have neither yet. The list is exact on purpose: fixing one (give the
+// alternative the act's `key`) must shrink it, and a new body-only rung must
+// not join it quietly.
+test("problems: every rung's Python can be run — it defines a function", () => {
+  const KNOWN_BODY_ONLY = new Set([
+    "pair-sum/brute",
+    "pair-sum/twoptr",
+    "pair-sum/twopass",
+    "container-water/brute",
+    "three-sum-zero/brute",
+    "three-sum-zero/hash",
+    "single-number/brute",
+    "single-number/hash",
+    "single-number/sort",
+  ])
+  const bodyOnly: string[] = []
+  for (const p of PROBLEMS) {
+    const journey = JOURNEYS.find((j) => j.problemId === p.id)
+    const { rungs } = ladderOf(p, journey, Number.MAX_SAFE_INTEGER)
+    for (const r of rungs)
+      if (!/^(def|class) /m.test(r.code.python))
+        bodyOnly.push(`${p.id}/${r.key}`)
+  }
+  assert.deepEqual(
+    bodyOnly.sort(),
+    [...KNOWN_BODY_ONLY].sort(),
+    "a rung Run cannot call — give its alternative the act's `key` (see docs/CONTENT-PATTERNS.md)"
+  )
+})
+
 // B45. The journey's own disclosure gate checks ACT prose against later ACT
 // names. Nothing checked what the PROBLEM PAGE renders, which is a different
 // question: `ladderOf` picks the rungs, from the journey when there is one and
