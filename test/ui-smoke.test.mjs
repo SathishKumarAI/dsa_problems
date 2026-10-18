@@ -2156,11 +2156,12 @@ describe(
       await page.goto(`${server.base}/#/p/two-pointers/container-water`)
       const out = await page.run(`
         const wait = ms => new Promise(r => setTimeout(r, ms));
-        // the explanation's outline arrives with the document; wait for it
+        // the page's LAST band, "Taking it with you", arrives with the
+        // document — the typed document is folded onto the page, so the rail
+        // lists the page's bands rather than the document's sub-headings
         let link;
         for (let i = 0; i < 40 && !link; i++) {
-          link = [...document.querySelectorAll('main a[href^="#"]')]
-            .filter(a => a.innerText.trim() === 'Code')[1];
+          link = document.querySelector('main a[href="#explanation"]');
           if (!link) await wait(250);
         }
         if (!link) return { noLink: true };
@@ -2175,7 +2176,7 @@ describe(
           top: Math.round(target.getBoundingClientRect().top),
         };
       `)
-      assert.ok(!out.noLink, "the rail drew no Code entry to test")
+      assert.ok(!out.noLink, "the rail drew no entry for the page's last band")
       assert.equal(out.route, "#/p/two-pointers/container-water")
       assert.ok(
         out.top >= 0 && out.top <= 120,
@@ -2796,10 +2797,14 @@ describe(
         const root = document.getElementById('explanation');
         return {
           hash: location.hash,
-          // the typed document's own sections, rendered as sections rather
-          // than round-tripped through a markdown string
-          headings: [...root.querySelectorAll('h2')].map(h => h.innerText.trim()),
+          // the typed document is FOLDED onto the page (B100, both kinds):
+          // what reaches the closing band is what belongs to no rung, each
+          // section under its own h3 — the failure-mode list is one of them
+          headings: [...root.querySelectorAll('h2, h3')].map(h => h.innerText.trim()),
           tables: root.querySelectorAll('table').length,
+          // and each rung carries its own account, folded
+          folds: [...document.querySelectorAll('[aria-label="approach ladder"] summary')]
+            .filter(s => /work it through/i.test(s.innerText)).length,
           editors: document.querySelectorAll(
             'textarea[aria-label="the script, yours to change"]'
           ).length,
@@ -2819,7 +2824,11 @@ describe(
         out.headings.some((h) => /failure modes/i.test(h)),
         `the typed document's sections are missing: ${out.headings.join(" | ")}`
       )
-      assert.ok(out.tables >= 3, `only ${out.tables} tables in the explanation`)
+      assert.ok(out.tables >= 1, `only ${out.tables} tables in the closing band`)
+      assert.ok(
+        out.folds >= 1,
+        "no rung carries its own account — the typed document did not fold"
+      )
       assert.ok(
         out.editors >= 1,
         "no block is editable — every one is the reader's to change"

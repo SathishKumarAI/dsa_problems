@@ -220,7 +220,8 @@ ladder does not carry that approach, and its section stays whole.
 
 - **The 49 typed documents.** They store per-approach content as one file per rung already
   (`src/problems/<id>/approaches/<rung>.ts`), so folding them is a field read rather than a
-  parse — the same shape, a different branch. B100 is half closed.
+  parse — the same shape, a different branch. _Closed 2026-10-18: `foldParts` in
+  `lib/doc-sections.ts`, one render path for both kinds; sorted-pair-sum 20.3 → 13.0 screens._
 - **Promote the two extra approaches into the ladder.** The document teaches five, the
   record has three. `problems.test.ts` requires Java **and** C++ for every alternative on a
   journeyed problem, so promoting them Python-only would fail the build, and weakening that
@@ -368,7 +369,7 @@ Worth recording, because both were mine and neither was visible in a diff:
 - **The code does not trace** (B101). Run prints output; it never shows `seen` filling.
 - **The other 152 problems** carry none of `unlocks`, `checks`, `reading` or `costWhy` yet. The
   mechanisms are generic; only the content is per problem, and §7 prices it.
-- **B100 is half closed**: the fold works for Markdown documents, not yet for the 49 typed ones.
+- ~~B100 is half closed~~ — closed 2026-10-18; `foldParts` folds the typed documents through the same path.
 - Two of `contains-duplicate`'s four "constraints" are English sentences that arguably belong in
   `unlocks` — a content question, not a formatting one.
 

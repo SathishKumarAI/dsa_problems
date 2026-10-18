@@ -20,7 +20,10 @@
 
 import { useEffect, useState } from "react"
 import { hasContent, loadContent } from "@/lib/content"
-import { hasExplanationMarkdown, loadExplanationMarkdown } from "@/lib/learn-pages"
+import {
+  hasExplanationMarkdown,
+  loadExplanationMarkdown,
+} from "@/lib/learn-pages"
 import { outlineOf, parseMarkdown } from "@/lib/markdown"
 import type { Block, Outline } from "@/lib/markdown"
 import { outlineOfParts, partsOf, scaffoldOf } from "@/lib/teaching-parts"
@@ -35,6 +38,9 @@ export type Explanation =
       kind: "typed"
       parts: Part[]
       outline: Outline[]
+      /** `doc.approaches[n].rung`, in order — which rung each approach section
+       *  teaches, so the page can fold it onto that rung (`foldParts`) */
+      approachRungs: string[]
       /** what a fence inherits from the document around it */
       scaffold: string
     }
@@ -84,6 +90,7 @@ export function useExplanation(
             kind: "typed",
             parts,
             outline: outlineOfParts(parts),
+            approachRungs: doc.approaches.map((a) => a.rung),
             scaffold: scaffoldOf(doc),
           }
         }

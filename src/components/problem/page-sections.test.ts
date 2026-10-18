@@ -98,21 +98,73 @@ describe("the problem page's shape", () => {
     assert.equal(shape.closing, undefined)
   })
 
-  // A TYPED document still renders whole, so its own outline is what the rail
-  // lists. A folded one is placed through the page, so it must NOT also be
-  // listed — that is the "no second list" rule, and it is one boolean away
-  // from showing every heading twice.
-  test("a typed document keeps its outline; a folded one hands it back", () => {
+  // A folded document is placed through the page, so it must NOT also be
+  // listed as an outline — that is the "no second list" rule, and it is one
+  // boolean away from showing every heading twice. A typed document is ALWAYS
+  // folded (B100's second half, 2026-10-17): it used to render whole and keep
+  // its outline, which put every approach on the page twice.
+  test("a typed document is folded, and hands its outline back", () => {
     const typed: Explanation = {
       present: true,
       ready: true,
       kind: "typed",
-      parts: [],
+      parts: [
+        {
+          id: "understanding",
+          title: "Understanding the problem",
+          level: 2,
+          kind: "prose",
+          text: "Plain words.",
+        },
+        {
+          id: "approach-1-brute",
+          title: "Approach 1: Brute",
+          level: 2,
+          kind: "heading",
+        },
+        {
+          id: "approach-1-brute-idea",
+          title: "The idea",
+          level: 3,
+          kind: "prose",
+          text: "Try every pair.",
+        },
+        {
+          id: "approach-1-brute-worked",
+          title: "Worked example",
+          level: 3,
+          kind: "prose",
+          text: "A trace.",
+        },
+        {
+          id: "approach-1-brute-code",
+          title: "Code",
+          level: 3,
+          kind: "code",
+          code: "def f(): pass",
+        },
+        {
+          id: "interview-priority",
+          title: "Interview priority",
+          level: 2,
+          kind: "prose",
+          text: "Know it.",
+        },
+      ],
       outline: [{ id: "x", text: "X", level: 2 }],
+      approachRungs: ["brute"],
       scaffold: "",
     }
     const { shape } = shapeOf("implement-trie", typed)
-    assert.deepEqual(shape.outline, [{ id: "x", text: "X", level: 2 }])
-    assert.equal(shape.folded, null, "a typed document was folded")
+    assert.ok(shape.folded, "a typed document was not folded")
+    assert.deepEqual(shape.outline, [], "a folded document kept a second list")
+    assert.ok(
+      shape.understanding,
+      "Understanding was not placed with the problem"
+    )
+    assert.ok(
+      shape.closing?.some((s) => s.title === "Interview priority"),
+      "the interview note did not reach the closing band"
+    )
   })
 })

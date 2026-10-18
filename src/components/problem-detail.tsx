@@ -36,6 +36,7 @@ import { K, useStored } from "@/lib/store"
 import { navigate, useRoute } from "@/lib/route"
 import { useEffect, useState } from "react"
 import { useExplanation } from "@/lib/use-explanation"
+import { hasContent } from "@/lib/content"
 import { Markdown } from "./markdown"
 import BINDINGS from "@/data/rung-bindings.json"
 import { pageShapeOf } from "./problem/page-sections"
@@ -400,7 +401,10 @@ function ProblemPage({
           // opening a rung's account is a reason to fetch the document, the
           // same as opening the section below — one fetch serves every rung
           onWantDoc={
-            explanation.present && binding ? () => setOpened(true) : undefined
+            // a Markdown document folds only with a binding; a typed one always
+            explanation.present && (binding || hasContent(problem.id))
+              ? () => setOpened(true)
+              : undefined
           }
         />
 

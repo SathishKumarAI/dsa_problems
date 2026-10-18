@@ -5,7 +5,8 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { readFileSync } from "node:fs"
 import { parseMarkdown } from "./markdown.ts"
-import { foldDoc } from "./doc-sections.ts"
+import { foldDoc, foldParts } from "./doc-sections.ts"
+import type { Part } from "./teaching-parts.ts"
 import bindings from "../data/rung-bindings.json" with { type: "json" }
 
 const DOC = "docs/deep/contains-duplicate_explained.md"
@@ -204,4 +205,276 @@ test("the document's arc is folded onto the ladder, not left as a second ending"
     withArc.arc.length + 1,
     "the arc blocks moved; only the heading itself was dropped"
   )
+})
+
+// ── the typed half ──────────────────────────────────────────────────────────
+//
+// Synthetic parts in the exact shape `partsOf` emits: ids `approach-<n>-<slug>-<which>`.
+// (`teaching-parts.ts` itself reaches for `@/lib/markdown`, which node cannot
+// resolve, so the real builder is exercised by the browser suite instead.)
+const typedParts = (): Part[] => [
+  {
+    id: "understanding",
+    title: "Understanding the problem",
+    level: 2,
+    kind: "prose",
+    text: "The question.",
+  },
+  {
+    id: "calculations",
+    title: "Reading the calculations",
+    level: 2,
+    kind: "prose",
+    text: "Count it, do not argue it.",
+  },
+  {
+    id: "approach-1-brute-force",
+    title: "Approach 1: Brute force",
+    level: 2,
+    kind: "heading",
+  },
+  {
+    id: "approach-1-brute-force-idea",
+    title: "The idea",
+    level: 3,
+    kind: "prose",
+    text: "Every pair.",
+  },
+  {
+    id: "approach-1-brute-force-intuition",
+    title: "How to think about it",
+    level: 3,
+    kind: "prose",
+    text: "Two fingers.",
+  },
+  {
+    id: "approach-1-brute-force-worked",
+    title: "Worked example",
+    level: 3,
+    kind: "prose",
+    text: "A trace.",
+  },
+  {
+    id: "approach-1-brute-force-code",
+    title: "Code",
+    level: 3,
+    kind: "code",
+    code: "def brute(): pass",
+  },
+  {
+    id: "approach-1-brute-force-mistake",
+    title: "Common mistake",
+    level: 3,
+    kind: "prose",
+    text: "Off by one.",
+  },
+  {
+    id: "approach-1-brute-force-cost",
+    title: "Complexity and when to use this",
+    level: 3,
+    kind: "prose",
+    text: "O(n²).",
+  },
+  {
+    id: "approach-2-counting-sort",
+    title: "Approach 2: Counting sort",
+    level: 2,
+    kind: "heading",
+  },
+  {
+    id: "approach-2-counting-sort-idea",
+    title: "The idea",
+    level: 3,
+    kind: "prose",
+    text: "Count them.",
+  },
+  {
+    id: "approach-2-counting-sort-code",
+    title: "Code",
+    level: 3,
+    kind: "code",
+    code: "def count(): pass",
+  },
+  {
+    id: "approach-2-counting-sort-cost",
+    title: "Complexity and when to use this",
+    level: 3,
+    kind: "prose",
+    text: "O(n + k).",
+  },
+  {
+    id: "approach-2-counting-sort-note-0",
+    title: "why it is stable",
+    level: 3,
+    kind: "prose",
+    text: "Because.",
+  },
+  {
+    id: "the-overall-arc",
+    title: "The overall arc",
+    level: 2,
+    kind: "prose",
+    text: "One principle.",
+  },
+  {
+    id: "interview-priority",
+    title: "Interview priority",
+    level: 2,
+    kind: "prose",
+    text: "Know it cold.",
+  },
+  {
+    id: "full-runnable-script",
+    title: "Full runnable script",
+    level: 2,
+    kind: "prose",
+    text: "Every approach.",
+  },
+  {
+    id: "full-runnable-script-code",
+    title: "The script",
+    level: 3,
+    kind: "code",
+    code: "print(1)",
+    editable: true,
+  },
+]
+
+test("typed: a carried rung keeps how-to-think, worked and mistake, and drops idea and code", () => {
+  const { byRung } = foldParts(
+    typedParts(),
+    ["brute", "count"],
+    new Set(["brute", "count"]),
+    new Set(["brute"]),
+    true
+  )
+  const heads = byRung.brute
+    .filter((b) => b.kind === "heading")
+    .map((b) => b.text)
+  assert.deepEqual(heads, [
+    "How to think about it",
+    "Worked example",
+    "Common mistake",
+  ])
+  assert.ok(
+    !byRung.brute.some((b) => b.kind === "code"),
+    "the rung's code came back in the fold"
+  )
+})
+
+test("typed: a rung with no authored costWhy keeps the document's complexity section", () => {
+  const { byRung } = foldParts(
+    typedParts(),
+    ["brute", "count"],
+    new Set(["brute", "count"]),
+    new Set(["brute"]),
+    true
+  )
+  const heads = byRung.count
+    .filter((b) => b.kind === "heading")
+    .map((b) => b.text)
+  assert.deepEqual(heads, [
+    "Complexity and when to use this",
+    "why it is stable",
+  ])
+})
+
+test("typed: an approach the ladder does not carry stays whole, under its own heading", () => {
+  const { sections, unbound, byRung } = foldParts(
+    typedParts(),
+    ["brute", "count"],
+    new Set(["brute"]),
+    new Set(["brute"]),
+    true
+  )
+  assert.deepEqual(unbound, [1])
+  assert.equal(byRung.count, undefined)
+  const whole = sections.find((s) => s.title === "Approach 2: Counting sort")
+  assert.ok(whole, "the uncarried approach lost its section")
+  const heads = whole.blocks
+    .filter((b) => b.kind === "heading")
+    .map((b) => b.text)
+  assert.deepEqual(heads, [
+    "The idea",
+    "Code",
+    "Complexity and when to use this",
+    "why it is stable",
+  ])
+  assert.ok(
+    whole.blocks.some(
+      (b) => b.kind === "code" && b.code === "def count(): pass"
+    )
+  )
+})
+
+test("typed: the arc folds onto the ladder, the script and its parts stay one section", () => {
+  const { arc, sections } = foldParts(
+    typedParts(),
+    ["brute", "count"],
+    new Set(["brute", "count"]),
+    new Set(),
+    true
+  )
+  assert.ok(arc.length > 0, "the arc was not collected")
+  assert.ok(
+    !sections.some((s) => /overall arc/i.test(s.title)),
+    "the arc is also a section"
+  )
+  const script = sections.find((s) => s.title === "Full runnable script")
+  assert.ok(
+    script?.blocks.some((b) => b.kind === "heading" && b.text === "The script")
+  )
+  assert.ok(
+    script?.blocks.some((b) => b.kind === "code" && b.code === "print(1)")
+  )
+  assert.deepEqual(
+    sections.map((s) => s.title),
+    [
+      "Understanding the problem",
+      "Reading the calculations",
+      "Interview priority",
+      "Full runnable script",
+    ]
+  )
+})
+
+test("typed: nothing is lost — every part lands in a rung, the arc, or a section", () => {
+  const parts = typedParts()
+  const { byRung, arc, sections } = foldParts(
+    parts,
+    ["brute", "count"],
+    new Set(["brute", "count"]),
+    new Set(["brute"]),
+    true
+  )
+  const texts = [
+    ...Object.values(byRung).flat(),
+    ...arc,
+    ...sections.flatMap((s) => s.blocks),
+  ].map((b) =>
+    b.kind === "paragraph"
+      ? b.text
+      : b.kind === "code"
+        ? b.code
+        : b.kind === "heading"
+          ? b.text
+          : ""
+  )
+  const dropped = [
+    "Every pair.",
+    "def brute(): pass",
+    "O(n²).",
+    "Count them.",
+    "def count(): pass",
+  ]
+  for (const p of parts) {
+    if (p.kind === "heading") continue
+    const body = p.kind === "code" ? p.code : "text" in p ? p.text : ""
+    const expected = !dropped.includes(body)
+    assert.equal(
+      texts.some((t) => t.includes(body.split("\n")[0])),
+      expected,
+      `${p.id}: ${expected ? "lost" : "a known duplicate came back"}`
+    )
+  }
 })
