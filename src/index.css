@@ -68,6 +68,10 @@
   --text-body--line-height: 1.75rem;
   --text-narration: 1.25rem; /* 20 — the narration line              */
   --text-narration--line-height: 1.9375rem;
+  --text-subheading: 1.1875rem; /* 19 — a sub-heading inside a band     */
+  --text-subheading--line-height: 1.625rem;
+  --text-heading: 1.375rem; /* 22 — a band's own heading            */
+  --text-heading--line-height: 1.75rem;
   --text-title: 1.75rem; /* 28 — page and act titles             */
   --text-title--line-height: 2.125rem;
   --text-display: 2.5rem; /* 40 — the equation, the answer        */
@@ -743,6 +747,15 @@
   }
   html {
     @apply font-sans;
+    /* THE ROOT SCALES WITH THE SCREEN. Every type step, the measure and the
+       spacing are rem, so this one line is the whole scaling rule: 16px at
+       1280 wide, 18px at 1920 and beyond, linear between. Measured before it
+       (2026-10-18, the owner reading on a wide monitor): at 1920 the column
+       was 1654px wide and the prose sat in a 768px strip at 17px — the same
+       strip as at 1280. The measure stays ~90 characters a line (DESIGN.md
+       §Measure); what grows is the type, and the column with it: 792px at
+       1440, 864px at 1920. */
+    font-size: clamp(16px, 12px + 0.3125vw, 18px);
   }
   /* Motion, in two layers. The media query answers the OS; the class answers
      the learner, who may want the animation still even though their system

@@ -100,8 +100,18 @@ export function Band({
       id={id}
       className={cn("flex scroll-mt-20 flex-col gap-3", className)}
     >
-      <h2 className="flex items-baseline gap-3 text-meta tracking-wide text-muted-foreground uppercase">
-        {label}
+      {/* A HEADING, NOT AN EYEBROW. Measured 2026-10-18 on the problem page:
+          every section heading was 13px regular uppercase — the smallest,
+          lightest text on the page, under 15px semibold sub-headings and 17px
+          body. A reader could not tell a section from a label, which the
+          owner put as "nothing has any priority". The ladder is now 28 title ·
+          22 section · 19 sub-heading · 17 body. Labels are authored lowercase
+          ("the problem"); the first letter is raised here rather than in
+          every call site. */}
+      <h2 className="flex items-baseline gap-3 font-heading text-heading font-semibold text-foreground">
+        {/* `::first-letter` applies to block containers, and the h2 is flex —
+            so the raising happens on an inline-block span, not on the h2 */}
+        <span className="inline-block first-letter:uppercase">{label}</span>
         {/* the rule IS the separator. A filled divider would add a third
             horizontal line to a page that already has borders and code
             blocks, and the page's job is to look like one document. */}

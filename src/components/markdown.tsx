@@ -145,7 +145,7 @@ export function Markdown({
                 // are 13px labels. A document's heading may not outrank the
                 // page's own. The rule keeps it reading as a heading at the
                 // body step.
-                className="scroll-mt-6 border-b pt-6 pb-2 text-body font-semibold"
+                className="scroll-mt-6 border-b pt-6 pb-2 font-heading text-subheading font-semibold"
               >
                 <Inline text={block.text} />
               </h2>
@@ -153,9 +153,8 @@ export function Markdown({
               <h3
                 key={i}
                 id={ids.get(i)}
-                // one step under its `##`, and the same step as the page's own
-                // sub-headings ("What it asks", "Examples")
-                className="scroll-mt-6 pt-2 text-ui font-semibold"
+                // one step under its `##`: the body step, carried by weight
+                className="scroll-mt-6 pt-2 font-heading text-body font-semibold"
               >
                 <Inline text={block.text} />
               </h3>

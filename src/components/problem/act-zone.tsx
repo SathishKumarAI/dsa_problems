@@ -64,9 +64,15 @@ export function ActZone({
       //
       // `-mt-2` closes the gap the flex column would otherwise leave, so
       // the two halves read as one block rather than as siblings.
-      className="-mt-4 flex flex-col gap-4"
+      // A CARD, SINCE 2026-10-18. The border and the padding had been removed
+      // so the bar and the brief would read as one block, and the result was a
+      // shadow with no edge under a sticky bar — "this card is looking super
+      // bad", the owner's words. It is the one raised surface on the page, so
+      // it gets the one large radius, a hairline, room to breathe, and the
+      // brief set as a lead rather than as a caption.
+      className="mt-2 flex flex-col gap-5 rounded-2xl border border-border/60 bg-card/70 p-6 lg:p-7"
     >
-      <p className="max-w-measure text-body text-muted-foreground">
+      <p className="max-w-measure text-narration text-foreground/90">
         {problem.brief}
       </p>
       {/* THE CLIMB. What replaced a sentence and two buttons with something
@@ -88,7 +94,7 @@ export function ActZone({
             type="button"
             aria-expanded={building}
             onClick={onBuild}
-            className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-4 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-9"
+            className="btn-glow inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-5 text-ui font-medium text-primary-foreground transition-[background-color,box-shadow] hover:bg-primary/90 active:translate-y-px lg:min-h-10"
           >
             <RouteIcon className="size-4 shrink-0" />
             {earned.earned > 0 ? "Continue the journey" : "Build it up"}
@@ -102,7 +108,7 @@ export function ActZone({
           target="_blank"
           rel="noopener"
           className={cn(
-            "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-9",
+            "inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-ui font-medium transition-[background-color,box-shadow] active:translate-y-px lg:min-h-10",
             journey
               ? "border hover:border-edge/60"
               : "btn-glow bg-primary text-primary-foreground hover:bg-primary/90"
@@ -116,7 +122,7 @@ export function ActZone({
       only while it is unstarted. Once earning has begun the button's
       "3/5" says everything a returning reader needs. */}
       {journey && earned.earned === 0 && (
-        <p className="max-w-measure prose-set text-body text-muted-foreground">
+        <p className="max-w-measure prose-set text-ui text-muted-foreground">
           {journey.acts.length} acts: the need, every approach earned by the
           last one's weakness, your own code animated, then the reveal.
         </p>

@@ -43,7 +43,7 @@ export function ClosingBands({
         >
           {closing.map((sec) => (
             <div key={sec.title} className="flex flex-col gap-3">
-              <h3 className="font-heading text-body font-semibold">
+              <h3 className="font-heading text-subheading font-semibold">
                 {sec.title}
               </h3>
               <Markdown

@@ -36,7 +36,7 @@ function Part({
 }) {
   return (
     <div className="flex scroll-mt-20 flex-col gap-2" id={id}>
-      <h3 className="flex items-baseline gap-2 font-heading text-ui font-semibold">
+      <h3 className="flex items-baseline gap-2 font-heading text-subheading font-semibold">
         {title}
         {hint && (
           <span className="font-sans text-meta font-normal text-dim">
@@ -137,7 +137,12 @@ function Constraints({ problem }: { problem: Problem }) {
                     what the figure IS. See `figure/README.md`. */}
                 <FigureFrame
                   label="the bound, drawn"
-                  caption={what ?? runsOf(c).map((r) => r.text).join("")}
+                  caption={
+                    what ??
+                    runsOf(c)
+                      .map((r) => r.text)
+                      .join("")
+                  }
                 >
                   <ConstraintFigureView figure={unlock.figure} />
                 </FigureFrame>
@@ -164,7 +169,9 @@ function Constraints({ problem }: { problem: Problem }) {
                 <span className="text-meta tracking-wide text-dim uppercase">
                   what it buys
                 </span>
-                <p className="text-body text-muted-foreground">{what}</p>
+                <p className="prose-set text-body text-muted-foreground">
+                  {what}
+                </p>
               </div>
             )}
           </li>
