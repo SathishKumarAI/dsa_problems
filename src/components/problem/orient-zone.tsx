@@ -23,7 +23,6 @@ export function OrientZone({
   problem,
   pattern,
   hidden,
-  reading,
   solved,
   onToggleSolved,
   expandAll,
@@ -35,8 +34,6 @@ export function OrientZone({
   pattern: Pattern
   /** the journey is still withholding this pattern's name (B45) */
   hidden: boolean
-  /** the reader is reading: the bar slides out of the way */
-  reading: boolean
   solved: boolean
   onToggleSolved: () => void
   expandAll: boolean
@@ -60,20 +57,10 @@ export function OrientZone({
     The glyph is gone — it restated the pattern the back link already
     names and spent the accent doing it. The mask still holds: the back
     link is what renders `· · ·` while a journey is mid-flight (B45). */}
-      {/* THE BAR GETS OUT OF THE WAY WHILE YOU READ, on the gesture the two
-    sidebars use — see `lib/use-reading-room.ts`. It SLIDES rather than
-    disappearing: a sticky bar that vanishes reads as a rendering fault,
-    and one that moves reads as making room. `invisible` lands only at
-    the end of the travel, so it cannot be tabbed into while it is off
-    screen but is still animating on the way there. */}
-      <OrientBar
-        className={cn(
-          "transition-[transform,opacity] duration-(--duration-reveal)",
-          reading
-            ? "pointer-events-none invisible -translate-y-full opacity-0"
-            : "translate-y-0 opacity-100"
-        )}
-      >
+      {/* IT STAYS. The bar used to slide away on the reading gesture; the
+          gesture is gone (`App.tsx`), and a sticky bar four facts tall is
+          cheaper than a reflow mid-paragraph. */}
+      <OrientBar>
         {/* TWO ROWS ON PURPOSE. Measured at 1440 with both columns open the
       reading column is 830px and this row wants ~1040, so it wrapped —
       and a wrap puts the break wherever it lands. It landed between the

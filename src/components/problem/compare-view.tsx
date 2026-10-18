@@ -8,7 +8,6 @@
 import { ArrowLeftIcon } from "lucide-react"
 import { Fact, OrientBar } from "@/components/ui/band"
 import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { ApproachCompare } from "../approach-compare"
 import type { Rung } from "@/lib/ladder"
 import type { Problem } from "@/data"
@@ -17,28 +16,17 @@ export function CompareView({
   problem,
   pair,
   rungs,
-  reading,
   onPick,
 }: {
   problem: Problem
   pair: [Rung, Rung]
   rungs: Rung[]
-  /** the reader is reading: the bar slides out of the way, as on the page */
-  reading: boolean
   /** "" closes the comparison and returns the page */
   onPick: (value: string) => void
 }) {
   return (
     <div className="mx-auto flex w-full max-w-reading flex-col gap-6">
-      {/* hides while reading, same as the page's own bar */}
-      <OrientBar
-        className={cn(
-          "transition-[transform,opacity] duration-(--duration-reveal)",
-          reading
-            ? "pointer-events-none invisible -translate-y-full opacity-0"
-            : "translate-y-0 opacity-100"
-        )}
-      >
+      <OrientBar>
         <Button
           variant="ghost"
           size="sm"

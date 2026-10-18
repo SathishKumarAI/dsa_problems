@@ -23,13 +23,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { Band } from "@/components/ui/band"
-import { cn } from "@/lib/utils"
 import { PROBLEMS } from "@/data"
 import type { Pattern, Problem } from "@/data"
 import { earnedOf, toggleSolved, useSolved } from "@/lib/progress"
 import { journeyForProblem } from "@/engine"
 import { usePatternMask } from "@/lib/disclosure"
-import { useReadingRoom } from "@/lib/use-reading-room"
 import { ladderOf, parseCompare } from "@/lib/ladder"
 import { K, useStored } from "@/lib/store"
 // `href` went with the journey link: the primary action is a button now
@@ -105,8 +103,6 @@ function ProblemPage({
     1
   )
   const ladder = ladderOf(problem, journey, unlocked)
-  // the page's own chrome answers to the same gesture as the shell's
-  const room = useReadingRoom()
   // the ledger, as the mode bar reads it: how many acts this learner has earned
   const earned = earnedOf(unlocked, journey?.acts.length ?? 0)
   // The explanation, fetched on arrival and never with the bundle: a typed
@@ -195,7 +191,6 @@ function ProblemPage({
         problem={problem}
         pair={pair}
         rungs={ladder.rungs}
-        reading={room.reading}
         onPick={compare}
       />
     )
@@ -227,29 +222,13 @@ function ProblemPage({
       {/* min-w-0: a flex item's default `min-width: auto` is its content's
           min-content width, and the widest comparison table would push this
           column open and take the whole document sideways with it. */}
-      {/* THE COLUMN OPENS BY WHAT THE CHROME GAVE UP. `max-w-reading` is
-            768; reading, it takes the page width, which is the rail's 224 plus
-            the sidebar's 208 back again.
-
-            Prose carries its own cap (`max-w-measure`, once per flow), so it
-            stops at 768 rather than running to 1080 — but it is honest to say
-            it DOES change: the 689 column was clamping the measure below its
-            designed width, so opening the column lets prose reach 768. The
-            wide content — code, tables, the constraint grid, the climb — takes
-            the rest. The reader's vertical place is held across the reflow by
-            `use-reading-room.ts`; measured drift beyond the scroll, zero.
-
-            Two earlier attempts are why the comment is this long. Letting the
-            column re-centre moved the text 32px sideways on every toggle;
-            pinning it to 768 instead left a 414px dead gutter and scrolled the
-            page sideways at exactly `xl`. Both were symptoms of chrome changing
-            width without the column answering. */}
-      <div
-        className={cn(
-          "mx-auto flex w-full min-w-0 flex-col gap-8 transition-[max-width] duration-(--duration-reveal)",
-          room.reading ? "max-w-(--container-page)" : "max-w-reading"
-        )}
-      >
+      {/* ONE WIDTH, WHATEVER THE SCROLL IS DOING. This column used to swap
+            `max-w-reading` for `max-w-page` while the reader was reading, on
+            the chrome-hiding gesture. Measured at 1440 it opened 792 → 828px:
+            36px the prose could not use (it carries its own `max-w-measure`),
+            bought by rewrapping every paragraph on screen mid-sentence. Gone
+            with the gesture — `App.tsx` carries the reasoning. */}
+      <div className="mx-auto flex w-full min-w-0 max-w-reading flex-col gap-8">
         {/* ZONE 1 · ORIENT — four facts in one sticky band, and the two
           page-level switches. `problem/orient-zone.tsx` owns how they are
           said; this page still owns what is true. */}
@@ -257,7 +236,6 @@ function ProblemPage({
           problem={problem}
           pattern={pattern}
           hidden={hidden}
-          reading={room.reading}
           solved={solved.has(problem.id)}
           onToggleSolved={() => toggleSolved(problem.id)}
           expandAll={expandAll}

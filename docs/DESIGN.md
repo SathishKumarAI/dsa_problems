@@ -379,71 +379,45 @@ colour is separate from the accent and means one thing each:
 **Colour is never the only channel.** Every state on the stage also carries a marker (▲), a ring, an
 icon (✓) or a fade. Check a change in greyscale before shipping it.
 
-## The reading room — chrome that leaves
+## The chrome stays put — and why the reading room is gone
 
-The app sidebar is 256px and the contents rail is 288px: 544px of a 1440px screen, held for
-the whole length of a document, and the only way to reclaim it was two deliberate clicks the
-reader then had to undo.
+The app sidebar is 256px and the contents rail is 224px, held for the whole length of a
+document. From 2026-10-16 the page gave that width back on the reading gesture — scroll down
+hid the sidebar, the rail and the orient bar; scroll up brought all three back. It is
+**deleted** as of 2026-10-18, and the measurement is the reason.
 
-**The gesture already says it.** Scrolling DOWN is reading; scrolling UP is looking for
-something. So down hides the sidebar, the rail and the page's own orient bar, and up brings
-all three back — the controls arrive exactly when a hand is already moving toward them.
-`lib/use-reading-room.ts` owns it, and three callers share the one rule.
+**What it actually bought.** The reading column swapped `max-w-reading` for `max-w-page`, so at
+1440 it opened **792 → 828px — 36px**. Prose cannot use those 36px: it carries its own
+`max-w-measure`, which IS the reading column's width. What the reader got for it was every
+paragraph on screen rewrapping, and the text's left edge moving, mid-sentence. The owner, reading
+on a monitor: _"this text, when I scroll up, it starts scaling to the width of the screen"_.
 
-| Decision                                | Why                                                                                                                                                                                                                                                                              |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| direction, never position               | position says where you are, which says nothing about what you want                                                                                                                                                                                                              |
-| **a sustained run, not a movement**     | 140px down to commit to reading, 90px up to ask for the controls back; travel accumulates in one direction and resets on a turn, so a re-read nudge does nothing                                                                                                                 |
-| **the app sidebar does not take part**  | its collapse widens the inset, which moves the reading column — see below                                                                                                                                                                                                        |
-| a 120px top zone always shows chrome    | arriving mid-gesture — a restored scroll, an anchor jump — must not land you at the top with the chrome gone                                                                                                                                                                     |
-| rAF, passive listener                   | a trackpad fires scroll faster than the screen refreshes, and this reads layout                                                                                                                                                                                                  |
-| **OFF under `prefers-reduced-motion`**  | both columns animate their width, and the reduced-motion override zeroes every duration — so with it on this is not a calm slide but the reading column teleporting sideways. A motion feature whose whole value is the animation is switched off rather than shipped without it |
-| the gesture never writes the preference | `wanted` is what the reader last asked for and only a click sets it; scroll back up and a sidebar you closed by hand is still closed                                                                                                                                             |
+A motion feature has to buy more than 4.5% of a column to be allowed to move the line someone is
+reading. This one did not, and four passes of tuning — hysteresis, a settle window, a top zone
+that is entered rather than occupied, a 1536px bail-out — were all spent making a 36px gain stop
+hurting. **The tuning was the tell.**
 
-The bar SLIDES rather than disappearing — a sticky bar that vanishes reads as a rendering
-fault, one that moves reads as making room — and takes `invisible` only at the end of the
-travel, so it cannot be tabbed into off screen.
+### What the four passes taught, kept because the traps outlive the feature
 
-### Three attempts, and what each one taught
+| Attempt                                                | What it measured                                                                                                                                                                                                      |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Hide on any movement**                            | flipped on 8px; the column moved 32px sideways and rewrapped on every toggle, and a re-read nudge up counted as a gesture                                                                                              |
+| **2. Pin the column so it cannot move**                | the 224px the rail vacated became a **414px dead gutter**, and at exactly `xl` the page scrolled sideways                                                                                                             |
+| **3. Reserve the rail's column and only fade it**      | layout frozen, nothing moved — and the document never got the width, which was the point                                                                                                                              |
+| **4. Hide, and open the column by what was given up**  | shipped, then tuned four more times: hiding makes the document SHORTER, so near the foot the browser clamps `scrollY` downward, which reads as scrolling up, which restores the chrome, which lengthens the page again |
 
-This feature took four passes to get right, and the wrong ones are worth keeping because each
-failed in a way that looked like success.
+Two of those are permanent lessons and are enforced elsewhere:
 
-**1. Hide everything, react to any movement.** Flipped on 8px. Measured at 1440: the reading column
-moved 32px sideways and rewrapped **on every toggle** — and the small nudge UP a reader makes to
-re-read a line counted as a gesture, so it did that constantly. Worse than the clutter it removed.
+- **`overflow-anchor` already keeps the reader's place** when content above the viewport changes
+  size. The hand-written version fought the reader, double-corrected against the native one, and
+  its own `scrollBy` re-entered the scroll listener — 6000px of jump on a scroll that asked for
+  600.
+- **A jump reflows the page it jumps through**, whatever caused the reflow. `lib/scroll-to.ts`
+  still re-places the target on `scrollend`, and still owns every in-page anchor.
 
-**2. Pin the column so it cannot move.** It stopped moving, and the 224px the rail vacated became a
-**414px dead gutter** with the text jammed left. At exactly `xl`, 768 + 40 + 224 exceeds the 1024
-available and the page scrolled sideways.
-
-**3. Reserve the rail's column and only fade it.** Layout frozen, nothing moved — and the document
-never got the width, which was the point.
-
-**4. What shipped.** Both sidebars leave and **the column opens by what they gave up** — 689 → 1080
-at 1440, which is 432px of a 1440 screen returned to the document. Prose keeps its own
-`max-w-measure` cap, so it reaches its designed 768 rather than running to 1080; code, tables, the
-constraint grid and the climb take the rest.
-
-Two guards make that a transition rather than an interruption:
-
-| Guard                                                                      | Why                                                                                                                                                                                                                                                                                                        |
-| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **a sustained run** — 140px down, 90px up, accumulated and reset on a turn | a re-read nudge does nothing at all; the flip is rare and deliberate                                                                                                                                                                                                                                       |
-| **a 500ms settle window** after each flip                                  | hiding the chrome makes the document SHORTER, so near the foot the browser clamps `scrollY` downward — which reads as scrolling up, which restores the chrome, which lengthens the page again. Measured before the guard: a run to the bottom ended with the chrome back open and the position oscillating |
-
-And the top zone is **entered, not occupied**: scrolling up into the first screen restores the
-chrome, but merely being there does not. The reflow can legitimately land a reader near the top, and
-forcing the chrome back there re-lengthened the page — the same oscillation by another route.
-
-**Keeping the reader's place is the browser's job.** CSS scroll anchoring (`overflow-anchor`, on by
-default) already adjusts the offset when content above the viewport changes size. A manual version —
-record a probe, correct the drift across the transition — fought a reader who kept scrolling,
-double-corrected against the native one still running underneath, and its own `scrollBy` re-entered
-the scroll listener: driving the page showed the position jumping 6000px on a scroll that asked for 600. Deleted. What the platform cannot give is the settle guard above, and that is all that remains.
-
-Measured after: scroll positions `600, 1200, 1800 … 8400` — monotonic, worst jump exactly the 600
-requested.
+**Now:** the sidebar is the trigger and `[`; the rail is `f`. Both are states the reader chose, so
+nothing undoes them behind their back, and scrolling changes no width on the page. Gate:
+_"scrolling moves the page, not the layout"_ in `ui-smoke`.
 
 ## Depth — `lift-3d`
 

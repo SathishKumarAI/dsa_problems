@@ -18,7 +18,6 @@ import { cardBySlug } from "@/engine/manifest"
 import { Suspense, lazy, useEffect, useState } from "react"
 import { navigate, useRoute } from "@/lib/route"
 import { visited } from "@/lib/recent"
-import { useReadingRoom } from "@/lib/use-reading-room"
 import { openDialog } from "@/lib/dialogs"
 import { cn } from "@/lib/utils"
 import { CircleHelpIcon, LoaderCircleIcon } from "lucide-react"
@@ -191,33 +190,19 @@ export default function App() {
   // viewport-high and the page divides that height between its own panels
   const panels = parts[0] === "journey" || parts[0] === "algorithms"
 
-  // BOTH SIDEBARS LEAVE, AND THE DOCUMENT TAKES THE ROOM. 256px of navigation
-  // on the left and 224 of rail on the right is 480 of a 1440 screen, held for
-  // the whole length of a document nobody navigates while reading it.
+  // THE CHROME STAYS PUT. The sidebar and the contents rail used to leave on
+  // the reading gesture (scroll down hides, up brings back) to give the
+  // document their 480px. It is gone, and the measurement is why: the prose
+  // carries its own cap, so the column opened 792 → 828px at 1440 and the
+  // text moved sideways and REWRAPPED under the reader for 36px it could not
+  // use. The owner, 2026-10-18: "this text, when I scroll up, it starts
+  // scaling to the width of the screen". A feature that moves the line you are
+  // reading has to buy more than that, and this bought 4.5% of a column.
   //
-  // The layout DOES reflow — measured at 1440, the column opens 689 -> 1080 and
-  // prose reaches its designed 768 measure from the 689 the narrow column was
-  // clamping it to. Two things make that a transition rather than an
-  // interruption, and both are load-bearing:
-  //
-  //   - it is RARE and deliberate. The gesture is a sustained run (140px down,
-  //     90px up, accumulated), so the small nudge up a reader makes to re-read
-  //     a line does nothing at all. The first cut flipped on 8px and thrashed.
-  //   - the reader's PLACE is held. Widening the column shortens everything
-  //     above the viewport, so the document would slide up underneath them;
-  //     `use-reading-room.ts` pins a block near the top of the viewport across
-  //     the reflow. Measured: scroll 120px through the flip and the heading
-  //     moves exactly 120px. Drift beyond the scroll, zero.
-  //
-  // Two states, not one, and keeping them apart is the correctness of this.
-  // `wanted` is what the reader last asked for through the trigger and a scroll
-  // never writes it; `reading` is the gesture and a click never writes it. So a
-  // sidebar closed by hand stays closed when you scroll back up.
-  //
-  // Not on the panel layouts: the journey and the visualizer bound their own
-  // height and the window never scrolls, so there is no gesture to read.
+  // The sidebar is still a click (the trigger, and `[`), which is what the
+  // gesture was standing in for — and a click is a state the reader chose, so
+  // nothing undoes it behind their back.
   const [wanted, setWanted] = useState(true)
-  const room = useReadingRoom(!panels)
 
   // Where you just were. Every back link in this app points UP a hierarchy,
   // which is the right answer only when you arrived from above — see
@@ -232,12 +217,8 @@ export default function App() {
   return (
     <TooltipProvider>
       <SidebarProvider
-        open={wanted && !room.reading}
-        onOpenChange={(open) => {
-          setWanted(open)
-          // asking for it back beats the gesture, or the trigger reads as broken
-          if (open) room.reveal()
-        }}
+        open={wanted}
+        onOpenChange={setWanted}
       >
         <AppSidebar view={view} />
         <GlobalKeys />
