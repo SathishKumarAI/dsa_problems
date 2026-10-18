@@ -41,7 +41,7 @@ export const examples: Example[] = [
 export const unlocks: NonNullable<Problem["unlocks"]> = [
   {
     constraint: "2 <= numbers.length <= 3 * 10^4",
-    what: "Thirty thousand elements makes every pair about 4.5\u00b710\u2078 comparisons \u2014 slow, and not hopeless. So this bound is not what rules the quadratic rung out here; the O(1) space requirement below is. Two different constraints doing two different jobs, and confusing them is how people learn the wrong lesson from this problem.",
+    what: "Thirty thousand elements makes every pair about 4.5\u00b710\u2078 checks: slow, not impossible. So this bound alone does not kill the quadratic answer \u2014 the O(1) space line below does. Two constraints, two different jobs.",
     figure: {
       kind: "quantities",
       unit: "ops",
@@ -53,16 +53,16 @@ export const unlocks: NonNullable<Problem["unlocks"]> = [
   },
   {
     constraint: "-1000 <= numbers[i] <= 1000",
-    what: "Only 2001 distinct values are possible, which is small enough that a counting array over the whole range would fit. Worth noticing and then NOT using: it would be O(1) space by the letter and would throw away the indices the answer is made of, and the converging walk is simpler and faster anyway.",
+    what: "Only 2001 distinct values. A counting array over that range would be O(1) space by the letter — and would lose the indices the answer is made of. Notice it, then leave it.",
   },
   {
     constraint: "numbers is sorted ascending",
-    what: "The promise the entire page rests on. Sorted means a comparison is INFORMATIVE: if the sum at the two ends is too small, no pair using the left element can ever be large enough, so that element is finished. Without this line every approach here collapses to the unsorted version and its sort, which is the sibling problem one rung down.",
+    what: "The line everything rests on. If the two ends sum too small, nothing paired with the left end can ever be big enough, so the left end is finished — one comparison retires a whole row of pairs. Take this line away and you are solving the unsorted sibling.",
   },
   {
     constraint:
       "exactly one solution exists and an element may not be used twice; O(1) extra space is required",
-    what: "The space requirement is the real constraint on this page: it forbids the hash map that solves the unsorted version in one pass, and leaves exactly one door open \u2014 a technique that carries no state beyond two indices. Read it as the problem naming its own intended solution.",
+    what: "The real constraint on this page. It forbids the one-pass hash map that solves the unsorted version, and leaves one door open: a method whose whole state is two indices. The problem is naming its own answer.",
     figure: {
       kind: "quantities",
       items: [
