@@ -217,18 +217,31 @@ function ProblemPage({
   })
   const binding = (BINDINGS as Record<string, (string | null)[]>)[problem.id]
 
+  // THE ROW TAKES THE SCREEN, NOT 70rem OF IT. Measured at 1920 before this:
+  // `main` was 1622px and this row stopped at 1260 (70rem at the 18px root),
+  // so 362px of the window was reserved for nothing at all and the reading
+  // column sat 864 wide with a 528px gutter beside it. The cap is the stage's
+  // now — a ceiling for a 4K monitor, not a budget for a laptop.
   return (
-    <div className="mx-auto flex w-full max-w-(--container-page) gap-10">
+    <div className="mx-auto flex w-full max-w-(--container-stage) gap-10">
       {/* min-w-0: a flex item's default `min-width: auto` is its content's
           min-content width, and the widest comparison table would push this
           column open and take the whole document sideways with it. */}
-      {/* ONE WIDTH, WHATEVER THE SCROLL IS DOING. This column used to swap
-            `max-w-reading` for `max-w-page` while the reader was reading, on
-            the chrome-hiding gesture. Measured at 1440 it opened 792 → 828px:
-            36px the prose could not use (it carries its own `max-w-measure`),
-            bought by rewrapping every paragraph on screen mid-sentence. Gone
-            with the gesture — `App.tsx` carries the reasoning. */}
-      <div className="mx-auto flex w-full min-w-0 max-w-reading flex-col gap-8">
+      {/* THE COLUMN FILLS WHAT IS LEFT, AND PROSE DOES NOT.
+          
+          Two different jobs were riding on one width. Sentences want ~90
+          characters and have their own cap for it (`max-w-measure`, one per
+          flow); code, tables, the constraint grid, the climb and the
+          comparison want every pixel there is, and a 56-line Python block in
+          a 768px box wraps or scrolls while 528px sits empty beside it.
+          
+          So this column is bounded by the ROW, not by the measure, and every
+          sentence inside it carries the measure itself. Measured at 1920: the
+          column 864 → 1358px, prose unchanged at 864 (92ch), the dead gutter
+          beside the text 528 → 0. The U7 gate is what makes that safe — it
+          fails on any paragraph over 96ch, which is exactly the paragraph
+          that was leaning on the column for its cap. */}
+      <div className="flex w-full min-w-0 flex-1 flex-col gap-8">
         {/* ZONE 1 · ORIENT — four facts in one sticky band, and the two
           page-level switches. `problem/orient-zone.tsx` owns how they are
           said; this page still owns what is true. */}

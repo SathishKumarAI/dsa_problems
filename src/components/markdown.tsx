@@ -122,12 +122,20 @@ export function Markdown({
   // sideways with it. Measured at 1440: scrollWidth 1440 against clientWidth
   // 1430 — exactly the scrollbar — until this was set.
   return (
-    // `max-w-measure` ONCE, here. Per-block caps are applied after the
-    // nesting, so a callout inside a fold got 576 of its own on top of two
-    // levels of left inset and ended 35px past every paragraph above it —
-    // measured 611 against the column's 576. On the flow it is a ceiling that
-    // nesting can only move inwards from.
-    <div className="flex max-w-measure min-w-0 flex-col gap-5">
+    // THE CAP IS ON THE TEXT, NOT ON THE FLOW — changed 2026-10-18, and the
+    // reason is what the flow cap was also catching. A document is sentences
+    // AND code AND tables, and those want opposite things: ~90 characters, and
+    // every pixel there is. One cap on the flow gave them the same width, so a
+    // table of four worked examples and a 56-line Python block rendered 862px
+    // wide at 1920 with 389px of the column empty beside them.
+    //
+    // So: every TEXT block below carries `max-w-measure`, and `pre`/`table`
+    // carry nothing. The nesting trap the flow cap was guarding is handled by
+    // capping the BOX for the two blocks that inset their text — a callout and
+    // a fold — so their right edge still lands on the column's, rather than
+    // 35px past it (measured 611 against 576 when the cap sat on the inner
+    // paragraph instead).
+    <div className="flex min-w-0 flex-col gap-5">
       {blocks.map((block, i) => {
         switch (block.kind) {
           // the page renders the document's own title in its header
@@ -145,7 +153,7 @@ export function Markdown({
                 // are 13px labels. A document's heading may not outrank the
                 // page's own. The rule keeps it reading as a heading at the
                 // body step.
-                className="scroll-mt-6 border-b pt-6 pb-2 font-heading text-subheading font-semibold"
+                className="max-w-measure scroll-mt-6 border-b pt-6 pb-2 font-heading text-subheading font-semibold"
               >
                 <Inline text={block.text} />
               </h2>
@@ -154,7 +162,7 @@ export function Markdown({
                 key={i}
                 id={ids.get(i)}
                 // one step under its `##`: the body step, carried by weight
-                className="scroll-mt-6 pt-2 font-heading text-body font-semibold"
+                className="max-w-measure scroll-mt-6 pt-2 font-heading text-body font-semibold"
               >
                 <Inline text={block.text} />
               </h3>
@@ -162,7 +170,10 @@ export function Markdown({
 
           case "paragraph":
             return (
-              <p key={i} className="prose-set text-body text-muted-foreground">
+              <p
+                key={i}
+                className="max-w-measure prose-set text-body text-muted-foreground"
+              >
                 <Inline text={block.text} />
               </p>
             )
@@ -172,12 +183,14 @@ export function Markdown({
               <blockquote
                 key={i}
                 className={cn(
-                  // NO `max-w-measure` on this box. The measure belongs to
-                  // the text inside it (below): with it here, the rule, the
-                  // padding and the inset all came out of the 576 and the
-                  // callout's lines ended 29px short of every paragraph
-                  // around them.
-                  "flex flex-col gap-2 border-l-2 bg-card/40 py-2 pr-3 pl-4",
+                  // `max-w-measure` ON THE BOX, not on the text inside it.
+                  // The cost is known and is the smaller one: the rule, the
+                  // padding and the inset come out of the measure, so the
+                  // callout's lines are ~29px shorter than the paragraphs
+                  // around them. Capping the inner text instead lands its
+                  // right edge PAST the column's, and one right edge is what
+                  // makes a column read as set.
+                  "flex max-w-measure flex-col gap-2 border-l-2 bg-card/40 py-2 pr-3 pl-4",
                   ACCENT[block.label ?? ""] ?? DEFAULT_ACCENT
                 )}
               >
@@ -263,7 +276,7 @@ export function Markdown({
 
           case "list":
             return (
-              <ul key={i} className="flex flex-col gap-2 pl-5">
+              <ul key={i} className="flex max-w-measure flex-col gap-2 pl-5">
                 {block.items.map((item, j) => (
                   <li
                     key={j}
@@ -282,7 +295,7 @@ export function Markdown({
             return (
               <details
                 key={i}
-                className="w-fit rounded-lg border bg-card/40 px-4 py-3 [&[open]]:w-auto"
+                className="w-fit max-w-measure rounded-lg border bg-card/40 px-4 py-3 [&[open]]:w-auto"
               >
                 <summary className="cursor-pointer text-body font-medium text-foreground underline-offset-4 marker:text-muted-foreground hover:underline">
                   <Inline text={block.summary} />
@@ -294,7 +307,7 @@ export function Markdown({
             )
 
           case "rule":
-            return <hr key={i} className="border-border/60" />
+            return <hr key={i} className="max-w-measure border-border/60" />
         }
       })}
     </div>

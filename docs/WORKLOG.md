@@ -11,6 +11,37 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-18 — the column is for code, the measure is for sentences
+
+Second of the owner's three complaints from the same sentence: _"there is a lot of empty space."_
+
+Measured at 1920 (headless Chrome, `#/p/two-pointers/sorted-pair-sum`): `main` was **1622px**, the
+problem page's row stopped at **1260** (70rem at the 18px root), the reading column was **864** —
+and every table and every code block in the document rendered **862 wide with 389px of the column
+empty beside them**. Two different jobs were riding on one width: `markdown.tsx` carried a single
+`max-w-measure` on the FLOW, so a 56-line Python block and a four-column table of worked examples
+got the width of a sentence.
+
+| At 1920                | Before | After    |
+| ---------------------- | ------ | -------- |
+| the page's row         | 1260   | **1517** (fills `main`, ceiling `--container-stage`) |
+| the reading column     | 864    | **1253** |
+| code and tables        | 862    | **1251** |
+| prose                  | 864    | 864 (90ch — unchanged, and that is the point) |
+| page height            | 13 469 | 13 036   |
+| sideways scroll        | no     | no       |
+
+The cap moved from the flow onto each TEXT block — paragraphs, headings, lists, rules — with
+nothing on `pre`/`table`. The two blocks that inset their text (a callout, a fold) are capped as a
+BOX: their padding comes out of the measure so their lines run ~29px short, where capping the inner
+text instead put their right edge 35px PAST the column's. A short line is the cheaper error; one
+right edge is what makes a column read as set.
+
+Gate: _"code and tables take the column, sentences keep the measure"_ — asserts at 1920 that the
+row is filled, that code is at least 200px wider than the widest paragraph, that no sentence
+escapes 96ch, and that the page does not scroll sideways. U7 (96ch, four routes) is what makes the
+split safe: it fails on exactly the paragraph that was leaning on the flow for its cap.
+
 ## 2026-10-18 — the reading room is deleted: 36px of column, paid for in rewraps
 
 The owner, reading a problem page: _"this text, when I scroll up, it starts scaling to the width of
