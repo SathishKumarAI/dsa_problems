@@ -172,6 +172,42 @@ that could be read aloud in one breath is the right length. Anything that sounds
 heading ("Approach 2: Hash Map Technique") is a smell; anything that sounds like a teacher at a
 whiteboard ("look at what it is remembering") is the target.
 
+## 3b. Design patterns the second pass found — the page as a surface, not only as prose
+
+The owner's words on 2026-10-18, looking at the finished content: _this card is looking super
+bad_; _there is no emphasis between headings, subheadings, code — nothing has any priority_;
+_increase the width of the text when it's enlarged_. Each one measured first, each one a pattern
+that applies to every page because it lives in a token or a shared component.
+
+| Pattern                                                                                                                                                                                                                    | Measured before → after                                                                                                                             | Where                                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **D1 · A heading outranks the body it heads.** Band headings are a step, not an eyebrow: 22/600 sentence case; sub-headings 19/600; body 17. Uppercase tracking is for a label beside a value, never a heading             | section headings **13/400 uppercase** — the smallest, lightest text on the page — under 15/600 sub-headings and 17/400 body → **28 · 22 · 19 · 17** | `ui/band.tsx`, `index.css` (`text-heading`, `text-subheading`), `DESIGN.md` §Type |
+| **D2 · The one raised surface is a card.** Large radius (`rounded-2xl`, 18px), a hairline, `p-7`, the brief set as a 20px lead, pill buttons. A shadow with no edge under a sticky bar is not a card                       | shadow, no border, no padding → bordered, rounded, roomy                                                                                            | `problem/act-zone.tsx`                                                            |
+| **D3 · The root scales with the screen.** `html { font-size: clamp(16px, 12px + 0.3125vw, 18px) }`. Everything is rem, so one line scales the type, the measure and the spacing together; the measure stays ~90 characters | at 1920: column 1654px, prose a **768px / 17px** strip (the same as at 1280) → **864px / 19px**                                                     | `index.css`, `DESIGN.md` §Measure                                                 |
+| **D4 · Justify every prose block, hyphens on.** The cards' "what it buys" were the only ragged prose on the page                                                                                                           | 5 ragged paragraphs → 2, and those two are flex label rows, not prose                                                                               | `prose-set` on the card paragraph                                                 |
+| **D5 · Desktop only.** Design and measure at 1280–1680; a phone-width gate that blocks desktop work is deleted, not obeyed                                                                                                 | the owner's call                                                                                                                                    | `CLAUDE.md` Working agreements                                                    |
+
+### Traps met while doing it, so the next pass does not
+
+- **`::first-letter` does not apply to a flex container.** The band heading is `flex` (label,
+  rule, count), so `[&::first-letter]:uppercase` on the h2 did nothing. Put the label in an
+  `inline-block` span and raise the letter there.
+- **A hidden copy reads as unstyled.** The phone-only sibling list is `xl:hidden` at 1440; its
+  heading's `innerText` came back lowercase and looked like a failed rule. `display: none`
+  means no CSS applies to the text you read out. Check `offsetParent` before trusting a probe.
+- **Prettier on a `.mjs` the repo never formatted.** `format` covers `**/*.{ts,tsx}` only;
+  `prettier --write test/ui-smoke.test.mjs` rewrote 160 lines of other people's assertions.
+  `git checkout` the file and re-apply by hand.
+- **A branch is not where you think after a merge.** `gh pr merge --delete-branch` leaves you on
+  master; the next `git commit` lands there. `git switch -c` FIRST, every time — the fold work
+  had to be lifted off master with `git branch -f master origin/master`.
+- **A UI gate started before the last edit tests the previous build.** `vite build` snapshots the
+  tree; three runs were wasted that way. Edit, then start the gate, then stop editing.
+- **Two gates asserted the old shape, not the rule.** "the rail's second `Code` entry" and "h2
+  inside `#explanation`" were both proxies for a page that rendered the document whole. When
+  the shape changes, rewrite the gate to assert the RULE (the last band lands; the closing band
+  carries the failure modes) rather than loosening it.
+
 ## 4. Mechanics that must hold on every page — now gated
 
 These are not style. Each one shipped broken on the pilot and each now has a test.

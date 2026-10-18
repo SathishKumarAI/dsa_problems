@@ -65,8 +65,8 @@ export function ReadFurther({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-baseline gap-3">
-        <h2 className="text-meta tracking-wide text-muted-foreground uppercase">
-          read further
+        <h2 className="font-heading text-heading font-semibold text-foreground">
+          Read further
         </h2>
         <span className="ml-auto font-mono text-meta text-dim tabular-nums">
           {own.length ? `${own.length} on this problem · ` : ""}

@@ -116,6 +116,27 @@ fold opened against the long read, the hints read against the insight-before-nam
 Gates: `npm run check` 883/0 (five new `foldParts` tests, the typed-outline test flipped);
 `test:ui` — see STATUS.
 
+### Headings that outrank their body, and the act card as a card
+
+The owner, looking at the page: _this card is looking super bad_, and _there is no emphasis
+between headings, subheadings, code — nothing has any priority_. Measured before touching
+anything: every band heading was **13px / 400 / uppercase** — the smallest, lightest text on the
+page — under **15/600** sub-headings and **17/400** body. A heading smaller than the body it heads
+is a label, and the page read as a stack of labels. The act card had had its border and padding
+removed so it would read as one block with the sticky bar; what was left was a shadow with no edge.
+
+| What                                                                                                                                                                                                                                                          | Before → after                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Band headings (`ui/band.tsx`): two new steps, `text-heading` 22/28 and `text-subheading` 19/26; sentence case                                                                                                                                                 | 13/400 uppercase → **22/600**                                                                                                                           |
+| The page's sub-headings, a document's `##`                                                                                                                                                                                                                    | 15/600 → **19/600**                                                                                                                                     |
+| A document's `###` (inside the folds)                                                                                                                                                                                                                         | 15/600 → 17/600, carried by weight one step under                                                                                                       |
+| The act card (`problem/act-zone.tsx`)                                                                                                                                                                                                                         | shadow, no edge, no padding → rounded-2xl, hairline border, p-7, brief as a 20px lead, pill buttons                                                     |
+| `DESIGN.md` §Type: the heading ladder is **28 · 22 · 19 · 17**, and uppercase tracking is for a label beside a value, never a heading                                                                                                                         | the 2026-09-12 rule revised, with the measurement that revised it                                                                                       |
+| `CLAUDE.md`: **desktop only** — design and measure at 1280–1680; a phone-width gate that blocks desktop work is deleted, not obeyed                                                                                                                           | the owner's call, 2026-10-18                                                                                                                            |
+| **The root scales with the screen**: `clamp(16px, 12px + 0.3125vw, 18px)`. The owner, on a wide monitor: _increase the width of the text when it's enlarged_. Measured: at 1920 the column was 1654px and the prose a 768px / 17px strip, the same as at 1280 | body 17 → 19.1px and column 768 → 864px at 1920; the measure stays ~90 characters, so the U7 gate holds. The bound cards' prose justified with the rest |
+
+Gates: `npm run check` 883/0; `test:ui` — see STATUS.
+
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 
 Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and

@@ -374,7 +374,7 @@ export function ApproachLadder({
             duplication of it. */}
         {comparison && comparison.length > 0 && (
           <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
-            <h3 className="font-heading text-body font-semibold">
+            <h3 className="font-heading text-subheading font-semibold">
               All of them, side by side
             </h3>
             <Markdown blocks={comparison} problemId={problem.id} />

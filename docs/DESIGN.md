@@ -11,16 +11,18 @@ how the sixteen steps happened.
 
 ## Type
 
-Six steps. Line heights ship with them, so `text-body` is a full type setting, not a size.
+Eight steps. Line heights ship with them, so `text-body` is a full type setting, not a size.
 
-| Token            | px / line-height | Use it for                                                                                                                                    |
-| ---------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `text-meta`      | 13 / 18          | labels, counts, act keys, eyebrow captions, legend entries                                                                                    |
-| `text-ui`        | 15 / 22          | buttons, controls, table cells, breadcrumbs, subtitles                                                                                        |
-| `text-body`      | **17 / 28**      | anything a learner reads as a sentence: the reading column, dialog prose, quiz and predict questions, corner cases, problem statements, hints |
-| `text-narration` | **20 / 31**      | the narration line under the stage (`lg` and up; `text-body` below)                                                                           |
-| `text-title`     | 28 / 34          | page and act titles                                                                                                                           |
-| `text-display`   | 40 / 44          | the equation and the answer on the stage                                                                                                      |
+| Token             | px / line-height | Use it for                                                                                                                                    |
+| ----------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `text-meta`       | 13 / 18          | labels, counts, act keys, eyebrow captions, legend entries                                                                                    |
+| `text-ui`         | 15 / 22          | buttons, controls, table cells, breadcrumbs, subtitles                                                                                        |
+| `text-body`       | **17 / 28**      | anything a learner reads as a sentence: the reading column, dialog prose, quiz and predict questions, corner cases, problem statements, hints |
+| `text-narration`  | **20 / 31**      | the narration line under the stage (`lg` and up; `text-body` below); the brief on the problem page's card                                     |
+| `text-subheading` | 19 / 26          | a sub-heading inside a band ("What it asks"), a document's `##` once it is placed on the page                                                 |
+| `text-heading`    | **22 / 28**      | a band's own heading ("The problem", "Approaches") — a heading, not an eyebrow. Added 2026-10-18                                              |
+| `text-title`      | 28 / 34          | page and act titles                                                                                                                           |
+| `text-display`    | 40 / 44          | the equation and the answer on the stage                                                                                                      |
 
 **Raised one step on 2026-09-12, and the reason is a measurement rather than a
 taste.** Every text node on four routes was read out of a real browser with its
@@ -205,6 +207,12 @@ Uppercase labels take `tracking-wide`. Nothing else does.
 **The measure IS the reading column — `max-w-measure`, 48rem / 768px — and prose is
 justified with automatic hyphenation.**
 
+**And the root scales with the screen (2026-10-18).** `html { font-size: clamp(16px, 12px +
+0.3125vw, 18px) }` — 16px at 1280, 18px at 1920. Every step, the measure and the spacing are
+rem, so the whole system grows together and the measure stays ~90 characters a line while the
+column it fills goes 768 → 792 → 864px across 1280 → 1440 → 1920. Measured before: at 1920 the
+prose sat in the same 768px / 17px strip as at 1280, with 1654px of column beside it.
+
 Changed 2026-09-15 on the owner's call, made twice. Prose fills the column it is in rather than
 stopping short of it; the column is the measure, so every sentence still shares one right edge —
 the edge is just the column's now, and it is a straight edge rather than a rag.
@@ -267,14 +275,20 @@ explanation was its own ROUTE and 28 was its top level. As a section they made a
 SUBSECTION of the last band render at the size of the page title, and more than
 twice every actual section heading on the page, which are 13px labels.
 
-They are `text-body` semibold with a rule, and `text-ui` semibold — one step
-under, and level with the page's own sub-headings. Both renderers carry the same
-classes, because a typed document and a Markdown one must never read at two
-different sizes.
+They are `text-subheading` semibold with a rule, and `text-body` semibold —
+one step under the band, and level with the page's own sub-headings. Both
+renderers carry the same classes, because a typed document and a Markdown one
+must never read at two different sizes.
 
-The page's heading ladder, top to bottom: **28** the problem title · **13
-uppercase** every section · **17** a document subsection · **15** a
-sub-heading.
+**Revised 2026-10-18.** The first version of this rule made every section
+heading a 13px uppercase eyebrow — the smallest, lightest text on the page,
+under its own sub-headings and its body. Measured: 13/400 for a section,
+15/600 for a sub-heading, 17/400 for a sentence. The owner's reading was
+"nothing has any priority", and he was right: a heading that is smaller than
+the body it heads is a label. The page's heading ladder is now, top to bottom:
+**28** the problem title · **22** every band · **19** a sub-heading and a
+document's `##` · **17 semibold** a document's `###` · **17** body. Uppercase
+tracking is for a label beside a value (`Fact`), never for a heading.
 
 ## Shape — how a surface is built
 
@@ -340,12 +354,13 @@ a chip's inner padding — and nowhere else. `0.5` (2 px) is a hairline, not a g
 
 Four, all derived from `--radius: 0.625rem`, and nothing arbitrary:
 
-| Token        | px  | For                               |
-| ------------ | --- | --------------------------------- |
-| `rounded-sm` | 6   | chips, pills, inline marks        |
-| `rounded-md` | 8   | buttons, inputs, small controls   |
-| `rounded-lg` | 10  | panels inside a card, code blocks |
-| `rounded-xl` | 14  | cards and the stage               |
+| Token         | px  | For                                                          |
+| ------------- | --- | ------------------------------------------------------------ |
+| `rounded-sm`  | 6   | chips, pills, inline marks                                   |
+| `rounded-md`  | 8   | buttons, inputs, small controls                              |
+| `rounded-lg`  | 10  | panels inside a card, code blocks                            |
+| `rounded-xl`  | 14  | cards, buttons on the primary surface, the stage             |
+| `rounded-2xl` | 18  | the ONE raised surface on a page — the act card, home's dock |
 
 ## Colour
 
