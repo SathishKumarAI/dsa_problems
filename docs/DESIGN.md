@@ -204,8 +204,26 @@ Uppercase labels take `tracking-wide`. Nothing else does.
 
 ## Measure
 
-**The measure IS the reading column — `max-w-measure`, 48rem / 768px — and prose is
+**The measure IS the reading column for SENTENCES — `max-w-measure`, 48rem / 768px — and prose is
 justified with automatic hyphenation.**
+
+**The column itself is wider than that, and code and tables take all of it (2026-10-18.)** A
+document is sentences *and* code *and* tables, and those want opposite things: ~90 characters, and
+every pixel there is. One cap on the markdown FLOW gave them the same width — measured at 1920,
+`main` was 1622px, the problem page's row stopped at 70rem = 1260, the reading column was 864, and
+every table and every 56-line Python block rendered **862px with 389px of the column empty beside
+it**. The owner, reading on a monitor: _"there is a lot of empty space"_.
+
+So the problem page's row fills the window (ceiling `--container-stage`, for a 4K monitor) and the
+column fills what the rail leaves; `markdown.tsx` carries the measure on each TEXT block and
+nothing on `pre`/`table`. Measured after, at 1920: column 864 → **1253**, code and tables 862 →
+**1251**, prose unchanged at 864 / 90ch, no sideways scroll. Gate: _"code and tables take the
+column, sentences keep the measure"_.
+
+**The two blocks that inset their text are capped as a BOX** — a callout and a fold. Their padding
+and rule come out of the measure, so their lines are ~29px shorter than the paragraphs around them;
+capping the text inside instead put their right edge 35px PAST the column's (measured 611 against
+576), and one right edge is what makes a column read as set. The shorter line is the cheaper error.
 
 **And the root scales with the screen (2026-10-18).** `html { font-size: clamp(16px, 12px +
 0.3125vw, 18px) }` — 16px at 1280, 18px at 1920. Every step, the measure and the spacing are

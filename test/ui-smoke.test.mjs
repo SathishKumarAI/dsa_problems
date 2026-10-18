@@ -2062,6 +2062,47 @@ describe(
         )
       })
 
+    // THE COLUMN IS FOR CODE, THE MEASURE IS FOR SENTENCES. Measured at 1920
+    // before this split: `main` 1622px, the reading row stopped at 1260 (70rem
+    // at the 18px root), the column 864 — and every table and 56-line Python
+    // block in the document rendered 862 wide with 389px of the column empty
+    // beside it, because one `max-w-measure` on the markdown FLOW gave prose
+    // and code the same width. The cap is on the text now.
+    test("code and tables take the column, sentences keep the measure", async () => {
+      await page.resize(1920)
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const out = await page.run(`
+        const main = document.querySelector('main');
+        const w = e => Math.round(e.getBoundingClientRect().width);
+        const ps = [...main.querySelectorAll('p')].filter(e => e.textContent.trim().length > 120);
+        const wide = [...main.querySelectorAll('pre, table')];
+        const ch = e => Math.round(w(e) / (parseFloat(getComputedStyle(e).fontSize) * 0.5));
+        return {
+          col: w(main.querySelector('[data-slot="orient-bar"]').parentElement),
+          prose: Math.max(0, ...ps.map(w)),
+          proseCh: Math.max(0, ...ps.map(ch)),
+          code: Math.max(0, ...wide.map(w)),
+          codeCount: wide.length,
+          sideways: document.documentElement.scrollWidth > innerWidth + 1,
+        };
+      `)
+      await page.resize(1440)
+      assert.ok(out.codeCount > 0, "no code or tables on this page to test")
+      assert.ok(
+        out.col > 1100,
+        `the reading row is still budgeted, not filled: column ${out.col} of a 1920 screen`
+      )
+      assert.ok(
+        out.code > out.prose + 200,
+        `code and tables did not take the column: code ${out.code}, prose ${out.prose}, column ${out.col}`
+      )
+      assert.ok(
+        out.proseCh <= 96,
+        `a sentence escaped the measure at 1920: ${out.proseCh}ch`
+      )
+      assert.equal(out.sideways, false, "the page scrolls sideways at 1920")
+    })
+
     test("the narration stays on screen even on a long panel (U1)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(
