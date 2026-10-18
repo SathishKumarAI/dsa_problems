@@ -171,6 +171,9 @@ export const problem: Problem = {
 }`,
   alternatives: [
     {
+      // the key the journey's act carries — lib/ladder.ts links this rung's
+      // costWhy and code to the act through it (docs/CONTENT-PATTERNS.md R4)
+      key: "brute",
       name: "Brute force",
       summary:
         "Check every pair until one sums to the target. No memory, nothing to get wrong, and the right thing to say first in an interview — but it re-reads the whole array for every element, asking a question it has already asked n times. On the 10^4 upper bound that is fifty million pairs to find one.",
@@ -198,6 +201,9 @@ export const problem: Problem = {
 }`,
     },
     {
+      // the key the journey's act carries — lib/ladder.ts links this rung's
+      // costWhy and code to the act through it (docs/CONTENT-PATTERNS.md R4)
+      key: "twoptr",
       name: "Sort + two pointers",
       whyNow:
         "Brute force re-reads the whole array for every element, asking the same question n times. Sorting answers it once: on ordered values, comparing the two ends tells you which end can never reach the target, so a single comparison retires a whole row of the table.",

@@ -87,10 +87,30 @@ const joinTabs = (code: {
  * the 238 acts are shaped that way. The record's own code for the same rung is
  * a function, in three languages, and is what `verify:run` already proves
  * against the Python. So: the act's lines when they are a function; the
- * record's when it has one and the act's are the body alone.
+ * record's when it has one and the act's are the body alone; and when the act
+ * has no record rung at all (pair-sum's two-pass hash, single-number's brute
+ * force), the act's own lines under the record's signature — the acts write
+ * their bodies against the record's parameter names, which is what makes
+ * that an honest function rather than a guess.
  */
-const runnable = (tabs: Code, record?: Code): Code =>
-  record && !/^def /m.test(tabs.python) ? record : tabs
+const runnable = (
+  tabs: Code,
+  record: Code | undefined,
+  signature?: string
+): Code => {
+  if (/^def /m.test(tabs.python)) return tabs
+  if (record) return record
+  if (!signature) return tabs
+  const body = tabs.python
+    .split("\n")
+    .map((l) => (l.trim() ? `    ${l}` : l))
+    .join("\n")
+  return { ...tabs, python: `${signature}\n${body}` }
+}
+
+/** the record's own `def …:` line, for a rung that has only a body */
+const signatureOf = (problem: Problem) =>
+  problem.python.split("\n").find((l) => /^def .*:\s*$/.test(l))
 
 /**
  * Move a rung that says where it goes.
@@ -163,7 +183,8 @@ function fromJourney(
     // the top act is the problem itself, so the record's code is its code
     code: runnable(
       joinTabs(a.code),
-      byKey.get(a.key) ?? (a === acts[acts.length - 1] ? problem : undefined)
+      byKey.get(a.key) ?? (a === acts[acts.length - 1] ? problem : undefined),
+      signatureOf(problem)
     ),
   }))
 

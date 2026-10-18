@@ -11,7 +11,7 @@
 //     the page scroll sideways.
 import { Fragment } from "react"
 import type { Block, Span } from "@/lib/markdown"
-import { inlineSpans, slugify } from "@/lib/markdown"
+import { headingIds, inlineSpans } from "@/lib/markdown"
 import { cn } from "@/lib/utils"
 import { CodeBlock } from "./code-block"
 import { RunnableCode } from "./runnable-code"
@@ -84,6 +84,7 @@ const DEFAULT_ACCENT = "border-border"
 
 export function Markdown({
   blocks,
+  idPrefix,
   runnable = false,
   problemId,
   scaffold,
@@ -108,7 +109,11 @@ export function Markdown({
    * markdown. A fence in a dialog is illustration.
    */
   runnable?: boolean
+  /** scopes every heading id — for a document rendered in PIECES on one page
+   *  (the per-rung folds), so they do not collide with the explanation's */
+  idPrefix?: string
 }) {
+  const ids = headingIds(blocks, idPrefix)
   // The "which fence is the full script" heuristic is gone with the thing it
   // decided. It picked the LAST python fence and made only that one editable;
   // every block is editable now, so there is nothing left to guess.
@@ -131,7 +136,7 @@ export function Markdown({
             return block.level === 2 ? (
               <h2
                 key={i}
-                id={slugify(block.text)}
+                id={ids.get(i)}
                 // `text-body`, not `text-title`. These were sized when the
                 // explanation was its own ROUTE and 28px was its top level.
                 // It is a section of the problem page now, so a `##` inside it
@@ -147,7 +152,7 @@ export function Markdown({
             ) : (
               <h3
                 key={i}
-                id={slugify(block.text)}
+                id={ids.get(i)}
                 // one step under its `##`, and the same step as the page's own
                 // sub-headings ("What it asks", "Examples")
                 className="scroll-mt-6 pt-2 text-ui font-semibold"

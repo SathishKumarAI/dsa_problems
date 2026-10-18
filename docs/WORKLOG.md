@@ -33,8 +33,9 @@ measured what moved.
 "smooth"})` sat at scrollY 0 for three seconds — which read as "every anchor on the page is dead".
   Relaunched with `--disable-backgrounding-occluded-windows --disable-renderer-backgrounding` and
   they all scrolled. Check visibility before calling anything dead.
-- A duplicate-React-key warning (`the-idea`, `code`, …) appeared in the throttled runs and never
-  again across a full walk at 1440 and 390 after the relaunch. Not reproduced; not chased.
+- A duplicate-React-key warning (`the-idea`, `code`, …) appeared in the throttled runs and not
+  on the typed pages afterwards. It was real — see the fourth branch below: Markdown documents,
+  not typed ones, and pair-sum reproduces it on every load.
 
 ### Gates
 
@@ -82,6 +83,23 @@ pilot's before/after, the lecture tone the owner asked for (concrete example fir
 brute force said aloud; "can we do better?" before the name; dry-run as a table; cost counted; code
 last), five gated mechanics, and the checklist. Gates: `npm run check` 877/0; `test:ui` adds _"the
 ladder's Run uses the statement's example, and says so"_.
+
+### Fourth branch — every rung runs, and a Markdown document's headings stop colliding
+
+The nine rungs the R1 gate listed are zero: seven alternatives across pair-sum, container-water,
+three-sum-zero and single-number carry their acts' keys, and the two acts with no record rung at
+all (pair-sum's two-pass hash, single-number's brute force) show the act's own lines under the
+record's `def` line — their bodies already use the record's parameter names. Pressed every ladder
+Run on both pages: 8 of 8 print the answer to the statement's example. The gate now asserts the
+list is EMPTY.
+
+Pressing those pages also reproduced the duplicate-key warning on every load — **125** of them on
+pair-sum — and named the cause: a Markdown document writes the same six `###` under every
+`## Approach`, `outlineOf` slugged them alone, so the rail's keys collided and its second "Code"
+entry pointed at the first approach's. `headingIds` scopes a `###` under its `##`
+(`approach-1-brute-force-code`, the shape typed documents already use), counters anything still
+equal, and the per-rung folds pass a prefix so their headings do not collide with the
+explanation's. Gates: `npm run check` 878/0; `test:ui` — see STATUS.
 
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 

@@ -6,9 +6,11 @@ update every clone and reference.
 
 ## The last session, in one line
 
-**Thirteen branches, #114 → #126: the site grew a glossary, a ledger of everything it is still
-missing, the first 16 problems at the pilot's depth, and a clock on every rung of them.** Full account, with the measurement behind
-each one: `docs/WORKLOG.md`, entry for 2026-09-21.
+**2026-10-17, four branches from one page driven as a learner (#128–#131): every in-page jump
+lands, every Run button calls the statement's example and says so, sorted-pair-sum reads as
+points, and `docs/CONTENT-PATTERNS.md` says how to do the next 152.** The session before it,
+#114 → #126, grew a glossary, a ledger of what is missing, 16 problems at the pilot's depth and a
+clock on every rung of them. Both in `docs/WORKLOG.md`.
 
 |                              |                                                                                               |
 | ---------------------------- | --------------------------------------------------------------------------------------------- |
@@ -23,8 +25,8 @@ each one: `docs/WORKLOG.md`, entry for 2026-09-21.
 
 | Gate                                    | Result                                                                      |
 | --------------------------------------- | --------------------------------------------------------------------------- |
-| `npm run check`                         | **875 / 0 fail**, exit 0                                                    |
-| `npm run test:ui`                       | **187 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-17          |
+| `npm run check`                         | **878 / 0 fail**, exit 0 (2026-10-17)                                       |
+| `npm run test:ui`                       | **188 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-17          |
 | `npm run check:links`                   | **72 URLs, 0 dead** — cached 30 days, re-run with `--fresh`                 |
 | `node scripts/page-backlog.mjs --check` | current (a node test fails the build when it is stale)                      |
 | `npm run verify:vectors`                | **RED — 22 survivors across 11 problems.** Real, pre-existing, filed as G12 |
@@ -46,6 +48,12 @@ from a loaded machine is still not evidence.
 | **`components/problem/`** (new)   | `page-sections.ts` (what the page draws — plain `.ts`, gated), `orient-zone`, `act-zone`, `compare-view`, `closing-bands`. `problem-detail.tsx` 821 → 490 lines                                                                                  |
 
 ## The next action — the order the owner picked, with one item already half-built
+
+**0. The next page, with `docs/CONTENT-PATTERNS.md` open.** The read-through first (press every
+Run, click every rail link, count the words), then P1–P10, then the checklist into the PR.
+sorted-pair-sum went 5 937 → 4 525 words; expect an hour a page. B100's second half — the rung's
+"Work it through" fold and the explanation's per-approach sections overlap on a typed document —
+is the one thing on those pages a rewrite cannot fix; it is a renderer change.
 
 **1. B71 — the optimal-rung audit. 16 of 153 done; the method is proven.**
 `npm run time-rungs` times every rung of a problem on a bench authored at that problem's own

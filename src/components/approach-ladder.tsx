@@ -316,7 +316,11 @@ export function ApproachLadder({
                 </summary>
                 <div className="pt-3">
                   {folded?.[r.key]?.length ? (
-                    <Markdown blocks={folded[r.key]} problemId={problem.id} />
+                    <Markdown
+                      blocks={folded[r.key]}
+                      problemId={problem.id}
+                      idPrefix={r.key}
+                    />
                   ) : (
                     <p className="text-ui text-muted-foreground">
                       {folded ? "nothing further for this rung" : "loading…"}
