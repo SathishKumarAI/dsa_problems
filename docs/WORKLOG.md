@@ -42,6 +42,24 @@ measured what moved.
 from the rail lands on its heading after the chrome hides"_, asserts the landing from the far end
 of the longest typed page.
 
+### Second branch — one page made readable: sorted-pair-sum
+
+The owner's brief: open the page, make the content easy to learn from rather than to read and
+memorise, paragraphs into points, nothing said twice, the long tail shorter. One page, as the
+pilot for the rest.
+
+| What                                                                                                                                                                                                        | Measured                                                                 |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Understanding** restated the statement and carried a four-row constraints table — the same four bounds as the cards directly above it. Now the one question under the statement and three facts as points | page **5 937 → 4 525 words**, **23.0 → 20.3 screens** at 1440            |
+| **Reading the calculations** repeated the optimal rung's trace and the exchange argument. Kept the symbol table, the three-outcome decision, the printed elimination, the counted table                     | section roughly halved                                                   |
+| The hash rung's **measured table sat inside a blockquote**, which `lib/markdown.ts` does not parse — it had rendered as one line of literal pipes since the conversion                                      | 0 literal pipe rows after                                                |
+| **"How to get fluent" was a numbered list**, and the renderer has no ordered lists, so six drills arrived as one run-on paragraph. Bullets now                                                              | six bullets on screen                                                    |
+| Every intuition, mistake, the arc and the interview note: paragraphs → points with a bold lead; the four bound cards cut to two or three sentences each                                                     | content gate 875/0, `verify:fences --id` 3/3 clean, B45 mask still holds |
+
+**Still open on this page and not a content fix:** the ladder's "Work it through" fold and the
+long explanation's per-approach sections cover the same ground on a TYPED document — that is
+B100's second half (`docs/PROBLEM-PAGE.md` §9), a renderer change, not a rewrite.
+
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 
 Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and

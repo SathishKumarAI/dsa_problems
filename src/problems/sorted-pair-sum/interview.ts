@@ -1,50 +1,38 @@
 // sorted-pair-sum — which rungs to know cold, and the drills
 //
-// Converted from docs/deep/sorted-pair-sum_explained.md by scripts/md-to-content.mjs.
-// Every byte of prose carried through unchanged; what changed is that the
-// STRUCTURE is a type (src/content/types.ts) rather than a heading convention.
+// Rewritten 2026-10-17 for reading. The drills are bullets, not a numbered
+// list: `lib/markdown.ts` renders no ordered lists, so "1. … 2. …" was
+// arriving on the page as one run-on paragraph.
 
-export const interview = `**Memorise cold: the two-pointer version, and the hash map.** Those two are a matched pair and the
-interview is usually about knowing which one the input calls for. The hash map is the answer to
-unsorted two-sum, which is the single most-asked warm-up in the business; the converging pointers
-are the answer the moment someone adds "the array is sorted" or "use O(1) space", and being able
-to state the exchange argument — *the sum at the ends is extremal, so one endpoint is provably
-dead* — in two sentences is what separates "I memorised it" from "I understand it". Write both
-without hesitation, get the \`i < j\` strict inequality right the first time, and be ready for the
-follow-up "what if I asked for the values instead of the indices, and the array were not sorted?"
-(answer: sorting destroys the indices, so either carry them along or use the map).
+export const interview = `**Know cold: the two pointers and the hash map.** They are a matched pair, and the interview is
+about which one the input calls for.
 
-**Understand but do not drill: brute force.** Its value is entirely as a starting point and as an
-oracle. Say it out loud in the first thirty seconds to establish the baseline and the quadratic
-cost you are about to remove, use it to sanity-check your fast version on small inputs, and move
-on. Nobody is hiring for it, but skipping straight to the clever answer without naming the
-baseline reads as pattern-matching rather than reasoning.
+- Unsorted two-sum → the map. The most-asked warm-up there is.
+- "The array is sorted" or "use O(1) space" → the pointers.
+- Say the exchange argument in one breath: *the sum at the ends is extreme, so one end is provably
+  dead.* That sentence is what separates understanding from memorising.
+- Get \`i < j\` right the first time, and expect the follow-up: *values instead of indices, and the
+  array not sorted?* Sorting destroys indices — carry them along, or use the map.
 
+**Understand, do not drill: brute force.** Say it in the first thirty seconds to name the baseline
+and the cost you are about to remove, use it to check the fast version on small inputs, move on.
+Skipping it reads as pattern-matching rather than reasoning.
 ---`
 
-export const fluent = `1. **State the elimination out loud before writing the loop.** *"If the cheapest and the dearest
-   together fall short, the cheapest cannot reach the target with anyone, so it is gone."* **Done
-   when** you can say it without the array in front of you — that sentence is the algorithm, and
-   the code is four lines of transcription.
-
-2. **Hand-trace \`[1, 3, 6, 9]\` with \`target = 12\`, then with \`target = 100\`.** The second has no
-   answer; watch the pointers meet. **Done when** you can say what \`while lo < hi\` is protecting
-   against and why \`<=\` would be wrong here.
-
-3. **Break the promise.** Shuffle the array so it is no longer sorted and run the two-pointer rung.
-   It returns something, and it is wrong. **Done when** you can say exactly which line stops being
-   true — the comparison no longer tells you anything about the values you have not seen — and why
-   the hash rung does not care.
-
-4. **Count, do not time.** Instrument both rungs on \`list(range(1, 10001))\` with the answer at the
-   far end. **Done when** you have produced the \`49 995 000\` against \`9 999\` yourself.
-
-5. **Do the siblings.** *Three Sum* is this loop with an outer element fixed — and the reason it is
-   \`O(n²)\` and not \`O(n³)\`. *Container With Most Water* is the same two pointers with a different
-   reason for moving (always discard the shorter wall). *Sort Colors* is two pointers converging
-   with a third walking between them. **Done when** you can say, for each, what the comparison is
-   and what one move eliminates.
-
-6. **A month later, the one sentence that should come back:** *on sorted data, comparing the two
-   ends tells you about everything in between, so one comparison can retire a whole row of the
-   table.*`
+export const fluent = `- **Say the elimination before writing the loop.** *"If the cheapest and the dearest together fall
+  short, the cheapest cannot reach the target with anyone."* Done when you can say it without the
+  array in front of you — the code is four lines of transcription.
+- **Hand-trace \`[1, 3, 6, 9]\` with \`target = 12\`, then with \`target = 100\`.** The second has no
+  answer; watch the pointers meet. Done when you can say what \`while lo < hi\` protects against and
+  why \`<=\` would be wrong.
+- **Break the promise.** Shuffle the array and run the two-pointer rung. It returns something, and
+  it is wrong. Done when you can name the line that stopped being true — and why the map does not
+  care.
+- **Count, do not time.** Both rungs on \`list(range(1, 10001))\` with the answer at the far end.
+  Done when you have produced \`49 995 000\` against \`9 999\` yourself.
+- **Do the siblings.** *Three Sum* is this loop with one element fixed outside it — the reason it is
+  O(n²) and not O(n³). *Container With Most Water* is the same two pointers with a different reason
+  to move. *Sort Colors* is two converging pointers with a third walking between them. Done when you
+  can say, for each, what one move eliminates.
+- **A month from now, one sentence should remain:** *on sorted data, comparing the two ends tells
+  you about everything in between, so one comparison can retire a whole row of the table.*`
