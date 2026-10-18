@@ -21,6 +21,7 @@ import { ProblemNotes } from "./problem-notes"
 import { cn } from "@/lib/utils"
 import type { Pattern, Problem } from "@/data"
 import type { Outline } from "@/lib/markdown"
+import { scrollToId } from "@/lib/scroll-to"
 
 /** which mark a source gets — a text, an official manual, or a course */
 const KIND_ICON = {
@@ -352,9 +353,7 @@ function Entry({
         // a bare `#id` href would replace the hash ROUTE and navigate the
         // app home; scroll to the heading instead (CLAUDE.md, the trap)
         e.preventDefault()
-        document
-          .getElementById(entry.id)
-          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+        scrollToId(entry.id)
       }}
       // `-ml-4 border-l-2 border-transparent pl-4` puts each entry's own
       // indicator exactly on the rail's border, so the hovered section

@@ -52,6 +52,7 @@ import { ProblemStatement } from "./problem-statement"
 import { PreSolveCheck } from "./pre-solve-check"
 import { ProblemDebt } from "./problem-debt"
 import { SimilarProblems } from "./similar-problems"
+import { scrollToId } from "@/lib/scroll-to"
 
 interface Props {
   /** the id, not the record: this component is lazy, so it resolves the record
@@ -165,9 +166,7 @@ function ProblemPage({
   const jumpToExplanation = asked && explanation.present && explanation.ready
   useEffect(() => {
     if (!jumpToExplanation) return
-    document
-      .getElementById("explanation")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+    scrollToId("explanation")
   }, [jumpToExplanation])
   // `navigate`, not `replaceQuery`: the comparison has to be a history entry or
   // Back cannot undo it, and Back is the only way out a reader will guess.
@@ -281,11 +280,7 @@ function ProblemPage({
           building={building}
           onBuild={() => {
             setBuilding(true)
-            requestAnimationFrame(() =>
-              document
-                .getElementById("build-it-up")
-                ?.scrollIntoView({ behavior: "smooth", block: "start" })
-            )
+            requestAnimationFrame(() => scrollToId("build-it-up"))
           }}
         />
 

@@ -42,6 +42,14 @@ const TOP_ZONE = 120
 const COMMIT_DOWN = 140
 const COMMIT_UP = 90
 
+/** Dispatch this on `window` just before a PROGRAMMATIC scroll — an anchor
+ *  being re-placed after the chrome's reflow (`lib/scroll-to.ts`) — and the
+ *  hook treats the next half second the way it treats its own transition:
+ *  tracked, concluded from not at all. Without it the 170px upward correction
+ *  that lands a heading reads as "scrolling up", brings the chrome back, and
+ *  the reflow moves the heading again — measured landing at 195px, not 24. */
+export const NOT_A_GESTURE = "reading-room:not-a-gesture"
+
 export interface ReadingRoom {
   /** true while the reader is moving DOWN through the document */
   reading: boolean
@@ -162,8 +170,17 @@ export function useReadingRoom(enabled = true): ReadingRoom {
       requestAnimationFrame(measure)
     }
 
+    const hold = () => {
+      run = 0
+      settleUntil = performance.now() + 500
+    }
+
     window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    window.addEventListener(NOT_A_GESTURE, hold)
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      window.removeEventListener(NOT_A_GESTURE, hold)
+    }
   }, [enabled])
 
   // A control that was just asked to OPEN must win over the gesture. Without

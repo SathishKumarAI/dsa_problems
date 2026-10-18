@@ -24,7 +24,7 @@ each one: `docs/WORKLOG.md`, entry for 2026-09-21.
 | Gate                                    | Result                                                                      |
 | --------------------------------------- | --------------------------------------------------------------------------- |
 | `npm run check`                         | **875 / 0 fail**, exit 0                                                    |
-| `npm run test:ui`                       | **171 / 0 fail** in `ui-smoke` (185 including the panel audit), real Chrome |
+| `npm run test:ui`                       | **187 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-17          |
 | `npm run check:links`                   | **72 URLs, 0 dead** — cached 30 days, re-run with `--fresh`                 |
 | `node scripts/page-backlog.mjs --check` | current (a node test fails the build when it is stale)                      |
 | `npm run verify:vectors`                | **RED — 22 survivors across 11 problems.** Real, pre-existing, filed as G12 |
@@ -35,14 +35,15 @@ from a loaded machine is still not evidence.
 
 ## What changed, by surface
 
-| Surface                         | What is new                                                                                                                                                                                                           |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Any figure**                  | Capped inline (`--figure-inline`), fades when cut, **full size** opens it over the page                                                                                                                               |
-| **The glossary** (new)          | `#/g` index, `#/g/<slug>` per entry, sidebar row under Reference. `[[hash map]]`, `[[dict]]`, `[[big-o\|its bound]]` in prose → dotted link + hover definition. "What links here" computed from prose, never authored |
-| **Foot of a problem page**      | "What this page still owes", in the reader's language, absent when it owes nothing, hidden mid-journey                                                                                                                |
-| **Reading list**                | Two groups in columns — this problem's sources (2 cols), the pattern's (3 from `lg`) — each row a real link. 591 → 335px at 1440                                                                                      |
-| **Below `xl`**                  | "On this page" button → bottom sheet listing the same sections the rail lists                                                                                                                                         |
-| **`components/problem/`** (new) | `page-sections.ts` (what the page draws — plain `.ts`, gated), `orient-zone`, `act-zone`, `compare-view`, `closing-bands`. `problem-detail.tsx` 821 → 490 lines                                                       |
+| Surface                           | What is new                                                                                                                                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Any figure**                    | Capped inline (`--figure-inline`), fades when cut, **full size** opens it over the page                                                                                                                                                          |
+| **The glossary** (new)            | `#/g` index, `#/g/<slug>` per entry, sidebar row under Reference. `[[hash map]]`, `[[dict]]`, `[[big-o\|its bound]]` in prose → dotted link + hover definition. "What links here" computed from prose, never authored                            |
+| **Foot of a problem page**        | "What this page still owes", in the reader's language, absent when it owes nothing, hidden mid-journey                                                                                                                                           |
+| **Reading list**                  | Two groups in columns — this problem's sources (2 cols), the pattern's (3 from `lg`) — each row a real link. 591 → 335px at 1440                                                                                                                 |
+| **Any in-page jump** (2026-10-17) | Lands on its heading. Six call sites → `lib/scroll-to.ts`: smooth scroll, one instant re-place on `scrollend`, flagged `NOT_A_GESTURE` to the reading room. Was −148px at 1440. Code editors size to their code (`rows` 4–24), was a fixed 320px |
+| **Below `xl`**                    | "On this page" button → bottom sheet listing the same sections the rail lists                                                                                                                                                                    |
+| **`components/problem/`** (new)   | `page-sections.ts` (what the page draws — plain `.ts`, gated), `orient-zone`, `act-zone`, `compare-view`, `closing-bands`. `problem-detail.tsx` 821 → 490 lines                                                                                  |
 
 ## The next action — the order the owner picked, with one item already half-built
 

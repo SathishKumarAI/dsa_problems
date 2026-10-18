@@ -2100,6 +2100,46 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // The desktop half of the same bug, found 2026-10-17 on container-water.
+    // Scrolling down is the reading gesture and the reading room answers it by
+    // hiding the chrome — which widens the column by ~208px, reflows every
+    // paragraph above the target, and moves the target UP while the browser is
+    // still animating toward where it WAS. The rail's second "Code" landed
+    // 148px above the viewport. `lib/scroll-to.ts` re-places the target once
+    // the scroll ends; this asserts the LANDING, from the far end of a long
+    // page, where the reflow above the target is largest.
+    test("a jump from the rail lands on its heading after the chrome hides", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers/container-water`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        // the explanation's outline arrives with the document; wait for it
+        let link;
+        for (let i = 0; i < 40 && !link; i++) {
+          link = [...document.querySelectorAll('main a[href^="#"]')]
+            .filter(a => a.innerText.trim() === 'Code')[1];
+          if (!link) await wait(250);
+        }
+        if (!link) return { noLink: true };
+        const target = document.getElementById(link.getAttribute('href').slice(1));
+        const colBefore = Math.round(document.querySelector('main').getBoundingClientRect().width);
+        link.click();
+        await wait(3000);
+        return {
+          route: location.hash,
+          colBefore,
+          colAfter: Math.round(document.querySelector('main').getBoundingClientRect().width),
+          top: Math.round(target.getBoundingClientRect().top),
+        };
+      `)
+      assert.ok(!out.noLink, "the rail drew no Code entry to test")
+      assert.equal(out.route, "#/p/two-pointers/container-water")
+      assert.ok(
+        out.top >= 0 && out.top <= 120,
+        `the heading landed at ${out.top}px (column ${out.colBefore} → ${out.colAfter})`
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the reading-column toggle does not sit on top of the text (U8)", async () => {
       await page.goto(`${server.base}/#/journey/two-sum?act=recap&step=1`)
       const out = await page.run(`

@@ -22,6 +22,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
+import { scrollToId } from "@/lib/scroll-to"
 
 export interface SectionEntry {
   id: string
@@ -72,11 +73,7 @@ export function SectionsMenu({
                   setOpen(false)
                   // after the sheet closes, so the scroll lands against the
                   // final layout rather than the one with the overlay on it
-                  requestAnimationFrame(() =>
-                    document
-                      .getElementById(s.id)
-                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                  )
+                  requestAnimationFrame(() => scrollToId(s.id))
                 }}
                 className="flex min-h-11 items-center border-b border-border/40 text-ui text-muted-foreground last:border-b-0 hover:text-foreground"
               >

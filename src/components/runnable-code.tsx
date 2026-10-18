@@ -61,6 +61,14 @@ export function RunnableCode({
     usePython(id)
   const edited = editable && draft !== code
 
+  // THE BOX IS THE SIZE OF THE CODE. It was a fixed `h-80` (320px) for every
+  // block — measured on container-water at 1440: five editors of 5, 6, 6, 10
+  // and 87 lines, all 320px, so four of them were two-thirds empty and the
+  // script scrolled inside itself. Rows follow the draft, with a floor so a
+  // one-liner still reads as a place to type and a ceiling so the 87-line
+  // script does not push the output a screen away. Still `resize-y`.
+  const rows = Math.min(24, Math.max(4, draft.split("\n").length + 1))
+
   const source = editable ? draft : code
 
   // The line the Run button adds, or "" when the block already does something.
@@ -101,10 +109,11 @@ export function RunnableCode({
             // mark the ROLE, and let each gate assert what it actually means.
             data-code-editor=""
             value={draft}
+            rows={rows}
             spellCheck={false}
             onChange={(e) => setDraft(e.target.value)}
             aria-label="the script, yours to change"
-            className="block h-80 w-full resize-y bg-transparent p-4 font-mono text-ui leading-relaxed text-foreground focus-visible:outline-none"
+            className="block w-full resize-y bg-transparent p-4 font-mono text-ui leading-relaxed text-foreground focus-visible:outline-none"
           />
         </div>
       ) : (
