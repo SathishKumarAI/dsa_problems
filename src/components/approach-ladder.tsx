@@ -159,6 +159,12 @@ export function ApproachLadder({
     <Band
       id="approaches"
       label="approaches"
+      fold
+      // OPEN ON ARRIVAL, alone among the folded bands. The ladder is what the
+      // page is FOR — a problem page whose approaches start shut is a page
+      // that opens on a question and offers nothing. Its own rungs fold
+      // individually, which is where the height actually is.
+      open
       // "worst to best" promised a monotone climb the data does not always make:
       // on island-count the middle rung is a generalisation the prose then argues
       // is overkill, not a step up. What IS true of every pair is that each rung

@@ -103,12 +103,21 @@ function Question({ check, n, of }: { check: Check; n: number; of: number }) {
   )
 }
 
-export function PreSolveCheck({ checks }: { checks: Check[] }) {
+export function PreSolveCheck({
+  checks,
+  expandAll,
+}: {
+  checks: Check[]
+  /** the page's "read it all" switch */
+  expandAll?: boolean
+}) {
   if (checks.length === 0) return null
   return (
     <Band
       id="before-you-solve-it"
       label="before you solve it"
+      fold
+      open={expandAll}
       count="answerable from the statement alone"
     >
       <p className="max-w-measure prose-set text-body text-muted-foreground">

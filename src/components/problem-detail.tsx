@@ -213,6 +213,9 @@ function ProblemPage({
     problem,
     rungs: ladder.rungs,
     hasJourney: !!journey,
+    hasReading:
+      !hidden &&
+      (problem.reading?.length ?? 0) + (pattern.references?.length ?? 0) > 0,
     explanation,
   })
   const binding = (BINDINGS as Record<string, (string | null)[]>)[problem.id]
@@ -290,7 +293,11 @@ function ProblemPage({
         {/* Three `h3` sections, not one column of three kinds of thing — and
           the examples are watchable rather than printed. See
           `problem-statement.tsx`, which owns all three. */}
-        <Band id="the-problem" label="the problem">
+        {/* THE ONE BAND THAT STARTS OPEN. A reader arrives to read the
+            question; everything else on the page is a choice they make after
+            it. `fold` on all of them, because the page was 13 screens at 1920
+            with the statement and 37 on pair-sum. */}
+        <Band id="the-problem" label="the problem" fold open>
           <ProblemStatement problem={problem} />
           {/* The document's own reading of the question, WITH the question. It
               used to be the first thing behind the door — a page away from the
@@ -306,12 +313,14 @@ function ProblemPage({
           page used to offer a reader who had finished reading was a way out of
           thinking. Absent unless the record authors questions. */}
         {problem.checks?.length ? (
-          <PreSolveCheck checks={problem.checks} />
+          <PreSolveCheck checks={problem.checks} expandAll={expandAll} />
         ) : null}
 
         <Band
           id="hints"
           label="hints"
+          fold
+          open={expandAll}
           count={`${problem.hints.length}, each one further in`}
         >
           {/* `multiple`: reading hint 3 used to close hint 2, so a ladder meant
@@ -343,6 +352,10 @@ function ProblemPage({
           <Band
             id={building ? "build-it-up" : "walkthrough"}
             label={building ? "building it up" : "walkthrough"}
+            fold
+            // `building` is the reader having PRESSED "build it up", so the
+            // thing they asked for cannot arrive folded shut
+            open={building || expandAll}
             count={
               building
                 ? "the whole journey, on this page"
@@ -374,7 +387,12 @@ function ProblemPage({
         {/* Where the cost actually goes — immediately before the rungs whose
             costs it explains, rather than three thousand words after them. */}
         {calculations && (
-          <Band id="reading-the-calculations" label="reading the calculations">
+          <Band
+            id="reading-the-calculations"
+            label="reading the calculations"
+            fold
+            open={expandAll}
+          >
             <Markdown blocks={calculations.blocks} problemId={problem.id} />
           </Band>
         )}
@@ -429,9 +447,16 @@ function ProblemPage({
           closing={closing}
           folded={folded}
           explanation={explanation}
+          expandAll={expandAll}
         />
 
-        {!hidden && <ReadFurther pattern={pattern} problem={problem} />}
+        {!hidden && (
+          <ReadFurther
+            pattern={pattern}
+            problem={problem}
+            expandAll={expandAll}
+          />
+        )}
 
         {/* LAST, AND QUIET. 152 of 153 pages are still thin, and a thin page
             here does not look thin — every band degrades to nothing when its

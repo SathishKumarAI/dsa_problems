@@ -83,6 +83,17 @@ const FRESH = `
   document.cookie = 'sidebar_state=true; path=/';
 `
 
+// THE PAGE'S BANDS ARE `<details>` AND MOST ARRIVE SHUT (2026-10-18), so a
+// check that reads a band's content has to do what a reader does and open it.
+// `innerText` is RENDERED text, so a closed band reports '' while its elements
+// are perfectly present in the DOM — which is how four gates failed on content
+// that was one click away. Setting `open` fires the band's own `onToggle`, so
+// React's state follows rather than fighting it.
+const OPEN_BANDS = `
+  for (const d of document.querySelectorAll('main details')) d.open = true;
+  await new Promise(r => setTimeout(r, 400));
+`
+
 describe(
   "ui smoke",
   { skip: exe ? false : "no Chrome (set CHROME_PATH)", concurrency: 1 },
@@ -555,6 +566,7 @@ describe(
       for (const [pattern, id] of unjourneyed) {
         await page.goto(`${server.base}/#/p/${pattern}/${id}`)
         const out = await page.run(`
+          ${OPEN_BANDS}
           const player = document.querySelector('[aria-label^="walkthrough,"]');
           const heading = [...document.querySelectorAll('h1')][0];
           return {
@@ -1770,7 +1782,8 @@ describe(
       // leak the exact word B45 exists to withhold. The panel MOVED to the
       // problem page, where a reader reaches for it; the rule moved with it.
       const read = `
-        const panel = [...document.querySelectorAll('section')]
+        ${OPEN_BANDS}
+        const panel = [...document.querySelectorAll('section, details')]
           .find(s => /read further/i.test(s.innerText || ''));
         return {
           panel: !!panel,
@@ -1913,14 +1926,15 @@ describe(
     test("a journeyed problem draws its walkthrough from the engine, capped by the ledger", async () => {
       const openTab = `
         const wait = ms => new Promise(r => setTimeout(r, ms));
-        // The problem page is stacked sections now, not tabs (B38) — the
-        // walkthrough is open, so there is nothing to click. Find the section
-        // by its own heading rather than by a tab that no longer exists.
+        // The problem page is stacked BANDS now, not tabs (B38), and most of
+        // them arrive folded shut — so this does what a reader does and opens
+        // them, then finds the band by its own heading.
         await wait(1200);
+        ${OPEN_BANDS}
         const heading = [...document.querySelectorAll('h2')].find(
           e => /^walkthrough/i.test(e.innerText.trim())
         );
-        const panel = heading?.closest('section') ?? document.querySelector('main');
+        const panel = heading?.closest('section, details') ?? document.querySelector('main');
         return {
           act: panel.querySelector('b')?.innerText ?? '',
           note: [...panel.querySelectorAll('[aria-live=polite]')].pop()?.innerText ?? '',
@@ -2101,6 +2115,106 @@ describe(
         `a sentence escaped the measure at 1920: ${out.proseCh}ch`
       )
       assert.equal(out.sideways, false, "the page scrolls sideways at 1920")
+    })
+
+    // THE PAGE ARRIVES SHORT. Measured at 1920 before the bands folded:
+    // sorted-pair-sum 13 036px (13 screens), pair-sum 36 729px (36.7). The
+    // owner: "why do I need to scroll if I can just read entirely from my
+    // screen?" Width was not the answer — uncapping the column cut 3% — the
+    // AMOUNT of page on arrival was. Two bands open (the question, and the
+    // approaches the page is for); every other one is a `<details>` the
+    // reader or the "everything open" switch opens.
+    test("a problem page arrives short, and opens on demand", async () => {
+      await page.resize(1920)
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const read = `
+        const d = [...document.querySelectorAll('main details[id]')];
+        return {
+          docH: document.body.scrollHeight,
+          folds: d.length,
+          open: d.filter(x => x.open).length,
+          openIds: d.filter(x => x.open).map(x => x.id),
+          closedHaveHeadings: d.filter(x => !x.open)
+            .every(x => (x.querySelector('summary')?.innerText ?? '').trim().length > 0),
+        };
+      `
+      const arrive = await page.run(`await new Promise(r => setTimeout(r, 1200)); ${read}`)
+      const all = await page.run(`
+        const btn = [...document.querySelectorAll('button')].find(b => /everything open|read it all/i.test(b.innerText));
+        if (!btn) return { noSwitch: true };
+        btn.click();
+        await new Promise(r => setTimeout(r, 2500));
+        ${read}
+      `)
+      await page.resize(1440)
+      assert.ok(arrive.folds >= 5, `only ${arrive.folds} folded bands on this page`)
+      assert.deepEqual(
+        arrive.openIds.sort(),
+        ["approaches", "the-problem"],
+        `the wrong bands are open on arrival: ${arrive.openIds.join(", ")}`
+      )
+      assert.ok(
+        arrive.closedHaveHeadings,
+        "a closed band has no heading to open it by"
+      )
+      assert.ok(
+        arrive.docH < 9000,
+        `the page arrives ${arrive.docH}px tall — it was 13 036 before the folds`
+      )
+      assert.ok(!all.noSwitch, "the page has no switch that opens everything")
+      // the switch PUSHES every fold, which is the whole reason it exists
+      assert.equal(
+        all.open,
+        all.folds,
+        `the switch left ${all.folds - all.open} of ${all.folds} bands shut`
+      )
+      assert.ok(
+        all.docH > arrive.docH * 2,
+        `the folds are hiding nothing: ${arrive.docH} -> ${all.docH}`
+      )
+    })
+
+    // A jump has to open what it lands on, or the rail offers a heading and
+    // leaves the reader to click it — and an anchor INSIDE a closed band (a
+    // rung, a sub-heading) has nowhere to land at all. `lib/scroll-to.ts`
+    // opens the target and every `<details>` above it.
+    test("a rail jump opens the band it lands on", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(1500);
+        const links = [...document.querySelectorAll('nav[aria-label="contents"] a')];
+        const shut = links.find(a => {
+          const el = document.getElementById(a.getAttribute('href').slice(1));
+          return el && el.tagName === 'DETAILS' && !el.open;
+        });
+        if (!shut) return { noShutBand: true, rail: links.map(a => a.getAttribute('href')) };
+        const id = shut.getAttribute('href').slice(1);
+        const target = document.getElementById(id);
+        shut.click();
+        await wait(3000);
+        return {
+          id,
+          open: target.open,
+          top: Math.round(target.getBoundingClientRect().top),
+          route: location.hash,
+        };
+      `)
+      assert.ok(
+        !out.noShutBand,
+        `the rail offered no closed band to open: ${(out.rail ?? []).join(", ")}`
+      )
+      assert.equal(out.open, true, `the jump left "${out.id}" shut`)
+      assert.equal(
+        out.route,
+        "#/p/two-pointers/sorted-pair-sum",
+        "a bare #id href hijacked the hash route"
+      )
+      assert.ok(
+        out.top >= 0 && out.top <= 120,
+        `"${out.id}" landed at ${out.top}px`
+      )
+      assert.deepEqual(page.errors(), [])
     })
 
     test("the narration stays on screen even on a long panel (U1)", async () => {
@@ -2966,7 +3080,8 @@ describe(
       await page.resize(1440, 1000)
       await page.goto(`${server.base}/#/p/arrays-hashing/pair-sum`)
       const read = `
-        const sec = [...document.querySelectorAll('main section')]
+        ${OPEN_BANDS}
+        const sec = [...document.querySelectorAll('main section, main details')]
           .find(s => /read further/i.test(s.innerText.slice(0, 40)));
         if (!sec) return { found: false };
         const grids = [...sec.querySelectorAll('ul')].map(ul =>

@@ -521,3 +521,33 @@ and _the climb draws every rung, and masks the ones not earned_ — the second a
 scrolls rather than navigating.
 
 **Verified:** `npm run check` 837/837 · `npm run test:ui` **180/180** · build clean.
+### 12.7 The bands fold, and the page arrives in six screens
+
+_"Why do I need to scroll if I can just read entirely from my screen?"_ — the owner, 2026-10-18.
+
+Measured at 1920 before answering, because the obvious answer was wrong: uncapping the reading
+column (§the measure) cut the page 13 469 → 13 036px, **3%**. Width is not what makes a page long.
+
+Every band is a `<details>` now (`fold` on `ui/band.tsx`), and exactly two arrive open — **the
+problem**, because a reader comes to read the question, and **approaches**, because that is what the
+page is for and its rungs already fold one by one. Everything else is a heading, a rule and a count
+that says how deep it is.
+
+| On arrival at 1920 | Before | After |
+| ------------------ | ------ | ----- |
+| sorted-pair-sum    | 13 036px / 13.0 screens | **6 164px / 6.2** |
+| pair-sum           | 36 729px / 36.7 screens | **6 196px / 6.2** |
+| island-count       | 6 320px / 6.3 screens   | **4 027px / 4.0** |
+
+Three things keep that from becoming a page you have to click twelve times to read:
+
+- **"Everything open"** in the sticky orient bar pushes every fold — all fifteen on sorted-pair-sum,
+  18 271px — and a reader's own click wins until the switch moves again.
+- **A jump opens what it lands on.** `lib/scroll-to.ts` opens the target `<details>` and every one
+  above it, so a rail entry, a rung anchor or `?read=explanation` all land open rather than on a
+  closed heading.
+- **Pressing "build it up"** opens the walkthrough it asks for — `open={building || expandAll}`.
+
+The gates: _"a problem page arrives short, and opens on demand"_ (which bands are open, the height,
+and that the switch leaves nothing shut) and _"a rail jump opens the band it lands on"_.
+
