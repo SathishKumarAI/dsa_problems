@@ -18,6 +18,8 @@
 // would be a name match, and this repo's own rule is that two things with the
 // same name are often two different things.
 import type { Block } from "@/lib/markdown"
+import { parseMarkdown } from "./markdown.ts"
+import type { Part } from "./teaching-parts.ts"
 
 /** the three subsections of an approach that the RUNG already renders */
 const RUNG_ALREADY_SHOWS = {
@@ -182,5 +184,139 @@ export function foldDoc(
     else sections.push({ title: "", blocks: [b] })
   }
 
+  return { byRung, shared, unbound, arc, sections }
+}
+
+// ── THE TYPED HALF ───────────────────────────────────────────────────────────
+//
+// B100's second half. A typed document already stores one file per rung, so
+// its fold is a field read rather than a parse: every part carries an id of
+// the shape `approach-<n>-<slug>-<which>` (`lib/teaching-parts.ts`), and the
+// document's own `approaches[n].rung` says which rung the section teaches — no
+// binding file, no name match. Everything else is the same decision as above,
+// so the page renders both kinds of document through ONE path: `byRung` on the
+// rung, `arc` under the ladder's arc line, `sections` placed through the page.
+//
+// Measured before this on sorted-pair-sum, 2026-10-17: the ladder showed three
+// rungs with a "Work it through" fold each, and the long read repeated all
+// three approaches whole — idea, how to think, worked example, code, mistake,
+// cost — 1,500 of the explanation's 3,300 words were the rungs again.
+
+/** the suffixes `partsOf` gives an approach's six parts, and what the rung
+ *  already renders for each */
+const PART_OF_RUNG = {
+  idea: "idea",
+  code: "code",
+  cost: "cost",
+} as const
+
+const blocksOf = (part: Part, withHeading: boolean): Block[] => {
+  const head: Block[] =
+    withHeading && part.level === 3
+      ? [{ kind: "heading", level: 3, text: part.title }]
+      : []
+  switch (part.kind) {
+    case "heading":
+      return []
+    case "prose":
+      return [...head, ...parseMarkdown(part.text)]
+    case "table":
+      return [...head, { kind: "table", head: part.head, rows: part.rows }]
+    case "prose+table":
+      return [
+        ...head,
+        ...parseMarkdown(part.text),
+        { kind: "table", head: part.head, rows: part.rows },
+        ...(part.after ? parseMarkdown(part.after) : []),
+      ]
+    case "code":
+      return [...head, { kind: "code", lang: "python", code: part.code }]
+  }
+}
+
+/**
+ * @param parts          `partsOf(doc)` — the document in reading order
+ * @param approachRungs  `doc.approaches[n].rung`, in order
+ * @param carried        the rung keys the ladder actually shows; an approach
+ *                       whose rung is not among them stays whole, under its
+ *                       own heading, exactly as an unbound Markdown approach
+ * @param hasCost        rung keys whose `costWhy` is authored (see `foldDoc`)
+ * @param hasArc         the record carries `arc` (see `foldDoc`)
+ */
+export function foldParts(
+  parts: Part[],
+  approachRungs: string[],
+  carried: ReadonlySet<string>,
+  hasCost: ReadonlySet<string> = new Set(),
+  hasArc = false
+): Folded {
+  const byRung: Record<string, Block[]> = {}
+  const sections: { title: string; blocks: Block[] }[] = []
+  const unbound: number[] = []
+  const arc: Block[] = []
+
+  let approach = -1 // index into approachRungs while inside an approach
+  let base = "" // that approach's id prefix
+  let key: string | null = null // its rung, when the ladder carries it
+  let inArc = false
+
+  const section = () => sections[sections.length - 1]
+
+  for (const part of parts) {
+    const heading = part.level === 2
+    if (heading && part.kind === "heading" && /^approach-\d+-/.test(part.id)) {
+      approach += 1
+      base = part.id
+      inArc = false
+      const rung = approachRungs[approach]
+      if (rung && carried.has(rung)) {
+        key = rung
+        byRung[key] ??= []
+      } else {
+        key = null
+        unbound.push(approach)
+        sections.push({ title: part.title, blocks: [] })
+      }
+      continue
+    }
+    if (heading) {
+      approach = -1
+      key = null
+      inArc = hasArc && ARC_HEADING.test(part.title.trim())
+      if (inArc) {
+        arc.push(...blocksOf(part, false))
+        continue
+      }
+      sections.push({ title: part.title, blocks: blocksOf(part, false) })
+      continue
+    }
+    if (inArc) {
+      arc.push(...blocksOf(part, true))
+      continue
+    }
+    // a `###` outside any approach — the script, its output — joins the
+    // section it was written under
+    if (approach === -1) {
+      if (!section()) sections.push({ title: "", blocks: [] })
+      section().blocks.push(...blocksOf(part, true))
+      continue
+    }
+    const which = part.id.startsWith(`${base}-`)
+      ? part.id.slice(base.length + 1)
+      : ""
+    if (key === null) {
+      section().blocks.push(...blocksOf(part, true))
+      continue
+    }
+    const already = PART_OF_RUNG[which as keyof typeof PART_OF_RUNG]
+    if (already === "idea" || already === "code") continue
+    if (already === "cost" && hasCost.has(key)) continue
+    byRung[key].push(...blocksOf(part, true))
+  }
+
+  const shared: Block[] = sections.flatMap((s) => [
+    ...(s.title ? [{ kind: "heading", level: 2, text: s.title } as Block] : []),
+    ...s.blocks,
+  ])
   return { byRung, shared, unbound, arc, sections }
 }

@@ -101,6 +101,21 @@ entry pointed at the first approach's. `headingIds` scopes a `###` under its `##
 equal, and the per-rung folds pass a prefix so their headings do not collide with the
 explanation's. Gates: `npm run check` 878/0; `test:ui` — see STATUS.
 
+## 2026-10-18 — the typed documents fold (B100 closed), and a page at half its length
+
+Second pass over sorted-pair-sum, asked for by the owner. Read at 390 this time, every rung's
+fold opened against the long read, the hints read against the insight-before-name rule.
+
+| Finding                                                                                                                                                                                                                                                                                                                           | Measured                                                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The long read repeated all three approaches whole** on a typed page: idea, how to think, worked, code, mistake, cost — while each rung already carried a fold                                                                                                                                                                   | 1 500 of the explanation's 3 300 words were the rungs again                                                                                                      |
+| **B100's second half**: `foldParts` folds a typed document through the same path as `foldDoc` — byRung on the rung, the arc under the ladder's arc line, the rest placed through the page. A typed document names its rung in `approaches[n].rung`, so no binding file; an approach the ladder does not carry stays whole, marked | page **4 525 → 2 743 words closed, 20.3 → 13.0 screens** at 1440 (17.1 with every fold open); **390: 31.5 → 19.6**. `teaching-doc.tsx` deleted; 0 console errors |
+| **Hints named the technique** before the reader had earned it                                                                                                                                                                                                                                                                     | rewritten as questions the statement can answer (CONTENT-PATTERNS P11)                                                                                           |
+| Phone tables, the measured one included, fit the 390 column; the design detector found 0 issues on the page's seven components                                                                                                                                                                                                    | checked, no change                                                                                                                                               |
+
+Gates: `npm run check` 883/0 (five new `foldParts` tests, the typed-outline test flipped);
+`test:ui` — see STATUS.
+
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 
 Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and

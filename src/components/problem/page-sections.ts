@@ -11,7 +11,7 @@
 // invariant now. Same reason `watchable.ts` and `doc-sections.ts` are plain.
 //
 // It decides WHAT and WHERE, never how anything looks.
-import { foldDoc } from "../../lib/doc-sections.ts"
+import { foldDoc, foldParts } from "../../lib/doc-sections.ts"
 import type { Folded } from "../../lib/doc-sections.ts"
 import BINDINGS from "../../data/rung-bindings.json" with { type: "json" }
 import type { Problem } from "../../data/index.ts"
@@ -43,7 +43,8 @@ export interface PageShape {
   closing?: Folded["sections"]
   /** the page's own bands, in render order */
   sections: RailSection[]
-  /** a TYPED document still renders whole and keeps its own outline */
+  /** a document the page could not fold (a Markdown one with no binding)
+   *  renders whole and keeps its own outline; a folded one hands it back */
   outline: { id: string; text: string; level: 2 | 3 }[]
 }
 
@@ -63,29 +64,38 @@ export function pageShapeOf({
   // pass over the same ladder at the foot of the page. `foldDoc` splits it;
   // the ladder renders `byRung`, and the section below renders what is left.
   //
-  // Only the Markdown documents for now. The typed half already stores one
-  // file per rung (`src/problems/<id>/approaches/<rung>.ts`), so folding that
-  // is a field read rather than a parse — a different branch.
+  // Both kinds of document, through one path. A Markdown document is split
+  // by `foldDoc` against the binding file; a typed one already stores one
+  // file per rung and names its rung, so `foldParts` is a field read. Either
+  // way the ladder renders `byRung` and the page places `sections`.
   const binding = (BINDINGS as Record<string, (string | null)[]>)[problem.id]
-  const folded =
-    explanation.present &&
-    explanation.ready &&
-    explanation.kind === "markdown" &&
-    binding
-      ? foldDoc(
-          explanation.blocks,
-          binding,
-          // a rung whose costWhy is authored already says where its bound comes
-          // from; one without it must keep the document's own account
-          new Set(rungs.filter((r) => r.costWhy).map((r) => r.key)),
-          // the page draws every bound as a card with a figure, so the
-          // document's own constraints table is the same content twice
-          (problem.unlocks?.length ?? 0) > 0,
-          // and the ladder closes on `arc`, so the document's own arc section
-          // is the same job in more words — it folds under that line instead
+  // a rung whose costWhy is authored already says where its bound comes
+  // from; one without it must keep the document's own account
+  const hasCost = new Set(rungs.filter((r) => r.costWhy).map((r) => r.key))
+  const ready = explanation.present && explanation.ready
+  const folded = !ready
+    ? null
+    : explanation.kind === "typed"
+      ? foldParts(
+          explanation.parts,
+          explanation.approachRungs,
+          new Set(rungs.map((r) => r.key)),
+          hasCost,
           Boolean(problem.arc)
         )
-      : null
+      : binding
+        ? foldDoc(
+            explanation.blocks,
+            binding,
+            hasCost,
+            // the page draws every bound as a card with a figure, so the
+            // document's own constraints table is the same content twice
+            (problem.unlocks?.length ?? 0) > 0,
+            // and the ladder closes on `arc`, so the document's own arc section
+            // is the same job in more words — it folds under that line instead
+            Boolean(problem.arc)
+          )
+        : null
 
   /**
    * One section of the document, by the heading it was written under — so the
@@ -156,12 +166,11 @@ export function pageShapeOf({
       : []),
   ]
 
-  // the rail lists what the SECTION renders, which is now the shared half
   // NO second list. The document's sections used to be a rail group of their
   // own because they all lived behind one door; they are placed through the
   // page now, so `sections` above already names every heading a reader can
-  // jump to. A typed document still has its own outline, because it still
-  // renders whole.
+  // jump to. Only a document the page could not fold keeps its own outline,
+  // because only that one still renders whole.
   const outline =
     folded || !explanation.present || !explanation.ready
       ? []

@@ -6,10 +6,11 @@
 // account on its rung. What reaches here is the part that is about none of
 // those: the interview script, the fluency drills, the runnable script.
 //
-// Two paths, and they are not symmetrical yet. A MARKDOWN document is folded
-// and placed section by section, so this renders only the leftovers. A TYPED
-// document still renders whole and keeps its own band — folding that is a
-// field read rather than a parse, and a different branch.
+// One path for both kinds of document since 2026-10-17: a typed document folds
+// through `foldParts`, a Markdown one through `foldDoc`, and this renders the
+// leftovers of either. The whole-document band below survives for the one
+// case the page cannot fold — a Markdown document with no binding — and for
+// the moment before the fetch lands.
 //
 // The band keeps `id="explanation"`: `#/learn/<id>` redirects to
 // `?read=explanation`, and something has to be at that offset.
@@ -28,7 +29,7 @@ export function ClosingBands({
   problemId: string
   /** the document's sections this page found no better home for */
   closing?: Folded["sections"]
-  /** null when the document is typed, or not ready: then it renders whole */
+  /** null when the document could not be folded, or is not ready yet */
   folded: Folded | null
   explanation: Explanation
 }) {
