@@ -137,6 +137,27 @@ removed so it would read as one block with the sticky bar; what was left was a s
 
 Gates: `npm run check` 883/0; `test:ui` — see STATUS.
 
+### A deeper bench, one voice for the chrome, code on its own surface, and a still monitor
+
+The owner said _go_ to a colour pass. The palette here is the figure palette (Okabe–Ito roles,
+viridis ramp, an achromatic bench — not Catppuccin, whatever the 2026-09 note in `index.css`
+said), and every change had to pass `palette.test.ts`: text roles ≥ 4.5:1 on both grounds, chip
+roles apart in OKLab, the ramp ordered, chrome's accent ≥ 3:1 and not a data colour.
+
+| What                                                                                                       | Measured                                                                         |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Dark ground `#0b1120 → #080d18`, card `#111a2c`, sidebar `#05090f`, borders cooler                         | foreground 16.4:1 on the ground, dim 5.2:1 on the card                           |
+| **One voice for the chrome**: `--primary` / `--edge` / `--ring` = `#7b8aff` dark, `#3546d6` light          | 6.4:1 / 6.6:1 against the ground; not one of the ten data colours                |
+| **Code on its own surface**: `--code` one step under the ground, the language in the corner of every block | `#060a13` dark (foreground 16.7:1), `#e9edf3` light (dim 4.67:1)                 |
+| **The chrome stays put from 1536px**: the reading room no longer hides the sidebar and rail on a monitor   | at 1920, column 1622px before and after a 2 400px scroll; at 1440 it still hides |
+
+Why not centre the column instead (the suggestion the owner said _go_ to): `problem-detail.tsx`
+records two earlier attempts — re-centring moved the text 32px on every toggle, pinning left a
+414px gutter. On a desktop-only product the cleaner answer is to stop hiding chrome where hiding
+buys nothing.
+
+Gates: `npm run check` 883/0; `palette.test.ts` 6/6; `test:ui` — see STATUS.
+
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 
 Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and

@@ -133,6 +133,7 @@
      are categorical and answer "what is this"; the ramp answers "where in the
      order", and the two must never be swapped. */
   --color-edge: var(--edge);
+  --color-code: var(--code);
   --color-ramp-0: var(--ramp-0);
   --color-ramp-1: var(--ramp-1);
   --color-ramp-2: var(--ramp-2);
@@ -199,7 +200,7 @@
   /* CHROME IS ACHROMATIC. The primary action is the darkest neutral rather
      than a hue, because on this page a hue is a claim about data. A button is
      not data. */
-  --primary: #1b2534;
+  --primary: #3546d6; /* the interface's one voice; 6.58 : 1 under white */
   --primary-foreground: #f6f8fa;
   --secondary: #dfe4ea;
   --secondary-foreground: #101722;
@@ -214,8 +215,12 @@
   /* CHROME'S OWN ACCENT. Hover, focus, selection and "you are here" are not
      data, so they may not borrow a data hue — they are drawn in the ink. One
      token, so the whole app agrees about what "here" looks like. */
-  --edge: #101722;
-  --ring: #101722;
+  --edge: #3546d6; /* 6.58 : 1 on the ground; not a data hue */
+  --ring: #3546d6;
+  /* CODE SITS LOWER THAN PROSE. A code block on the card colour was the same
+     surface as a callout; a reader could not tell "this is code" from "this is
+     a box" at a glance. One step below the ground, both themes. */
+  --code: #e9edf3; /* foreground 15.3 : 1, dim 4.67 : 1 */
   /* Okabe–Ito, darkened for a light ground: the canonical colour-blind-safe
      qualitative set of scientific graphics. One hue per ROLE, and the role
      never changes hue between themes — a screenshot of one reads as the
@@ -249,26 +254,27 @@
 
 /* The figure palette, dark: a cold near-black bench. */
 .dark {
-  --background: #0b1120;
+  --background: #080d18; /* deeper than the 2026-09 bench: 16.4 : 1 under the foreground */
   --foreground: #e6ecf5;
-  --card: #121a2b;
+  --card: #111a2c;
   --card-foreground: #e6ecf5;
-  --popover: #121a2b;
+  --popover: #111a2c;
   --popover-foreground: #e6ecf5;
-  --primary: #e6ecf5;
+  --primary: #7b8aff; /* the interface's one voice; 6.21 : 1 under the dark ink */
   --primary-foreground: #0b1120;
-  --secondary: #1c2740;
+  --secondary: #192441;
   --secondary-foreground: #e6ecf5;
-  --muted: #1c2740;
-  --muted-foreground: #9fb0c8; /* 8.53 : 1 */
-  --dim: #7d8ea8; /* 5.65 : 1 — the quiet layer, still text */
-  --accent: #1c2740;
+  --muted: #192441;
+  --muted-foreground: #9fb0c8; /* 8.80 : 1 */
+  --dim: #7d8ea8; /* 5.22 : 1 on the card — the quiet layer, still text */
+  --accent: #192441;
   --accent-foreground: #e6ecf5;
   --destructive: #ff6b3d;
-  --border: #22304d;
-  --input: #2c3c5e;
-  --edge: #e6ecf5;
-  --ring: #e6ecf5;
+  --border: #24324f;
+  --input: #2f3f62;
+  --edge: #7b8aff; /* 6.40 : 1 on the ground; not a data hue */
+  --ring: #7b8aff;
+  --code: #060a13; /* foreground 16.7 : 1, dim 5.95 : 1 */
   --chart-1: #e69f00; /* focus   */
   --chart-2: #56b4e9; /* window  */
   --chart-3: #00b888; /* settled */
@@ -281,21 +287,25 @@
   --ramp-2: #21918c;
   --ramp-3: #5ec962;
   --ramp-4: #fde725;
-  --sidebar: #080e1a;
+  --sidebar: #05090f;
   --sidebar-foreground: #e6ecf5;
-  --sidebar-primary: #e6ecf5;
+  --sidebar-primary: #7b8aff;
   --sidebar-primary-foreground: #0b1120;
-  --sidebar-accent: #1c2740;
+  --sidebar-accent: #192441;
   --sidebar-accent-foreground: #e6ecf5;
-  --sidebar-border: #22304d;
+  --sidebar-border: #24324f;
   --sidebar-ring: #56b4e9;
 }
 
 /* ---------------------------------------------------------------------------
    The instrument surface (2026-09-12).
 
-   The palette stayed Catppuccin; what changed is the room it is lit in. Three
-   things carry it, and each one is doing a job rather than a style:
+   The palette is the figure palette above (not Catppuccin, whatever the 2026-09
+   note said); what this block decides is the room it is lit in. On 2026-10-18
+   the bench went deeper and cooler, chrome got ONE voice — the indigo
+   `--primary` / `--edge`, which is not a data hue — and code got a surface of
+   its own (`--code`), one step under the ground. Three things carry the room,
+   and each one is doing a job rather than a style:
 
    1. The page sits on the CRUST rather than the base, with two very low-alpha
       washes — mauve top-left, blue bottom-right, the same two hues the chip
