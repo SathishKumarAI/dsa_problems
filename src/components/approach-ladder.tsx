@@ -21,6 +21,7 @@ import { RunnableCode } from "./runnable-code"
 import { Markdown } from "./markdown"
 import type { Block } from "@/lib/markdown"
 import { setPref, usePrefs } from "@/lib/store"
+import { scrollToId } from "@/lib/scroll-to"
 
 const LANGS: { key: keyof Code; label: string }[] = [
   { key: "python", label: "Python 3" },
@@ -187,9 +188,7 @@ export function ApproachLadder({
                   // Scroll instead, and let `scroll-padding-top` (index.css)
                   // keep the landing clear of the phone's sticky bar.
                   e.preventDefault()
-                  document
-                    .getElementById(id(r))
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  scrollToId(id(r))
                 }}
                 className="inline-flex min-h-11 items-center text-meta text-muted-foreground underline-offset-2 hover:text-foreground hover:underline lg:min-h-7"
               >

@@ -24,6 +24,7 @@ import { ComplexityMark } from "@/components/ui/tick-meter"
 import { levels, smoothPath } from "@/lib/cost-curve"
 import type { Ladder } from "@/lib/ladder"
 import { cn } from "@/lib/utils"
+import { scrollToId } from "@/lib/scroll-to"
 
 /** the ordered ramp, by RANK — the page's rule for anything that is a sequence
  *  rather than a set of kinds. Five role colours would say "five kinds"; the
@@ -202,11 +203,7 @@ function Step({
       type="button"
       className={cn(className, "lift-3d cursor-pointer")}
       title="go to this approach"
-      onClick={() =>
-        document
-          .getElementById(`rung-${rungKey}`)
-          ?.scrollIntoView({ behavior: "smooth", block: "start" })
-      }
+      onClick={() => scrollToId(`rung-${rungKey}`)}
     >
       {children}
     </button>

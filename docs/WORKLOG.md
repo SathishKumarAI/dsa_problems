@@ -11,6 +11,37 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-17 — one problem page, driven as a learner: two defects, one of them in every anchor
+
+Opened `#/p/two-pointers/container-water` in a real Chrome on a fresh port (5190, the ones
+already listening left alone), read it top to bottom at 1440 and 390, clicked what a learner
+clicks — the pre-solve checks, the hints, the walkthrough, the rail, the ladder's nav, Run — and
+measured what moved.
+
+### What was wrong, with the number
+
+| Finding                                                                                                                                                                                                                                                                                       | Measured                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Every in-page jump on desktop overshoots.** The jump is the reading gesture, so the reading room hides the chrome; the column widens, everything above the target reflows shorter, the target moves UP while the browser is still animating toward where it WAS. Six call sites, one cause. | Rail → second "Code": column 1174 → 1382px, heading's document offset 9642 → 9471, landed **−148px** (above the viewport). Fix: landed at **24** (its `scroll-mt-6`). |
+| The first cut of the fix — re-place the target on `scrollend` — moved the page UP by more than the reading room's commit distance, was read as the reader turning round, brought the chrome back, and the reflow moved the heading again.                                                     | Landed at **195**. `NOT_A_GESTURE`, dispatched before the correction, puts the hook in its own settle window. Then 24.                                                |
+| **Every code editor was 320px** regardless of its code.                                                                                                                                                                                                                                       | Five editors of 5, 6, 6, 10 and 87 lines, all 320. Now 178 / 203 / 203 / 300 / 617 — `rows` from the draft, floor 4, ceiling 24, still `resize-y`.                    |
+
+### What was NOT wrong, and cost twenty minutes anyway
+
+- **A hidden tab freezes smooth scrolling.** Driven over CDP with the window occluded,
+  `document.visibilityState` was `hidden`, rAF did not tick, and every `scrollIntoView({behavior:
+"smooth"})` sat at scrollY 0 for three seconds — which read as "every anchor on the page is dead".
+  Relaunched with `--disable-backgrounding-occluded-windows --disable-renderer-backgrounding` and
+  they all scrolled. Check visibility before calling anything dead.
+- A duplicate-React-key warning (`the-idea`, `code`, …) appeared in the throttled runs and never
+  again across a full walk at 1440 and 390 after the relaunch. Not reproduced; not chased.
+
+### Gates
+
+`npm run check` 875/0. `npm run test:ui` — see STATUS.md for the count; one new test, _"a jump
+from the rail lands on its heading after the chrome hides"_, asserts the landing from the far end
+of the longest typed page.
+
 ## 2026-09-21 — eleven branches: a glossary, a ledger of what is missing, and content
 
 Master went from **#113 to #124**. The worklog had stopped at 2026-09-15 and

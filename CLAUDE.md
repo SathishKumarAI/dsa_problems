@@ -142,6 +142,17 @@ DOM-free engine with an HTTP API. Node 24 runs `server/` and the tests unbundled
   reader was on is gone. Every in-page anchor needs `preventDefault()` + `scrollIntoView`.
   Shipped broken on the approach ladder for months; `learn-page-view.tsx` had guarded it all
   along. Gate: _"a jump to an approach scrolls, and lands clear of the sticky bar"_.
+- **An in-page jump reflows the page it is jumping through.** The jump is the reading gesture, so
+  the reading room hides the chrome, the column widens, and the target moves UP while the browser
+  is still scrolling to where it WAS — the rail's second "Code" landed 148px above the viewport
+  at 1440. Every anchor goes through `lib/scroll-to.ts`, which re-places the target on `scrollend`
+  and tells the hook (`NOT_A_GESTURE`) that the correction is not the reader turning round —
+  without that the chrome came back and it landed at 195. Never call `scrollIntoView` directly.
+- **A hidden tab freezes smooth scrolling, and reads as "every anchor is dead".** Driving an
+  occluded Chrome window over CDP, `visibilityState` was `hidden`, rAF did not tick, and every
+  smooth `scrollIntoView` sat at scrollY 0 for three seconds. Check `document.visibilityState`
+  before diagnosing; launch Chrome with `--disable-backgrounding-occluded-windows` and
+  `--disable-renderer-backgrounding` when its window is not in front.
 - **An anchor lands under the phone's sticky bar** unless the SCROLL CONTAINER reserves it.
   `html { scroll-padding-top }` below `md` fixes every jump at once (index.css); a `scroll-mt-*`
   on each target is the version you forget on the next one.
