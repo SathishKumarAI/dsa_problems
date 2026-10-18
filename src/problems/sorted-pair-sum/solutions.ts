@@ -58,6 +58,10 @@ export const cpp = `vector<int> sortedPairSum(const vector<int>& nums, int targe
 
 export const alternatives: Solution[] = [
   {
+    // the key the journey's act carries, so the ladder reads this rung's
+    // costWhy and code off the record (lib/ladder.ts) — without it the slug
+    // "brute-force" never met the act "brute", and the rung showed neither
+    key: "brute",
     name: "Brute force",
     summary:
       "Try every pair and stop at the one that hits the target. It ignores the one thing this input gives you for free — the order — and it is the baseline the two-pointer answer is measured against.",
@@ -86,6 +90,7 @@ export const alternatives: Solution[] = [
 }`,
   },
   {
+    key: "hash",
     name: "Hash map",
     whyNow:
       "The double loop asks whether a partner exists by trying every candidate. One pass with a map answers it in a single lookup - but this is the answer for an unsorted array, and this array is sorted.",

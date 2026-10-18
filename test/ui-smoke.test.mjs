@@ -752,6 +752,50 @@ describe(
     // CI — every approach in the document plus a differential test over random
     // inputs — so agreement here and agreement there are the same fact, and
     // this test fails if the two ever stop being the same code.
+    // 2026-10-17, sorted-pair-sum. The ladder's three Run buttons raised
+    // `SyntaxError: 'return' outside function` — the journey's code tabs are the
+    // BODY alone — and the explanation's three printed `[]`, because the demo
+    // argument was the vectors' first case, `[2], 4`, chosen to catch `i <= j`.
+    // Both under a page whose every example is `[1, 3, 6, 9], 12`. Three
+    // things asserted: the ladder's block runs, it runs on the statement's
+    // example, and the output SAYS which call produced it.
+    test("the ladder's Run uses the statement's example, and says so", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      await page.run(`
+        const py = [...document.querySelectorAll('main [role=tab]')]
+          .find(t => /python/i.test(t.innerText));
+        if (py) py.click();
+        return true;
+      `)
+      const first = await page.run(`
+        const runs = [...document.querySelectorAll('button')]
+          .filter(b => b.innerText.trim() === 'Run');
+        const box = runs[0].closest('div.flex.flex-col');
+        const code = box.querySelector('textarea').value;
+        runs[0].click();
+        return { defines: /^def /m.test(code) };
+      `)
+      assert.ok(first.defines, "the ladder's first Python block has no def — Run cannot call it")
+      await page.waitFor(`!!document.body.innerText.match(/exit 0|error ·/)`, {
+        tries: 90,
+        gap: 1000,
+      })
+      const out = await page.run(`
+        const text = document.body.innerText;
+        return {
+          ok: /exit 0/.test(text),
+          broke: /SyntaxError|Traceback/.test(text),
+          call: /sorted_pair_sum\\(\\[1,\\s?3,\\s?6,\\s?9\\],\\s?12\\)/.test(text),
+          answer: /\\[1, 3\\]/.test(text),
+        };
+      `)
+      assert.ok(out.ok, "the ladder's block did not exit cleanly")
+      assert.equal(out.broke, false, "the ladder's block raised")
+      assert.ok(out.call, "the output does not say which call produced it")
+      assert.ok(out.answer, "Run did not answer the statement's example — printed something other than [1, 3]")
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the problem page runs the document's Python, and it agrees (B82)", async () => {
       const problem = PROBLEMS.find((p) => p.id === "cycle-detect")
       await page.goto(`${server.base}${pageOf(problem)}`)

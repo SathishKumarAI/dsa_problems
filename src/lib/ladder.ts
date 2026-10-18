@@ -77,6 +77,22 @@ const joinTabs = (code: {
 })
 
 /**
+ * The code a rung shows — and RUNS, because the ladder's Python has a Run
+ * button that appends a call to whatever function the block defines.
+ *
+ * An act's tabs are written line-for-line against its animation, and the early
+ * journeys wrote them as the BODY alone: `for i in range(len(nums)):` with no
+ * `def` above it. Pressing Run on that gave `SyntaxError: 'return' outside
+ * function` on every rung of sorted-pair-sum — measured 2026-10-17, and 19 of
+ * the 238 acts are shaped that way. The record's own code for the same rung is
+ * a function, in three languages, and is what `verify:run` already proves
+ * against the Python. So: the act's lines when they are a function; the
+ * record's when it has one and the act's are the body alone.
+ */
+const runnable = (tabs: Code, record?: Code): Code =>
+  record && !/^def /m.test(tabs.python) ? record : tabs
+
+/**
  * Move a rung that says where it goes.
  *
  * `alternatives` is worst -> best, and so are a journey's acts, but the two
@@ -144,7 +160,11 @@ function fromJourney(
     whyNow:
       (i === 0 ? undefined : a.insight || undefined) ??
       byKey.get(a.key)?.whyNow,
-    code: joinTabs(a.code),
+    // the top act is the problem itself, so the record's code is its code
+    code: runnable(
+      joinTabs(a.code),
+      byKey.get(a.key) ?? (a === acts[acts.length - 1] ? problem : undefined)
+    ),
   }))
 
   // The record's own `complexity` describes the TOP rung, so its `costWhy` is

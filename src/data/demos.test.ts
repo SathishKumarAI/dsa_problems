@@ -14,6 +14,15 @@ test("demos.ts matches what the vectors render today", () => {
   execFileSync("node", ["scripts/gen-demos.mjs", "--check"], { stdio: "pipe" })
 })
 
+// The vectors put their nastiest case first on purpose, and that case was the
+// demo: sorted-pair-sum's Run printed `[]` for `[2], 4` under a page whose
+// every worked example is `[1, 3, 6, 9], 12`. The statement's example wins
+// where the vectors carry it.
+test("the demo is the statement's own example where the vectors carry it", () => {
+  assert.equal(DEMOS["sorted-pair-sum"], "[1,3,6,9], 12")
+  assert.equal(DEMOS["container-water"], "[1,8,6,2,5,4,8,3,7]")
+})
+
 test("every demo names a problem that exists", () => {
   const ids = new Set(CATALOGUE.map((p) => p.id))
   const orphans = Object.keys(DEMOS).filter((id) => !ids.has(id))
@@ -28,7 +37,11 @@ test("every demo is a usable argument list", () => {
     assert.ok(args.trim().length > 0, `${id}: an empty argument list`)
     const open = (args.match(/[([]/g) ?? []).length
     const close = (args.match(/[)\]]/g) ?? []).length
-    assert.equal(open, close, `${id}: brackets do not balance — ${args.slice(0, 60)}`)
+    assert.equal(
+      open,
+      close,
+      `${id}: brackets do not balance — ${args.slice(0, 60)}`
+    )
     assert.ok(
       !/\b(true|false|null)\b/.test(args),
       `${id}: JSON literals, not Python — ${args.slice(0, 60)}`
