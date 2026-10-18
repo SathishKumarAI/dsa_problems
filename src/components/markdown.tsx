@@ -216,7 +216,12 @@ export function Markdown({
                 />
               )
             return (
-              <CodeBlock key={i} code={block.code} className="w-0 min-w-full" />
+              <CodeBlock
+                key={i}
+                code={block.code}
+                lang={block.lang === "text" ? undefined : block.lang}
+                className="w-0 min-w-full"
+              />
             )
 
           case "table":

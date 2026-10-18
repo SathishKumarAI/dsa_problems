@@ -187,6 +187,10 @@ that applies to every page because it lives in a token or a shared component.
 | **D4 · Justify every prose block, hyphens on.** The cards' "what it buys" were the only ragged prose on the page                                                                                                           | 5 ragged paragraphs → 2, and those two are flex label rows, not prose                                                                               | `prose-set` on the card paragraph                                                 |
 | **D5 · Desktop only.** Design and measure at 1280–1680; a phone-width gate that blocks desktop work is deleted, not obeyed                                                                                                 | the owner's call                                                                                                                                    | `CLAUDE.md` Working agreements                                                    |
 
+| **D6 · Chrome has one voice, and it is not a data hue.** `--primary`, `--edge` and `--ring` are one indigo; buttons, focus, hover and "you are here" agree, and the Okabe–Ito roles keep meaning data | primary was the darkest neutral, edge was the ink: nothing on the page said "this is the interface" → one accent, 6.4:1 dark / 6.6:1 light, gate-checked against every data colour | `index.css`, `palette.test.ts` |
+| **D7 · Code sits one step under the ground, and says its language.** A code block on the card colour was the same surface as a callout | `--code` (`#060a13` dark, `#e9edf3` light) under every block, `python` / `java` / `c++` in the corner | `code-block.tsx`, `runnable-code.tsx` |
+| **D8 · On a monitor nothing needs to leave.** The reading room's hide-on-scroll gives the column back what the chrome took; from 1536px the chrome takes nothing the prose can use | at 1920 the text moved sideways on every scroll flip and the prose stayed 768px → the chrome stays, the text stays | `use-reading-room.ts` |
+
 ### Traps met while doing it, so the next pass does not
 
 - **`::first-letter` does not apply to a flex container.** The band heading is `flex` (label,

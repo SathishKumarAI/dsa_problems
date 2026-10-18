@@ -73,6 +73,13 @@ export function useReadingRoom(enabled = true): ReadingRoom {
   useEffect(() => {
     if (!enabled) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    // ON A MONITOR NOTHING NEEDS TO LEAVE. The gesture exists to give the
+    // column back what the chrome took; from 1536 up the chrome takes nothing
+    // the prose can use (the measure is ~90 characters whatever the width), so
+    // hiding it only moves the text sideways under the reader — the owner's
+    // "when I'm scrolling I'm unable to see it", 2026-10-18. Desktop only
+    // (CLAUDE.md), so this is the common case, not the edge.
+    if (window.matchMedia("(min-width: 96rem)").matches) return
 
     last.current = window.scrollY
     let queued = false

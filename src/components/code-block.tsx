@@ -7,9 +7,13 @@ import { cn } from "@/lib/utils"
 export function CodeBlock({
   code,
   className,
+  lang,
 }: {
   code: string
   className?: string
+  /** shown as a quiet tag in the corner, so a block says what it is before a
+   *  reader parses it. Python, Java and C++ look alike for the first line. */
+  lang?: string
 }) {
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -35,7 +39,15 @@ export function CodeBlock({
       : "Copy code"
 
   return (
-    <div className={cn("group relative rounded-lg border bg-card", className)}>
+    <div className={cn("group relative rounded-lg border bg-code", className)}>
+      {lang && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute top-2 left-3 font-mono text-meta text-dim"
+        >
+          {lang}
+        </span>
+      )}
       <Button
         variant="ghost"
         size="icon-sm"
@@ -62,7 +74,12 @@ export function CodeBlock({
       </Button>
       {/* pr-12 keeps the first line clear of the copy button, which floats
           over the block and used to sit on top of it */}
-      <pre className="overflow-x-auto p-4 pr-12 font-mono text-ui leading-relaxed">
+      <pre
+        className={cn(
+          "overflow-x-auto p-4 pr-12 font-mono text-ui leading-relaxed",
+          lang && "pt-7"
+        )}
+      >
         <code>{code}</code>
       </pre>
     </div>

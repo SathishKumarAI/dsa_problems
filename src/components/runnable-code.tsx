@@ -96,7 +96,13 @@ export function RunnableCode({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {editable ? (
-        <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="relative overflow-hidden rounded-lg border bg-code">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-2 left-3 font-mono text-meta text-dim"
+          >
+            python
+          </span>
           <textarea
             // WHAT KIND OF TEXTAREA THIS IS. Two UI gates used to count bare
             // textareas and mean different things by the number: one proving
@@ -113,11 +119,11 @@ export function RunnableCode({
             spellCheck={false}
             onChange={(e) => setDraft(e.target.value)}
             aria-label="the script, yours to change"
-            className="block w-full resize-y bg-transparent p-4 font-mono text-ui leading-relaxed text-foreground focus-visible:outline-none"
+            className="block w-full resize-y bg-transparent p-4 pt-7 font-mono text-ui leading-relaxed text-foreground focus-visible:outline-none"
           />
         </div>
       ) : (
-        <CodeBlock code={code} className="w-0 min-w-full" />
+        <CodeBlock code={code} lang="python" className="w-0 min-w-full" />
       )}
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">

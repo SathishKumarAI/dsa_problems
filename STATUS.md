@@ -6,10 +6,10 @@ update every clone and reference.
 
 ## The last session, in one line
 
-**2026-10-17/18, five branches from one page driven as a learner (#128–#133): every in-page jump
+**2026-10-17/18, five branches from one page driven as a learner (#128–#134): every in-page jump
 lands, every Run button calls the statement's example and says so, sorted-pair-sum reads as
 points at half its length, the typed documents fold onto their rungs (B100 closed), headings outrank their body again and
-the act card is a card (#133), and `docs/CONTENT-PATTERNS.md` says how to do the next 152.** The session before it,
+the act card is a card (#133), the chrome has one voice and code its own surface (#134), and `docs/CONTENT-PATTERNS.md` says how to do the next 152.** The session before it,
 #114 → #126, grew a glossary, a ledger of what is missing, 16 problems at the pilot's depth and a
 clock on every rung of them. Both in `docs/WORKLOG.md`.
 
@@ -27,7 +27,7 @@ clock on every rung of them. Both in `docs/WORKLOG.md`.
 | Gate                                    | Result                                                                      |
 | --------------------------------------- | --------------------------------------------------------------------------- |
 | `npm run check`                         | **883 / 0 fail**, exit 0 (2026-10-18)                                       |
-| `npm run test:ui`                       | **188 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-18 #133     |
+| `npm run test:ui`                       | **188 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-18 #134     |
 | `npm run check:links`                   | **72 URLs, 0 dead** — cached 30 days, re-run with `--fresh`                 |
 | `node scripts/page-backlog.mjs --check` | current (a node test fails the build when it is stale)                      |
 | `npm run verify:vectors`                | **RED — 22 survivors across 11 problems.** Real, pre-existing, filed as G12 |
