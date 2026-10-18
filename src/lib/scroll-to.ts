@@ -26,6 +26,19 @@
 export function scrollToId(id: string) {
   const el = document.getElementById(id)
   if (!el) return
+  // A JUMP OPENS WHAT IT LANDS ON. The page's bands are `<details>` and most
+  // of them start closed, so a rail entry pointing at a closed band would
+  // otherwise scroll to a heading and leave the reader to click it — and an
+  // anchor INSIDE a closed band (a rung, a sub-heading) would have nowhere to
+  // land at all. Opening it directly is picked up by the band's own `onToggle`,
+  // so React's state does not race the DOM.
+  if (el instanceof HTMLDetailsElement) el.open = true
+  for (
+    let d = el.parentElement?.closest("details");
+    d;
+    d = d.parentElement?.closest("details")
+  )
+    d.open = true
   el.scrollIntoView({ behavior: "smooth", block: "start" })
   const land = () => el.scrollIntoView({ behavior: "instant", block: "start" })
   addEventListener("scrollend", land, { once: true })

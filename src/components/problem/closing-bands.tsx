@@ -25,6 +25,7 @@ export function ClosingBands({
   closing,
   folded,
   explanation,
+  expandAll,
 }: {
   problemId: string
   /** the document's sections this page found no better home for */
@@ -32,6 +33,8 @@ export function ClosingBands({
   /** null when the document could not be folded, or is not ready yet */
   folded: Folded | null
   explanation: Explanation
+  /** the page's "read it all" switch */
+  expandAll?: boolean
 }) {
   return (
     <>
@@ -39,6 +42,8 @@ export function ClosingBands({
         <Band
           id="explanation"
           label="taking it with you"
+          fold
+          open={expandAll}
           count="the parts that belong to no single rung"
         >
           {closing.map((sec) => (
@@ -62,7 +67,7 @@ export function ClosingBands({
       )}
 
       {!folded && explanation.present && (
-        <Band id="explanation" label="the long explanation">
+        <Band id="explanation" label="the long explanation" fold open={expandAll}>
           <ExplanationBody state={explanation} problemId={problemId} />
         </Band>
       )}

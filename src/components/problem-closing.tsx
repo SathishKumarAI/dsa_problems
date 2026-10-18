@@ -14,6 +14,7 @@ import {
   PanelRightOpenIcon,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { Band } from "@/components/ui/band"
 import { Button } from "@/components/ui/button"
 import { setPref, usePrefs } from "@/lib/store"
 import { ProblemNotes } from "./problem-notes"
@@ -54,24 +55,28 @@ const KIND_ICON = {
 export function ReadFurther({
   pattern,
   problem,
+  expandAll,
 }: {
   pattern: Pattern
   problem: Problem
+  /** the page's "read it all" switch */
+  expandAll?: boolean
 }) {
   const own = problem.reading ?? []
   const shared = pattern.references ?? []
   if (own.length + shared.length === 0) return null
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-baseline gap-3">
-        <h2 className="font-heading text-heading font-semibold text-foreground">
-          Read further
-        </h2>
-        <span className="ml-auto font-mono text-meta text-dim tabular-nums">
-          {own.length ? `${own.length} on this problem · ` : ""}
-          {own.length + shared.length} sources
-        </span>
-      </div>
+    // A BAND LIKE THE REST OF THE PAGE, as of 2026-10-18 — it was a
+    // hand-rolled heading row, which is how it ended up the one section with
+    // no fold and no entry the rail could open. Sixteen source rows at the
+    // foot of a thirteen-screen page is the definition of a fold.
+    <Band
+      id="read-further"
+      label="read further"
+      fold
+      open={expandAll}
+      count={`${own.length ? `${own.length} on this problem · ` : ""}${own.length + shared.length} sources`}
+    >
 
       {/* THIS PROBLEM first, and in its own group. A source written about this
           instance is worth more here than the pattern's canon, and mixing the
@@ -91,7 +96,7 @@ export function ReadFurther({
           className="sm:grid-cols-2 lg:grid-cols-3"
         />
       )}
-    </section>
+    </Band>
   )
 }
 

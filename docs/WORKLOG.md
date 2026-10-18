@@ -11,6 +11,47 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-18 — a problem page arrives in six screens, not thirteen
+
+The third of the owner's three complaints: _"why do I need to scroll if I can just read entirely
+from my screen?"_
+
+**The obvious answer was wrong, and measuring it first is what saved the branch.** Giving the
+column the whole window (the entry below) cut the page from 13 469 to 13 036px — **3%**. Width is
+not what makes a page long; the amount of page on arrival is. A problem page was thirteen screens
+at 1920 with every section stacked open, and pair-sum was **thirty-seven**.
+
+Every band is a `<details>` now — `fold` on `ui/band.tsx`, native disclosure rather than a
+hand-rolled one, so the button role, the expanded state, space/enter and find-in-page all come free.
+Two arrive open: **the problem**, because a reader comes to read the question, and **approaches**,
+because that is what the page is for and its rungs already fold one at a time.
+
+| On arrival at 1920 | Before | After |
+| ------------------ | ------ | ----- |
+| sorted-pair-sum    | 13 036px / 13.0 screens | **6 164px / 6.2** |
+| pair-sum           | 36 729px / 36.7 screens | **6 196px / 6.2** |
+| island-count       | 6 320px / 6.3 screens   | **4 027px / 4.0** |
+
+Three things keep it from being a page you have to click twelve times to read: "everything open"
+pushes every fold (all fifteen on sorted-pair-sum, 18 271px) and a reader's own click wins until the
+switch moves again; `lib/scroll-to.ts` opens the target `<details>` and every one above it, so a
+rail entry, a rung anchor and `?read=explanation` all land open; and pressing "build it up" opens
+the walkthrough it asked for.
+
+"Read further" became a band in the same change — it was a hand-rolled heading row, which is how it
+ended up the one section with no fold and no rail entry, sixteen source rows at the foot of a
+thirteen-screen page. `page-sections.ts` offers it now, which is what keeps the rail honest.
+
+### What the folds broke, and what that taught
+
+Four gates failed, all the same way: **`innerText` of a closed `<details>` is `''`** while every
+element inside it is perfectly present in the DOM. So a walkthrough player "rendered nothing" and a
+reading list was "not on the page". The gates open the bands first now (`OPEN_BANDS`) — which is
+what a reader does — and setting `open` fires the band's own `onToggle`, so React's state follows
+rather than racing it. This is exactly the state-blindness the shipping skill warns about: making
+content harder to reach makes it harder for the gate to reach, and the before and after runs can
+both be green while a real defect hides behind the new fold.
+
 ## 2026-10-18 — the column is for code, the measure is for sentences
 
 Second of the owner's three complaints from the same sentence: _"there is a lot of empty space."_

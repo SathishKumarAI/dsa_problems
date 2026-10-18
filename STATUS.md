@@ -6,7 +6,11 @@ update every clone and reference.
 
 ## The last session, in one line
 
-**2026-10-17/18, five branches from one page driven as a learner (#128–#134): every in-page jump
+**2026-10-18, three more branches from one sentence the owner said while reading (#135–#137): the
+chrome stays put (the hide-on-scroll reading room is deleted — it bought 36px and paid in rewraps),
+code and tables take the column while sentences keep the measure (at 1920: code 862 → 1251px), and
+every band on a problem page folds, so it arrives in 6.2 screens instead of 13.0 (pair-sum 36.7 →
+6.2).** Before that: **2026-10-17/18, five branches from one page driven as a learner (#128–#134): every in-page jump
 lands, every Run button calls the statement's example and says so, sorted-pair-sum reads as
 points at half its length, the typed documents fold onto their rungs (B100 closed), headings outrank their body again and
 the act card is a card (#133), the chrome has one voice and code its own surface (#134), and `docs/CONTENT-PATTERNS.md` says how to do the next 152.** The session before it,
@@ -27,7 +31,7 @@ clock on every rung of them. Both in `docs/WORKLOG.md`.
 | Gate                                    | Result                                                                      |
 | --------------------------------------- | --------------------------------------------------------------------------- |
 | `npm run check`                         | **883 / 0 fail**, exit 0 (2026-10-18)                                       |
-| `npm run test:ui`                       | **188 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-18 #134     |
+| `npm run test:ui`                       | **191 / 0 fail** (ui-smoke + panel audit), real Chrome, 2026-10-18 #137     |
 | `npm run check:links`                   | **72 URLs, 0 dead** — cached 30 days, re-run with `--fresh`                 |
 | `node scripts/page-backlog.mjs --check` | current (a node test fails the build when it is stale)                      |
 | `npm run verify:vectors`                | **RED — 22 survivors across 11 problems.** Real, pre-existing, filed as G12 |
@@ -45,6 +49,9 @@ from a loaded machine is still not evidence.
 | **Foot of a problem page**        | "What this page still owes", in the reader's language, absent when it owes nothing, hidden mid-journey                                                                                                                                           |
 | **Reading list**                  | Two groups in columns — this problem's sources (2 cols), the pattern's (3 from `lg`) — each row a real link. 591 → 335px at 1440                                                                                                                 |
 | **Any in-page jump** (2026-10-17) | Lands on its heading. Six call sites → `lib/scroll-to.ts`: smooth scroll, one instant re-place on `scrollend`, re-placed against the layout after the jump's own reflow. Was −148px at 1440. Code editors size to their code (`rows` 4–24), was a fixed 320px |
+| **A problem page's length** (2026-10-18) | Every band is a `<details>`; the problem and the approaches arrive open, the rest closed with their depth on the heading. Arrival at 1920: sorted-pair-sum 13 036 → **6 164px**, pair-sum 36 729 → **6 196**. "Everything open" pushes all fifteen folds; a rail jump, a rung anchor and `?read=explanation` open what they land on |
+| **A problem page's width** (2026-10-18) | The row fills the window (ceiling `--container-stage`), the column fills what the rail leaves, and the measure sits on each text block — so code and tables took 862 → **1251px** at 1920 while prose stayed 864 (90ch). Callouts and folds are capped as a box so the right edge still lands on the column's |
+| **Scrolling** (2026-10-18)        | Changes nothing but the scroll position. The reading room is deleted: it opened the column 792 → 828px at 1440, 36px the prose cannot use, and rewrapped every paragraph on screen to do it. Sidebar = the trigger and `[`, rail = `f` |
 | **Below `xl`**                    | "On this page" button → bottom sheet listing the same sections the rail lists                                                                                                                                                                    |
 | **`components/problem/`** (new)   | `page-sections.ts` (what the page draws — plain `.ts`, gated), `orient-zone`, `act-zone`, `compare-view`, `closing-bands`. `problem-detail.tsx` 821 → 490 lines                                                                                  |
 

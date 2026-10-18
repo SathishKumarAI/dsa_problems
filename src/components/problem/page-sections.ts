@@ -52,11 +52,16 @@ export function pageShapeOf({
   problem,
   rungs,
   hasJourney,
+  hasReading = false,
   explanation,
 }: {
   problem: Problem
   rungs: Rung[]
   hasJourney: boolean
+  /** the page draws a "read further" band: this problem's own sources plus the
+   *  pattern's, and the pattern is not masked. Passed rather than derived,
+   *  because the mask is the PAGE's state and this module reads no store. */
+  hasReading?: boolean
   explanation: ExplanationState
 }): PageShape {
   // ── THE FOLD ──────────────────────────────────────────────────────────
@@ -163,6 +168,13 @@ export function pageShapeOf({
     // never name a section the page did not draw.
     ...(closing?.length
       ? [{ id: "explanation", text: "Taking it with you", level: 2 as const }]
+      : []),
+    // A FOLD NEEDS A DOOR IN THE RAIL. "Read further" was a hand-rolled
+    // section with no entry here; now that every band is a `<details>`, a
+    // section with no rail entry is a section a reader has to scroll thirteen
+    // screens to find closed.
+    ...(hasReading
+      ? [{ id: "read-further", text: "Read further", level: 2 as const }]
       : []),
   ]
 

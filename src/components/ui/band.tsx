@@ -30,6 +30,8 @@
 //
 // The rule both encode: a card wraps a thing with its own actions and its own
 // state; a region of a page gets a heading and a hairline.
+import { ChevronRightIcon } from "lucide-react"
+import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 /**
@@ -84,6 +86,8 @@ export function Band({
   id,
   label,
   count,
+  fold,
+  open = false,
   children,
   className,
 }: {
@@ -92,41 +96,98 @@ export function Band({
   id?: string
   label: string
   count?: string
+  /** render as a `<details>` the reader can close. Opt-in: a band that is
+   *  three lines long costs a click to read and saves nothing. */
+  fold?: boolean
+  /** the state to START in, and to be PUSHED to — the page's "read it all"
+   *  switch flips this and every fold answers. A reader's own click wins
+   *  until the switch moves again. */
+  open?: boolean
   children: React.ReactNode
   className?: string
 }) {
-  return (
-    <section
-      id={id}
-      className={cn("flex scroll-mt-20 flex-col gap-3", className)}
-    >
-      {/* A HEADING, NOT AN EYEBROW. Measured 2026-10-18 on the problem page:
-          every section heading was 13px regular uppercase — the smallest,
-          lightest text on the page, under 15px semibold sub-headings and 17px
-          body. A reader could not tell a section from a label, which the
-          owner put as "nothing has any priority". The ladder is now 28 title ·
-          22 section · 19 sub-heading · 17 body. Labels are authored lowercase
-          ("the problem"); the first letter is raised here rather than in
-          every call site. */}
-      <h2 className="flex items-baseline gap-3 font-heading text-heading font-semibold text-foreground">
-        {/* `::first-letter` applies to block containers, and the h2 is flex —
-            so the raising happens on an inline-block span, not on the h2 */}
-        <span className="inline-block first-letter:uppercase">{label}</span>
-        {/* the rule IS the separator. A filled divider would add a third
-            horizontal line to a page that already has borders and code
-            blocks, and the page's job is to look like one document. */}
-        <span
+  // THE SWITCH PUSHES, THE READER WINS UNTIL IT MOVES AGAIN. A render-time
+  // adjust rather than an effect: react-hooks v7 forbids a synchronous
+  // setState in an effect, and `key`-ing the band on the switch would remount
+  // it and throw away a player's position and an editor's draft.
+  const [pushed, setPushed] = useState(open)
+  const [isOpen, setIsOpen] = useState(open)
+  if (open !== pushed) {
+    setPushed(open)
+    setIsOpen(open)
+  }
+
+  // A HEADING, NOT AN EYEBROW. Measured 2026-10-18 on the problem page: every
+  // section heading was 13px regular uppercase — the smallest, lightest text
+  // on the page, under 15px semibold sub-headings and 17px body. A reader
+  // could not tell a section from a label, which the owner put as "nothing has
+  // any priority". The ladder is now 28 title · 22 section · 19 sub-heading ·
+  // 17 body. Labels are authored lowercase ("the problem"); the first letter is
+  // raised here rather than in every call site.
+  const heading = (
+    <h2 className="flex items-baseline gap-3 font-heading text-heading font-semibold text-foreground">
+      {fold && (
+        // the only chrome the fold adds: the affordance. `group-open` on the
+        // details below turns it, so there is no second source of truth for
+        // whether the section is open.
+        <ChevronRightIcon
           aria-hidden
-          className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
+          className="size-4 shrink-0 translate-y-[0.1em] text-dim transition-transform group-open:rotate-90"
         />
-        {count && (
-          <span className="font-mono text-meta text-dim normal-case">
-            {count}
-          </span>
-        )}
-      </h2>
-      {children}
-    </section>
+      )}
+      {/* `::first-letter` applies to block containers, and the h2 is flex —
+          so the raising happens on an inline-block span, not on the h2 */}
+      <span className="inline-block first-letter:uppercase">{label}</span>
+      {/* the rule IS the separator. A filled divider would add a third
+          horizontal line to a page that already has borders and code
+          blocks, and the page's job is to look like one document. */}
+      <span
+        aria-hidden
+        className="h-px flex-1 translate-y-[-0.15em] bg-gradient-to-r from-border to-transparent"
+      />
+      {count && (
+        <span className="font-mono text-meta text-dim normal-case">{count}</span>
+      )}
+    </h2>
+  )
+
+  // A SECTION BY DEFAULT, and that is the right default: a band three lines
+  // long costs a click to read and saves nothing.
+  if (!fold)
+    return (
+      <section
+        id={id}
+        className={cn("flex scroll-mt-20 flex-col gap-3", className)}
+      >
+        {heading}
+        {children}
+      </section>
+    )
+
+  // FOLDED: `<details>`, not a hand-rolled disclosure.
+  //
+  // The platform gives the whole contract for free — the button role, the
+  // expanded state, space and enter, find-in-page reaching inside a closed
+  // one. What it does NOT give is React knowing the reader clicked, which is
+  // what `onToggle` is for: it fires on a programmatic `open` too, so
+  // `lib/scroll-to.ts` opening a band on its way to an anchor keeps this state
+  // honest rather than racing it.
+  //
+  // `group`, so the chevron above can read `group-open`. `list-none` and
+  // `[&::-webkit-details-marker]` take the browser's own triangle off — the
+  // chevron is the affordance, and two of them read as a rendering fault.
+  return (
+    <details
+      id={id}
+      open={isOpen}
+      onToggle={(e) => setIsOpen(e.currentTarget.open)}
+      className={cn("group scroll-mt-20", className)}
+    >
+      <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+        {heading}
+      </summary>
+      <div className="flex flex-col gap-3 pt-3">{children}</div>
+    </details>
   )
 }
 
