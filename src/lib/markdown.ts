@@ -77,9 +77,17 @@ export function inlineSpans(text: string): Span[] {
       })
     } else if (link) {
       out.push({ kind: "link", text: link[1], href: link[2] })
-    } else if (piece.length > 4 && piece.startsWith("**") && piece.endsWith("**")) {
+    } else if (
+      piece.length > 4 &&
+      piece.startsWith("**") &&
+      piece.endsWith("**")
+    ) {
       out.push({ kind: "bold", text: piece.slice(2, -2) })
-    } else if (piece.length > 2 && piece.startsWith("*") && piece.endsWith("*")) {
+    } else if (
+      piece.length > 2 &&
+      piece.startsWith("*") &&
+      piece.endsWith("*")
+    ) {
       out.push({ kind: "italic", text: piece.slice(1, -1) })
     } else {
       out.push({ kind: "text", text: piece })
@@ -105,7 +113,8 @@ const cells = (row: string) =>
     .split(/(?<!\\)\|/)
     .map((c) => c.trim().replace(/\\\|/g, "|"))
 
-const isSeparator = (line: string) => /^\s*\|?[\s:-]*-[\s:|-]*$/.test(line) && line.includes("-")
+const isSeparator = (line: string) =>
+  /^\s*\|?[\s:-]*-[\s:|-]*$/.test(line) && line.includes("-")
 
 // The document's own title (`# …`) is parsed like any other heading; the PAGE
 // decides not to render it twice (see `titleOf`).
@@ -138,9 +147,14 @@ export function parseMarkdown(source: string): Block[] {
     if (fence) {
       const body: string[] = []
       i++
-      while (i < lines.length && !/^```\s*$/.test(lines[i])) body.push(lines[i++])
+      while (i < lines.length && !/^```\s*$/.test(lines[i]))
+        body.push(lines[i++])
       i++ // the closing fence
-      blocks.push({ kind: "code", lang: fence[1] || "text", code: body.join("\n") })
+      blocks.push({
+        kind: "code",
+        lang: fence[1] || "text",
+        code: body.join("\n"),
+      })
       continue
     }
 
@@ -260,7 +274,8 @@ export function parseMarkdown(source: string): Block[] {
       paragraph.push(lines[i].trim())
       i++
     }
-    if (paragraph.length) blocks.push({ kind: "paragraph", text: paragraph.join(" ") })
+    if (paragraph.length)
+      blocks.push({ kind: "paragraph", text: paragraph.join(" ") })
     else i++
   }
 
@@ -281,12 +296,51 @@ export const slugify = (text: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
 
-export const outlineOf = (blocks: Block[]): Outline[] =>
-  blocks
-    .filter((b): b is Block & { kind: "heading" } => b.kind === "heading" && b.level > 1)
-    .map((b) => ({ id: slugify(b.text), text: b.text, level: b.level as 2 | 3 }))
+/**
+ * One id per heading, UNIQUE on the page — block index → id.
+ *
+ * A teaching document writes the same six `###` under every `## Approach`:
+ * "The idea", "Code", "Common mistake"… Slugged alone they collide, and on
+ * pair-sum that was 125 React duplicate-key warnings from the rail and a second
+ * "Code" entry that could only ever scroll to the first (2026-10-17). A `###`
+ * is therefore scoped under the `##` it sits in — `approach-1-brute-force-code`
+ * — which is also the shape the typed documents already use
+ * (`lib/teaching-parts.ts`), so a rail reads the same whichever kind of
+ * document is under it. Anything still equal after that (two `##` with one
+ * text) gets a counter. `prefix` is for a document rendered in PIECES on one
+ * page — the per-rung folds — so their headings do not collide with the
+ * explanation's.
+ */
+export function headingIds(blocks: Block[], prefix = ""): Map<number, string> {
+  const ids = new Map<number, string>()
+  const seen = new Map<string, number>()
+  let section = ""
+  blocks.forEach((b, i) => {
+    if (b.kind !== "heading" || b.level === 1) return
+    const own = slugify(b.text)
+    if (b.level === 2) section = own
+    let id = [prefix, b.level === 3 ? section : "", own]
+      .filter(Boolean)
+      .join("-")
+    const n = seen.get(id) ?? 0
+    seen.set(id, n + 1)
+    if (n) id = `${id}-${n + 1}`
+    ids.set(i, id)
+  })
+  return ids
+}
+
+export const outlineOf = (blocks: Block[]): Outline[] => {
+  const ids = headingIds(blocks)
+  return blocks.flatMap((b, i) =>
+    b.kind === "heading" && b.level > 1
+      ? [{ id: ids.get(i)!, text: b.text, level: b.level as 2 | 3 }]
+      : []
+  )
+}
 
 export const titleOf = (blocks: Block[]): string | undefined =>
   blocks.find(
-    (b): b is Block & { kind: "heading" } => b.kind === "heading" && b.level === 1
+    (b): b is Block & { kind: "heading" } =>
+      b.kind === "heading" && b.level === 1
   )?.text

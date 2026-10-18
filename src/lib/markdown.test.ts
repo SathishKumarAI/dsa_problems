@@ -2,7 +2,14 @@
 // case here is a construct that actually occurs in `docs/learn/*.md`.
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { inlineSpans, outlineOf, parseMarkdown, slugify, titleOf } from "./markdown.ts"
+import {
+  headingIds,
+  inlineSpans,
+  outlineOf,
+  parseMarkdown,
+  slugify,
+  titleOf,
+} from "./markdown.ts"
 
 test("a snake_case identifier is not italics", () => {
   // the reason `_` is not an emphasis marker here: the corpus is full of these
@@ -37,14 +44,22 @@ test("a hard-wrapped paragraph rejoins into one sentence", () => {
 })
 
 test("a fence keeps its indentation and is not parsed as markdown", () => {
-  const blocks = parseMarkdown("```python\nif x:\n    # **not bold**\n    y = 1\n```")
+  const blocks = parseMarkdown(
+    "```python\nif x:\n    # **not bold**\n    y = 1\n```"
+  )
   assert.deepEqual(blocks, [
-    { kind: "code", lang: "python", code: "if x:\n    # **not bold**\n    y = 1" },
+    {
+      kind: "code",
+      lang: "python",
+      code: "if x:\n    # **not bold**\n    y = 1",
+    },
   ])
 })
 
 test("a dashed line inside a fence is not a horizontal rule", () => {
-  const blocks = parseMarkdown("```python\n# ---------------- scaffolding\nx = 1\n```")
+  const blocks = parseMarkdown(
+    "```python\n# ---------------- scaffolding\nx = 1\n```"
+  )
   assert.equal(blocks.length, 1)
   assert.equal(blocks[0].kind, "code")
 })
@@ -64,7 +79,9 @@ test("a table keeps its header and every row", () => {
 })
 
 test("a callout keeps its label separate from its prose", () => {
-  const [block] = parseMarkdown("> **Watch out.** The base case belongs at `None`.")
+  const [block] = parseMarkdown(
+    "> **Watch out.** The base case belongs at `None`."
+  )
   assert.deepEqual(block, {
     kind: "quote",
     label: "Watch out.",
@@ -73,7 +90,9 @@ test("a callout keeps its label separate from its prose", () => {
 })
 
 test("a multi-line callout is one paragraph, not one line per source line", () => {
-  const [block] = parseMarkdown("> **Intuition.** A ripple\n> spreading out from the root.")
+  const [block] = parseMarkdown(
+    "> **Intuition.** A ripple\n> spreading out from the root."
+  )
   assert.deepEqual(block, {
     kind: "quote",
     label: "Intuition.",
@@ -90,7 +109,9 @@ test("an unlabelled quote has no label rather than an empty one", () => {
 })
 
 test("CRLF input still finds its fences and headings", () => {
-  const blocks = parseMarkdown("## Heading\r\n\r\n```python\r\nx = 1\r\n```\r\n")
+  const blocks = parseMarkdown(
+    "## Heading\r\n\r\n```python\r\nx = 1\r\n```\r\n"
+  )
   assert.deepEqual(blocks, [
     { kind: "heading", level: 2, text: "Heading" },
     { kind: "code", lang: "python", code: "x = 1" },
@@ -98,7 +119,9 @@ test("CRLF input still finds its fences and headings", () => {
 })
 
 test("a bullet list keeps wrapped continuation lines in the same item", () => {
-  const [block] = parseMarkdown("- **Time — `O(n)`.** One visit\n  per node.\n- **Space.**")
+  const [block] = parseMarkdown(
+    "- **Time — `O(n)`.** One visit\n  per node.\n- **Space.**"
+  )
   assert.deepEqual(block, {
     kind: "list",
     items: ["**Time — `O(n)`.** One visit per node.", "**Space.**"],
@@ -110,12 +133,38 @@ test("the outline skips the title and keeps the section headings", () => {
   assert.equal(titleOf(blocks), "The Title")
   assert.deepEqual(outlineOf(blocks), [
     { id: "approach-1", text: "Approach 1", level: 2 },
-    { id: "the-idea", text: "The idea", level: 3 },
+    { id: "approach-1-the-idea", text: "The idea", level: 3 },
   ])
 })
 
+// Every approach writes the same six `###`. Slugged alone they collided — 125
+// duplicate-key warnings from the rail on pair-sum, and a second "Code" entry
+// that could only reach the first.
+test("identical sub-headings under different sections get distinct ids", () => {
+  const blocks = parseMarkdown(
+    "## Approach 1: Brute\n\n### Code\n\n## Approach 2: Map\n\n### Code\n\n## Approach 2: Map\n"
+  )
+  const ids = outlineOf(blocks).map((o) => o.id)
+  assert.deepEqual(ids, [
+    "approach-1-brute",
+    "approach-1-brute-code",
+    "approach-2-map",
+    "approach-2-map-code",
+    "approach-2-map-2",
+  ])
+  assert.equal(new Set(ids).size, ids.length)
+  assert.deepEqual(
+    [...headingIds(blocks, "squeeze").values()][1],
+    "squeeze-approach-1-brute-code",
+    "a prefix scopes the whole document"
+  )
+})
+
 test("a slug drops backticks rather than turning them into separators", () => {
-  assert.equal(slugify("Approach 3: one `O(n)` pass"), "approach-3-one-o-n-pass")
+  assert.equal(
+    slugify("Approach 3: one `O(n)` pass"),
+    "approach-3-one-o-n-pass"
+  )
 })
 
 test("a generated page's edit-me banner never reaches the reader", () => {
@@ -158,7 +207,6 @@ test("an unlabelled fold still opens", () => {
   const [block] = parseMarkdown("<details>\n\nnaked\n\n</details>")
   assert.equal(block.kind === "details" && block.summary, "Show more")
 })
-
 
 // three-sum-closest writes `|s − 1|` — absolute value — in the header of four
 // worked examples, escaped as `\|` because that is how a table carries a pipe.
@@ -221,7 +269,10 @@ test("an array literal is not a glossary link", () => {
       `${literal} was parsed as a glossary link`
     )
     assert.ok(
-      spans.map((s) => s.text).join("").includes(literal),
+      spans
+        .map((s) => s.text)
+        .join("")
+        .includes(literal),
       `${literal} lost its brackets`
     )
   }

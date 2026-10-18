@@ -55,6 +55,9 @@ export const cpp = `int maxArea(const vector<int>& h) {
 
 export const alternatives: Solution[] = [
   {
+    // the key the journey's act carries — lib/ladder.ts links this rung's
+    // costWhy and code to the act through it (docs/CONTENT-PATTERNS.md R4)
+    key: "brute",
     name: "Brute force",
     summary:
       "Measure every pair of lines and keep the largest area. Right, and quadratic — and the reason it is worth stating is that it treats all n squared pairs as equally plausible, when the width of a pair is known before either height is read.",

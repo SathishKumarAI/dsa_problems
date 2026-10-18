@@ -11,11 +11,14 @@
 
 import type { Solution } from "../../data/types.ts"
 
-export const approach = "Sort the array. For each index k (skipping values equal to the previous one), run the two-pointer pair search on the suffix for target -nums[k]. When a triplet is found, advance both pointers past duplicate values before continuing so no repeated triplet is emitted. A small cutoff: once nums[k] > 0, no triplet can sum to zero."
+export const approach =
+  "Sort the array. For each index k (skipping values equal to the previous one), run the two-pointer pair search on the suffix for target -nums[k]. When a triplet is found, advance both pointers past duplicate values before continuing so no repeated triplet is emitted. A small cutoff: once nums[k] > 0, no triplet can sum to zero."
 
-export const whyNow = "The hash rung pays O(n) memory per anchor and then has to fight duplicates with a set of triples, because an unsorted array can reach the same answer by several routes. Sorting first buys both missing pieces at once: the converging pointers need no extra memory, and equal values land next to each other, so a repeat is skipped with one comparison instead of a set."
+export const whyNow =
+  "The hash rung pays O(n) memory per anchor and then has to fight duplicates with a set of triples, because an unsorted array can reach the same answer by several routes. Sorting first buys both missing pieces at once: the converging pointers need no extra memory, and equal values land next to each other, so a repeat is skipped with one comparison instead of a set."
 
-export const arc = "Three sum is two sum with a loop around it, and the ladder is mostly about DUPLICATES rather than speed. Fixing an anchor reduces the problem to finding a pair summing to its negation — which the hash rung does with memory and the final rung does with converging pointers on the sorted array, for constant extra space. Sorting also turns deduplication from a set of tuples into two skip rules: skip an anchor equal to the previous anchor, and after a hit, skip repeats of both pointers. The general lesson is that sorting can be worth its cost for reasons other than search, and the k-sum generalisation is simply this pattern recursively: fix an index, solve (k-1)-sum on the rest, and dedupe at every level."
+export const arc =
+  "Three sum is two sum with a loop around it, and the ladder is mostly about DUPLICATES rather than speed. Fixing an anchor reduces the problem to finding a pair summing to its negation — which the hash rung does with memory and the final rung does with converging pointers on the sorted array, for constant extra space. Sorting also turns deduplication from a set of tuples into two skip rules: skip an anchor equal to the previous anchor, and after a hit, skip repeats of both pointers. The general lesson is that sorting can be worth its cost for reasons other than search, and the k-sum generalisation is simply this pattern recursively: fix an index, solve (k-1)-sum on the rest, and dedupe at every level."
 
 export const complexity = { time: "O(n²)", space: "O(1) beyond output" }
 
@@ -91,6 +94,9 @@ export const cpp = `vector<vector<int>> threeSum(vector<int> nums) {
 
 export const alternatives: Solution[] = [
   {
+    // the key the journey's act carries — lib/ladder.ts links this rung's
+    // costWhy and code to the act through it (docs/CONTENT-PATTERNS.md R4)
+    key: "brute",
     name: "Brute force",
     summary:
       "Three nested loops, with a set of sorted tuples to kill repeats. Cubic, so useful only for establishing correctness on small inputs — and the dedup set is the tell: on unsorted input the same triple is reachable by several routes, which is exactly the problem sorting makes disappear.",
@@ -132,6 +138,9 @@ export const alternatives: Solution[] = [
 }`,
   },
   {
+    // the key the journey's act carries — lib/ladder.ts links this rung's
+    // costWhy and code to the act through it (docs/CONTENT-PATTERNS.md R4)
+    key: "hash",
     name: "Hash per anchor",
     whyNow:
       "The cubic version tries every triple, including the vast majority that a moment of arithmetic rules out: once two values are chosen the third is forced, so searching for it is a lookup rather than a loop. Fixing an anchor and hashing the rest turns the inner two loops into one.",
