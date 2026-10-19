@@ -74,7 +74,12 @@ export function SqlView() {
             </p>
             {/* the tables you are querying — code, so it renders as code:
                 same size, same copy button, same block as every other fence */}
-            <CodeBlock code={p.schema} className="mt-3" />
+            <CodeBlock
+              code={p.schema}
+              lang="sql"
+              tag={false}
+              className="mt-3"
+            />
             <Tabs defaultValue="hints" className="mt-3">
               <TabsList variant="line">
                 <TabsTrigger value="hints">
@@ -101,7 +106,7 @@ export function SqlView() {
               </TabsContent>
               <TabsContent value="solution">
                 <div className="flex flex-col gap-3 pt-2">
-                  <CodeBlock code={p.solution} />
+                  <CodeBlock code={p.solution} lang="sql" tag={false} />
                   <p className="max-w-measure text-body leading-relaxed text-muted-foreground">
                     {p.explanation}
                   </p>

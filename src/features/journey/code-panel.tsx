@@ -10,6 +10,8 @@
 // Owns the tab strip and the highlight; the tab choice is a stored pref.
 
 import { cn } from "@/lib/utils"
+import { TokenLine } from "@/components/code-tokens"
+import { tokenizeLines } from "@/lib/syntax"
 import type { CodeTabs } from "@/engine"
 import { setPref, usePrefs } from "@/lib/store"
 
@@ -32,6 +34,18 @@ export function CodePanel({ code, line }: { code: CodeTabs; line: number }) {
     ? (codeTab as Lang)
     : "pseudo"
   const lines = code[mode] ?? code.pseudo
+  // SYNTAX COLOUR HERE TOO, over the lit row rather than instead of it: the
+  // wash and the inset rule say WHERE the machine is, the token colours say
+  // what the line is made of, and a reader sent to a line is there to read it.
+  // Pseudocode is not one of the four languages and stays plain — it is prose
+  // about the algorithm, and colouring `swap` as a call would be a claim.
+  //
+  // Tokenised as ONE block, not line by line: a docstring or a /* */ spans
+  // rows, and a line lexed on its own would start in the wrong state.
+  const tokens = tokenizeLines(
+    lines.join("\n"),
+    mode === "pseudo" ? undefined : mode
+  )
   const synced = !(code.unsynced ?? []).includes(mode as "java" | "cpp")
   return (
     <div className="overflow-hidden rounded-lg border bg-background/60">
@@ -74,7 +88,7 @@ export function CodePanel({ code, line }: { code: CodeTabs; line: number }) {
                 : "text-muted-foreground"
             )}
           >
-            {l || " "}
+            {tokens[i]?.length ? <TokenLine tokens={tokens[i]} /> : l || " "}
           </div>
         ))}
       </pre>

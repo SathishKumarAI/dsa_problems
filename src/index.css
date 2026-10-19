@@ -134,6 +134,12 @@
      order", and the two must never be swapped. */
   --color-edge: var(--edge);
   --color-code: var(--code);
+  /* THE CODE PALETTE. Four hues and three neutrals, one role each — the
+     reasoning and the numbers are in `docs/DESIGN.md` §The code palette. */
+  --color-code-keyword: var(--code-keyword);
+  --color-code-string: var(--code-string);
+  --color-code-number: var(--code-number);
+  --color-code-type: var(--code-type);
   --color-ramp-0: var(--ramp-0);
   --color-ramp-1: var(--ramp-1);
   --color-ramp-2: var(--ramp-2);
@@ -221,6 +227,23 @@
      surface as a callout; a reader could not tell "this is code" from "this is
      a box" at a glance. One step below the ground, both themes. */
   --code: #e9edf3; /* foreground 15.3 : 1, dim 4.67 : 1 */
+  /* ── THE CODE PALETTE ────────────────────────────────────────────────────
+     Four hues for what a token IS, picked numerically (see DESIGN.md §The
+     code palette): >= 5 : 1 on the code surface, >= 0.12 from every figure
+     role in OKLab so a keyword never reads as a figure's "focus", and >= 0.11
+     from each other. On a LIGHT ground they are ink-dark (L 0.27-0.33),
+     because the light figure roles already occupy the mid-lightness band and
+     the distance has to come from somewhere. Same hue per role in both
+     themes.
+
+     The other three roles are the neutrals this palette already owns:
+     a comment is `--dim`, a name being defined or called is `--foreground`
+     (the brightest thing in the block, because it is the subject), and
+     identifiers, operators and punctuation are `--muted-foreground`. */
+  --code-keyword: #46215c; /* 10.95 : 1 — violet; blue is the chrome's voice */
+  --code-string: #592204; /*  10.80 : 1 — warm, the way every editor sets one */
+  --code-number: #014210; /*  10.00 : 1 */
+  --code-type: #032c34; /*    12.64 : 1 — types and built-ins */
   /* Okabe–Ito, darkened for a light ground: the canonical colour-blind-safe
      qualitative set of scientific graphics. One hue per ROLE, and the role
      never changes hue between themes — a screenshot of one reads as the
@@ -275,6 +298,12 @@
   --edge: #7b8aff; /* 6.40 : 1 on the ground; not a data hue */
   --ring: #7b8aff;
   --code: #060a13; /* foreground 16.7 : 1, dim 5.95 : 1 */
+  /* the code palette, dark — one lightness band (L 0.78-0.85) and one chroma
+     (~0.10), so six colours read as one family rather than as a rainbow */
+  --code-keyword: #c5a7ef; /*  9.57 : 1, 0.130 from chart-4 */
+  --code-string: #faba9d; /*  11.86 : 1, 0.130 from chart-1 */
+  --code-number: #96d397; /*  11.37 : 1, 0.130 from chart-3 */
+  --code-type: #70e2ef; /*    13.03 : 1, 0.131 from chart-2 */
   --chart-1: #e69f00; /* focus   */
   --chart-2: #56b4e9; /* window  */
   --chart-3: #00b888; /* settled */
