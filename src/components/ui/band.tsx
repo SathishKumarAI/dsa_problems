@@ -183,10 +183,18 @@ export function Band({
       onToggle={(e) => setIsOpen(e.currentTarget.open)}
       className={cn("group scroll-mt-20", className)}
     >
-      <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+      {/* `group/summary` + the hover colour: a summary is the page's main
+          gesture and had neither hover nor focus style (C7, C10). The focus
+          ring now comes from the base layer, so this only owns the hover. */}
+      <summary className="list-none rounded-md transition-colors hover:bg-accent/40 [&::-webkit-details-marker]:hidden">
         {heading}
       </summary>
-      <div className="flex flex-col gap-3 pt-3">{children}</div>
+      {/* `animate-fold-in` — opacity and a 4px rise over 320ms. Before this the
+          body arrived in ONE frame: 1 879px of content with `transition: all
+          0s`, on the gesture this page is mostly made of. Height is
+          deliberately not animated — that is what makes a reveal cost layout
+          every frame. */}
+      <div className="flex animate-fold-in flex-col gap-3 pt-3">{children}</div>
     </details>
   )
 }

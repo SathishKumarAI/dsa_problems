@@ -2429,6 +2429,66 @@ describe(
       )
     })
 
+    // A CONTROL SAYS IT IS A CONTROL, AND THE PAGE ANSWERS (2026-10-18).
+    // Measured before this: 50 of 142 controls reported a cursor that was
+    // neither `pointer` nor `text` — Tailwind v4 dropped the preflight and the
+    // button recipe never put it back, so only the three climb cards (which
+    // add it by hand) behaved. The page's main gesture, 15 `<details>`, had no
+    // motion at all: 1 879px arriving in one frame. And the focus ring's
+    // visible part composited to 2.45:1 against a WCAG floor of 3.
+    test("every control says it is a control, and the fold has motion", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(1300);
+        const b = [...document.querySelectorAll('button')].find(x => /everything open/i.test(x.innerText));
+        if (b) b.click();
+        await wait(2000);
+        for (const d of document.querySelectorAll('main details')) d.open = true;
+        await wait(700);
+        const all = [...document.querySelectorAll(
+          'main button, main summary, main [role=tab], main [role=radio], aside button, aside a'
+        )];
+        const dead = all.filter(e => {
+          const c = getComputedStyle(e).cursor;
+          return !e.disabled && c !== 'pointer' && c !== 'text';
+        });
+        const fold = document.querySelector('main details[id] > div');
+        // the ring token, resolved the way the page resolves it
+        const probe = document.createElement('span');
+        document.body.appendChild(probe);
+        probe.style.color = 'var(--ring)';
+        const ring = getComputedStyle(probe).color;
+        probe.remove();
+        const rgb = s => (s.match(/[0-9.]+/g) || []).slice(0, 3).map(Number);
+        const chan = c => { c /= 255; return c <= 0.04045 ? c/12.92 : ((c+0.055)/1.055)**2.4; };
+        const lum = s => { const [r,g,b] = rgb(s).map(chan); return 0.2126*r + 0.7152*g + 0.0722*b; };
+        const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x,y)=>y-x); return (hi+0.05)/(lo+0.05); };
+        return {
+          controls: all.length,
+          dead: dead.length,
+          deadSample: dead.slice(0, 4).map(e => (e.innerText || e.tagName).trim().slice(0, 24)),
+          foldAnimation: fold ? getComputedStyle(fold).animationName : "none",
+          foldDuration: fold ? getComputedStyle(fold).animationDuration : "0s",
+          ringOnGround: ratio(ring, getComputedStyle(document.body).backgroundColor),
+        };
+      `)
+      assert.ok(out.controls > 40, `only ${out.controls} controls found to check`)
+      assert.equal(
+        out.dead,
+        0,
+        `${out.dead} controls do not look clickable: ${out.deadSample.join(" · ")}`
+      )
+      assert.equal(out.foldAnimation, "fold-in", "the page's main gesture has no reveal")
+      assert.equal(out.foldDuration, "0.32s", "the fold's reveal is not the house duration")
+      // WCAG 2.4.11 wants 3:1 for a non-text indicator. The ring is what the
+      // focus outline is painted in, so measuring the token measures the ring.
+      assert.ok(
+        out.ringOnGround >= 3,
+        `the focus ring measures ${out.ringOnGround.toFixed(2)}:1 against the ground`
+      )
+    })
+
     test("the narration stays on screen even on a long panel (U1)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(

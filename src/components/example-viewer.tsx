@@ -25,6 +25,7 @@ import { useEffect, useRef, useState } from "react"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
+  PauseIcon,
   PlayIcon,
   RotateCcwIcon,
 } from "lucide-react"
@@ -146,7 +147,15 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
             size="icon-sm"
             variant="ghost"
             className={TRANSPORT}
-            aria-label={done ? "walk it again" : "walk the input"}
+            // THE TRANSPORT IS THE ONE CONTROL WHOSE LABEL MUST TRACK ITS
+            // STATE. Measured 2026-10-18 (C4): both the icon and the name
+            // branched on `done` and never on `playing`, so pressing play left
+            // the accessible name "walk the input" and the glyph a ▶ — while
+            // the handler happily toggled. A reader mid-walk had nothing on
+            // screen saying the thing was running, or how to stop it.
+            aria-label={
+              done ? "walk it again" : playing ? "pause the walk" : "walk the input"
+            }
             onClick={() => {
               if (done) {
                 setCursor(-1)
@@ -154,7 +163,7 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
               } else setPlaying((p) => !p)
             }}
           >
-            {done ? <RotateCcwIcon /> : <PlayIcon />}
+            {done ? <RotateCcwIcon /> : playing ? <PauseIcon /> : <PlayIcon />}
           </Button>
           <Button
             size="icon-sm"
