@@ -91,7 +91,7 @@ export function CodeBlock({
           // the base step is the quiet one: identifiers, operators and
           // punctuation recede so the coloured roles and the names come
           // forward. Nothing in a code block is body prose.
-          "text-muted-foreground",
+          "text-code-base",
           lang && tag && "pt-7"
         )}
       >

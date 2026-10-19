@@ -11,6 +11,48 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-18 — three code palettes, and the setting that picks one
+
+Asked for mid-branch: _"https://vscodethemes.com/e/BenjaminBenais.copilot-theme — add this theme as
+well"_, then _"add them in settings as well so that I can change them based on my requirement."_
+
+The theme's real values came from its repo rather than from the preview page
+(`benjaminbenais/copilot-theme`, `Copilot Theme-color-theme.json`, read through `gh api`), and VS
+Code Dark+ went in beside it since its numbers had already been measured when it was rejected as
+the default.
+
+| Setting        | Bench     | keyword | string  | number  | type    | name    |
+| -------------- | --------- | ------- | ------- | ------- | ------- | ------- |
+| `patternsmith` | `--code`  | violet  | warm    | green   | cyan    | foreground |
+| `copilot`      | `#232a2f` | #ba8ef7 | #5bec95 | #89ddff | #89ddff | #ffea6b |
+| `vscode`       | `#1f1f1f` | #569cd6 | #ce9178 | #b5cea8 | #4ec9b0 | #dcdcaa |
+
+Each imported theme brings **its own bench**, which is what makes a block look like the editor it
+came from. Both stay dark on a light page — inventing light variants would mean publishing colours
+their authors never chose. Three neutral roles (`--code-base`, `--code-name`, `--code-comment`) were
+added for this: they had been the page's own `--foreground` / `--muted-foreground` / `--dim`, which
+is right with one palette and wrong with three, because a block mixing an editor's hues with this
+site's greys reads as half-converted.
+
+**Two things are not faithful, and both are printed rather than hidden.** Copilot's comment grey
+measures 3.33 : 1 on its own bench and this site does not ship text under 4.5, so its hue is kept
+and its lightness lifted: `#707a84` → `#88929c`, 4.60 : 1. And the imported themes break the house
+rule that no code hue may share a figure role's hue — Dark+'s keyword blue is 0.066 from `chart-2`
+"window", its type 0.076 from `chart-3` "settled", Copilot's keyword 0.118 from `chart-4` "anchor".
+The gate prints each distance as `NOT ENFORCED` on every run and asserts only the floor that is not
+a matter of taste: every role of every theme clears AA on its own bench.
+
+### Two bugs on the way, both caught by gates rather than by looking
+
+- **The setting did nothing.** `[data-code-theme="copilot"]` has the same specificity as `.dark` and
+  came EARLIER in the file, so the dark theme's `--code-*` won and the UI gate read the house
+  colours back after switching. `:root[data-code-theme=…]` is one element more specific and order
+  stops mattering.
+- **Ten of the twelve palette tests failed on a palette that had not changed.** The gate reads
+  `index.css` off disk and looks the light theme up by a selector with a newline in it; a Python
+  rewrite had left the file CRLF. Normalised on the way in now — the repo already knew this trap for
+  template literals, and this is the same one through a file read. In `CLAUDE.md`.
+
 ## 2026-10-18 — code reads as code: a lexer, and four hues picked by machine
 
 The owner: _"let's do a colour palette kind of like coding VS Code style — just a colour for coding

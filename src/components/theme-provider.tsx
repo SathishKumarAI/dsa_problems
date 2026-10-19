@@ -126,10 +126,24 @@ export function ThemeProvider({
   // collapse every transition and animation. This provider already owns
   // "put a class on the document to match a preference", so it owns this too;
   // the OS-level media query is handled in the CSS beside it.
-  const { reduceMotion } = usePrefs()
+  const { reduceMotion, codeTheme } = usePrefs()
   React.useEffect(() => {
     document.body.classList.toggle("force-reduced-motion", reduceMotion)
   }, [reduceMotion])
+
+  // WHICH CODE PALETTE, as a data attribute on <html> that `index.css` answers
+  // with a block of `--code-*` overrides. Same job as the line above and the
+  // same owner: this provider is the one place that turns a preference into
+  // something the stylesheet can see.
+  //
+  // The site's own palette is the DEFAULT and writes no attribute, so its
+  // values stay in the theme blocks beside every other colour rather than in a
+  // fourth block that would have to be kept in step with them.
+  React.useEffect(() => {
+    const root = document.documentElement
+    if (codeTheme === "patternsmith") delete root.dataset.codeTheme
+    else root.dataset.codeTheme = codeTheme
+  }, [codeTheme])
 
   React.useEffect(() => {
     applyTheme(theme)

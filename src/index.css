@@ -140,6 +140,14 @@
   --color-code-string: var(--code-string);
   --color-code-number: var(--code-number);
   --color-code-type: var(--code-type);
+  /* The three NEUTRAL code roles. They were `--foreground`,
+     `--muted-foreground` and `--dim` written into the components directly,
+     which was right while there was one code palette and wrong the moment
+     there were three: an imported theme brings its own greys, and a block
+     cannot borrow the page's without looking half-converted. */
+  --color-code-base: var(--code-base);
+  --color-code-name: var(--code-name);
+  --color-code-comment: var(--code-comment);
   --color-ramp-0: var(--ramp-0);
   --color-ramp-1: var(--ramp-1);
   --color-ramp-2: var(--ramp-2);
@@ -240,6 +248,11 @@
      a comment is `--dim`, a name being defined or called is `--foreground`
      (the brightest thing in the block, because it is the subject), and
      identifiers, operators and punctuation are `--muted-foreground`. */
+  --code-base: var(
+    --muted-foreground
+  ); /* identifiers, operators, punctuation */
+  --code-name: var(--foreground); /*        the name being defined or called */
+  --code-comment: var(--dim); /*            the quietest thing still text */
   --code-keyword: #46215c; /* 10.95 : 1 — violet; blue is the chrome's voice */
   --code-string: #592204; /*  10.80 : 1 — warm, the way every editor sets one */
   --code-number: #014210; /*  10.00 : 1 */
@@ -275,6 +288,61 @@
   --sidebar-ring: #005b8f;
 }
 
+/* ── IMPORTED CODE THEMES ────────────────────────────────────────────────────
+   The owner asked for two editors' palettes by name, so they are here as
+   THEMES rather than as a rewrite: `[data-code-theme]` on <html> (set by
+   `theme-provider.tsx` from the `codeTheme` pref, chosen in Settings) and
+   nothing else on the site moves. Each one brings its own bench, which is what
+   makes a block look like the editor it came from rather than like this site
+   wearing its colours.
+
+   Both are DARK themes and stay dark on a light page. Inventing light variants
+   would mean publishing colours their authors never chose, and a dark code
+   block on a light page is what every documentation site does anyway.
+
+   WHAT IS NOT FAITHFUL, said here rather than hidden: Copilot's comment grey
+   measures 3.33 : 1 on its own bench, and this site does not ship text under
+   4.5 (`--dim` exists because a 1.02 : 1 label was found shipped). Its hue is
+   kept and its lightness lifted until it passes — #707a84 → #88929c, 4.60 : 1.
+   Nothing else in either theme is changed.
+
+   These two also break the rule the house palette is built on: a code hue here
+   may sit close to a figure role, so the same colour can mean "keyword" in a
+   block and "the cell in focus" in a drawing on the same page. That is the
+   trade the owner chose by name, and `palette.test.ts` prints the measured
+   distances on every run rather than pretending they pass. */
+
+/* Copilot Theme — benjaminbenais/copilot-theme, `Copilot Theme-color-theme.json` */
+/* `:root[...]`, not a bare attribute selector: the theme blocks below are
+   `.dark` and `:root`, which have the same specificity as `[data-code-theme]`
+   and come LATER in the file — so a bare selector lost to them and the setting
+   did nothing (caught by the UI gate, which read the house colours back after
+   switching to Copilot). One more element in the selector and order stops
+   mattering. */
+:root[data-code-theme="copilot"] {
+  --code: #232a2f; /* the theme's own editor.background */
+  --code-base: #939da5; /*     5.27 : 1 — editor.foreground */
+  --code-name: #ffea6b; /*    11.94 : 1 — entity.name.function */
+  --code-comment: #88929c; /*  4.60 : 1 — lifted from #707a84 (3.33) */
+  --code-keyword: #ba8ef7; /*  5.75 : 1 — keyword, storage.type */
+  --code-string: #5bec95; /*   9.61 : 1 */
+  --code-number: #89ddff; /*   9.59 : 1 — constant.numeric */
+  --code-type: #89ddff; /*     9.59 : 1 — support.type.primitive, the same hue
+                                the theme itself gives a number */
+}
+
+/* VS Code Dark+ — the default dark_plus token colours */
+:root[data-code-theme="vscode"] {
+  --code: #1f1f1f;
+  --code-base: #d4d4d4; /*    11.12 : 1 */
+  --code-name: #dcdcaa; /*    11.66 : 1 */
+  --code-comment: #6a9955; /*  4.95 : 1 */
+  --code-keyword: #569cd6; /*  5.59 : 1 */
+  --code-string: #ce9178; /*   6.24 : 1 */
+  --code-number: #b5cea8; /*   9.70 : 1 */
+  --code-type: #4ec9b0; /*     8.09 : 1 */
+}
+
 /* The figure palette, dark: a cold near-black bench. */
 .dark {
   --background: #080d18; /* deeper than the 2026-09 bench: 16.4 : 1 under the foreground */
@@ -300,6 +368,9 @@
   --code: #060a13; /* foreground 16.7 : 1, dim 5.95 : 1 */
   /* the code palette, dark — one lightness band (L 0.78-0.85) and one chroma
      (~0.10), so six colours read as one family rather than as a rainbow */
+  --code-base: var(--muted-foreground);
+  --code-name: var(--foreground);
+  --code-comment: var(--dim);
   --code-keyword: #c5a7ef; /*  9.57 : 1, 0.130 from chart-4 */
   --code-string: #faba9d; /*  11.86 : 1, 0.130 from chart-1 */
   --code-number: #96d397; /*  11.37 : 1, 0.130 from chart-3 */

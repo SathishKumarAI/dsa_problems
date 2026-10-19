@@ -492,6 +492,37 @@ Four tests hold it (`lib/palette.test.ts`): AA ≥ 4.5 on **both** grounds a blo
 (`--code` and `--card`, the journey panel's), ≥ 0.12 from every figure role, ≥ 0.11 from each other,
 and a luminance spread ≤ 0.42 — the last one is the anti-rainbow clause.
 
+### Three palettes, and the setting that picks one
+
+The owner asked for Copilot Theme by name mid-build, so the palette is a **preference**:
+`codeTheme` in `lib/store.ts`, chosen in Settings ("code colours", with a live sample block), applied
+as `data-code-theme` on `<html>` by `theme-provider.tsx` — the one place a preference becomes
+something the stylesheet can see. The site's own palette is the default and writes **no** attribute,
+so its values stay in the theme blocks beside every other colour rather than in a fourth block that
+would have to be kept in step.
+
+| Setting        | Bench     | Keyword | String  | Number  | Type    | Name    |
+| -------------- | --------- | ------- | ------- | ------- | ------- | ------- |
+| `patternsmith` | `--code`  | violet  | warm    | green   | cyan    | `--foreground` |
+| `copilot`      | `#232a2f` | #ba8ef7 | #5bec95 | #89ddff | #89ddff | #ffea6b |
+| `vscode`       | `#1f1f1f` | #569cd6 | #ce9178 | #b5cea8 | #4ec9b0 | #dcdcaa |
+
+Each imported theme brings **its own bench**, which is what makes a block look like the editor it
+came from rather than like this site wearing its colours. Both are dark themes and stay dark on a
+light page: inventing light variants would mean publishing colours their authors never chose.
+
+**Two honest notes, kept in the open:**
+
+- Copilot's comment grey measures **3.33 : 1** on its own bench, and this site does not ship text
+  under 4.5 — `--dim` exists because a 1.02 : 1 label was once found shipped. Its hue is kept and
+  its lightness lifted until it passes: `#707a84` → `#88929c`, 4.60 : 1. Nothing else in either
+  theme is changed; Copilot gives a number and a primitive type the same sky, and so do we.
+- The imported themes **break the figure rule** — Dark+'s keyword blue is 0.066 from `chart-2`
+  "window", its type 0.076 from `chart-3` "settled", Copilot's keyword 0.118 from `chart-4`
+  "anchor". The gate does not quietly drop them: it **prints** each distance on every run as
+  `NOT ENFORCED`, and asserts only what is not a matter of taste — every role of every theme clears
+  AA on its own bench.
+
 ### What is coloured, and what deliberately is not
 
 Everything goes through two components: `Tokens` for a block, `TokenLine` for a panel that draws its
