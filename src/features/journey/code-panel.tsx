@@ -84,8 +84,8 @@ export function CodePanel({ code, line }: { code: CodeTabs; line: number }) {
             className={cn(
               "-mx-3 px-3 whitespace-pre transition-colors",
               synced && i === line
-                ? "bg-chart-1/15 text-foreground shadow-[inset_2px_0_0_0] shadow-chart-1"
-                : "text-muted-foreground"
+                ? "bg-chart-1/15 text-code-name shadow-[inset_2px_0_0_0] shadow-chart-1"
+                : "text-code-base"
             )}
           >
             {tokens[i]?.length ? <TokenLine tokens={tokens[i]} /> : l || " "}

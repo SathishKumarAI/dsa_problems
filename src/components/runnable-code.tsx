@@ -126,7 +126,7 @@ export function RunnableCode({
           <pre
             aria-hidden
             ref={mirror}
-            className="pointer-events-none absolute inset-0 overflow-hidden p-4 pt-7 font-mono text-ui leading-relaxed whitespace-pre text-muted-foreground"
+            className="pointer-events-none absolute inset-0 overflow-hidden p-4 pt-7 font-mono text-ui leading-relaxed whitespace-pre text-code-base"
           >
             <code>
               <Tokens code={draft} lang="python" />
@@ -158,7 +158,7 @@ export function RunnableCode({
             // `text-transparent` with a real caret: the characters are drawn
             // by the mirror behind. The selection still paints, which is what
             // makes selecting invisible text feel normal rather than broken.
-            className="relative block w-full resize-y overflow-auto bg-transparent p-4 pt-7 font-mono text-ui leading-relaxed whitespace-pre text-transparent caret-foreground selection:bg-primary/30 focus-visible:outline-none"
+            className="relative block w-full resize-y overflow-auto bg-transparent p-4 pt-7 font-mono text-ui leading-relaxed whitespace-pre text-transparent caret-code-name selection:bg-primary/30 focus-visible:outline-none"
           />
         </div>
       ) : (

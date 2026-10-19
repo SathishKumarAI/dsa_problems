@@ -2299,6 +2299,77 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // THE PALETTE IS A SETTING (2026-10-18). Three choices: this site's own,
+    // Copilot Theme's and VS Code Dark+'s. Each imported one brings its own
+    // bench, which is what makes a block look like the editor it came from.
+    // The pref has to be written on ANOTHER route and then navigated to — the
+    // store caches per key, so a write while the page is mounted is undone.
+    test("the code palette is a setting, and each one repaints the block", async () => {
+      const read = `
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(900);
+        const rgb = s => (s.match(/[0-9.]+/g) || []).slice(0, 3).map(Number);
+        const chan = c => { c /= 255; return c <= 0.04045 ? c/12.92 : ((c+0.055)/1.055)**2.4 };
+        const lum = s => { const [r,g,b] = rgb(s).map(chan); return 0.2126*r + 0.7152*g + 0.0722*b };
+        const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x,y)=>y-x); return (hi+0.05)/(lo+0.05) };
+        const pre = [...document.querySelectorAll('main pre')].find(p => p.querySelector('span'));
+        if (!pre) return { noCode: true };
+        const colours = [...new Set([...pre.querySelectorAll('span')].map(s => getComputedStyle(s).color))];
+        const bench = getComputedStyle(pre.parentElement).backgroundColor;
+        return {
+          attr: document.documentElement.dataset.codeTheme ?? "none",
+          bench,
+          colours: colours.sort(),
+          worst: Math.min(...colours.map(c => ratio(c, bench))),
+        };
+      `
+      const seen = {}
+      for (const theme of ["patternsmith", "copilot", "vscode"]) {
+        await page.goto(`${server.base}/#/`)
+        await page.run(
+          `localStorage.setItem('dsa:prefs', JSON.stringify({ codeTheme: '${theme}' })); return 1`
+        )
+        await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+        const out = await page.run(read)
+        assert.ok(!out.noCode, `${theme}: no coloured code block on the page`)
+        assert.equal(
+          out.attr,
+          theme === "patternsmith" ? "none" : theme,
+          `${theme}: the pref did not reach <html>`
+        )
+        assert.ok(
+          out.colours.length >= 3,
+          `${theme}: only ${out.colours.length} token colours`
+        )
+        // READABLE IS NOT A MATTER OF TASTE. An imported theme may collide with
+        // a figure role — that is the trade, and `palette.test.ts` prints it —
+        // but it may not ship text under AA on its own bench.
+        assert.ok(
+          out.worst >= 4.5,
+          `${theme}: a token measured ${out.worst.toFixed(2)}:1 on its own bench`
+        )
+        seen[theme] = out
+      }
+      // and they are actually DIFFERENT palettes, benches included
+      assert.notDeepEqual(
+        seen.patternsmith.colours,
+        seen.copilot.colours,
+        "copilot painted the same colours as the house palette"
+      )
+      assert.notDeepEqual(
+        seen.copilot.colours,
+        seen.vscode.colours,
+        "the two imported themes painted the same colours"
+      )
+      assert.notEqual(
+        seen.patternsmith.bench,
+        seen.copilot.bench,
+        "an imported theme did not bring its own bench"
+      )
+      await page.goto(`${server.base}/#/`)
+      await page.run(`${FRESH} return 1`)
+    })
+
     test("the narration stays on screen even on a long panel (U1)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(

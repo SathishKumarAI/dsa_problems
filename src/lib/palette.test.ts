@@ -13,7 +13,13 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 import { readFileSync, readdirSync } from "node:fs"
 
-const css = readFileSync("src/index.css", "utf8")
+// CRLF NORMALISED ON THE WAY IN. Git stores this file with LF and checks it
+// out with CRLF on Windows, so a selector containing a newline — the light
+// theme's is the `:root {` line plus its FIGURE PALETTE comment — matched on
+// one machine and not on another. Ten of these twelve tests failed that way,
+// on a palette that had not changed. The repo already knows this trap for
+// template literals; this is the same one through a file read.
+const css = readFileSync("src/index.css", "utf8").replace(/\r\n/g, "\n")
 
 /** the custom properties of one block, by its selector */
 function block(selector: string): Record<string, string> {
@@ -247,6 +253,12 @@ const CODE_ROLES = [
   "--code-type",
 ]
 
+/** the two imported editor themes, as `index.css` writes them */
+const IMPORTED = [
+  { name: "copilot", selector: ':root[data-code-theme="copilot"] {' },
+  { name: "vscode", selector: ':root[data-code-theme="vscode"] {' },
+]
+
 test("every code token clears AA on the code surface it is read on", () => {
   // Not the ground — the CODE surface, which sits one step under it
   // (`--code`). A token measured against the page is a token measured against
@@ -319,4 +331,69 @@ test("the code hues read as one family, not as a rainbow", () => {
       `${name}: the code hues span ${spread.toFixed(2)} in luminance — that is a rainbow, not a family`
     )
   }
+})
+
+test("every imported code theme is READABLE on its own bench", () => {
+  // The site's own palette answers to the figure rule as well; an imported one
+  // cannot — it was chosen by someone who had never heard of this app. What it
+  // still has to clear is the floor that is not a matter of taste: text a
+  // reader can actually read. All seven roles, against the bench the theme
+  // brings with it.
+  for (const { name, selector } of IMPORTED) {
+    const p = block(selector)
+    const ground = p["--code"]
+    assert.ok(ground, `${name}: the theme brings no bench of its own`)
+    for (const role of [
+      ...CODE_ROLES,
+      "--code-base",
+      "--code-name",
+      "--code-comment",
+    ]) {
+      assert.ok(p[role], `${name}: ${role} is missing`)
+      const r = contrast(p[role], ground)
+      assert.ok(
+        r >= 4.5,
+        `${name}: ${role} is ${r.toFixed(2)}:1 on its own bench, want >= 4.5 ` +
+          `(lift the lightness and keep the hue, the way copilot's comment was)`
+      )
+    }
+  }
+})
+
+test("an imported theme's collisions with the figure roles are PRINTED, not asserted", () => {
+  // AN EXEMPTION YOU CAN SEE IS A DIFFERENT OBJECT FROM AN OMISSION YOU CANNOT.
+  //
+  // The house palette keeps every code hue >= 0.12 in OKLab from every figure
+  // role, so a keyword never wears the colour that means "the cell in focus".
+  // The imported themes were asked for by name and cannot be held to that —
+  // Copilot's keyword violet sits near `chart-4` "anchor", Dark+'s keyword blue
+  // near `chart-2` "window". Dropping them from the gate would make that
+  // invisible, so the number is printed on every run instead, and the test
+  // asserts only that the printing happened.
+  const lines = []
+  for (const { name, selector } of IMPORTED) {
+    const p = block(selector)
+    for (const { name: theme, selector: themeSel } of THEMES) {
+      const fig = block(themeSel)
+      for (const role of CODE_ROLES) {
+        const near = [1, 2, 3, 4, 5]
+          .map((i) => ({
+            fig: `--chart-${i}`,
+            d: perceptualDistance(p[role], fig[`--chart-${i}`]),
+          }))
+          .sort((a, b) => a.d - b.d)[0]
+        if (near.d < 0.12)
+          lines.push(
+            `  NOT ENFORCED — ${name} ${role} is ${near.d.toFixed(3)} from ${near.fig} (${theme} figures); the house rule is >= 0.12`
+          )
+      }
+    }
+  }
+  console.log(
+    [
+      "imported code themes: where a token shares a hue with a figure role",
+      ...(lines.length ? lines : ["  none — they happen to clear 0.12"]),
+    ].join("\n")
+  )
+  assert.ok(true)
 })

@@ -4,6 +4,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { CodeBlock } from "@/components/code-block"
 import { cn } from "@/lib/utils"
 import {
   Dialog,
@@ -263,6 +264,15 @@ function Row({
   )
 }
 
+// Four lines that exercise every role at once: a keyword, a name being
+// defined, a type, a string, a number and a comment. Short on purpose — this
+// is a swatch, not a lesson.
+const SAMPLE = `def two_sum(nums: list[int], target: int) -> int:
+    seen = {}  # value -> index
+    for i, x in enumerate(nums):
+        if target - x in seen:
+            return "found"`
+
 export function SettingsDialog() {
   const prefs = usePrefs()
   const { theme, setTheme } = useTheme()
@@ -368,6 +378,33 @@ export function SettingsDialog() {
               { value: "off", label: "off" },
             ]}
           />
+        </Row>
+        {/* THE CODE PALETTE, with a sample — because nobody can pick a syntax
+            theme from three words. The sample is real: the same `CodeBlock`
+            every page uses, so what it shows is what a rung will look like. */}
+        <Row
+          label="code colours"
+          hint={
+            prefs.codeTheme === "patternsmith"
+              ? "this site's own — no token shares a hue with a figure"
+              : prefs.codeTheme === "copilot"
+                ? "Copilot Theme's own colours, on its own bench"
+                : "VS Code Dark+ token colours, on its own bench"
+          }
+        >
+          <div className="flex flex-col gap-2">
+            <Segmented
+              label="code colours"
+              value={prefs.codeTheme}
+              onChange={(v) => setPref("codeTheme", v)}
+              options={[
+                { value: "patternsmith", label: "Patternsmith" },
+                { value: "copilot", label: "Copilot" },
+                { value: "vscode", label: "VS Code" },
+              ]}
+            />
+            <CodeBlock code={SAMPLE} lang="python" tag={false} />
+          </div>
         </Row>
         <Row label="code tab" hint="shared by every act and the visualizer">
           <Segmented

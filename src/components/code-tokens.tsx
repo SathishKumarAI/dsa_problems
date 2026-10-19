@@ -16,9 +16,14 @@ import type { Token, TokenKind } from "@/lib/syntax"
  *
  *   - a NAME is the brightest thing in the block, because the function being
  *     defined or called is what the line is about;
- *   - identifiers, operators and punctuation sit at the body's quiet step, so
+ *   - identifiers, operators and punctuation sit at the block's quiet step, so
  *     the shape of the code recedes and its content comes forward;
- *   - a comment is the dimmest text this palette can still call text.
+ *   - a comment is the dimmest text the palette can still call text.
+ *
+ * All seven are `--code-*` roles, including the three neutrals. They were the
+ * page's own `--foreground` / `--muted-foreground` / `--dim` until the imported
+ * themes landed — an editor's palette brings its own greys, and a block mixing
+ * them with the page's reads as half-converted.
  *
  * `plain` gets no span at all: a token that needs no colour needs no element,
  * and a 600-line block is 600 fewer nodes for it.
@@ -28,8 +33,8 @@ const CLASS: Record<Exclude<TokenKind, "plain">, string> = {
   string: "text-code-string",
   number: "text-code-number",
   type: "text-code-type",
-  name: "text-foreground",
-  comment: "text-dim",
+  name: "text-code-name",
+  comment: "text-code-comment",
 }
 
 /** one token's worth of markup, or its bare text when it needs none */

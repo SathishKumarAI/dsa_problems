@@ -170,6 +170,12 @@ const NOT_PROGRESS = (key: string) => key.startsWith("notes:")
 export interface Prefs {
   speed: number // slider 1..100
   codeTab: string // pseudo | python | java | cpp
+  // WHICH PALETTE CODE IS PAINTED IN. `patternsmith` is this site's own —
+  // picked numerically so no token wears a figure role's hue (DESIGN.md §The
+  // code palette); the other two are the editors' own token colours, imported
+  // on the owner's ask. A theme name, not a set of colours: the values live in
+  // `index.css` under `[data-code-theme]`, where every other colour lives.
+  codeTheme: "patternsmith" | "copilot" | "vscode"
   motion: "calm" | "normal" | "cinematic" | "off"
   // The in-app reduced-motion override. Separate from `motion`, which only
   // sizes the FLIP travel: this one also stops every CSS transition, via a
@@ -197,6 +203,7 @@ export interface Prefs {
 export const DEFAULT_PREFS: Prefs = {
   speed: 50,
   codeTab: "pseudo",
+  codeTheme: "patternsmith",
   motion: "normal",
   reduceMotion: false,
   reading: true,
