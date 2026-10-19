@@ -101,7 +101,9 @@ function RungCode({
         className="[&_pre]:max-h-none"
       />
     )
-  return <CodeBlock code={code[lang] ?? code.python} />
+  // `tag={false}`: the language strip above already says which language this
+  // is, and the corner tag was the same word twice. The colour still needs it.
+  return <CodeBlock code={code[lang] ?? code.python} lang={lang} tag={false} />
 }
 
 // The ladder. Rungs read in build order; the "why now" line sits BETWEEN them,

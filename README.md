@@ -131,6 +131,9 @@ history: [`WORKLOG.md`](docs/WORKLOG.md) · where the last session stopped:
 | Change | File |
 |---|---|
 | Theme colours, type scale, container widths (all tokens) | `src/index.css` (the decisions: `docs/DESIGN.md`) |
+| **What colour a keyword / string / number / type is**, in any code on the site | `src/index.css` — the four `--code-*` roles (why these hues: `docs/DESIGN.md` §The code palette; gate: `src/lib/palette.test.ts`) |
+| Which WORD is a keyword, a string, a number, a type or a name | `src/lib/syntax.ts` — a lexer for Python, Java, C++ and SQL, no dependency. Gate: `src/lib/syntax.test.ts` |
+| How a token becomes markup (and the editable block's coloured mirror) | `src/components/code-tokens.tsx` · `src/components/code-block.tsx` · `src/components/runnable-code.tsx` |
 | Routes (`#/journey/…`, `#/algorithms`, `#/p/…`) | `src/lib/route.ts`, `src/App.tsx` |
 | Add / edit a **glossary entry**, or the rules a `[[link]]` follows | `src/glossary/terms/<topic>.ts` — map and the five authoring rules: `src/glossary/README.md`. Gate: `src/glossary/glossary.test.ts` |
 | How a defined word LOOKS in prose, and what its popover says | `src/components/glossary/term-link.tsx` |

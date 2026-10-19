@@ -1,19 +1,30 @@
-// Minimal code display: mono block with copy button. No highlighter dependency.
+// Code display: mono block, copy button, and syntax colour from this repo's
+// own lexer (`lib/syntax.ts`) — no highlighter dependency, which is why the
+// lexer exists. Every code surface on the site but the journey's panel comes
+// through here: the ladder's rungs, a document's fences, the SQL drills, and a
+// Run editor when it is not being edited.
 import { useState } from "react"
 import { CheckIcon, CopyIcon, XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Tokens } from "@/components/code-tokens"
 import { cn } from "@/lib/utils"
 
 export function CodeBlock({
   code,
   className,
   lang,
+  tag = true,
 }: {
   code: string
   className?: string
-  /** shown as a quiet tag in the corner, so a block says what it is before a
-   *  reader parses it. Python, Java and C++ look alike for the first line. */
+  /** WHAT LANGUAGE THIS IS — it decides the colours, and by default it is also
+   *  shown as a quiet tag in the corner, because Python, Java and C++ look
+   *  alike for the first line. */
   lang?: string
+  /** `false` where something else on screen already says the language — the
+   *  ladder's own language strip sits directly above its block, and the tag
+   *  was the same word twice. The COLOUR still comes from `lang`. */
+  tag?: boolean
 }) {
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -40,7 +51,7 @@ export function CodeBlock({
 
   return (
     <div className={cn("group relative rounded-lg border bg-code", className)}>
-      {lang && (
+      {lang && tag && (
         <span
           aria-hidden
           className="pointer-events-none absolute top-2 left-3 font-mono text-meta text-dim"
@@ -77,10 +88,18 @@ export function CodeBlock({
       <pre
         className={cn(
           "overflow-x-auto p-4 pr-12 font-mono text-ui leading-relaxed",
-          lang && "pt-7"
+          // the base step is the quiet one: identifiers, operators and
+          // punctuation recede so the coloured roles and the names come
+          // forward. Nothing in a code block is body prose.
+          "text-muted-foreground",
+          lang && tag && "pt-7"
         )}
       >
-        <code>{code}</code>
+        {/* `lang` is the block's own tag, so an untagged block renders exactly
+            as it did before the lexer existed — one plain run, no spans. */}
+        <code>
+          <Tokens code={code} lang={lang} />
+        </code>
       </pre>
     </div>
   )

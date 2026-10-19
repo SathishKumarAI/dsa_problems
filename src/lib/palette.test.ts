@@ -31,7 +31,7 @@ function block(selector: string): Record<string, string> {
 const channel = (c: number) =>
   c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
 
-function luminance(hex: string): number {
+export function luminance(hex: string): number {
   const h = hex.replace("#", "")
   const full = h.length === 3 ? [...h].map((c) => c + c).join("") : h
   const [r, g, b] = (full.match(/../g) ?? [])
@@ -231,5 +231,92 @@ test("chrome's accent is not one of the data colours", () => {
         `${name}: ${key} is ${r.toFixed(2)}:1 against the ground, needs 3`
       )
     }
+  }
+})
+
+// ── the code palette ─────────────────────────────────────────────────────
+//
+// Four hues for what a token IS, and the three rules that made them pickable
+// by machine rather than by eye. Every number in `index.css`'s comments came
+// out of this; the gate is what stops the next hand nudging one "until it
+// looks right" on one monitor.
+const CODE_ROLES = [
+  "--code-keyword",
+  "--code-string",
+  "--code-number",
+  "--code-type",
+]
+
+test("every code token clears AA on the code surface it is read on", () => {
+  // Not the ground — the CODE surface, which sits one step under it
+  // (`--code`). A token measured against the page is a token measured against
+  // a background it never appears on. Blocks also render on `--card` inside the
+  // journey's panel, so both grounds count.
+  for (const { name, selector } of THEMES) {
+    const p = block(selector)
+    for (const role of CODE_ROLES) {
+      assert.ok(p[role], `${name}: ${role} is missing`)
+      for (const ground of ["--code", "--card"]) {
+        const r = contrast(p[role], p[ground])
+        assert.ok(
+          r >= 4.5,
+          `${name}: ${role} on ${ground} is ${r.toFixed(2)}:1, want >= 4.5`
+        )
+      }
+    }
+  }
+})
+
+test("a code token is never a figure role — colour means one thing per page", () => {
+  // THE RULE THAT MADE THIS PALETTE HARD, and the reason it is not VS Code's.
+  // On a problem page a figure says orange = the cell in focus, green =
+  // settled, sky = the window; the code block is six inches below it. Dark+'s
+  // keyword blue measured 0.066 from `chart-2` and its comment green 0.095
+  // from `chart-3` — close enough that the same hue would be making two
+  // different claims on one screen.
+  for (const { name, selector } of THEMES) {
+    const p = block(selector)
+    const figure = [1, 2, 3, 4, 5].map((i) => `--chart-${i}`)
+    for (const role of CODE_ROLES)
+      for (const fig of figure) {
+        const d = perceptualDistance(p[role], p[fig])
+        assert.ok(
+          d >= 0.12,
+          `${name}: ${role} and ${fig} are ${d.toFixed(3)} apart in OKLab, want >= 0.12`
+        )
+      }
+  }
+})
+
+test("the four code hues stay distinguishable from each other", () => {
+  // They sit on adjacent words of the same line, which is the hardest place to
+  // tell two colours apart.
+  for (const { name, selector } of THEMES) {
+    const p = block(selector)
+    for (let i = 0; i < CODE_ROLES.length; i++)
+      for (let j = i + 1; j < CODE_ROLES.length; j++) {
+        const d = perceptualDistance(p[CODE_ROLES[i]], p[CODE_ROLES[j]])
+        assert.ok(
+          d >= 0.11,
+          `${name}: ${CODE_ROLES[i]} and ${CODE_ROLES[j]} are ${d.toFixed(3)} apart, want >= 0.11`
+        )
+      }
+  }
+})
+
+test("the code hues read as one family, not as a rainbow", () => {
+  // The first cut of this palette was picked by MAXIMISING saturation and
+  // distance, and produced #f789fe / #98ff81 / #ffec32 — a 1998 syntax theme.
+  // One lightness band and one chroma band is what makes six colours read as
+  // a set, so the gate holds the band rather than trusting the taste that
+  // chose it.
+  for (const { name, selector } of THEMES) {
+    const p = block(selector)
+    const ls = CODE_ROLES.map((r) => luminance(p[r]))
+    const spread = Math.max(...ls) - Math.min(...ls)
+    assert.ok(
+      spread <= 0.42,
+      `${name}: the code hues span ${spread.toFixed(2)} in luminance — that is a rainbow, not a family`
+    )
   }
 })

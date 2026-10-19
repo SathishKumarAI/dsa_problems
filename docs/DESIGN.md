@@ -437,6 +437,70 @@ Two of those are permanent lessons and are enforced elsewhere:
 nothing undoes them behind their back, and scrolling changes no width on the page. Gate:
 _"scrolling moves the page, not the layout"_ in `ui-smoke`.
 
+## The code palette
+
+**Code was one colour until 2026-10-18.** `code-block.tsx` opened with "No highlighter
+dependency" and meant no highlighting: 384 Python, 333 Java and 333 C++ blocks in the data, plus
+the fences in 82 documents, all rendered in a single grey. The owner asked for "a colour for
+coding for each and everything — for easy reading and learning".
+
+**Four hues and three neutrals**, and the neutrals carry the hierarchy:
+
+| Token                               | Role                | Why                                                                              |
+| ----------------------------------- | ------------------- | -------------------------------------------------------------------------------- |
+| keyword — `def`, `if`, `SELECT`     | `--code-keyword`    | violet. Blue is the chrome's one voice and sky is a figure's "window"            |
+| string, character literal           | `--code-string`     | warm, the way every editor since Textmate has set one                            |
+| number                              | `--code-number`     | green                                                                            |
+| type / built-in — `int`, `len`      | `--code-type`       | cyan. A built-in beats a call: `len` is the same colour everywhere it appears    |
+| **name** being defined or called    | `--foreground`      | the BRIGHTEST thing in the block, because it is what the line is about           |
+| identifiers, operators, punctuation | `--muted-foreground`| the quiet step, so the shape recedes and the content comes forward               |
+| comment                             | `--dim`             | the dimmest thing this palette can still call text                               |
+
+### Why it is not VS Code's palette, which is what was asked for
+
+Dark+ was measured first, against this app's own gates:
+
+| Dark+ token    |         | On `--code` | Nearest figure role (OKLab) |
+| -------------- | ------- | ----------- | --------------------------- |
+| keyword        | #569CD6 | 6.72 : 1    | `chart-2` "window" **0.066** |
+| comment        | #6A9955 | 5.94 : 1    | `chart-3` "settled" **0.095** |
+| type           | #4EC9B0 | 9.72 : 1    | `chart-3` "settled" **0.076** |
+| string         | #CE9178 | 7.49 : 1    | `chart-1` "focus" 0.108      |
+
+Those distances are the problem. On a problem page a figure says *orange = the cell in focus, green
+= settled, sky = the window*, and the code block is six inches below it — so Dark+ would have the
+same hue making two different claims on one screen. **Colour means one thing per page** is the
+older rule and it wins. Light+ also fails AA outright on the light code surface: comment 4.37,
+type 3.90, number 3.92.
+
+### Picked by machine, because the first hand-picked cut was a 1998 theme
+
+The search maximising chroma and distance returned `#f789fe` / `#98ff81` / `#ffec32` — technically
+compliant, visually a rainbow. So the objective was inverted: **hold one lightness band and one
+chroma band** so the four hues read as one family, and satisfy the constraints inside it.
+
+| Theme | Band        | keyword              | string               | number               | type                 |
+| ----- | ----------- | -------------------- | -------------------- | -------------------- | -------------------- |
+| dark  | L 0.78–0.85, C ~0.10 | `#c5a7ef` 9.57 : 1 | `#faba9d` 11.86 : 1 | `#96d397` 11.37 : 1 | `#70e2ef` 13.03 : 1 |
+| light | L 0.27–0.33 (ink)    | `#46215c` 10.95 : 1 | `#592204` 10.80 : 1 | `#014210` 10.00 : 1 | `#032c34` 12.64 : 1 |
+
+The light set is ink-dark on purpose: the light figure roles already occupy the mid-lightness band,
+so the OKLab distance has to come from lightness. Same hue per role in both themes, which is the
+rule the figure palette already follows.
+
+Four tests hold it (`lib/palette.test.ts`): AA ≥ 4.5 on **both** grounds a block is read on
+(`--code` and `--card`, the journey panel's), ≥ 0.12 from every figure role, ≥ 0.11 from each other,
+and a luminance spread ≤ 0.42 — the last one is the anti-rainbow clause.
+
+### What is coloured, and what deliberately is not
+
+Everything goes through two components: `Tokens` for a block, `TokenLine` for a panel that draws its
+own rows. **The journey's code panel is coloured too**, over its lit row rather than instead of it —
+the wash and the inset rule say where the machine is, the tokens say what the line is made of.
+**Pseudocode stays plain**: it is prose about the algorithm, and colouring `swap` as a call would be
+a claim the text is not making. So does any block whose language this lexer does not know — it
+renders as one plain run, exactly as it did before.
+
 ## Depth — `lift-3d`
 
 A tilt is a claim that a surface is physical, so it is spent only where the claim is true:

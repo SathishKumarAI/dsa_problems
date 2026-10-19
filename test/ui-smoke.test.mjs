@@ -2217,6 +2217,88 @@ describe(
       assert.deepEqual(page.errors(), [])
     })
 
+    // CODE READS AS CODE (2026-10-18). Every block on this site was one colour
+    // until the lexer landed — `code-block.tsx` said "No highlighter
+    // dependency" and meant no highlighting. Three things have to hold in a
+    // real browser, and none of them can be checked in CSS: the tokens are
+    // actually painted, the editable block's mirror lines up with the caret
+    // the reader types at, and no token borrows a figure role's hue.
+    test("code is syntax-coloured, and no token wears a figure's colour", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(1200);
+        const rgb = s => (s.match(/[0-9.]+/g) || []).slice(0, 3).map(Number);
+        const chan = c => { c /= 255; return c <= 0.04045 ? c/12.92 : ((c+0.055)/1.055)**2.4 };
+        const lum = s => { const [r,g,b] = rgb(s).map(chan); return 0.2126*r + 0.7152*g + 0.0722*b };
+        const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x,y)=>y-x); return (hi+0.05)/(lo+0.05) };
+        const ta = document.querySelector('[data-code-editor]');
+        if (!ta) return { noEditor: true };
+        const box = ta.closest('div');
+        const pre = box.querySelector('pre');
+        const spans = pre ? [...pre.querySelectorAll('span')] : [];
+        const colours = [...new Set(spans.map(s => getComputedStyle(s).color))];
+        const root = getComputedStyle(document.documentElement);
+        // the figure roles, resolved the way the page resolves them
+        const probe = document.createElement('span');
+        document.body.appendChild(probe);
+        const figure = [1,2,3,4,5].map(i => {
+          probe.style.color = 'var(--chart-' + i + ')';
+          return getComputedStyle(probe).color;
+        });
+        probe.remove();
+        const ground = getComputedStyle(pre.parentElement).backgroundColor;
+        const cs = getComputedStyle(ta), cp = getComputedStyle(pre);
+        const tb = ta.getBoundingClientRect(), pb = pre.getBoundingClientRect();
+        return {
+          colours,
+          shared: colours.filter(c => figure.includes(c)),
+          worstContrast: Math.min(...colours.map(c => ratio(c, ground))),
+          editorText: cs.color,
+          caret: cs.caretColor,
+          aligned:
+            cs.fontFamily === cp.fontFamily &&
+            cs.fontSize === cp.fontSize &&
+            cs.lineHeight === cp.lineHeight &&
+            cs.paddingTop === cp.paddingTop &&
+            cs.paddingLeft === cp.paddingLeft &&
+            Math.abs(tb.top - pb.top) <= 1 &&
+            Math.abs(tb.left - pb.left) <= 1,
+          wrap: ta.getAttribute('wrap'),
+        };
+      `)
+      assert.ok(!out.noEditor, "no code editor on this problem page to test")
+      assert.ok(
+        out.colours.length >= 3,
+        `the block drew ${out.colours.length} token colours, want >= 3`
+      )
+      assert.deepEqual(
+        out.shared,
+        [],
+        "a code token is painted in a figure role's colour — on a page where that hue means focus, settled or window"
+      )
+      assert.ok(
+        out.worstContrast >= 4.5,
+        `a token measured ${out.worstContrast.toFixed(2)}:1 on the code surface`
+      )
+      // THE MIRROR, and the two ways it goes wrong: invisible text with no
+      // caret (nothing to type at) and a mirror one padding off (every line
+      // shimmers a few pixels away from the caret).
+      assert.equal(
+        out.editorText,
+        "rgba(0, 0, 0, 0)",
+        "the editor paints its own text over the coloured mirror"
+      )
+      assert.notEqual(out.caret, "rgba(0, 0, 0, 0)", "the caret is invisible")
+      assert.ok(out.aligned, "the mirror does not line up with the editor")
+      assert.equal(
+        out.wrap,
+        "off",
+        "the editor soft-wraps, which no `pre` can follow — the mirror will drift a row"
+      )
+      assert.deepEqual(page.errors(), [])
+    })
+
     test("the narration stays on screen even on a long panel (U1)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(

@@ -11,6 +11,58 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-18 — code reads as code: a lexer, and four hues picked by machine
+
+The owner: _"let's do a colour palette kind of like coding VS Code style — just a colour for coding
+for each and everything, for easy reading and learning."_
+
+**What was there:** nothing. `code-block.tsx` opened with the line "No highlighter dependency" and
+meant no highlighting — 384 Python, 333 Java and 333 C++ blocks in the data, plus the fences in 82
+teaching documents, every one of them a single grey.
+
+**What was asked for was measured and rejected, which is the interesting part.** VS Code's Dark+ on
+this app's own code surface: keyword #569CD6 is **0.066** from `chart-2` "window" in OKLab, comment
+#6A9955 is **0.095** from `chart-3` "settled", type #4EC9B0 is **0.076** from the same. On a problem
+page a figure says *orange = focus, green = settled, sky = window* and the code sits six inches
+below it, so Dark+ would have one hue making two claims on one screen. Light+ also fails AA on the
+light code surface outright: comment 4.37, type 3.90, number 3.92.
+
+So the hues were picked numerically, and the FIRST search was wrong in an instructive way: asked to
+maximise chroma and distance it returned `#f789fe` / `#98ff81` / `#ffec32` — every constraint
+satisfied, a 1998 syntax theme on screen. Inverting the objective is what worked: hold one lightness
+band and one chroma band so the four read as one family, then satisfy the constraints inside it.
+
+| Theme | Band                  | keyword              | string               | number               | type                 |
+| ----- | --------------------- | -------------------- | -------------------- | -------------------- | -------------------- |
+| dark  | L 0.78–0.85, C ~0.10  | `#c5a7ef` 9.57 : 1  | `#faba9d` 11.86 : 1 | `#96d397` 11.37 : 1 | `#70e2ef` 13.03 : 1 |
+| light | L 0.27–0.33 (ink)     | `#46215c` 10.95 : 1 | `#592204` 10.80 : 1 | `#014210` 10.00 : 1 | `#032c34` 12.64 : 1 |
+
+The three neutrals are the hierarchy and cost no new colour: a **name** being defined or called is
+`--foreground`, the brightest thing in the block, because it is what the line is about; identifiers,
+operators and punctuation sit at `--muted-foreground`; a comment is `--dim`.
+
+**A lexer, not a dependency.** Shiki is a WASM engine plus a grammar per language and Prism with
+four languages is ~25 KB gzipped, against a bundle that was already audited down 76% (B95). The code
+here is teaching code — four languages, no macros, no DSLs — so `lib/syntax.ts` scans it left to
+right in ~290 lines. Left to right rather than regexes over the string is what keeps a `#` inside a
+string a `#` and `'{'` a character literal, which is the repo's own rule: to find code, parse it.
+The gate's load-bearing test is the round trip — **every code block in the data tokenises back to
+itself, character for character** (1 197 blocks) — because a highlighter that drops a character
+renders code that does not compile and the reader cannot tell which side is wrong.
+
+**The editable blocks needed a second idea.** Every Python rung on a problem page is a `textarea`
+(editable by decision, 2026-09-15), and a textarea holds text, not elements — there is nothing
+inside it to paint. So the colour is a `<pre>` behind it with the same characters tokenised, and the
+textarea on top with `text-transparent` and a visible caret. Measured aligned in a real browser:
+same font, same padding, both boxes at 968px wide and the same top to the pixel, 19 spans in 4
+colours. `wrap="off"` is the load-bearing bit — a soft-wrapping textarea breaks a long line at its
+own idea of a word boundary and no `pre` setting reproduces it, so every row below the wrap would
+sit one line out.
+
+The journey's code panel is coloured too, over its lit row rather than instead of it; **pseudocode
+stays plain**, because it is prose about the algorithm and colouring `swap` as a call would be a
+claim it is not making.
+
 ## 2026-10-18 — a problem page arrives in six screens, not thirteen
 
 The third of the owner's three complaints: _"why do I need to scroll if I can just read entirely

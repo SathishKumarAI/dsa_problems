@@ -25,9 +25,10 @@
 // case (`data/demos.ts`, generated from the vectors that drive the Java and C++
 // gates). The appended line is shown in the output, not hidden, so nobody is
 // left wondering where a number came from.
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { PlayIcon, RotateCcwIcon, SquareIcon } from "lucide-react"
 import { CodeBlock } from "./code-block"
+import { Tokens } from "@/components/code-tokens"
 import { cn } from "@/lib/utils"
 import { DEMOS } from "@/data/demos"
 import { printsSomething, pyEntry } from "@/lib/py-entry"
@@ -57,6 +58,8 @@ export function RunnableCode({
   className?: string
 }) {
   const [draft, setDraft] = useState(code)
+  // the coloured copy behind the editor — see the block below for why
+  const mirror = useRef<HTMLPreElement>(null)
   const { run, result, clear, running, blocked, booting, failed } =
     usePython(id)
   const edited = editable && draft !== code
@@ -96,14 +99,47 @@ export function RunnableCode({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {editable ? (
+        // A COLOURED EDITOR, which a textarea cannot be on its own: it holds
+        // text, not elements, so there is nothing inside it to paint.
+        //
+        // So the colour is a `<pre>` BEHIND it, holding the same characters
+        // tokenised, and the textarea on top with transparent text and a
+        // visible caret. Three things make that line up rather than shimmer,
+        // and each one is load-bearing:
+        //
+        //   - the same metrics on both: `p-4 pt-7 font-mono text-ui
+        //     leading-relaxed`. One different padding and every line is off.
+        //   - `wrap="off"` on the textarea and `whitespace-pre` on the mirror,
+        //     so NEITHER wraps. Soft wrapping is the trap here: a textarea
+        //     breaks a long line at its own idea of a word boundary, and no
+        //     `pre` setting reproduces that exactly — the lines below the wrap
+        //     then sit one row out. Long lines scroll sideways instead, which
+        //     is what the read-only block already does.
+        //   - the mirror's scroll follows the textarea's, both axes.
         <div className="relative overflow-hidden rounded-lg border bg-code">
           <span
             aria-hidden
-            className="pointer-events-none absolute top-2 left-3 font-mono text-meta text-dim"
+            className="pointer-events-none absolute top-2 left-3 z-10 font-mono text-meta text-dim"
           >
             python
           </span>
+          <pre
+            aria-hidden
+            ref={mirror}
+            className="pointer-events-none absolute inset-0 overflow-hidden p-4 pt-7 font-mono text-ui leading-relaxed whitespace-pre text-muted-foreground"
+          >
+            <code>
+              <Tokens code={draft} lang="python" />
+            </code>
+          </pre>
           <textarea
+            wrap="off"
+            onScroll={(e) => {
+              const m = mirror.current
+              if (!m) return
+              m.scrollTop = e.currentTarget.scrollTop
+              m.scrollLeft = e.currentTarget.scrollLeft
+            }}
             // WHAT KIND OF TEXTAREA THIS IS. Two UI gates used to count bare
             // textareas and mean different things by the number: one proving
             // the page hosts no solve editor, one proving every teaching block
@@ -119,7 +155,10 @@ export function RunnableCode({
             spellCheck={false}
             onChange={(e) => setDraft(e.target.value)}
             aria-label="the script, yours to change"
-            className="block w-full resize-y bg-transparent p-4 pt-7 font-mono text-ui leading-relaxed text-foreground focus-visible:outline-none"
+            // `text-transparent` with a real caret: the characters are drawn
+            // by the mirror behind. The selection still paints, which is what
+            // makes selecting invisible text feel normal rather than broken.
+            className="relative block w-full resize-y overflow-auto bg-transparent p-4 pt-7 font-mono text-ui leading-relaxed whitespace-pre text-transparent caret-foreground selection:bg-primary/30 focus-visible:outline-none"
           />
         </div>
       ) : (
