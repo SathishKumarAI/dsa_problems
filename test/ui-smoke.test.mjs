@@ -2370,6 +2370,65 @@ describe(
       await page.run(`${FRESH} return 1`)
     })
 
+    // THE HIERARCHY HOLDS, AND NOTHING QUIET IS AN OPACITY (2026-10-18).
+    // Measured before this: a document `###` and an inline bold phrase were
+    // the same setting — 18.06px / 600 / 29.75 — 16 headings against 35
+    // emphases, so from y=9 909 to y=15 079 the skim path was 25 consecutive
+    // identical items. And the example's own answer rendered at 1.88:1,
+    // `text-dim` multiplied by `opacity-40`, which is the habit DESIGN.md
+    // §The quiet layer deleted once already.
+    test("a heading outranks an emphasis, and the answer is readable", async () => {
+      await page.goto(`${server.base}/#/p/two-pointers/sorted-pair-sum`)
+      const out = await page.run(`
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        await wait(1200);
+        const b = [...document.querySelectorAll('button')].find(x => /everything open/i.test(x.innerText));
+        if (b) b.click();
+        await wait(2200);
+        for (const d of document.querySelectorAll('main details')) d.open = true;
+        await wait(800);
+        const sig = el => { const c = getComputedStyle(el); return c.fontSize + '/' + c.fontWeight; };
+        const uniq = a => [...new Set(a)];
+        const h3 = uniq([...document.querySelectorAll('main h3')].map(sig));
+        const bold = uniq([...document.querySelectorAll('main p b, main li b')].map(sig));
+        // contrast of the example's answer row against the page ground
+        const rgb = s => (s.match(/[0-9.]+/g) || []).slice(0, 3).map(Number);
+        const chan = c => { c /= 255; return c <= 0.04045 ? c/12.92 : ((c+0.055)/1.055)**2.4; };
+        const lum = s => { const [r,g,b] = rgb(s).map(chan); return 0.2126*r + 0.7152*g + 0.0722*b; };
+        const ratio = (a, b) => { const [hi, lo] = [lum(a), lum(b)].sort((x,y)=>y-x); return (hi+0.05)/(lo+0.05); };
+        const ground = getComputedStyle(document.body).backgroundColor;
+        const label = [...document.querySelectorAll('main span')].find(s => s.textContent.trim() === 'out');
+        const answer = label && label.parentElement.querySelector('span:last-child');
+        // a justified block narrower than 520px is a river factory
+        const narrow = [...document.querySelectorAll('main p')]
+          .filter(p => getComputedStyle(p).textAlign === 'justify' && p.getBoundingClientRect().width < 520)
+          .map(p => Math.round(p.getBoundingClientRect().width));
+        return {
+          h3, bold,
+          collide: h3.some(x => bold.includes(x)),
+          answerRatio: answer ? ratio(getComputedStyle(answer).color, ground) : 0,
+          answerOpacity: answer ? getComputedStyle(answer.parentElement).opacity : "0",
+          narrowJustified: narrow,
+        };
+      `)
+      assert.ok(out.h3.length && out.bold.length, "no headings or emphases on the page to compare")
+      assert.equal(
+        out.collide,
+        false,
+        `a document heading renders the same as an emphasis: h3 ${out.h3.join(", ")} vs b ${out.bold.join(", ")}`
+      )
+      assert.ok(
+        out.answerRatio >= 4.5,
+        `the example's answer renders at ${out.answerRatio.toFixed(2)}:1`
+      )
+      assert.equal(out.answerOpacity, "1", "the answer row is withheld with an opacity, not a colour")
+      assert.deepEqual(
+        out.narrowJustified,
+        [],
+        "a column under 520px is set justified — that is where the rivers come from"
+      )
+    })
+
     test("the narration stays on screen even on a long panel (U1)", async () => {
       await page.goto(`${server.base}/#/`)
       await page.run(

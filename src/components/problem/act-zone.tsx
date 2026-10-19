@@ -122,7 +122,10 @@ export function ActZone({
       only while it is unstarted. Once earning has begun the button's
       "3/5" says everything a returning reader needs. */}
       {journey && earned.earned === 0 && (
-        <p className="max-w-measure prose-set text-ui text-muted-foreground">
+        // `text-body`, not `text-ui`: this is a SENTENCE, and a sentence set
+        // at the control step wraps to a different width than the prose beside
+        // it (T10). No `prose-set` either — two lines do not need justifying.
+        <p className="max-w-measure text-body text-muted-foreground">
           {journey.acts.length} acts: the need, every approach earned by the
           last one's weakness, your own code animated, then the reveal.
         </p>

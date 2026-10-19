@@ -43,7 +43,15 @@ function SumEq({
       <span className="text-muted-foreground">+</span>
       <span>{eq.b}</span>
       <span className="text-muted-foreground">=</span>
-      <b className={cn("text-display", ok ? "text-chart-3" : "text-chart-5")}>
+      {/* `font-semibold`, because a bare `<b>` renders 700 and this scale is
+          400/500/600 — DESIGN.md §Weights names it as a trap and T9 found it
+          shipped at 42.5px. The element stays `<b>`: it is the answer. */}
+      <b
+        className={cn(
+          "text-display font-semibold",
+          ok ? "text-chart-3" : "text-chart-5"
+        )}
+      >
         {eq.sum}
       </b>
       <span className="ml-2 text-ui text-muted-foreground">

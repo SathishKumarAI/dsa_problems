@@ -169,9 +169,13 @@ function Constraints({ problem }: { problem: Problem }) {
                 <span className="text-meta tracking-wide text-dim uppercase">
                   what it buys
                 </span>
-                <p className="prose-set text-body text-muted-foreground">
-                  {what}
-                </p>
+                {/* NO `prose-set`. The comment above says so and the code
+                    did it anyway: measured 2026-10-18 (T4), this card is
+                    303px / 39 characters at 1280, where justification opened
+                    a four-line river and word gaps of 0.727em — 15.8px
+                    against a 3.4px space, 4.6× the natural one. A narrow
+                    measure is set ragged. */}
+                <p className="text-body text-muted-foreground">{what}</p>
               </div>
             )}
           </li>
