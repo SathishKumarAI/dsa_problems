@@ -11,6 +11,37 @@ evidence. The visualizer's own history (PRs #1–#45, 2026-09-02 → 09-03) is p
 Read this if you are returning cold. It is the story the dated entries below tell in pieces: where
 the project started, what changed, why each change was made, and what it bought.
 
+## 2026-10-18 — the session, in one place: five branches from one sentence
+
+Read this instead of the five entries below if you are returning cold. The owner said one sentence
+while reading a problem page, and it contained three separate complaints that needed three separate
+answers; then asked for code colour, and then for the palette to be his choice.
+
+| #    | What shipped                                                      | The measurement that justified it                                                        |
+| ---- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| #135 | The reading room deleted — the chrome stops moving on scroll      | hiding 432px of chrome gave the column **36px** (792 → 828 at 1440) and rewrapped every paragraph to do it |
+| #136 | The column is for code, the measure is for sentences              | at 1920, code and tables 862 → **1251px**, prose unchanged at 864 (90ch), dead gutter 389 → 0 |
+| #137 | Every band folds — the page arrives in 6.2 screens, not 13.0      | sorted-pair-sum 13 036 → **6 164px**; pair-sum 36 729 → **6 196** (36.7 → 6.2 screens)  |
+| #138 | Code reads as code — a lexer and four hues picked by machine      | 1 050 blocks in one grey before it; all **1 197** now tokenise back character-for-character |
+| #139 | Three code palettes, and a setting that picks one                 | each theme's every role ≥ 4.5 : 1 on its own bench; the figure collisions PRINTED, not dropped |
+
+**The one lesson worth carrying out of it:** *width is not what makes a page long.* Uncapping the
+reading column cut the page 3%; folding its sections cut it 53% — 83% on pair-sum. Two of the three
+complaints in that sentence had causes nobody would have guessed from the words.
+
+**What the gates caught that looking did not:** a code theme that silently did nothing (an attribute
+selector tying `.dark` on specificity and losing on order); ten palette tests failing on a palette
+that had not changed (CRLF through a file read); four UI gates failing on content one click behind a
+new fold (`innerText` of a closed `<details>` is `''`). All three are in `CLAUDE.md` now.
+
+**Process note, recorded because it is the kind of thing that repeats:** the #138 commit landed on
+local `master` because its `git checkout -b` sat in a compound command that died on a shell parse
+error, so the branch was never created. Nothing had been pushed; the commit was moved onto its
+branch and the local pointer reset. **A branch is not created until `git branch --show-current` says
+so.**
+
+Gates at the end of the session: `npm run check` **901 / 0**, `npm run test:ui` **193 / 0**.
+
 ## 2026-10-18 — three code palettes, and the setting that picks one
 
 Asked for mid-branch: _"https://vscodethemes.com/e/BenjaminBenais.copilot-theme — add this theme as
