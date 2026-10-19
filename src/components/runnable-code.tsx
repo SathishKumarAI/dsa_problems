@@ -25,7 +25,7 @@
 // case (`data/demos.ts`, generated from the vectors that drive the Java and C++
 // gates). The appended line is shown in the output, not hidden, so nobody is
 // left wondering where a number came from.
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { PlayIcon, RotateCcwIcon, SquareIcon } from "lucide-react"
 import { CodeBlock } from "./code-block"
 import { Tokens } from "@/components/code-tokens"
@@ -60,6 +60,13 @@ export function RunnableCode({
   const [draft, setDraft] = useState(code)
   // the coloured copy behind the editor — see the block below for why
   const mirror = useRef<HTMLPreElement>(null)
+  // A PROGRESS BAR THAT WAITS 200ms, and the measurement that sets the
+  // number: a cold Run takes 1 029ms and a warm one 13ms (C8). A spinner that
+  // appears immediately flickers on every warm run; one that never appears
+  // leaves a second of silence on a cold one. So it arms on 200ms and is
+  // cancelled by anything faster, which is Material's own rule for an
+  // indeterminate indicator.
+  const [slow, setSlow] = useState(false)
   const { run, result, clear, running, blocked, booting, failed } =
     usePython(id)
   const edited = editable && draft !== code
@@ -89,6 +96,17 @@ export function RunnableCode({
   // `TreeNode`. The preamble is the same scaffolding the Java and C++ gates
   // drive Python with, so the block runs here the way it runs in CI. A block
   // that starts itself is a full script and is run exactly as written.
+  const [wasRunning, setWasRunning] = useState(running)
+  if (running !== wasRunning) {
+    setWasRunning(running)
+    if (!running) setSlow(false)
+  }
+  useEffect(() => {
+    if (!running) return
+    const t = setTimeout(() => setSlow(true), 200)
+    return () => clearTimeout(t)
+  }, [running])
+
   const toRun = call
     ? PREAMBLE +
       (scaffold ? stripFuture(scaffold) + "\n" : "") +
@@ -186,7 +204,19 @@ export function RunnableCode({
               Run
             </>
           )}
+          {/* the bar lives inside the button's row, beside it rather than
+              over the code, so a reader watching their own edit is not covered
+              by the thing reporting on it */}
         </button>
+
+        {slow && running && (
+          <span
+            aria-hidden
+            className="h-0.5 w-24 overflow-hidden rounded-full bg-border"
+          >
+            <span className="block h-full w-2/5 animate-run-sweep rounded-full bg-primary" />
+          </span>
+        )}
 
         {edited && (
           <button
@@ -239,7 +269,12 @@ export function RunnableCode({
         // and the cycle-detect one runs to 90 lines. Looked at in a browser:
         // unbounded, the output pushed the rest of the document a screen and a
         // half down, and the reader lost the code they had just run.
-        <div className="rounded-lg border bg-card">
+        // `animate-fold-in` — the result fades and rises over 320ms rather
+        // than appearing between two frames. Measured 2026-10-18 (C8): a warm
+        // run returns in 13ms, and at 13ms an untransitioned 408px panel reads
+        // as a glitch rather than as an answer. Opacity and transform only;
+        // height-animating it would shove the document.
+        <div className="animate-fold-in rounded-lg border bg-card">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b px-3 py-1.5">
             <span className="font-mono text-meta text-dim">output</span>
             {/* WHAT WAS CALLED. The appended line lives in the code sent to

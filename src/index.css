@@ -762,6 +762,47 @@
   transform-origin: top;
 }
 
+/* THE FOLD'S REVEAL (C7). Fifteen `<details>` on a problem page, and opening
+   one dropped 1 879px into place in a single frame with `transition: all 0s`
+   — while the system has carried a 320ms reveal token for exactly this since
+   the day it was written.
+
+   Opacity and transform only. NOT height: animating height is what makes a
+   reveal cost layout on every frame, and it is the same mistake the hints
+   accordion makes at 200ms with a second curve. The body arrives 4px high and
+   settles; the summary above it never moves. */
+@keyframes fold-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-fold-in {
+  animation: fold-in var(--duration-reveal) var(--default-transition-timing-function);
+}
+
+/* The Run indicator's sweep. One curve, and it only ever runs while a block
+   is actually executing — armed after 200ms, so a 13ms warm run never shows
+   it at all (C8). */
+@keyframes run-sweep {
+  from {
+    transform: translateX(-40%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}
+
+@utility animate-run-sweep {
+  animation: run-sweep 900ms var(--default-transition-timing-function) infinite
+    alternate;
+}
+
 @keyframes edge-in-x {
   from {
     transform: scaleX(0);
@@ -850,7 +891,45 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+
+  /* A CONTROL SAYS IT IS A CONTROL — once, here, rather than per component.
+     Measured 2026-10-18 (C1): **50 of 142** controls on a problem page
+     reported a cursor that was neither `pointer` nor `text` — Run, the whole
+     walkthrough transport, all twelve quiz options, the code tabs, Copy,
+     "everything open", "Build it up". Tailwind v4 dropped the preflight's
+     `cursor: pointer` and the button recipe never put it back, so only the
+     three climb cards (which add it by hand) behaved. Every one of those is
+     a real `button`, `summary` or `[role]`, so one rule reaches all of them;
+     anything genuinely disabled keeps the default arrow. */
+  button:not(:disabled),
+  summary,
+  label:has(input:not(:disabled)),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="radio"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  /* AND IT ANSWERS THE PRESS. The button recipe carries `active:translate-y-px`
+     and the 37 hand-rolled controls did not (C13), so half the page felt dead
+     under the finger. One pixel, on the same gesture, everywhere. */
+  button:not(:disabled):active,
+  summary:active {
+    transform: translateY(1px);
+  }
+
+  /* THE FOCUS RING IS A FULL-OPACITY OUTLINE, NOT A HALF-ALPHA HALO.
+     `ring-ring/50` composited to **2.45:1** against the ground and 2.41:1 on
+     a card (C2), where WCAG 2.4.11 asks for 3; `--ring` at full opacity is
+     6.40:1. An `outline` is also never clipped by an `overflow: hidden`
+     ancestor, which is how three focusable things on the problem page lost
+     theirs entirely. This also gives the 64 controls that declared no focus
+     style at all (C10) a real one — the summaries, the quiz options and the
+     rail links among them. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
   body {
     @apply bg-background text-foreground;
@@ -894,6 +973,15 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* THE LEARNER'S OWN SWITCH REMOVES THE TILT, not merely its duration (C14).
+     The OS media query above already does this; the in-app override did not,
+     so a reader who turned motion off in Settings still got 3° of rotation and
+     2px of rise — instantly, which is the one thing they asked not to get. */
+  body.force-reduced-motion .lift-3d:hover,
+  body.force-reduced-motion .lift-3d:active {
+    transform: none !important;
   }
 
   /* Thin, themed scrollbars. The OS default is bright and chunky and knows
