@@ -60,6 +60,22 @@ from a loaded machine is still not evidence.
 | **Below `xl`**                    | "On this page" button → bottom sheet listing the same sections the rail lists                                                                                                                                                                    |
 | **`components/problem/`** (new)   | `page-sections.ts` (what the page draws — plain `.ts`, gated), `orient-zone`, `act-zone`, `compare-view`, `closing-bands`. `problem-detail.tsx` 821 → 490 lines                                                                                  |
 
+## The audit of 2026-10-18 — read this before touching the problem page
+
+Four auditors drove `#/p/two-pointers/sorted-pair-sum` in a real browser at 1280/1600/1920 and
+measured **45 findings**, 8 of them breaking. All of it, with the build order, is in
+[`docs/AUDIT-2026-10-18.md`](docs/AUDIT-2026-10-18.md) — filed as **B109–B114**. Two numbers it
+corrects, both quoted in PRs merged the same day:
+
+- **Prose renders 108 characters a line, not 90.** Three gates estimate characters as
+  `width / (fontSize * 0.5)` against a real 0.447em glyph.
+- **The reading room's 36px came from the column's own cap swap, not from the rail leaving.** The
+  measure is 816px inside a 970px column, so the rail's exit moves nothing capped; the LEFT
+  sidebar's exit is what moves text, by 272px. That is what makes the gesture buildable again.
+
+Three calls are the owner's and block their waves: the measure (72ch or keep column-filling), both
+rails or one, and whether a reader may commit to a wrong answer outside a journey.
+
 ## The next action — the order the owner picked, with one item already half-built
 
 **0. The next page, with `docs/CONTENT-PATTERNS.md` open.** The read-through first (press every
