@@ -55,9 +55,16 @@ function Inline({ text }: { text: string }) {
         // Bold and italic re-enter, because the corpus nests code inside them
         // — "**Time — `O(n)`.**" is how every complexity bullet is written.
         // Without this the inner backticks render as literal characters.
+        // EMPHASIS IS 500, NOT 600 — measured 2026-10-18 (T1): a document
+        // `###` and an inline bold phrase both rendered 18.06px / 600 / 29.75,
+        // 16 headings against 35 emphases, so from y=9 909 to y=15 079 the
+        // skim path was 25 consecutive identical items and a reader looking
+        // for the next SECTION could not find one. The heading keeps 600 and
+        // the emphasis steps down; weight is the only channel left at this
+        // size, so the two cannot both have the loud end of it.
         if (span.kind === "bold")
           return (
-            <b key={i} className="font-semibold text-foreground">
+            <b key={i} className="font-medium text-foreground">
               <Inline text={span.text} />
             </b>
           )
@@ -162,7 +169,12 @@ export function Markdown({
                 key={i}
                 id={ids.get(i)}
                 // one step under its `##`: the body step, carried by weight
-                className="max-w-measure scroll-mt-6 pt-2 font-heading text-body font-semibold"
+                // `leading-snug` and a little tracking, because `text-body`
+                // drags the BODY leading (1.65) along with it — every other
+                // heading on this page sits at 1.21–1.37 (T6). `pt-6`, not
+                // `pt-2`: a heading 13px under the previous paragraph and 21px
+                // above its own body belongs to the wrong one (T14).
+                className="max-w-measure scroll-mt-6 pt-6 font-heading text-body leading-snug font-semibold tracking-[0.005em]"
               >
                 <Inline text={block.text} />
               </h3>

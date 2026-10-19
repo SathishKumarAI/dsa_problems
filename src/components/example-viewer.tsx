@@ -193,8 +193,15 @@ function WalkableExample({ example, args }: { example: Example; args: Arg[] }) {
 
       <div
         className={cn(
-          "flex items-baseline gap-2 border-t pt-2 font-mono text-ui transition-opacity duration-(--duration-reveal)",
-          done ? "opacity-100" : "opacity-40"
+          // NOT AN OPACITY. Measured 2026-10-18 (T3): `text-dim` under
+          // `opacity-40` rendered the label at 1.88:1 and the value itself at
+          // 3.38:1 — both hard AA failures, and exactly the habit DESIGN.md
+          // §The quiet layer deleted once already ("not dim, invisible").
+          // The withholding is carried by COLOUR instead: the answer sits at
+          // the dim step until it is earned, then takes the settled hue and
+          // the pulse. Both states are text a reader can actually read.
+          "flex items-baseline gap-2 border-t pt-2 font-mono text-ui transition-colors duration-(--duration-reveal)",
+          done ? "text-foreground" : "text-dim"
         )}
       >
         <span className="text-dim">out</span>
